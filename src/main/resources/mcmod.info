@@ -1,0 +1,16 @@
+[
+{
+  "modid": "tellme",
+  "name": "Tell Me",
+  "description": "Provides some information about various things",
+  "version": "${mod_version}",
+  "mcversion": "${minecraft_version}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["masa"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
