@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme;
 
+import net.minecraft.world.WorldType;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,7 @@ public class TellMe
     @EventHandler
     public void postInit(FMLPostInitializationEvent event)
     {
+        logger.info("WorldType.worldTypes.length: " + WorldType.worldTypes.length);
         BiomeInfo.printBiomeList();
     }
 }

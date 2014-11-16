@@ -15,6 +15,7 @@ public class BiomeEvents
         if (event.worldType != null)
         {
             TellMe.logger.info("InitBiomeGens: worldType: " + event.worldType.toString());
+            TellMe.logger.info(String.format("worldTypeID: %d; worldTypeName: %s", event.worldType.getWorldTypeID(), event.worldType.getWorldTypeName()));
         }
         else
         {
