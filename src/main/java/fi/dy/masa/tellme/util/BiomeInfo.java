@@ -28,7 +28,7 @@ public class BiomeInfo
                 }
                 else
                 {
-                	TellMe.logger.info(String.format("%3d | %3d | %-20s | 0x%08X | 0x%08X | %2.6f", i, 0, "<none>", 0, 0, 0.0f));
+                    TellMe.logger.info(String.format("%3d | %3d | %-20s | 0x%08X | 0x%08X | %2.6f", i, 0, "<none>", 0, 0, 0.0f));
                 }
             }
         }

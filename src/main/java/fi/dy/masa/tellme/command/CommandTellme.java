@@ -7,6 +7,7 @@ import java.util.Map;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 /*
  * Base class for handling all the commands of this mod.
@@ -15,7 +16,8 @@ import net.minecraft.command.WrongUsageException;
  */
 public class CommandTellme extends CommandBase
 {
-private static Map<String, CommandBase> subCommands = new HashMap<String, CommandBase>();
+    public static CommandTellme instance = new CommandTellme();
+    private static Map<String, CommandBase> subCommands = new HashMap<String, CommandBase>();
 
     @Override
     public String getCommandName()
@@ -30,6 +32,12 @@ private static Map<String, CommandBase> subCommands = new HashMap<String, Comman
     }
 
     @Override
+    public boolean canCommandSenderUseCommand(ICommandSender icommandsender)
+    {
+        return true;
+    }
+
+    @Override
     public int getRequiredPermissionLevel()
     {
         return 0;
@@ -37,23 +45,45 @@ private static Map<String, CommandBase> subCommands = new HashMap<String, Comman
 
     @SuppressWarnings("rawtypes")
     @Override
-    public List addTabCompletionOptions(ICommandSender icommandsender, String[] str)
+    public List addTabCompletionOptions(ICommandSender icommandsender, String[] strArr)
     {
-        // TODO
+        if (strArr.length == 1)
+        {
+            return getListOfStringsFromIterableMatchingLastWord(strArr, subCommands.keySet());
+        }
+        else if (subCommands.containsKey(strArr[0]))
+        {
+            CommandBase sc = subCommands.get(strArr[0]);
+            if (sc != null)
+            {
+                return sc.addTabCompletionOptions(icommandsender, strArr);
+            }
+        }
         return null;
     }
 
     @Override
     public void processCommand(ICommandSender icommandsender, String[] commandArgs)
     {
-        if (commandArgs.length > 0 && subCommands.containsKey(commandArgs[0]) == true)
+        if (commandArgs.length > 0)
         {
-            CommandBase cb = subCommands.get(commandArgs[0]);
-            if (cb != null)
+            if (subCommands.containsKey(commandArgs[0]) == true)
             {
-                cb.processCommand(icommandsender, commandArgs);
+                CommandBase cb = subCommands.get(commandArgs[0]);
+                if (cb != null)
+                {
+                    cb.processCommand(icommandsender, commandArgs);
+                    return;
+                }
             }
-            return;
+            else
+            {
+                /*if (icommandsender instanceof EntityPlayer)
+                {
+                    System.out.println("remote: " + ((EntityPlayer)icommandsender).worldObj.isRemote);
+                }*/
+                throw new WrongUsageException("Unrecognized command: " + "/" + this.getCommandName() + " " + commandArgs[0]);
+            }
         }
 
         throw new WrongUsageException("Type '" + getCommandUsage(icommandsender) + "' for help.");
@@ -65,5 +95,10 @@ private static Map<String, CommandBase> subCommands = new HashMap<String, Comman
         {
             subCommands.put(cmd.getCommandName(), cmd);
         }
+    }
+
+    public static void registerCommand(FMLServerStartingEvent event)
+    {
+        event.registerServerCommand(instance);
     }
 }

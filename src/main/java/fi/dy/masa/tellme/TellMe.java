@@ -1,7 +1,5 @@
 package fi.dy.masa.tellme;
 
-import net.minecraftforge.client.ClientCommandHandler;
-
 import org.apache.logging.log4j.Logger;
 
 import cpw.mods.fml.common.Mod;
@@ -10,6 +8,7 @@ import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import fi.dy.masa.tellme.command.CommandTellme;
 import fi.dy.masa.tellme.reference.Reference;
 
@@ -34,7 +33,7 @@ public class TellMe
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-        ClientCommandHandler.instance.registerCommand(new CommandTellme());
+        //ClientCommandHandler.instance.registerCommand(CommandTellme.instance);
     }
 
     @EventHandler
@@ -42,5 +41,11 @@ public class TellMe
     {
         //logger.info("WorldType.worldTypes.length: " + WorldType.worldTypes.length);
         //BiomeInfo.printBiomeList();
+    }
+
+    @EventHandler
+    public void serverStarting(FMLServerStartingEvent event)
+    {
+        CommandTellme.registerCommand(event);
     }
 }
