@@ -2,3 +2,18 @@ language.name=English
 language.region=US
 language.code=en_US
 
+info.and=and
+
+info.command.available=Available commands are
+info.command.help=For help, type
+info.command.name=command_name
+info.command.unknown=Unrecognized command
+info.command.unknown.subcommand=Unrecognized sub command or option
+info.command.usage=Usage
+
+info.output.to.console=Command output printed to console
+info.output.to.file.cfgdir=Command output dumped to a file in the configuration directory
+
+info.subcommand.biome=Gives some information about biomes
+info.subcommand.blockstats=Calculates the number of each block type in a given area
+info.subcommand.help=Gives some information about the commands

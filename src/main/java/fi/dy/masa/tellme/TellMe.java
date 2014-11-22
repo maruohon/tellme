@@ -22,11 +22,14 @@ public class TellMe
     //public static IProxy proxy;
     public static Logger logger;
 
+    public static String configDirPath;
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
         instance = this;
         logger = event.getModLog();
+        configDirPath = event.getModConfigurationDirectory().getAbsolutePath().concat("/").concat(Reference.MOD_ID);
         //MinecraftForge.TERRAIN_GEN_BUS.register(new BiomeEvents());
     }
 
@@ -39,8 +42,6 @@ public class TellMe
     @EventHandler
     public void postInit(FMLPostInitializationEvent event)
     {
-        //logger.info("WorldType.worldTypes.length: " + WorldType.worldTypes.length);
-        //BiomeInfo.printBiomeList();
     }
 
     @EventHandler

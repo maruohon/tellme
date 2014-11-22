@@ -3,10 +3,12 @@ package fi.dy.masa.tellme.command;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.util.StatCollector;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 /*
@@ -17,7 +19,13 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 public class CommandTellme extends CommandBase
 {
     public static CommandTellme instance = new CommandTellme();
-    private static Map<String, CommandBase> subCommands = new HashMap<String, CommandBase>();
+    private static Map<String, ISubCommand> subCommands = new HashMap<String, ISubCommand>();
+
+    static
+    {
+        registerSubCommand(new SubCommandBiome());
+        registerSubCommand(new SubCommandHelp());
+    }
 
     @Override
     public String getCommandName()
@@ -53,7 +61,7 @@ public class CommandTellme extends CommandBase
         }
         else if (subCommands.containsKey(strArr[0]))
         {
-            CommandBase sc = subCommands.get(strArr[0]);
+            ISubCommand sc = subCommands.get(strArr[0]);
             if (sc != null)
             {
                 return sc.addTabCompletionOptions(icommandsender, strArr);
@@ -69,7 +77,7 @@ public class CommandTellme extends CommandBase
         {
             if (subCommands.containsKey(commandArgs[0]) == true)
             {
-                CommandBase cb = subCommands.get(commandArgs[0]);
+                ISubCommand cb = subCommands.get(commandArgs[0]);
                 if (cb != null)
                 {
                     cb.processCommand(icommandsender, commandArgs);
@@ -82,19 +90,24 @@ public class CommandTellme extends CommandBase
                 {
                     System.out.println("remote: " + ((EntityPlayer)icommandsender).worldObj.isRemote);
                 }*/
-                throw new WrongUsageException("Unrecognized command: " + "/" + this.getCommandName() + " " + commandArgs[0]);
+                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown") + ": /" + this.getCommandName() + " " + commandArgs[0]);
             }
         }
 
-        throw new WrongUsageException("Type '" + getCommandUsage(icommandsender) + "' for help.");
+        throw new WrongUsageException(StatCollector.translateToLocal("info.command.help") + ": '" + getCommandUsage(icommandsender) + "'");
     }
 
-    public static void registerSubCommand(CommandBase cmd)
+    public static void registerSubCommand(ISubCommand cmd)
     {
         if (subCommands.containsKey(cmd.getCommandName()) == false)
         {
             subCommands.put(cmd.getCommandName(), cmd);
         }
+    }
+
+    public static Set<String> getSubCommandList()
+    {
+        return subCommands.keySet();
     }
 
     public static void registerCommand(FMLServerStartingEvent event)
