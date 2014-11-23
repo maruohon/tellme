@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
 
 public class SubCommandBlockStats extends SubCommand
@@ -33,9 +34,11 @@ public class SubCommandBlockStats extends SubCommand
         // "/tellme blockstats <playername> <x-distance> <y-distance> <z-distance> [blocktype blocktype ...]"
         if (args.length < 5)
         {
-            String str = StatCollector.translateToLocal("info.command.usage") + " "
-                + CommandTellme.instance.getCommandName() + " blockstats <playername> <x-distance> <y-distance> <z-distance> [blocktype blocktype ...]";
-            throw new WrongUsageException(str);
+            String str = StatCollector.translateToLocal("info.command.usage") + " '/"
+                + CommandTellme.instance.getCommandName() + " blockstats <playername> <x-distance> <y-distance> <z-distance> [blocktype blocktype ...]'";
+            sender.addChatMessage(new ChatComponentText(str));
+
+            return;
         }
 
         if (args.length > 5)
@@ -46,5 +49,8 @@ public class SubCommandBlockStats extends SubCommand
                 blockFilter.add(args[i]);
             }
         }
+
+        // FIXME
+        sender.addChatMessage(new ChatComponentText("WIP"));
     }
 }
