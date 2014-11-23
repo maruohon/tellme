@@ -58,8 +58,13 @@ public abstract class SubCommand implements ISubCommand
     @Override
     public void processCommand(ICommandSender sender, String[] args)
     {
+        // "/tellme command"
+        if (args.length == 1)
+        {
+            sender.addChatMessage(new ChatComponentText(this.getSubCommandsHelpString()));
+        }
         // "/tellme command [help|unknown]"
-        if (args.length == 2)
+        else if (args.length == 2)
         {
             if (args[1].equals("help") == true)
             {

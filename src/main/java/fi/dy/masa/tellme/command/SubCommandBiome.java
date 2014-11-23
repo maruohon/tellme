@@ -27,12 +27,7 @@ public class SubCommandBiome extends SubCommand
     {
         super.processCommand(sender, args);
 
-        // "/tellme biome"
-        if (args.length == 1)
-        {
-            sender.addChatMessage(new ChatComponentText(this.getSubCommandsHelpString()));
-        }
-        else if (args.length == 2)
+        if (args.length == 2)
         {
             if (args[1].equals("current") == true)
             {

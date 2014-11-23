@@ -24,6 +24,7 @@ public class CommandTellme extends CommandBase
     static
     {
         registerSubCommand(new SubCommandBiome());
+        registerSubCommand(new SubCommandBlockStats());
         registerSubCommand(new SubCommandHelp());
     }
 
