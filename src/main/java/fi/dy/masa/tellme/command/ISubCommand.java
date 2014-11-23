@@ -14,4 +14,10 @@ public interface ISubCommand
 
     /* Adds the tab completion options */
     List<String> addTabCompletionOptions(ICommandSender sender, String[] args);
+
+    /* Gets the sub commands for this (sub) command.*/
+    List<String> getSubCommands();
+
+    /* Gets the sub command help string ready for printing. */
+    String getSubCommandsHelpString();
 }

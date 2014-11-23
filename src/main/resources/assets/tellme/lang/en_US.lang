@@ -6,6 +6,7 @@ info.and=and
 
 info.command.available=Available commands are
 info.command.help=For help, type
+info.command.help.subcommand=For help about sub commands, type
 info.command.name=command_name
 info.command.unknown=Unrecognized command
 info.command.unknown.subcommand=Unrecognized sub command or option
@@ -17,3 +18,11 @@ info.output.to.file.cfgdir=Command output dumped to a file in the configuration 
 info.subcommand.biome=Gives some information about biomes
 info.subcommand.blockstats=Calculates the number of each block type in a given area
 info.subcommand.help=Gives some information about the commands
+
+info.subcommands.available=Available subcommands are
+info.subcommands.help=Gives information about the sub commands
+info.subcommands.help.unknown=Unknown sub command
+
+info.subcommand.biome.help.current=Prints information about the current biome to chat
+info.subcommand.biome.help.dump=Dumps the complete biome list into a timestamped file in config/tellme/
+info.subcommand.biome.help.list=Prints the complete biome list to the console

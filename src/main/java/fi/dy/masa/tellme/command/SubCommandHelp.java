@@ -9,8 +9,13 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
 
-public class SubCommandHelp implements ISubCommand
+public class SubCommandHelp extends SubCommand
 {
+    public SubCommandHelp()
+    {
+        super();
+    }
+
     @Override
     public String getCommandName()
     {
@@ -57,14 +62,18 @@ public class SubCommandHelp implements ISubCommand
             str.append("/" + CommandTellme.instance.getCommandName() + " " + subCommands.get(subCommands.size() - 1));
         }
 
+        // List of sub commands
         sender.addChatMessage(new ChatComponentText(str.toString()));
+
+        // Sub command help
+        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.help.subcommand") + " '/" + CommandTellme.instance.getCommandName() + " <sub_command> help'"));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args)
     {
-        // "/tellme help "
+        // "/tellme help ???"
         if (args.length == 2)
         {
             return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, CommandTellme.getSubCommandList());
