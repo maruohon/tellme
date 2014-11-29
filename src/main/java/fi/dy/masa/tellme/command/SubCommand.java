@@ -29,7 +29,7 @@ public abstract class SubCommand implements ISubCommand
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args)
     {
-        if (args.length == 2 || (args.length == 3 && args[1].equals("help") == true))
+        if (args.length == 2 || (args.length == 3 && args[1].equals("help")))
         {
             return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, this.getSubCommands());
         }
@@ -66,7 +66,7 @@ public abstract class SubCommand implements ISubCommand
         // "/tellme command [help|unknown]"
         else if (args.length == 2)
         {
-            if (args[1].equals("help") == true)
+            if (args[1].equals("help"))
             {
                 sender.addChatMessage(new ChatComponentText(this.getSubCommandsHelpString()));
             }
@@ -76,9 +76,9 @@ public abstract class SubCommand implements ISubCommand
             }
         }
         // "/tellme command help subsubcommand"
-        else if (args.length == 3 && args[1].equals("help") == true)
+        else if (args.length == 3 && args[1].equals("help"))
         {
-            if (args[2].equals("help") == true)
+            if (args[2].equals("help"))
             {
                 sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommands.help")));
             }

@@ -31,7 +31,12 @@ public class SubCommandBlockStats extends SubCommand
             throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.notplayer"));
         }
 
-        // "/tellme blockstats <playername> <x-distance> <y-distance> <z-distance> [blocktype blocktype ...]"
+        // Possible command formats are:
+        // /tellme blockstats count <playername> <x-distance> <y-distance> <z-distance>
+        // /tellme blockstats count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>
+        // /tellme query
+        // /tellme query [name name ...]
+
         if (args.length < 5)
         {
             String str = StatCollector.translateToLocal("info.command.usage") + " '/"

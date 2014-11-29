@@ -20,8 +20,8 @@ public class TellMe
 
     //@SidedProxy(clientSide = Reference.PROXY_CLASS_CLIENT, serverSide = Reference.PROXY_CLASS_SERVER)
     //public static IProxy proxy;
-    public static Logger logger;
 
+    public static Logger logger;
     public static String configDirPath;
 
     @EventHandler
@@ -30,13 +30,11 @@ public class TellMe
         instance = this;
         logger = event.getModLog();
         configDirPath = event.getModConfigurationDirectory().getAbsolutePath().concat("/").concat(Reference.MOD_ID);
-        //MinecraftForge.TERRAIN_GEN_BUS.register(new BiomeEvents());
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-        //ClientCommandHandler.instance.registerCommand(CommandTellme.instance);
     }
 
     @EventHandler

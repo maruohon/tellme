@@ -29,19 +29,19 @@ public class SubCommandBiome extends SubCommand
 
         if (args.length == 2)
         {
-            if (args[1].equals("current") == true)
+            if (args[1].equals("current"))
             {
                 if (sender instanceof EntityPlayer)
                 {
                     BiomeInfo.printCurrentBiomeInfoToChat((EntityPlayer)sender);
                 }
             }
-            else if (args[1].equals("dump") == true)
+            else if (args[1].equals("dump"))
             {
                 BiomeInfo.dumpBiomeListToFile();
                 sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.file.cfgdir")));
             }
-            else if (args[1].equals("list") == true)
+            else if (args[1].equals("list"))
             {
                 BiomeInfo.printBiomeListToLogger();
                 sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
