@@ -4,10 +4,15 @@ language.code=en_US
 
 info.and=and
 
+info.command.argument.outofrange=Argument(s) out of range
+info.command.argument.outofrange.world=Argument(s) out of range (world limits)
 info.command.available=Available commands are
+info.command.done=Done
 info.command.help=For help, type
 info.command.help.subcommand=For help about sub commands, type
+info.command.invalid.argument.number=Invalid number of argument(s)!
 info.command.name=command_name
+info.command.player.notfound=No player found by name
 info.command.unknown=Unrecognized command
 info.command.unknown.subcommand=Unrecognized sub command or option
 info.command.usage=Usage
@@ -26,5 +31,8 @@ info.subcommand.biome.help.list=Prints the complete biome list to the console
 
 info.subcommand.help=Gives some information about the commands
 
-info.subcommand.blockstats=[WIP] Calculates the number of each block type in a given area
+info.subcommand.blockstats=Calculates the number of each block type in a given area
+info.subcommand.blockstats.calculating=Calculating block statistics...
+info.subcommand.blockstats.chunksnotloaded=All the chunks for the requested range are not loaded, aborting!
 info.subcommand.blockstats.notplayer=This command can only be run by a player
+info.subcommand.blockstats.invalid.dimension=Invalid dimension!

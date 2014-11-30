@@ -27,7 +27,7 @@ public abstract class SubCommand implements ISubCommand
 
     @SuppressWarnings("unchecked")
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args)
+    public List<String> addTabCompletionOptions(ICommandSender icommandsender, String[] args)
     {
         if (args.length == 2 || (args.length == 3 && args[1].equals("help")))
         {
