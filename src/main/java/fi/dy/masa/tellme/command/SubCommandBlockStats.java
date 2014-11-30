@@ -8,9 +8,11 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.StatCollector;
 import fi.dy.masa.tellme.util.BlockStats;
+import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandBlockStats extends SubCommand
 {
@@ -21,6 +23,7 @@ public class SubCommandBlockStats extends SubCommand
         super();
         this.blockStats = new BlockStats();
         this.subSubCommands.add("count");
+        this.subSubCommands.add("dump");
         this.subSubCommands.add("query");
     }
 
@@ -107,8 +110,8 @@ public class SubCommandBlockStats extends SubCommand
                     + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
             }
         }
-        // "/tellme blockstats query ..."
-        else if (args[1].equals("query"))
+        // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
+        else if (args[1].equals("query") || args[1].equals("dump"))
         {
             // We have some filters specified
             if (args.length > 2)
@@ -118,6 +121,16 @@ public class SubCommandBlockStats extends SubCommand
             else
             {
                 this.blockStats.queryAll();
+            }
+
+            if (args[1].equals("query"))
+            {
+                this.blockStats.printBlockStatsToLogger();
+            }
+            else // dump
+            {
+                DataDump.dumpDataToFile("block_stats", this.blockStats.getBlockStatsLines());
+                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.file.cfgdir")));
             }
         }
         else

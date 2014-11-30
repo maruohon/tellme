@@ -1,18 +1,11 @@
 package fi.dy.masa.tellme.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
-
-import org.apache.commons.io.FileUtils;
-
 import fi.dy.masa.tellme.TellMe;
 
 public class BiomeInfo
@@ -74,52 +67,6 @@ public class BiomeInfo
         for (int i = 0; i < lines.size(); ++i)
         {
             TellMe.logger.info(lines.get(i));
-        }
-    }
-
-    public static void dumpBiomeListToFile()
-    {
-        File cfgDir = new File(TellMe.configDirPath);
-        if (cfgDir.exists() == false)
-        {
-            try
-            {
-                cfgDir.mkdirs();
-            }
-            catch (Exception e)
-            {
-                TellMe.logger.error("Failed to create the configuration directory.");
-                e.printStackTrace();
-                return;
-            }
-
-        }
-
-        String fileName = "tellme_biome_dump_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis())) + ".txt";
-        ArrayList<String> lines = getBiomeList();
-        File outFile = new File(cfgDir, fileName);
-        try
-        {
-            outFile.createNewFile();
-        }
-        catch (IOException e)
-        {
-            TellMe.logger.error("Failed to create biome dump file '" + fileName + "'");
-            e.printStackTrace();
-            return;
-        }
-
-        try
-        {
-            for (int i = 0; i < lines.size(); ++i)
-            {
-                FileUtils.writeStringToFile(outFile, lines.get(i) + System.getProperty("line.separator"), true);
-            }
-        }
-        catch (IOException e)
-        {
-            TellMe.logger.error("Exception while writing biome list to file.");
-            e.printStackTrace();
         }
     }
 }

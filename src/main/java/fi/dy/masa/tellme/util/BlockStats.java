@@ -17,6 +17,7 @@ import fi.dy.masa.tellme.TellMe;
 public class BlockStats
 {
     private HashMap<String, BlockInfo> blockStats;
+    private ArrayList<String> blockStatLines;
     private int longestName = 0;
 
     public class BlockInfo implements Comparable<BlockInfo>
@@ -60,6 +61,7 @@ public class BlockStats
     public BlockStats()
     {
         this.blockStats = new HashMap<String, BlockInfo>();
+        this.blockStatLines = new ArrayList<String>();
     }
 
     public boolean checkChunksAreLoaded(int dim, int x1, int z1, int x2, int z2)
@@ -90,16 +92,6 @@ public class BlockStats
         }
 
         return true;
-    }
-
-    public HashMap<String, BlockInfo> getBlockStats()
-    {
-        if (this.blockStats == null)
-        {
-            this.blockStats = new HashMap<String, BlockInfo>();
-        }
-
-        return this.blockStats;
     }
 
     public HashMap<String, BlockInfo> calculateBlockStats(EntityPlayer player, List<String> ranges)
@@ -292,6 +284,7 @@ public class BlockStats
         ArrayList<BlockInfo> values = new ArrayList<BlockInfo>();
         values.addAll(this.blockStats.values());
         Collections.sort(values);
+        this.blockStatLines = new ArrayList<String>();
 
         for (BlockInfo blockInfo : values)
         {
@@ -299,8 +292,21 @@ public class BlockStats
             if (filters == null || filters.contains(blockInfo.name))
             {
                 //BlockInfo blockInfo = this.blockStats.get(name);
-                TellMe.logger.info(String.format(fmt, blockInfo.name, blockInfo.id, blockInfo.meta, blockInfo.count, blockInfo.countTE));
+                this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.id, blockInfo.meta, blockInfo.count, blockInfo.countTE));
             }
         }
+    }
+
+    public void printBlockStatsToLogger()
+    {
+        for (String line : this.blockStatLines)
+        {
+            TellMe.logger.info(line);
+        }
+    }
+
+    public ArrayList<String> getBlockStatsLines()
+    {
+        return this.blockStatLines;
     }
 }

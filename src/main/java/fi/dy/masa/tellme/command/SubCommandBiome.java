@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
 import fi.dy.masa.tellme.util.BiomeInfo;
+import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandBiome extends SubCommand
 {
@@ -38,7 +39,7 @@ public class SubCommandBiome extends SubCommand
             }
             else if (args[1].equals("dump"))
             {
-                BiomeInfo.dumpBiomeListToFile();
+                DataDump.dumpDataToFile("biome_dump", BiomeInfo.getBiomeList());
                 sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.file.cfgdir")));
             }
             else if (args[1].equals("list"))
