@@ -52,13 +52,23 @@ public class SubCommandBlockStats extends SubCommand
     @Override
     public void processCommand(ICommandSender icommandsender, String[] args)
     {
-        super.processCommand(icommandsender, args);
-
         // "/tellme bockstats"
         if (args.length < 2)
         {
+            String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
+
+            icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " query"));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " query [blockname blockname ...]"));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " dump"));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " dump [blockname blockname ...]"));
+
             return;
         }
+
+        super.processCommand(icommandsender, args);
 
         if (icommandsender instanceof EntityPlayer == false)
         {
@@ -126,17 +136,13 @@ public class SubCommandBlockStats extends SubCommand
             if (args[1].equals("query"))
             {
                 this.blockStats.printBlockStatsToLogger();
+                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
             }
             else // dump
             {
                 DataDump.dumpDataToFile("block_stats", this.blockStats.getBlockStatsLines());
                 icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.file.cfgdir")));
             }
-        }
-        else
-        {
-            // FIXME?
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown.subcommand") + " '" + args[1] + "'");
         }
     }
 }

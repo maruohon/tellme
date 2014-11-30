@@ -36,3 +36,7 @@ info.subcommand.blockstats.calculating=Calculating block statistics...
 info.subcommand.blockstats.chunksnotloaded=All the chunks for the requested range are not loaded, aborting!
 info.subcommand.blockstats.notplayer=This command can only be run by a player
 info.subcommand.blockstats.invalid.dimension=Invalid dimension!
+
+info.subcommand.blockstats.help.count=Counts all the blocks in the given area
+info.subcommand.blockstats.help.dump=Dumps the stats from a previous 'count' command into a file in config/tellme/
+info.subcommand.blockstats.help.query=Prints the stats from a previous 'count' command into the console
