@@ -277,7 +277,7 @@ public class BlockStats
 
     public void query(List<String> filters)
     {
-        String fmt = String.format("%%-%ds (ID: %%4d meta: %%2d): Count: %%8d (TE: %%8d)", this.longestName + 1);
+        String fmt = String.format("%%-%ds | %%8d | %%4d:%%-2d | %%8d", this.longestName + 1);
         //ArrayList<String> keys = new ArrayList<String>();
         //keys.addAll(this.blockStats.keySet());
         //Collections.sort(keys);
@@ -285,6 +285,12 @@ public class BlockStats
         values.addAll(this.blockStats.values());
         Collections.sort(values);
         this.blockStatLines = new ArrayList<String>();
+        String fmt2 = String.format("%%-%ds", this.longestName + 1);
+        this.blockStatLines.add("*** NOTE *** The Block ID is for very specific debugging or fixing purposes only!!!");
+        this.blockStatLines.add("It WILL be different on every world since Minecraft 1.7, since they are dynamically allocated by the game!!!");
+        this.blockStatLines.add("------------------------------------------------------------------------------------------------------------");
+        this.blockStatLines.add(String.format(fmt2 + " | %8s | %7s | %8s", "Block name", "Count", "ID:meta", "Count TE"));
+        this.blockStatLines.add(this.blockStatLines.get(2).substring(0, this.longestName + 33));
 
         for (BlockInfo blockInfo : values)
         {
@@ -292,7 +298,7 @@ public class BlockStats
             if (filters == null || filters.contains(blockInfo.name))
             {
                 //BlockInfo blockInfo = this.blockStats.get(name);
-                this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.id, blockInfo.meta, blockInfo.count, blockInfo.countTE));
+                this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.count, blockInfo.id, blockInfo.meta, blockInfo.countTE));
             }
         }
     }
