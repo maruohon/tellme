@@ -233,33 +233,35 @@ public class BlockStats
 
         String name;
         String dname;
+        int id = 0, meta = 0;
+
         for (int i = 0; i < 65536; ++i)
         {
             if (counts[i] > 0)
             {
                 try
                 {
-                    block = Block.getBlockById(i >> 4);
+                    id = i >> 4;
+                    meta = i & 0xF;
+                    block = Block.getBlockById(id);
 
                     // We don't want to use getItemDropped(), that would turn Stone into Cobblestone etc.
-                    //ItemStack stack = new ItemStack(block.getItemDropped((i & 0xF), worldServer.rand, 0), 1, block.damageDropped(i & 0xF));
+                    //ItemStack stack = new ItemStack(block.getItemDropped(meta, worldServer.rand, 0), 1, block.damageDropped(meta));
 
-                    ItemStack stack = new ItemStack(Block.getBlockById(i >> 4), 1, i & 0xF);
-
-                    name = Block.blockRegistry.getNameForObject(Block.getBlockById(i >> 4));
-                    //name = GameData.getItemRegistry().getNameForObject(stack.getItem()) + ":" + (i & 0xF);
+                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(meta));
+                    name = Block.blockRegistry.getNameForObject(block);
 
                     if (stack != null && stack.getItem() != null)
                     {
                         dname = stack.getDisplayName();
                     }
-                    // Blocks that are usually not obtainable
+                    // Blocks that are not obtainable/don't have an ItemBlock
                     else
                     {
                         dname = name;
                     }
 
-                    this.blockStats.put(name + ":" + (i & 0xF), new BlockInfo(name, dname, (i >> 4), (i & 0xF), counts[i], countsTE[i]));
+                    this.blockStats.put(name + ":" + meta, new BlockInfo(name, dname, id, meta, counts[i], countsTE[i]));
 
                     if (name.length() > this.longestName)
                     {
@@ -288,7 +290,7 @@ public class BlockStats
 
     public void query(List<String> filters)
     {
-        String fmt = String.format("%%-%ds | %%-%ds | %%8d | %%4d:%%-2d | %%8d", this.longestName + 1, this.longestDisplayName + 1);
+        String fmt = String.format("%%-%ds | %%-%ds | %%8d | %%4d:%%-2d | %%8d", this.longestName, this.longestDisplayName);
         //ArrayList<String> keys = new ArrayList<String>();
         //keys.addAll(this.blockStats.keySet());
         //Collections.sort(keys);
@@ -299,9 +301,9 @@ public class BlockStats
         this.blockStatLines.add("*** NOTE *** The Block ID is for very specific debugging or fixing purposes only!!!");
         this.blockStatLines.add("It WILL be different on every world since Minecraft 1.7, since they are dynamically allocated by the game!!!");
         this.blockStatLines.add("------------------------------------------------------------------------------------------------------------");
-        String fmt2 = String.format("%%-%ds | %%-%ds", this.longestName + 1, this.longestDisplayName + 1);
+        String fmt2 = String.format("%%-%ds | %%-%ds", this.longestName, this.longestDisplayName);
         this.blockStatLines.add(String.format(fmt2 + " | %8s | %7s | %8s", "Block name", "Display name", "Count", "ID:meta", "Count TE"));
-        this.blockStatLines.add(this.blockStatLines.get(2).substring(0, this.longestName + this.longestDisplayName + 37));
+        this.blockStatLines.add(this.blockStatLines.get(2).substring(0, this.longestName + this.longestDisplayName + 35));
 
         for (BlockInfo blockInfo : values)
         {
