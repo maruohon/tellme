@@ -19,18 +19,21 @@ public class BlockStats
     private HashMap<String, BlockInfo> blockStats;
     private ArrayList<String> blockStatLines;
     private int longestName = 0;
+    private int longestDisplayName = 0;
 
     public class BlockInfo implements Comparable<BlockInfo>
     {
         public String name;
+        public String displayName;
         public int id;
         public int meta;
         public int count;
         public int countTE;
 
-        public BlockInfo(String name, int id, int meta, int count, int countTE)
+        public BlockInfo(String name, String displayName, int id, int meta, int count, int countTE)
         {
             this.name = name;
+            this.displayName = displayName;
             this.id = id;
             this.meta = meta;
             this.count = count;
@@ -192,6 +195,7 @@ public class BlockStats
 
         this.blockStats = new HashMap<String, BlockInfo>();
         this.longestName = 0;
+        this.longestDisplayName = 0;
         int[] counts = new int[65536];
         int[] countsTE = new int[65536];
         Block block;
@@ -228,6 +232,7 @@ public class BlockStats
         TellMe.logger.info("Counted " + count + " blocks; " + nulls + " blocks were null.");
 
         String name;
+        String dname;
         for (int i = 0; i < 65536; ++i)
         {
             if (counts[i] > 0)
@@ -241,23 +246,29 @@ public class BlockStats
 
                     ItemStack stack = new ItemStack(Block.getBlockById(i >> 4), 1, i & 0xF);
 
-                    //name = Block.blockRegistry.getNameForObject(Block.getBlockById(i >> 4)) + ":" + (i & 0xF);
+                    name = Block.blockRegistry.getNameForObject(Block.getBlockById(i >> 4));
                     //name = GameData.getItemRegistry().getNameForObject(stack.getItem()) + ":" + (i & 0xF);
 
                     if (stack != null && stack.getItem() != null)
                     {
-                        name = stack.getDisplayName();
+                        dname = stack.getDisplayName();
                     }
-                    // Mostly Air?
+                    // Blocks that are usually not obtainable
                     else
                     {
-                        name = Block.blockRegistry.getNameForObject(Block.getBlockById(i >> 4));
+                        dname = name;
                     }
 
-                    this.blockStats.put(name + ":" + (i & 0xF), new BlockInfo(name, (i >> 4), (i & 0xF), counts[i], countsTE[i]));
+                    this.blockStats.put(name + ":" + (i & 0xF), new BlockInfo(name, dname, (i >> 4), (i & 0xF), counts[i], countsTE[i]));
+
                     if (name.length() > this.longestName)
                     {
                         this.longestName = name.length();
+                    }
+
+                    if (dname.length() > this.longestDisplayName)
+                    {
+                        this.longestDisplayName = dname.length();
                     }
                 }
                 catch (Exception e)
@@ -277,7 +288,7 @@ public class BlockStats
 
     public void query(List<String> filters)
     {
-        String fmt = String.format("%%-%ds | %%8d | %%4d:%%-2d | %%8d", this.longestName + 1);
+        String fmt = String.format("%%-%ds | %%-%ds | %%8d | %%4d:%%-2d | %%8d", this.longestName + 1, this.longestDisplayName + 1);
         //ArrayList<String> keys = new ArrayList<String>();
         //keys.addAll(this.blockStats.keySet());
         //Collections.sort(keys);
@@ -285,22 +296,26 @@ public class BlockStats
         values.addAll(this.blockStats.values());
         Collections.sort(values);
         this.blockStatLines = new ArrayList<String>();
-        String fmt2 = String.format("%%-%ds", this.longestName + 1);
         this.blockStatLines.add("*** NOTE *** The Block ID is for very specific debugging or fixing purposes only!!!");
         this.blockStatLines.add("It WILL be different on every world since Minecraft 1.7, since they are dynamically allocated by the game!!!");
         this.blockStatLines.add("------------------------------------------------------------------------------------------------------------");
-        this.blockStatLines.add(String.format(fmt2 + " | %8s | %7s | %8s", "Block name", "Count", "ID:meta", "Count TE"));
-        this.blockStatLines.add(this.blockStatLines.get(2).substring(0, this.longestName + 33));
+        String fmt2 = String.format("%%-%ds | %%-%ds", this.longestName + 1, this.longestDisplayName + 1);
+        this.blockStatLines.add(String.format(fmt2 + " | %8s | %7s | %8s", "Block name", "Display name", "Count", "ID:meta", "Count TE"));
+        this.blockStatLines.add(this.blockStatLines.get(2).substring(0, this.longestName + this.longestDisplayName + 37));
 
         for (BlockInfo blockInfo : values)
         {
-            // FIXME handle the formatting of the name in filters
-            if (filters == null || filters.contains(blockInfo.name))
+            if (filters == null || this.filterFound(filters, blockInfo.name, blockInfo.meta))
             {
-                //BlockInfo blockInfo = this.blockStats.get(name);
-                this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.count, blockInfo.id, blockInfo.meta, blockInfo.countTE));
+                this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.displayName, blockInfo.count, blockInfo.id, blockInfo.meta, blockInfo.countTE));
             }
         }
+    }
+
+    private boolean filterFound(List<String> filters, String name, int meta)
+    {
+        // FIXME TODO handle the formatting of the name in filters
+        return false;
     }
 
     public void printBlockStatsToLogger()
