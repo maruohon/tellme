@@ -43,13 +43,13 @@ public class CommandTellme extends CommandBase
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender icommandsender)
     {
-        return true;
+        return icommandsender.canCommandSenderUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
     }
 
     @Override
     public int getRequiredPermissionLevel()
     {
-        return 0;
+        return 4;
     }
 
     @SuppressWarnings("rawtypes")
