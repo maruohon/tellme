@@ -13,6 +13,7 @@ info.command.help.subcommand=For help about sub commands, type
 info.command.invalid.argument.number=Invalid number of argument(s)!
 info.command.name=command_name
 info.command.player.notfound=No player found by name
+info.command.output.to.file.failed=Failed to write output to file
 info.command.unknown=Unrecognized command
 info.command.unknown.subcommand=Unrecognized sub command or option
 info.command.usage=Usage

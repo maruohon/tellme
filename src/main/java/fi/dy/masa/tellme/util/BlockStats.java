@@ -307,16 +307,72 @@ public class BlockStats
 
         for (BlockInfo blockInfo : values)
         {
-            if (filters == null || this.filterFound(filters, blockInfo.name, blockInfo.meta))
+            if (filters == null || this.filterFound(filters, blockInfo) == true)
             {
                 this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.displayName, blockInfo.count, blockInfo.id, blockInfo.meta, blockInfo.countTE));
             }
         }
     }
 
-    private boolean filterFound(List<String> filters, String name, int meta)
+    private boolean filterMatches(String filter, BlockInfo info)
     {
-        // FIXME TODO handle the formatting of the name in filters
+        int first = filter.indexOf(":");
+
+        // At least one ':' found
+        if (first != -1)
+        {
+            int last = filter.lastIndexOf(":");
+
+            // At least two ':' characters found; assume the first separates the modid and block name, and the second separates the block name and meta
+            if (last != first && last < (filter.length() - 1))
+            {
+                try
+                {
+                    int meta = Integer.parseInt(filter.substring(last + 1, filter.length()));
+                    if (filter.substring(0, last).equals(info.name) && meta == info.meta)
+                    {
+                        return true;
+                    }
+                }
+                catch (NumberFormatException e)
+                {
+                }
+            }
+            // else: Just one ':' character found. We should have matched before calling this method, if it was in the modid:blockname format.
+            // And if it is not, then we don't support it (blockname:meta without modid) anyway.
+        }
+        // No ':' characters found, assume simple vanilla block name
+        else
+        {
+            if (info.name.equals("minecraft:" + filter))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean filterFound(List<String> filters, BlockInfo info)
+    {
+        // FIXME It would probably be more efficient to loop the filter list since it's probably shorter,
+        // and pick the requested things from the block info list. Probably won't make much of a difference though in practice.
+
+        // Simple case, the input name is a fully qualified block name
+        if (filters.contains(info.name))
+        {
+            return true;
+        }
+
+        // Try to parse the filter strings and handle possible meta restrictions etc.
+        for (String filter : filters)
+        {
+            if (this.filterMatches(filter, info) == true)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 

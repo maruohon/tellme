@@ -12,8 +12,10 @@ import fi.dy.masa.tellme.TellMe;
 
 public class DataDump
 {
-    public static void dumpDataToFile(String fileNameBase, ArrayList<String> lines)
+    public static File dumpDataToFile(String fileNameBase, ArrayList<String> lines)
     {
+        File outFile = null;
+
         File cfgDir = new File(TellMe.configDirPath);
         if (cfgDir.exists() == false)
         {
@@ -25,13 +27,13 @@ public class DataDump
             {
                 TellMe.logger.error("Failed to create the configuration directory.");
                 e.printStackTrace();
-                return;
+                return null;
             }
 
         }
 
         String fileName = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis())) + ".txt";
-        File outFile = new File(cfgDir, fileName);
+        outFile = new File(cfgDir, fileName);
 
         try
         {
@@ -41,7 +43,7 @@ public class DataDump
         {
             TellMe.logger.error("Failed to create data dump file '" + fileName + "'");
             e.printStackTrace();
-            return;
+            return null;
         }
 
         try
@@ -56,5 +58,7 @@ public class DataDump
             TellMe.logger.error("Exception while writing data dump to file '" + fileName + "'.");
             e.printStackTrace();
         }
+
+        return outFile;
     }
 }

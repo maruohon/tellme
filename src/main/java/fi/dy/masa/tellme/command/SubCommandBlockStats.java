@@ -61,9 +61,9 @@ public class SubCommandBlockStats extends SubCommand
             icommandsender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
             icommandsender.addChatMessage(new ChatComponentText(pre + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
             icommandsender.addChatMessage(new ChatComponentText(pre + " query"));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " query [blockname blockname ...]"));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
             icommandsender.addChatMessage(new ChatComponentText(pre + " dump"));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " dump [blockname blockname ...]"));
+            icommandsender.addChatMessage(new ChatComponentText(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
 
             return;
         }
