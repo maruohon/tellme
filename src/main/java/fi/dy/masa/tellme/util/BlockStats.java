@@ -69,6 +69,7 @@ public class BlockStats
 
     public boolean checkChunksAreLoaded(int dim, int x1, int z1, int x2, int z2)
     {
+        // TODO Do we need/want this anyway?
         return true;
     }
 
@@ -79,7 +80,7 @@ public class BlockStats
             throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.world") + ": y < 0");
         }
 
-        if (y1 >= 256 || y2 >= 256)
+        if (y1 > 255 || y2 > 255)
         {
             throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.world") + ": y > 255");
         }
@@ -92,6 +93,11 @@ public class BlockStats
         if (x1 > 30000000 || x2 > 30000000 || z1 > 30000000 || z2 > 30000000)
         {
             throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.world") + ": x or z > 30000000");
+        }
+
+        if (Math.abs(x1 - x2) > 512 || Math.abs(z1 - z2) > 512)
+        {
+            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.toolarge"));
         }
 
         return true;
@@ -119,9 +125,9 @@ public class BlockStats
         }
 
         // We don't allow ranges over 256 blocks from the player
-        if (range_x > 256 || range_y > 256 || range_z > 256)
+        if (range_x > 256 || range_z > 256)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange") + ": > 256");
+            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange") + ": x or z > 256");
         }
 
         int y_min = (y - range_y) >=   0 ? y - range_y :   0;

@@ -5,6 +5,7 @@ language.code=en_US
 info.and=and
 
 info.command.argument.outofrange=Argument(s) out of range
+info.command.argument.outofrange.toolarge=Argument(s) out of range: x or z distance > 512
 info.command.argument.outofrange.world=Argument(s) out of range (world limits)
 info.command.available=Available commands are
 info.command.done=Done
