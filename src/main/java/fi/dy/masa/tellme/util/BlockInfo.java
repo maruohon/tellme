@@ -13,14 +13,6 @@ import fi.dy.masa.tellme.TellMe;
 
 public class BlockInfo
 {
-    public static void printBasicBlockInfoToChat(EntityPlayer player, World world, int x, int y, int z)
-    {
-        for (String line : getBasicBlockInfo(player, world, x, y, z))
-        {
-            player.addChatMessage(new ChatComponentText(line));
-        }
-    }
-
     public static ArrayList<String> getBasicBlockInfo(EntityPlayer player, World world, int x, int y, int z)
     {
         ArrayList<String> lines = new ArrayList<String>();
@@ -49,7 +41,14 @@ public class BlockInfo
         }
 
         String fmt = "%s (%s) (ID:meta - %d:%d)";
-        lines.add(String.format(fmt, dname, name, id, meta));
+        if (block.hasTileEntity(meta) == true)
+        {
+            lines.add(String.format(fmt, dname, name, id, meta) + " has a TE");
+        }
+        else
+        {
+            lines.add(String.format(fmt, dname, name, id, meta) + " no TE");
+        }
 
         return lines;
     }
@@ -68,6 +67,14 @@ public class BlockInfo
         }
 
         return lines;
+    }
+
+    public static void printBasicBlockInfoToChat(EntityPlayer player, World world, int x, int y, int z)
+    {
+        for (String line : getBasicBlockInfo(player, world, x, y, z))
+        {
+            player.addChatMessage(new ChatComponentText(line));
+        }
     }
 
     public static void printBlockInfoToConsole(EntityPlayer player, World world, int x, int y, int z)

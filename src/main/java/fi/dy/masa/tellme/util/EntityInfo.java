@@ -11,14 +11,6 @@ import fi.dy.masa.tellme.TellMe;
 
 public class EntityInfo
 {
-    public static void printBasicEntityInfoToChat(EntityPlayer player, Entity target)
-    {
-        for (String line : getBasicEntityInfo(target))
-        {
-            player.addChatMessage(new ChatComponentText(line));
-        }
-    }
-
     public static ArrayList<String> getBasicEntityInfo(Entity target)
     {
         ArrayList<String> lines = new ArrayList<String>();
@@ -42,6 +34,14 @@ public class EntityInfo
         NBTFormatter.NBTFormatterPretty(lines, nbt);
 
         return lines;
+    }
+
+    public static void printBasicEntityInfoToChat(EntityPlayer player, Entity target)
+    {
+        for (String line : getBasicEntityInfo(target))
+        {
+            player.addChatMessage(new ChatComponentText(line));
+        }
     }
 
     public static void printEntityInfoToConsole(EntityPlayer player, Entity target)
