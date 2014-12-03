@@ -13,7 +13,8 @@ public class InteractEventHandler
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent event)
     {
-        if (event.world.isRemote == true)
+        // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
+        if (event.world.isRemote == true || event.entityPlayer.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }
@@ -78,7 +79,8 @@ public class InteractEventHandler
     @SubscribeEvent
     public void onEntityInteract(EntityInteractEvent event)
     {
-        if (event.entityPlayer.worldObj.isRemote == true)
+        // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
+        if (event.entityPlayer.worldObj.isRemote == true || event.entityPlayer.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }
