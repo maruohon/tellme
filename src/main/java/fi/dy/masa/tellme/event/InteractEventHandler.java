@@ -18,11 +18,10 @@ public class InteractEventHandler
             return;
         }
 
-        if (event.entityPlayer != null && event.entityPlayer.getCurrentEquippedItem() != null
-            && event.entityPlayer.getCurrentEquippedItem().getItem() == Items.gold_nugget)
+        if (event.entityPlayer != null && event.entityPlayer.getCurrentEquippedItem() != null)
         {
             // Show info for the block the player right clicks on with a gold nugget
-            if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK)
+            if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK && event.entityPlayer.getCurrentEquippedItem().getItem() == Items.gold_nugget)
             {
                 BlockInfo.printBasicBlockInfoToChat(event.entityPlayer, event.world, event.x, event.y, event.z);
 
@@ -34,9 +33,11 @@ public class InteractEventHandler
                 {
                     BlockInfo.printBlockInfoToConsole(event.entityPlayer, event.world, event.x, event.y, event.z);
                 }
+
+                event.setCanceled(true);
             }
             // Show info for the item to the right from the current slot when the player right clicks on air with a gold nugget
-            else if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR)
+            else if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR && event.entityPlayer.getCurrentEquippedItem().getItem() == Items.blaze_rod)
             {
                 // Select the slot to the right from the current slot, or the first slot if the current slot is the last slot
                 int slot = event.entityPlayer.inventory.currentItem;
@@ -68,9 +69,9 @@ public class InteractEventHandler
                 {
                     ItemInfo.printItemInfoToConsole(event.entityPlayer, slot);
                 }
-            }
 
-            event.setCanceled(true);
+                event.setCanceled(true);
+            }
         }
     }
 

@@ -3,7 +3,6 @@ package fi.dy.masa.tellme.util;
 import java.util.ArrayList;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
@@ -15,12 +14,7 @@ public class EntityInfo
     {
         ArrayList<String> lines = new ArrayList<String>();
 
-        lines.add("Entity: " + target.getClass().getSimpleName());
-        if (target instanceof EntityLivingBase)
-        {
-            EntityLivingBase lb = (EntityLivingBase)target;
-            lines.add("Health: " + lb.getHealth());
-        }
+        lines.add("Entity: " + target.getClass().getSimpleName() + " (entityId: " + target.getEntityId() + ")");
 
         return lines;
     }

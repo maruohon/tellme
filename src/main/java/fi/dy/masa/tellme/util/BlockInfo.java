@@ -40,15 +40,18 @@ public class BlockInfo
             dname = name;
         }
 
-        String fmt = "%s (%s) (ID:meta - %d:%d)";
+        String teInfo;
         if (block.hasTileEntity(meta) == true)
         {
-            lines.add(String.format(fmt, dname, name, id, meta) + " has a TE");
+            teInfo = "has a TE";
         }
         else
         {
-            lines.add(String.format(fmt, dname, name, id, meta) + " no TE");
+            teInfo = "no TE";
         }
+
+        String fmt = "%s (%s - %d:%d) %s";
+        lines.add(String.format(fmt, dname, name, id, meta, teInfo));
 
         return lines;
     }
