@@ -90,3 +90,23 @@ processResources
         exclude 'mcmod.info'
     }
 }
+
+// This task creates a jar file containing the source files of this project
+task sourcesJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    // This classifier is standard and should not be changed
+    classifier = 'sources'
+}
+
+// This task creates a jar file containing the unobfuscated class files of the project
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    // This classifier is standard and should not be changed
+    classifier = 'deobf'
+}
+
+// This section enables the last two tasks
+artifacts {
+    archives sourcesJar
+    archives deobfJar
+}
