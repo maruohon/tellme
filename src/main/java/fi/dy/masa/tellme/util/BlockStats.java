@@ -296,20 +296,65 @@ public class BlockStats
 
     public void query(List<String> filters)
     {
-        String fmt = String.format("%%-%ds | %%-%ds | %%8d | %%4d:%%-2d | %%8d", this.longestName, this.longestDisplayName);
+        int nameLen = this.longestName;
+        int dNameLen = this.longestDisplayName;
+
         //ArrayList<String> keys = new ArrayList<String>();
         //keys.addAll(this.blockStats.keySet());
         //Collections.sort(keys);
+
         ArrayList<BlockInfo> values = new ArrayList<BlockInfo>();
         values.addAll(this.blockStats.values());
         Collections.sort(values);
+
+        // Get the longest name lengths from the filtered list for formatting the output nicely
+        if (filters != null)
+        {
+            nameLen = 0;
+            dNameLen = 0;
+
+            for (BlockInfo blockInfo : values)
+            {
+                if (this.filterFound(filters, blockInfo) == true)
+                {
+                    if (blockInfo.name.length() > nameLen)
+                    {
+                        nameLen = blockInfo.name.length();
+                    }
+
+                    if (blockInfo.displayName.length() > dNameLen)
+                    {
+                        dNameLen = blockInfo.displayName.length();
+                    }
+                }
+            }
+
+            if (nameLen < 10)
+            {
+                nameLen = 10;
+            }
+
+            if (dNameLen < 12)
+            {
+                dNameLen = 12;
+            }
+        }
+
+        String separator = "";
+        int len = nameLen + dNameLen + 35;
+        for (int i = 0; i < len; ++i) { separator = separator.concat("-"); }
+
         this.blockStatLines = new ArrayList<String>();
+        this.blockStatLines.add(separator);
         this.blockStatLines.add("*** NOTE *** The Block ID is for very specific debugging or fixing purposes only!!!");
         this.blockStatLines.add("It WILL be different on every world since Minecraft 1.7, since they are dynamically allocated by the game!!!");
-        this.blockStatLines.add("------------------------------------------------------------------------------------------------------------");
-        String fmt2 = String.format("%%-%ds | %%-%ds", this.longestName, this.longestDisplayName);
+        this.blockStatLines.add(separator);
+
+        String fmt = String.format("%%-%ds | %%-%ds | %%8d | %%4d:%%-2d | %%8d", nameLen, dNameLen);
+        String fmt2 = String.format("%%-%ds | %%-%ds", nameLen, dNameLen);
+
         this.blockStatLines.add(String.format(fmt2 + " | %8s | %7s | %8s", "Block name", "Display name", "Count", "ID:meta", "Count TE"));
-        this.blockStatLines.add(this.blockStatLines.get(2).substring(0, this.longestName + this.longestDisplayName + 35));
+        this.blockStatLines.add(separator);
 
         for (BlockInfo blockInfo : values)
         {
