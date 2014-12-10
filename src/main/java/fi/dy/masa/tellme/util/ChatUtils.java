@@ -1,15 +1,9 @@
 package fi.dy.masa.tellme.util;
 
-import java.io.File;
-
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.IChatComponent;
 
 public class ChatUtils
 {
+/*
     public static IChatComponent getClickableFileLink(File file, String message)
     {
         if (file == null)
@@ -23,4 +17,5 @@ public class ChatUtils
 
         return new ChatComponentTranslation(message, new Object[] {text});
     }
+*/
 }

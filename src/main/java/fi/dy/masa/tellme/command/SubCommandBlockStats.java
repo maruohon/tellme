@@ -9,7 +9,6 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.StatCollector;
 import fi.dy.masa.tellme.util.BlockStats;
 import fi.dy.masa.tellme.util.DataDump;
@@ -94,9 +93,9 @@ public class SubCommandBlockStats extends SubCommand
                     EntityPlayer player = srv.getConfigurationManager().func_152612_a(args[2]);
                     if (player != null)
                     {
-                        icommandsender.addChatMessage(new ChatComponentTranslation("info.subcommand.blockstats.calculating"));
+                        icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
                         this.blockStats.calculateBlockStats(player, Arrays.asList(args).subList(3, args.length));
-                        icommandsender.addChatMessage(new ChatComponentTranslation("info.command.done"));
+                        icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
                     }
                     else
                     {
@@ -107,9 +106,9 @@ public class SubCommandBlockStats extends SubCommand
             // cuboid corners
             else if (args.length == 9)
             {
-                icommandsender.addChatMessage(new ChatComponentTranslation("info.subcommand.blockstats.calculating"));
+                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
                 this.blockStats.calculateBlockStats(Arrays.asList(args).subList(2, args.length));
-                icommandsender.addChatMessage(new ChatComponentTranslation("info.command.done"));
+                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
             }
             else
             {
