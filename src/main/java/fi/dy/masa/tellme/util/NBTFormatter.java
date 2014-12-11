@@ -25,6 +25,7 @@ public class NBTFormatter
     @SuppressWarnings("unchecked")
     public static void addFormattedLinePretty(ArrayList<String> lines, NBTBase nbt, String name, int depth)
     {
+        int len = 0;
         String line;
         String pre = "";
         String pre2 = "";
@@ -70,17 +71,33 @@ public class NBTFormatter
                 break;
 
             case Constants.NBT.TAG_BYTE_ARRAY:
-                lines.add(pre + "TAG_Int_Array (" + nbt.getId() + ") ('" + name + "')");
+                lines.add(pre + "TAG_Byte_Array (" + nbt.getId() + ") ('" + name + "')");
                 byte[] arrByte = ((NBTTagByteArray)nbt).func_150292_c();
+                len = arrByte.length;
 
-                for (int pos = 0; pos < arrByte.length; ++pos)
+                // For short arrays, print one value per line, it is easier to read
+                if (len <= 16)
                 {
-                    line = pre2;
-                    for (int i = 0; i < 30 && pos < arrByte.length; ++i, ++pos)
+                    for (int pos = 0; pos < len; ++pos)
                     {
-                        line.concat(String.format(" %02X", arrByte[pos]));
+                        lines.add(pre2 + String.format("    %2d: 0x%02X (%4d)", pos, arrByte[pos], arrByte[pos]));
                     }
-                    lines.add(line);
+                }
+                else
+                {
+                    for (int pos = 0; pos < len; )
+                    {
+                        StringBuilder sb = new StringBuilder(256);
+                        line = pre2 + String.format("    %4d:", pos);
+                        sb.append(line);
+
+                        for (int i = 0; i < 8 && pos < len; ++i, ++pos)
+                        {
+                            sb.append(String.format(" 0x%02X (%4d)", arrByte[pos], arrByte[pos]));
+                        }
+
+                        lines.add(sb.toString());
+                    }
                 }
                 break;
 
@@ -138,14 +155,31 @@ public class NBTFormatter
                 lines.add(pre + "TAG_Int_Array (" + nbt.getId() + ") ('" + name + "')");
                 int[] arrInt = ((NBTTagIntArray)nbt).func_150302_c();
 
-                for (int pos = 0; pos < arrInt.length; ++pos)
+                len = arrInt.length;
+
+                // For short arrays, print one value per line, it is easier to read
+                if (len <= 16)
                 {
-                    line = pre2;
-                    for (int i = 0; i < 10 && pos < arrInt.length; ++i, ++pos)
+                    for (int pos = 0; pos < len; ++pos)
                     {
-                        line.concat(String.format(" %08X", arrInt[pos]));
+                        lines.add(pre2 + String.format("    %2d: 0x%08X (%11d)", pos, arrInt[pos], arrInt[pos]));
                     }
-                    lines.add(line);
+                }
+                else
+                {
+                    for (int pos = 0; pos < len; )
+                    {
+                        StringBuilder sb = new StringBuilder(256);
+                        line = pre2 + String.format("    %4d:", pos);
+                        sb.append(line);
+
+                        for (int i = 0; i < 4 && pos < len; ++i, ++pos)
+                        {
+                            sb.append(String.format(" 0x%08X (%11d)", arrInt[pos], arrInt[pos]));
+                        }
+
+                        lines.add(sb.toString());
+                    }
                 }
                 break;
 
