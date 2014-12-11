@@ -387,6 +387,8 @@ public class BlockStats
                 }
                 catch (NumberFormatException e)
                 {
+                    TellMe.logger.error("Caught an exception while parsing block meta value from user input");
+                    e.printStackTrace();
                 }
             }
             // else: Just one ':' character found. We should have matched before calling this method, if it was in the modid:blockname format.
