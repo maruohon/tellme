@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
@@ -41,7 +42,8 @@ public class SubCommandBlockStats extends SubCommand
             MinecraftServer srv = MinecraftServer.getServer();
             if (srv != null)
             {
-                return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
+                //return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
+                return CommandBase.func_175762_a(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
             }
         }
 
@@ -49,12 +51,12 @@ public class SubCommandBlockStats extends SubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender icommandsender, String[] args)
+    public void processCommand(ICommandSender icommandsender, String[] args) throws CommandException
     {
         // "/tellme bockstats"
         if (args.length < 2)
         {
-            String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
+            String pre = "/" + CommandTellme.instance.getName() + " " + this.getCommandName();
 
             icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
             icommandsender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
@@ -90,7 +92,7 @@ public class SubCommandBlockStats extends SubCommand
                 if (srv != null)
                 {
                     // Get the player entity matching the name given as parameter
-                    EntityPlayer player = srv.getConfigurationManager().func_152612_a(args[2]);
+                    EntityPlayer player = srv.getConfigurationManager().getPlayerByUsername(args[2]);
                     if (player != null)
                     {
                         icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
@@ -114,8 +116,8 @@ public class SubCommandBlockStats extends SubCommand
             {
                 throw new WrongUsageException(StatCollector.translateToLocal("info.command.invalid.argument.number")
                     + " " + StatCollector.translateToLocal("info.command.usage") + ": /"
-                    + CommandTellme.instance.getCommandName() + " " + this.getCommandName() + " count <playername> <x-distance> <y-distance> <z-distance>"
-                    + " or /" + CommandTellme.instance.getCommandName() + " " + this.getCommandName()
+                    + CommandTellme.instance.getName() + " " + this.getCommandName() + " count <playername> <x-distance> <y-distance> <z-distance>"
+                    + " or /" + CommandTellme.instance.getName() + " " + this.getCommandName()
                     + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
             }
         }

@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.command;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
@@ -24,7 +25,7 @@ public class SubCommandBiome extends SubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args)
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException
     {
         super.processCommand(sender, args);
 

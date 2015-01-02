@@ -2,7 +2,7 @@ package fi.dy.masa.tellme.event;
 
 import net.minecraftforge.event.terraingen.WorldTypeEvent.BiomeSize;
 import net.minecraftforge.event.terraingen.WorldTypeEvent.InitBiomeGens;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import fi.dy.masa.tellme.TellMe;
 
 public class BiomeEvents

@@ -21,7 +21,7 @@ public class ItemInfo
             return lines;
         }
 
-        String name = Item.itemRegistry.getNameForObject(stack.getItem());
+        String name = Item.itemRegistry.getNameForObject(stack.getItem()).toString();
         String dname = stack.getDisplayName();
         String nbtInfo;
 

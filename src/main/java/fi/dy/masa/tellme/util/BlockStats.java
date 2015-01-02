@@ -6,10 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.WorldServer;
 import fi.dy.masa.tellme.TellMe;
@@ -73,7 +76,7 @@ public class BlockStats
         return true;
     }
 
-    private boolean areCoordinatesValid(int x1, int y1, int z1, int x2, int y2, int z2)
+    private boolean areCoordinatesValid(int x1, int y1, int z1, int x2, int y2, int z2) throws CommandException
     {
         if (y1 < 0 || y2 < 0)
         {
@@ -103,7 +106,7 @@ public class BlockStats
         return true;
     }
 
-    public HashMap<String, BlockInfo> calculateBlockStats(EntityPlayer player, List<String> ranges)
+    public HashMap<String, BlockInfo> calculateBlockStats(EntityPlayer player, List<String> ranges) throws CommandException
     {
         if (player == null)
         {
@@ -145,7 +148,7 @@ public class BlockStats
         return this.blockStats;
     }
 
-    public HashMap<String, BlockInfo> calculateBlockStats(List<String> params)
+    public HashMap<String, BlockInfo> calculateBlockStats(List<String> params) throws CommandException
     {
         int dim = 0, x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0;
 
@@ -189,7 +192,7 @@ public class BlockStats
         return this.blockStats;
     }
 
-    private void calculateBlockStats(int dim, int x1, int y1, int z1, int x2, int y2, int z2)
+    private void calculateBlockStats(int dim, int x1, int y1, int z1, int x2, int y2, int z2) throws CommandException
     {
         //System.out.printf("dim: %d x1: %d, y1: %d, z1: %d x2: %d y2: %d z2: %d\n", dim, x1, y1, z1, x2, y2, z2);
 
@@ -204,8 +207,13 @@ public class BlockStats
         this.longestDisplayName = 0;
         int[] counts = new int[65536];
         int[] countsTE = new int[65536];
+        IBlockState iBlockState;
         Block block;
         int count = 0, nulls = 0, index = 0;
+
+        // TODO profile this too:
+        // 23:13:48 < diesieben07> there is BlockPos.getAllInBoxMutable
+        // 23:14:06 < diesieben07> which returns an Iterable for all BlockPos' in a box, but re-uses the same instance
 
         // Calculate the number of each block type identified by: "id << 4 | meta"
         for (int y = y1; y <= y2; ++y)
@@ -214,15 +222,17 @@ public class BlockStats
             {
                 for (int z = z1; z <= z2; ++z)
                 {
-                    block = worldServer.getBlock(x, y, z);
+                    BlockPos pos = new BlockPos(x, y, z);
+                    iBlockState = worldServer.getBlockState(pos);
+                    block = iBlockState.getBlock();
                     if (block != null)
                     {
-                        index = Block.getIdFromBlock(block) << 4 | (worldServer.getBlockMetadata(x, y, z) & 0xF);
+                        index = Block.getIdFromBlock(block) << 4 | (block.getMetaFromState(iBlockState) & 0xF);
                         count++;
                         counts[index]++;
 
                         // Count the TileEntities for each block type
-                        if (worldServer.getTileEntity(x, y, z) != null)
+                        if (worldServer.getTileEntity(pos) != null)
                         {
                             countsTE[index]++;
                         }
@@ -254,8 +264,8 @@ public class BlockStats
                     // We don't want to use getItemDropped(), that would turn Stone into Cobblestone etc.
                     //ItemStack stack = new ItemStack(block.getItemDropped(meta, worldServer.rand, 0), 1, block.damageDropped(meta));
 
-                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(meta));
-                    name = Block.blockRegistry.getNameForObject(block);
+                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(block.getStateFromMeta(meta)));
+                    name = Block.blockRegistry.getNameForObject(block).toString();
 
                     if (stack != null && stack.getItem() != null)
                     {

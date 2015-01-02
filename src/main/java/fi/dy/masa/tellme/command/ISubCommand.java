@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.command;
 
 import java.util.List;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 
 public interface ISubCommand
@@ -10,7 +11,7 @@ public interface ISubCommand
     String getCommandName();
 
     /* Processes the command */
-    void processCommand(ICommandSender sender, String[] args);
+    void processCommand(ICommandSender sender, String[] args) throws CommandException;
 
     /* Adds the tab completion options */
     List<String> addTabCompletionOptions(ICommandSender sender, String[] args);

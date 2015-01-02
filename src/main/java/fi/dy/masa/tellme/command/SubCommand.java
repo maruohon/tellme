@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 
 public abstract class SubCommand implements ISubCommand
@@ -31,7 +31,8 @@ public abstract class SubCommand implements ISubCommand
     {
         if (args.length == 2 || (args.length == 3 && args[1].equals("help")))
         {
-            return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, this.getSubCommands());
+            //return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, this.getSubCommands());
+            return CommandBase.func_175762_a(args, this.getSubCommands());
         }
 
         return null;
@@ -56,7 +57,7 @@ public abstract class SubCommand implements ISubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args)
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException
     {
         // "/tellme command"
         if (args.length == 1)
@@ -72,7 +73,7 @@ public abstract class SubCommand implements ISubCommand
             }
             else if (this.subSubCommands.contains(args[1]) == false)
             {
-                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown.subcommand") + " '" + args[1] + "'");
+                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown.subcommand") + " '" + args[1] + "'", new Object[0]);
             }
         }
         // "/tellme command help subsubcommand"
@@ -88,7 +89,7 @@ public abstract class SubCommand implements ISubCommand
             }
             else
             {
-                sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + StatCollector.translateToLocal("info.subcommands.help.unknown") + " " + args[3] + EnumChatFormatting.RESET));
+                throw new WrongUsageException(StatCollector.translateToLocal("info.subcommands.help.unknown") + " " + args[3], new Object[0]);
             }
         }
     }

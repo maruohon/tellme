@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.util;
 import java.util.ArrayList;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -35,7 +36,7 @@ public class BiomeInfo
                         biomeList[i].waterColorMultiplier,
                         biomeList[i].temperature,
                         biomeList[i].rainfall,
-                        biomeList[i].func_150559_j()));
+                        biomeList[i].isSnowyBiome()));
                 }
                 else
                 {
@@ -50,14 +51,14 @@ public class BiomeInfo
     public static void printCurrentBiomeInfoToChat(EntityPlayer player)
     {
         World world = player.worldObj;
-        BiomeGenBase bgb = world.getBiomeGenForCoords((int)player.posX, (int)player.posZ);
+        BiomeGenBase bgb = world.getBiomeGenForCoords(new BlockPos((int)player.posX, (int)player.posY, (int)player.posZ));
 
         player.addChatMessage(new ChatComponentText("Current biome info:"));
         player.addChatMessage(new ChatComponentText(String.format("Name: %s - biomeID: %d", bgb.biomeName, bgb.biomeID)));
         player.addChatMessage(new ChatComponentText(String.format("%s 0x%08X (%d)", "color:", bgb.color, bgb.color)));
         player.addChatMessage(new ChatComponentText(String.format("%s 0x%08X (%d)", "waterColorMultiplier:", bgb.waterColorMultiplier, bgb.waterColorMultiplier)));
         player.addChatMessage(new ChatComponentText(String.format("temperature: %f - rainfall: %f", bgb.temperature, bgb.rainfall)));
-        player.addChatMessage(new ChatComponentText(String.format("enableSnow: %s", bgb.func_150559_j())));
+        player.addChatMessage(new ChatComponentText(String.format("enableSnow: %s", bgb.isSnowyBiome())));
     }
 
     public static void printBiomeListToLogger()

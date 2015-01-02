@@ -3,7 +3,7 @@ package fi.dy.masa.tellme.event;
 import net.minecraft.init.Items;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
@@ -14,7 +14,7 @@ public class InteractEventHandler
     public void onPlayerInteract(PlayerInteractEvent event)
     {
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (event.world.isRemote == true || event.entityPlayer.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
+        if (event.world.isRemote == true || event.entityPlayer.canUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }
@@ -24,15 +24,15 @@ public class InteractEventHandler
             // Show info for the block the player right clicks on with a gold nugget
             if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK && event.entityPlayer.getCurrentEquippedItem().getItem() == Items.gold_nugget)
             {
-                BlockInfo.printBasicBlockInfoToChat(event.entityPlayer, event.world, event.x, event.y, event.z);
+                BlockInfo.printBasicBlockInfoToChat(event.entityPlayer, event.world, event.pos);
 
                 if (event.entityPlayer.isSneaking() == true)
                 {
-                    BlockInfo.dumpBlockInfoToFile(event.entityPlayer, event.world, event.x, event.y, event.z);
+                    BlockInfo.dumpBlockInfoToFile(event.entityPlayer, event.world, event.pos);
                 }
                 else
                 {
-                    BlockInfo.printBlockInfoToConsole(event.entityPlayer, event.world, event.x, event.y, event.z);
+                    BlockInfo.printBlockInfoToConsole(event.entityPlayer, event.world, event.pos);
                 }
 
                 event.setCanceled(true);
@@ -80,7 +80,7 @@ public class InteractEventHandler
     public void onEntityInteract(EntityInteractEvent event)
     {
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (event.entityPlayer.worldObj.isRemote == true || event.entityPlayer.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
+        if (event.entityPlayer.worldObj.isRemote == true || event.entityPlayer.canUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }

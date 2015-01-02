@@ -3,17 +3,19 @@ package fi.dy.masa.tellme.util;
 import java.util.ArrayList;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.TellMe;
 
 public class BlockInfo
 {
-    public static ArrayList<String> getBasicBlockInfo(EntityPlayer player, World world, int x, int y, int z)
+    public static ArrayList<String> getBasicBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         ArrayList<String> lines = new ArrayList<String>();
 
@@ -22,12 +24,14 @@ public class BlockInfo
             return lines;
         }
 
-        Block block = world.getBlock(x, y, z);
+        IBlockState iBlockState = world.getBlockState(pos);
+        Block block = iBlockState.getBlock();
 
         int id = Block.getIdFromBlock(block);
-        int meta = world.getBlockMetadata(x, y, z);
-        ItemStack stack = new ItemStack(block, 1, block.damageDropped(meta));
-        String name = Block.blockRegistry.getNameForObject(block);
+        int meta = block.getMetaFromState(iBlockState);
+        ItemStack stack = new ItemStack(block, 1, block.damageDropped(iBlockState));
+        //String name = GameRegistry.findUniqueIdentifierFor(block).toString();
+        String name = Block.blockRegistry.getNameForObject(block).toString();
         String dname;
 
         if (stack != null && stack.getItem() != null)
@@ -41,7 +45,7 @@ public class BlockInfo
         }
 
         String teInfo;
-        if (block.hasTileEntity(meta) == true)
+        if (block.hasTileEntity(iBlockState) == true)
         {
             teInfo = "has a TE";
         }
@@ -56,11 +60,11 @@ public class BlockInfo
         return lines;
     }
 
-    public static ArrayList<String> getFullBlockInfo(EntityPlayer player, World world, int x, int y, int z)
+    public static ArrayList<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
-        ArrayList<String> lines = getBasicBlockInfo(player, world, x, y, z);
+        ArrayList<String> lines = getBasicBlockInfo(player, world, pos);
 
-        TileEntity te = world.getTileEntity(x, y, z);
+        TileEntity te = world.getTileEntity(pos);
         if (te != null)
         {
             NBTTagCompound nbt = new NBTTagCompound();
@@ -72,17 +76,17 @@ public class BlockInfo
         return lines;
     }
 
-    public static void printBasicBlockInfoToChat(EntityPlayer player, World world, int x, int y, int z)
+    public static void printBasicBlockInfoToChat(EntityPlayer player, World world, BlockPos pos)
     {
-        for (String line : getBasicBlockInfo(player, world, x, y, z))
+        for (String line : getBasicBlockInfo(player, world, pos))
         {
             player.addChatMessage(new ChatComponentText(line));
         }
     }
 
-    public static void printBlockInfoToConsole(EntityPlayer player, World world, int x, int y, int z)
+    public static void printBlockInfoToConsole(EntityPlayer player, World world, BlockPos pos)
     {
-        ArrayList<String> lines = getFullBlockInfo(player, world, x, y, z);
+        ArrayList<String> lines = getFullBlockInfo(player, world, pos);
 
         for (String line : lines)
         {
@@ -90,8 +94,8 @@ public class BlockInfo
         }
     }
 
-    public static void dumpBlockInfoToFile(EntityPlayer player, World world, int x, int y, int z)
+    public static void dumpBlockInfoToFile(EntityPlayer player, World world, BlockPos pos)
     {
-        DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, x, y, z));
+        DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, pos));
     }
 }

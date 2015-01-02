@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.util.ChatComponentText;
@@ -23,7 +24,7 @@ public class SubCommandHelp extends SubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args)
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException
     {
         if (args.length == 0)
         {
@@ -33,7 +34,7 @@ public class SubCommandHelp extends SubCommand
         if (args.length > 2)
         {
             throw new WrongUsageException(StatCollector.translateToLocal("info.command.usage") + ": /"
-                + CommandTellme.instance.getCommandName() + " " + getCommandName() + " [" + StatCollector.translateToLocal("info.command.name") + "]");
+                + CommandTellme.instance.getName() + " " + getCommandName() + " [" + StatCollector.translateToLocal("info.command.name") + "]");
         }
 
         if (args.length == 2)
@@ -48,25 +49,25 @@ public class SubCommandHelp extends SubCommand
 
         for (int i = 0; i < subCommands.size() - 2; ++i)
         {
-            str.append("/" + CommandTellme.instance.getCommandName() + " " + subCommands.get(i) + ", ");
+            str.append("/" + CommandTellme.instance.getName() + " " + subCommands.get(i) + ", ");
         }
 
         if (subCommands.size() > 1)
         {
-            str.append("/" + CommandTellme.instance.getCommandName() + " " + subCommands.get(subCommands.size() - 2) + " " + StatCollector.translateToLocal("info.and") + " ");
+            str.append("/" + CommandTellme.instance.getName() + " " + subCommands.get(subCommands.size() - 2) + " " + StatCollector.translateToLocal("info.and") + " ");
         }
 
         // Last or only command
         if (subCommands.size() >= 1)
         {
-            str.append("/" + CommandTellme.instance.getCommandName() + " " + subCommands.get(subCommands.size() - 1));
+            str.append("/" + CommandTellme.instance.getName() + " " + subCommands.get(subCommands.size() - 1));
         }
 
         // List of sub commands
         sender.addChatMessage(new ChatComponentText(str.toString()));
 
         // Sub command help
-        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.help.subcommand") + " '/" + CommandTellme.instance.getCommandName() + " <sub_command> help'"));
+        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.help.subcommand") + " '/" + CommandTellme.instance.getName() + " <sub_command> help'"));
     }
 
     @SuppressWarnings("unchecked")
@@ -76,7 +77,8 @@ public class SubCommandHelp extends SubCommand
         // "/tellme help ???"
         if (args.length == 2)
         {
-            return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, CommandTellme.getSubCommandList());
+            //return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, CommandTellme.getSubCommandList());
+            return CommandBase.func_175762_a(args, CommandTellme.getSubCommandList());
         }
 
         return null;

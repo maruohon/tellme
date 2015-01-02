@@ -6,10 +6,12 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.StatCollector;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 /*
  * Base class for handling all the commands of this mod.
@@ -29,7 +31,7 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "tellme";
     }
@@ -37,13 +39,13 @@ public class CommandTellme extends CommandBase
     @Override
     public String getCommandUsage(ICommandSender icommandsender)
     {
-        return "/" + this.getCommandName() + " help";
+        return "/" + this.getName() + " help";
     }
 
     @Override
-    public boolean canCommandSenderUseCommand(ICommandSender icommandsender)
+    public boolean canCommandSenderUse(ICommandSender icommandsender)
     {
-        return icommandsender.canCommandSenderUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
+        return icommandsender.canUseCommand(this.getRequiredPermissionLevel(), this.getName());
     }
 
     @Override
@@ -54,11 +56,12 @@ public class CommandTellme extends CommandBase
 
     @SuppressWarnings("rawtypes")
     @Override
-    public List addTabCompletionOptions(ICommandSender icommandsender, String[] strArr)
+    public List addTabCompletionOptions(ICommandSender icommandsender, String[] strArr, BlockPos pos)
     {
         if (strArr.length == 1)
         {
-            return getListOfStringsFromIterableMatchingLastWord(strArr, subCommands.keySet());
+            //return getListOfStringsFromIterableMatchingLastWord(strArr, subCommands.keySet());
+            return func_175762_a(strArr, subCommands.keySet());
         }
         else if (subCommands.containsKey(strArr[0]))
         {
@@ -72,7 +75,7 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public void processCommand(ICommandSender icommandsender, String[] commandArgs)
+    public void execute(ICommandSender icommandsender, String[] commandArgs) throws CommandException
     {
         if (commandArgs.length > 0)
         {
@@ -87,15 +90,11 @@ public class CommandTellme extends CommandBase
             }
             else
             {
-                /*if (icommandsender instanceof EntityPlayer)
-                {
-                    System.out.println("remote: " + ((EntityPlayer)icommandsender).worldObj.isRemote);
-                }*/
-                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown") + ": /" + this.getCommandName() + " " + commandArgs[0]);
+                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown") + ": /" + this.getName() + " " + commandArgs[0], new Object[0]);
             }
         }
 
-        throw new WrongUsageException(StatCollector.translateToLocal("info.command.help") + ": '" + getCommandUsage(icommandsender) + "'");
+        throw new WrongUsageException(StatCollector.translateToLocal("info.command.help") + ": '" + getCommandUsage(icommandsender) + "'", new Object[0]);
     }
 
     public static void registerSubCommand(ISubCommand cmd)
