@@ -1,6 +1,8 @@
 package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -60,9 +62,26 @@ public class BlockInfo
         return lines;
     }
 
+    @SuppressWarnings("rawtypes")
     public static ArrayList<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         ArrayList<String> lines = getBasicBlockInfo(player, world, pos);
+
+        IBlockState iBlockState = world.getBlockState(pos);
+
+        /*lines.add("BlockState properties:");
+        Iterator iter = iBlockState.getPropertyNames().iterator();
+        while (iter.hasNext() == true)
+        {
+            lines.add(iter.next().toString());
+        }*/
+
+        Iterator iter = iBlockState.getProperties().entrySet().iterator();
+        while (iter.hasNext() == true)
+        {
+            Map.Entry entry = (Map.Entry)iter.next();
+            lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
+        }
 
         TileEntity te = world.getTileEntity(pos);
         if (te != null)
