@@ -13,34 +13,34 @@ public class BiomeInfo
     public static ArrayList<String> getBiomeList()
     {
         ArrayList<String> lines = new ArrayList<String>();
-        BiomeGenBase[] biomeList = BiomeGenBase.getBiomeGenArray();
+        BiomeGenBase bgb;
 
-        if (biomeList != null)
+        lines.add("Biome list:");
+        lines.add(String.format("%6s | %-7s | %-24s | %-23s | %-23s | %14s | %14s | %11s",
+                "index", "biomeID", "biomeName", "color", "waterColorMultiplier", "temperature", "rainfall", "enableSnow"));
+
+        int biomeListLength = BiomeGenBase.getBiomeGenArray().length;
+        for (int i = 0; i < biomeListLength; ++i)
         {
-            lines.add("Biome list:");
-            lines.add(String.format("%6s | %-7s | %-24s | %-23s | %-23s | %14s | %14s | %11s",
-                    "index", "biomeID", "biomeName", "color", "waterColorMultiplier", "temperature", "rainfall", "enableSnow"));
+            bgb = BiomeGenBase.getBiome(i);
 
-            for (int i = 0; i < biomeList.length; ++i)
+            if (bgb != null)
             {
-                if (biomeList[i] != null)
-                {
-                    lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %14f | %14f | %11s",
-                        i,
-                        biomeList[i].biomeID,
-                        biomeList[i].biomeName,
-                        biomeList[i].color,
-                        biomeList[i].color,
-                        biomeList[i].waterColorMultiplier,
-                        biomeList[i].waterColorMultiplier,
-                        biomeList[i].temperature,
-                        biomeList[i].rainfall,
-                        biomeList[i].func_150559_j()));
-                }
-                else
-                {
-                    lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %14f | %14f | %11s", i, 0, "<none>", 0, 0, 0, 0, 0.0f, 0.0f, ""));
-                }
+                lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %14f | %14f | %11s",
+                    i,
+                    bgb.biomeID,
+                    bgb.biomeName,
+                    bgb.color,
+                    bgb.color,
+                    bgb.waterColorMultiplier,
+                    bgb.waterColorMultiplier,
+                    bgb.temperature,
+                    bgb.rainfall,
+                    bgb.func_150559_j()));
+            }
+            else
+            {
+                lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %14f | %14f | %11s", i, 0, "<none>", 0, 0, 0, 0, 0.0f, 0.0f, ""));
             }
         }
 
