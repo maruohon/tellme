@@ -31,7 +31,8 @@ public class BlockInfo
 
         int id = Block.getIdFromBlock(block);
         int meta = block.getMetaFromState(iBlockState);
-        ItemStack stack = new ItemStack(block, 1, block.damageDropped(iBlockState));
+        //ItemStack stack = new ItemStack(block, 1, block.damageDropped(iBlockState));
+        ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
         //String name = GameRegistry.findUniqueIdentifierFor(block).toString();
         String name = Block.blockRegistry.getNameForObject(block).toString();
         String dname;
