@@ -26,7 +26,8 @@ public class BlockInfo
 
         int id = Block.getIdFromBlock(block);
         int meta = world.getBlockMetadata(x, y, z);
-        ItemStack stack = new ItemStack(block, 1, block.damageDropped(meta));
+        //ItemStack stack = new ItemStack(block, 1, block.damageDropped(meta));
+        ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, x, y, z));
         String name = Block.blockRegistry.getNameForObject(block);
         String dname;
 
