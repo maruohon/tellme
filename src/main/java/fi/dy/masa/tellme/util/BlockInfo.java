@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.util;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import net.minecraft.block.Block;
@@ -93,6 +94,7 @@ public class BlockInfo
 
     public static void dumpBlockInfoToFile(EntityPlayer player, World world, int x, int y, int z)
     {
-        DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, x, y, z));
+        File f = DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, x, y, z));
+        player.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
     }
 }
