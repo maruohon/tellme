@@ -32,8 +32,17 @@ public class DataDump
 
         }
 
-        String fileName = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis())) + ".txt";
+        String fileNameBaseWithDate = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis()));
+        String fileName = fileNameBaseWithDate + ".txt";
         outFile = new File(cfgDir, fileName);
+        int postFix = 1;
+
+        while (outFile.exists() == true)
+        {
+            fileName = fileNameBaseWithDate + "_" + postFix + ".txt";
+            outFile = new File(cfgDir, fileName);
+            postFix++;
+        }
 
         try
         {
