@@ -3,8 +3,8 @@ package fi.dy.masa.tellme.util;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
@@ -12,7 +12,7 @@ import fi.dy.masa.tellme.TellMe;
 
 public class DataDump
 {
-    public static File dumpDataToFile(String fileNameBase, ArrayList<String> lines)
+    public static File dumpDataToFile(String fileNameBase, List<String> lines)
     {
         File outFile = null;
 
@@ -64,7 +64,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            TellMe.logger.error("Exception while writing data dump to file '" + fileName + "'.");
+            TellMe.logger.error("Exception while writing data dump to file '" + fileName + "'");
             e.printStackTrace();
         }
 

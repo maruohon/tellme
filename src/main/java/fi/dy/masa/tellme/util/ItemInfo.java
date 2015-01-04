@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.util;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -77,6 +78,7 @@ public class ItemInfo
 
     public static void dumpItemInfoToFile(EntityPlayer player, int slot)
     {
-        DataDump.dumpDataToFile("item_data", getFullItemInfo(player, slot));
+        File f = DataDump.dumpDataToFile("item_data", getFullItemInfo(player, slot));
+        player.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
     }
 }
