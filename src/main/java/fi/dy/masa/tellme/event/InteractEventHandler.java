@@ -1,12 +1,16 @@
 package fi.dy.masa.tellme.event;
 
 import net.minecraft.init.Items;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
+import fi.dy.masa.tellme.util.MOPHelper;
 
 public class InteractEventHandler
 {
@@ -22,17 +26,49 @@ public class InteractEventHandler
         if (event.entityPlayer != null && event.entityPlayer.getCurrentEquippedItem() != null)
         {
             // Show info for the block the player right clicks on with a gold nugget
-            if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK && event.entityPlayer.getCurrentEquippedItem().getItem() == Items.gold_nugget)
+            if (event.entityPlayer.getCurrentEquippedItem().getItem() == Items.gold_nugget)
             {
-                BlockInfo.printBasicBlockInfoToChat(event.entityPlayer, event.world, event.pos);
+                if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK
+                    && event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR)
+                {
+                    return;
+                }
+
+                BlockPos pos = event.pos;
+
+                // Ray tracing to be able to target fluid blocks, although currently it doesn't work for non-source blocks
+                MovingObjectPosition mop = MOPHelper.getMovingObjectPositionFromPlayer(event.world, event.entityPlayer, true);
+
+                if (mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
+                {
+                    return;
+                }
+                // Ray traced to a block
+                else
+                {
+                    pos = mop.getBlockPos();
+
+                    boolean isFluid = event.world.getBlockState(pos).getBlock().getMaterial().isLiquid();
+
+                    // If we ray traced to a fluid block, but the interact event is for a block (behind the fluid), then stop here
+                    // Also, if the target block is not a fluid, then we don't want to do anything on the RIGHT_CLICK_AIR case, that would dupe the output
+                    if ((isFluid == true && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK)
+                        || (isFluid == false && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR))
+                    {
+                        event.setCanceled(true);
+                        return;
+                    }
+                }
+
+                BlockInfo.printBasicBlockInfoToChat(event.entityPlayer, event.world, pos);
 
                 if (event.entityPlayer.isSneaking() == true)
                 {
-                    BlockInfo.dumpBlockInfoToFile(event.entityPlayer, event.world, event.pos);
+                    BlockInfo.dumpBlockInfoToFile(event.entityPlayer, event.world, pos);
                 }
                 else
                 {
-                    BlockInfo.printBlockInfoToConsole(event.entityPlayer, event.world, event.pos);
+                    BlockInfo.printBlockInfoToConsole(event.entityPlayer, event.world, pos);
                 }
 
                 event.setCanceled(true);
