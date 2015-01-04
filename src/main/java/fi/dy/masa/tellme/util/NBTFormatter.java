@@ -2,7 +2,7 @@ package fi.dy.masa.tellme.util;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Set;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
@@ -22,23 +22,36 @@ import fi.dy.masa.tellme.TellMe;
 
 public class NBTFormatter
 {
-    @SuppressWarnings("unchecked")
+    public static final String[] TAG_NAMES = new String[] {"TAG_End", "TAG_Byte", "TAG_Short",
+        "TAG_Int", "TAG_Long", "TAG_Float", "TAG_Double", "TAG_Byte_Array", "TAG_String", "TAG_List", "TAG_Compound", "TAG_Int_Array"};
+
+    public static String getTagName(int id)
+    {
+        if (id >= 0 && id < TAG_NAMES.length)
+        {
+            return TAG_NAMES[id];
+        }
+
+        return "";
+    }
+
+    public static String getTagDescription(int id, String name)
+    {
+        return getTagName(id) + String.format(" (%d) ('%s')", id, name);
+    }
+
     public static void addFormattedLinePretty(ArrayList<String> lines, NBTBase nbt, String name, int depth)
     {
         int len = 0;
         String line;
         String pre = "";
         String pre2 = "";
-        try
+
+        if (depth > 0)
         {
-            String fmt = String.format("%%-%ds", (depth * 4));
-            if (depth > 0) { pre  = String.format(fmt, ""); }
-            fmt = String.format("%%%ds", (depth * 4 + 3));
-            pre2 = String.format(fmt, "");
+            pre  = String.format(String.format("%%-%ds", (depth * 4)), "");
         }
-        catch(Exception e)
-        {
-        }
+        pre2 = String.format(String.format("%%%ds", (depth * 4 + 3)), "");
 
         switch(nbt.getId())
         {
@@ -47,33 +60,33 @@ public class NBTFormatter
                 break;
 
             case Constants.NBT.TAG_BYTE:
-                lines.add(pre + "TAG_Byte (" + nbt.getId() + ") ('" + name + "'): " + ((NBTTagByte)nbt).func_150287_d());
+                lines.add(pre + getTagDescription(nbt.getId(), name) + ": " + ((NBTTagByte)nbt).func_150287_d());
                 break;
 
             case Constants.NBT.TAG_SHORT:
-                lines.add(pre + "TAG_Short (" + nbt.getId() + ") ('" + name + "'): " + ((NBTTagShort)nbt).func_150287_d());
+                lines.add(pre + getTagDescription(nbt.getId(), name) + ": " + ((NBTTagShort)nbt).func_150287_d());
                 break;
 
             case Constants.NBT.TAG_INT:
-                lines.add(pre + "TAG_Int (" + nbt.getId() + ") ('" + name + "'): " + ((NBTTagInt)nbt).func_150287_d());
+                lines.add(pre + getTagDescription(nbt.getId(), name) + ": " + ((NBTTagInt)nbt).func_150287_d());
                 break;
 
             case Constants.NBT.TAG_LONG:
-                lines.add(pre + "TAG_Long (" + nbt.getId() + ") ('" + name + "'): " + ((NBTTagLong)nbt).func_150291_c());
+                lines.add(pre + getTagDescription(nbt.getId(), name) + ": " + ((NBTTagLong)nbt).func_150291_c());
                 break;
 
             case Constants.NBT.TAG_FLOAT:
-                lines.add(pre + "TAG_Float (" + nbt.getId() + ") ('" + name + "'): " + ((NBTTagFloat)nbt).func_150288_h());
+                lines.add(pre + getTagDescription(nbt.getId(), name) + ": " + ((NBTTagFloat)nbt).func_150288_h());
                 break;
 
             case Constants.NBT.TAG_DOUBLE:
-                lines.add(pre + "TAG_Double (" + nbt.getId() + ") ('" + name + "'): " + ((NBTTagDouble)nbt).func_150286_g());
+                lines.add(pre + getTagDescription(nbt.getId(), name) + ": " + ((NBTTagDouble)nbt).func_150286_g());
                 break;
 
             case Constants.NBT.TAG_BYTE_ARRAY:
-                lines.add(pre + "TAG_Byte_Array (" + nbt.getId() + ") ('" + name + "')");
                 byte[] arrByte = ((NBTTagByteArray)nbt).func_150292_c();
                 len = arrByte.length;
+                lines.add(pre + getTagDescription(nbt.getId(), name) + " (" + len + " values)");
 
                 // For short arrays, print one value per line, it is easier to read
                 if (len <= 16)
@@ -102,24 +115,25 @@ public class NBTFormatter
                 break;
 
             case Constants.NBT.TAG_STRING:
-                lines.add(pre + "TAG_String (" + nbt.getId() + ") ('" + name + "'): " + ((NBTTagString)nbt).toString());
+                lines.add(pre + getTagDescription(nbt.getId(), name) + ": " + ((NBTTagString)nbt).toString());
                 break;
 
             case Constants.NBT.TAG_LIST:
-                lines.add(pre + "TAG_List (" + nbt.getId() + ") ('" + name + "')");
+                NBTTagList tagList = (NBTTagList)nbt;
+                int tagCount = tagList.tagCount();
+                int tagType = tagList.func_150303_d();
+
+                lines.add(pre + getTagDescription(nbt.getId(), name) + " (" + tagCount + " entries of " + getTagName(tagType) + " (" + tagType + "))");
                 lines.add(pre + "{");
 
-                NBTTagList list = (NBTTagList)nbt;
-                NBTBase base;
-                int size = list.tagCount();
-
                 // Damn crappy NBTTagList doesn't have a generic get method ;_;
-                Field tagList = ReflectionHelper.findField(NBTTagList.class, "tagList", "field_74747_a");
+                Field tagListField = ReflectionHelper.findField(NBTTagList.class, "tagList", "field_74747_a");
                 try
                 {
-                    for (int i = 0; i < size; ++i)
+                    for (int i = 0; i < tagCount; ++i)
                     {
-                        base = ((ArrayList<NBTBase>)tagList.get((NBTTagList)nbt)).get(i);
+                        @SuppressWarnings("unchecked")
+                        NBTBase base = ((ArrayList<NBTBase>)tagListField.get(tagList)).get(i);
                         addFormattedLinePretty(lines, base, "", depth + 1);
                     }
                 }
@@ -135,16 +149,15 @@ public class NBTFormatter
                 break;
 
             case Constants.NBT.TAG_COMPOUND:
-                lines.add(pre + "TAG_Compound (" + nbt.getId() + ") ('" + name + "')");
+                lines.add(pre + getTagDescription(nbt.getId(), name));
                 lines.add(pre + "{");
 
                 NBTTagCompound tag = (NBTTagCompound)nbt;
-                @SuppressWarnings("rawtypes")
-                Iterator iterator = tag.func_150296_c().iterator();
+                @SuppressWarnings("unchecked")
+                Set<String> keys = tag.func_150296_c();
 
-                while (iterator.hasNext() == true)
+                for (String key : keys)
                 {
-                    String key = (String)iterator.next();
                     addFormattedLinePretty(lines, tag.getTag(key), key, depth + 1);
                 }
 
@@ -152,10 +165,9 @@ public class NBTFormatter
                 break;
 
             case Constants.NBT.TAG_INT_ARRAY:
-                lines.add(pre + "TAG_Int_Array (" + nbt.getId() + ") ('" + name + "')");
                 int[] arrInt = ((NBTTagIntArray)nbt).func_150302_c();
-
                 len = arrInt.length;
+                lines.add(pre + getTagDescription(nbt.getId(), name) + " (" + len + " values)");
 
                 // For short arrays, print one value per line, it is easier to read
                 if (len <= 16)
