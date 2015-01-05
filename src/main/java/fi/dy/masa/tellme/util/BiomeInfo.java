@@ -16,12 +16,16 @@ public class BiomeInfo
         ArrayList<String> lines = new ArrayList<String>();
         BiomeGenBase bgb;
 
+        StringBuilder separator = new StringBuilder(256);
+        for (int i = 0; i < 143; ++i) { separator.append("-"); }
         lines.add("Biome list:");
+        lines.add(separator.toString());
         lines.add(String.format("%6s | %-7s | %-24s | %-23s | %-23s | %14s | %14s | %11s",
                 "index", "biomeID", "biomeName", "color", "waterColorMultiplier", "temperature", "rainfall", "enableSnow"));
+        lines.add(separator.toString());
 
-        int biomeListLength = BiomeGenBase.getBiomeGenArray().length;
-        for (int i = 0; i < biomeListLength; ++i)
+        int biomeArrLen = BiomeGenBase.getBiomeGenArray().length;
+        for (int i = 0; i < biomeArrLen; ++i)
         {
             bgb = BiomeGenBase.getBiome(i);
 
@@ -44,6 +48,8 @@ public class BiomeInfo
                 lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %14f | %14f | %11s", i, 0, "<none>", 0, 0, 0, 0, 0.0f, 0.0f, ""));
             }
         }
+
+        lines.add(separator.toString());
 
         return lines;
     }

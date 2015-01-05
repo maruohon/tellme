@@ -1,5 +1,7 @@
 package fi.dy.masa.tellme.command;
 
+import java.io.File;
+
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -40,8 +42,8 @@ public class SubCommandBiome extends SubCommand
             }
             else if (args[1].equals("dump"))
             {
-                DataDump.dumpDataToFile("biome_dump", BiomeInfo.getBiomeList());
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.file.cfgdir")));
+                File f = DataDump.dumpDataToFile("biome_dump", BiomeInfo.getBiomeList());
+                sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
             }
             else if (args[1].equals("list"))
             {
