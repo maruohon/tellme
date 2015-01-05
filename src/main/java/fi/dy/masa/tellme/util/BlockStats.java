@@ -340,21 +340,21 @@ public class BlockStats
             }
         }
 
-        String separator = "";
+        StringBuilder separator = new StringBuilder(256);
         int len = nameLen + dNameLen + 35;
-        for (int i = 0; i < len; ++i) { separator = separator.concat("-"); }
+        for (int i = 0; i < len; ++i) { separator.append("-"); }
 
         this.blockStatLines = new ArrayList<String>();
-        this.blockStatLines.add(separator);
+        this.blockStatLines.add(separator.toString());
         this.blockStatLines.add("*** NOTE *** The Block ID is for very specific debugging or fixing purposes only!!!");
         this.blockStatLines.add("It WILL be different on every world since Minecraft 1.7, since they are dynamically allocated by the game!!!");
-        this.blockStatLines.add(separator);
+        this.blockStatLines.add(separator.toString());
 
         String fmt = String.format("%%-%ds | %%-%ds | %%8d | %%4d:%%-2d | %%8d", nameLen, dNameLen);
         String fmt2 = String.format("%%-%ds | %%-%ds", nameLen, dNameLen);
 
         this.blockStatLines.add(String.format(fmt2 + " | %8s | %7s | %8s", "Block name", "Display name", "Count", "ID:meta", "Count TE"));
-        this.blockStatLines.add(separator);
+        this.blockStatLines.add(separator.toString());
 
         for (BlockInfo blockInfo : values)
         {

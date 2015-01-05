@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.command;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,27 +50,27 @@ public class SubCommandBlockStats extends SubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender icommandsender, String[] args)
+    public void processCommand(ICommandSender sender, String[] args)
     {
         // "/tellme bockstats"
         if (args.length < 2)
         {
             String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
 
-            icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " query"));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " dump"));
-            icommandsender.addChatMessage(new ChatComponentText(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+            sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
+            sender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
+            sender.addChatMessage(new ChatComponentText(pre + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
+            sender.addChatMessage(new ChatComponentText(pre + " query"));
+            sender.addChatMessage(new ChatComponentText(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+            sender.addChatMessage(new ChatComponentText(pre + " dump"));
+            sender.addChatMessage(new ChatComponentText(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
 
             return;
         }
 
-        super.processCommand(icommandsender, args);
+        super.processCommand(sender, args);
 
-        if (icommandsender instanceof EntityPlayer == false)
+        if (sender instanceof EntityPlayer == false)
         {
             throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.notplayer"));
         }
@@ -93,9 +94,9 @@ public class SubCommandBlockStats extends SubCommand
                     EntityPlayer player = srv.getConfigurationManager().func_152612_a(args[2]);
                     if (player != null)
                     {
-                        icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
+                        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
                         this.blockStats.calculateBlockStats(player, Arrays.asList(args).subList(3, args.length));
-                        icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
+                        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
                     }
                     else
                     {
@@ -106,9 +107,9 @@ public class SubCommandBlockStats extends SubCommand
             // cuboid corners
             else if (args.length == 9)
             {
-                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
+                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
                 this.blockStats.calculateBlockStats(Arrays.asList(args).subList(2, args.length));
-                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
+                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
             }
             else
             {
@@ -135,12 +136,12 @@ public class SubCommandBlockStats extends SubCommand
             if (args[1].equals("query"))
             {
                 this.blockStats.printBlockStatsToLogger();
-                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
+                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
             }
             else // dump
             {
-                DataDump.dumpDataToFile("block_stats", this.blockStats.getBlockStatsLines());
-                icommandsender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.file.cfgdir")));
+                File f = DataDump.dumpDataToFile("block_stats", this.blockStats.getBlockStatsLines());
+                sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
             }
         }
     }
