@@ -31,6 +31,8 @@ info.subcommand.biome.help.current=Prints information about the current biome to
 info.subcommand.biome.help.dump=Dumps the complete biome list into a timestamped file in config/tellme/
 info.subcommand.biome.help.list=Prints the complete biome list to the console
 
+info.subcommand.dump=Dump block, entity and item lists
+
 info.subcommand.help=Gives some information about the commands
 
 info.subcommand.blockstats=Calculates the number of each block type in a given area
