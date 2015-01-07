@@ -1,15 +1,23 @@
 package fi.dy.masa.tellme.util;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.registry.EntityRegistry;
+import cpw.mods.fml.common.registry.EntityRegistry.EntityRegistration;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.relauncher.ReflectionHelper;
+import fi.dy.masa.tellme.TellMe;
 
 public class Dump
 {
@@ -17,6 +25,7 @@ public class Dump
     public int longestModId = 0;
     public int longestModName = 0;
     public int longestName = 0;
+    public int longestDisplayName = 0;
 
     public class Data implements Comparable<Data>
     {
@@ -74,6 +83,15 @@ public class Dump
             catch (Exception e) {}
         }
 
+        public Data(String entity, String dName, int id, String modId, String modName)
+        {
+            this.modId = modId;
+            this.modName = modName;
+            this.name = entity;
+            this.displayName = dName;
+            this.id = id;
+        }
+
         public int compareTo(Data other)
         {
             int result = this.modName.compareTo(other.modName);
@@ -86,20 +104,38 @@ public class Dump
         }
     }
 
-    public List<Data> getBlocks()
+    public List<Data> getItemsOrBlocks(boolean isItem)
     {
-        ArrayList<Data> blocks = new ArrayList<Data>();
-        @SuppressWarnings("unchecked")
-        Iterator<Block> iter = GameData.getBlockRegistry().iterator();
+        ArrayList<Data> list = new ArrayList<Data>();
+        @SuppressWarnings("rawtypes")
+        Iterator iter;
+
+        if (isItem == true)
+        {
+            iter = GameData.getItemRegistry().iterator();
+        }
+        else
+        {
+            iter = GameData.getBlockRegistry().iterator();
+        }
 
         this.longestModId = 0;
         this.longestModName = 0;
         this.longestName = 0;
 
+        Data bd;
         while (iter.hasNext() == true)
         {
-            Data bd = new Data(iter.next());
-            blocks.add(bd);
+            if (isItem == true)
+            {
+                bd = new Data((Item)iter.next());
+            }
+            else
+            {
+                bd = new Data((Block)iter.next());
+            }
+
+            list.add(bd);
 
             int len = bd.modId.length();
             if (len > this.longestModId)
@@ -120,47 +156,10 @@ public class Dump
             }
         }
 
-        return blocks;
+        return list;
     }
 
-    public List<Data> getItems()
-    {
-        ArrayList<Data> items = new ArrayList<Data>();
-        @SuppressWarnings("unchecked")
-        Iterator<Item> iter = GameData.getItemRegistry().iterator();
-
-        this.longestModId = 0;
-        this.longestModName = 0;
-        this.longestName = 0;
-
-        while (iter.hasNext() == true)
-        {
-            Data bd = new Data(iter.next());
-            items.add(bd);
-
-            int len = bd.modId.length();
-            if (len > this.longestModId)
-            {
-                this.longestModId = len;
-            }
-
-            len = bd.modName.length();
-            if (len > this.longestModName)
-            {
-                this.longestModName = len;
-            }
-
-            len = bd.name.length();
-            if (len > this.longestName)
-            {
-                this.longestName = len;
-            }
-        }
-
-        return items;
-    }
-
-    public List<String> getDump(List<Data> list)
+    public List<String> getItemOrBlockDump(List<Data> list, boolean isItem)
     {
         Collections.sort(list);
 
@@ -168,15 +167,106 @@ public class Dump
         String fmt = String.format("%%-%ds %%-%ds %%-%ds", this.longestModName, this.longestModId, this.longestName);
 
         StringBuilder separator = new StringBuilder(256);
-        int len = this.longestModId + this.longestModName + this.longestName + 12;
+        int len = this.longestModId + this.longestModName + this.longestName + 11;
         for (int i = 0; i < len; ++i) { separator.append("-"); }
 
-        lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Block/Item name", "Block/Item ID"));
+        if (isItem == true)
+        {
+            lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Item name", " Item ID"));
+        }
+        else
+        {
+            lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Block name", "Block ID"));
+        }
+
         lines.add(separator.toString());
 
         for (Data d : list)
         {
-            lines.add(String.format(fmt + " (%5d)", d.modName, d.modId, d.name, d.id));
+            lines.add(String.format(fmt + " %8d", d.modName, d.modId, d.name, d.id));
+        }
+
+        return lines;
+    }
+
+    public List<String> getEntityDump()
+    {
+        ArrayList<Data> entities = new ArrayList<Data>();
+        ArrayList<String> lines = new ArrayList<String>();
+        this.longestModId = 0;
+        this.longestModName = 0;
+        this.longestName = 0;
+        this.longestDisplayName = 0;
+
+        Field idField = ReflectionHelper.findField(EntityList.class, "g", "field_75622_f", "stringToIDMapping");
+
+        for (Object o : EntityList.stringToClassMapping.keySet())
+        {
+            String name = (String)o;
+            int len = name.length();
+            if (len > this.longestName)
+            {
+                this.longestName = len;
+            }
+
+            @SuppressWarnings("unchecked")
+            Class<? extends Entity> c = (Class<? extends Entity>)EntityList.stringToClassMapping.get(name);
+            if (c != null)
+            {
+                len = c.getSimpleName().length();
+                if (len > this.longestDisplayName)
+                {
+                    this.longestDisplayName = len;
+                }
+
+                EntityRegistration er = EntityRegistry.instance().lookupModSpawn(c, false);
+                if (er != null)
+                {
+                    entities.add(new Data(name, c.getSimpleName(), er.getModEntityId(), er.getContainer().getModId(), er.getContainer().getName()));
+
+                    len = er.getContainer().getModId().length();
+                    if (len > this.longestModId)
+                    {
+                        this.longestModId = len;
+                    }
+
+                    len = er.getContainer().getName().length();
+                    if (len > this.longestModName)
+                    {
+                        this.longestModName = len;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        @SuppressWarnings("unchecked")
+                        int id = ((Integer)((HashMap<String, Integer>)idField.get(null)).get(name)).intValue();
+                        entities.add(new Data(name, c.getSimpleName(), id, "minecraft", "Minecraft"));
+                    }
+                    catch (IllegalAccessException e)
+                    {
+                        TellMe.logger.error("Error while trying to read Entity IDs");
+                        entities.add(new Data(name, c.getSimpleName(), -1, "minecraft", "Minecraft"));
+                        //e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        Collections.sort(entities);
+        String fmt = String.format("%%-%ds %%-%ds %%-%ds %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
+
+        StringBuilder separator = new StringBuilder(256);
+        int len = this.longestModId + this.longestModName + this.longestName + this.longestDisplayName + 13;
+        for (int i = 0; i < len; ++i) { separator.append("-"); }
+
+        lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Entity Identifier", "Entity class name", "Entity ID"));
+        lines.add(separator.toString());
+
+        for (Data d : entities)
+        {
+            lines.add(String.format(fmt + " %9d", d.modName, d.modId, d.name, d.displayName, d.id));
         }
 
         return lines;
