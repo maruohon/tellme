@@ -6,15 +6,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
-import net.minecraftforge.fml.common.registry.GameData;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry.UniqueIdentifier;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -41,39 +43,41 @@ public class Dump
         public Data(Block block)
         {
             UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(block);
-            this.name = ui.name;
-            this.modId = ui.modId;
-            this.modName = "TODO";
-            this.displayName = "";
-            this.id = Block.getIdFromBlock(block);
-            Item item = Item.getItemFromBlock(block);
-            this.hasSubtypes = (item != null && item.getHasSubtypes() == true);
-
-            // Get the display name for items that have no sub types (ie. we know there is a valid item at damage = 0)
-            if (this.hasSubtypes == false)
-            {
-                try
-                {
-                    //ItemStack stack = new ItemStack(block.getItemDropped(0, new Random(), 0), 1, 0);
-                    ItemStack stack = new ItemStack(block, 1, 0);
-                    if (stack != null && stack.getItem() != null)
-                    {
-                        this.displayName = stack.getDisplayName();
-                    }
-                }
-                catch (Exception e) {}
-            }
+            this.setValues(ui, Block.getIdFromBlock(block), Item.getItemFromBlock(block));
         }
 
         public Data(Item item)
         {
             UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(item);
-            this.name = ui.name;
+            this.setValues(ui, Item.getIdFromItem(item), item);
+        }
+
+        public Data(String name, String dName, int id, String modId, String modName)
+        {
+            this.modId = modId;
+            this.modName = modName;
+            this.name = name;
+            this.displayName = dName;
+            this.id = id;
+        }
+
+        public void setValues(UniqueIdentifier ui, int id, Item item)
+        {
             this.modId = ui.modId;
-            this.modName = "TODO";
+            this.name = ui.name;
             this.displayName = "";
-            this.id = Item.getIdFromItem(item);
-            this.hasSubtypes = item.getHasSubtypes();
+            this.id = id;
+            this.hasSubtypes = item != null && item.getHasSubtypes();
+
+            Map<String, ModContainer> mods = Loader.instance().getIndexedModList();
+            if (mods != null && mods.get(ui.modId) != null)
+            {
+                this.modName = mods.get(ui.modId).getName();
+            }
+            else
+            {
+                this.modName = "Minecraft";
+            }
 
             // Get the display name for items that have no sub types (ie. we know there is a valid item at damage = 0)
             if (this.hasSubtypes == false)
@@ -88,15 +92,6 @@ public class Dump
                 }
                 catch (Exception e) {}
             }
-        }
-
-        public Data(String entity, String dName, int id, String modId, String modName)
-        {
-            this.modId = modId;
-            this.modName = modName;
-            this.name = entity;
-            this.displayName = dName;
-            this.id = id;
         }
 
         public int compareTo(Data other)
@@ -119,11 +114,11 @@ public class Dump
 
         if (isItem == true)
         {
-            iter = GameData.getItemRegistry().iterator();
+            iter = Item.itemRegistry.iterator();
         }
         else
         {
-            iter = GameData.getBlockRegistry().iterator();
+            iter = Block.blockRegistry.iterator();
         }
 
         this.longestModId = 0;
@@ -178,6 +173,10 @@ public class Dump
         Collections.sort(list);
 
         ArrayList<String> lines = new ArrayList<String>();
+        if (this.longestModId < 9) { this.longestModId = 9; }
+        if (this.longestModName < 9) { this.longestModName = 9; }
+        if (this.longestName < 8) { this.longestName = 8; }
+        if (this.longestDisplayName < 11) { this.longestDisplayName = 11; }
         String fmt = String.format("%%-%ds %%-%ds %%-%ds %%8d %%16s %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
         String fmtTitle = String.format("%%-%ds %%-%ds %%-%ds %%8s %%16s %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
 
@@ -226,7 +225,7 @@ public class Dump
         this.longestName = 0;
         this.longestDisplayName = 0;
 
-        Field idField = ReflectionHelper.findField(EntityList.class, "g", "field_75622_f", "stringToIDMapping");
+        Field idField = ReflectionHelper.findField(EntityList.class, "g", "field_180126_g", "stringToIDMapping");
 
         for (Object o : EntityList.stringToClassMapping.keySet())
         {
@@ -247,7 +246,7 @@ public class Dump
                     this.longestDisplayName = len;
                 }
 
-                EntityRegistration er = EntityRegistry.instance().lookupModSpawn(c, false);
+                EntityRegistration er = EntityRegistry.instance().lookupModSpawn(c, true);
                 if (er != null)
                 {
                     entities.add(new Data(name, c.getSimpleName(), er.getModEntityId(), er.getContainer().getModId(), er.getContainer().getName()));
@@ -283,6 +282,10 @@ public class Dump
         }
 
         Collections.sort(entities);
+        if (this.longestModId < 9) { this.longestModId = 9; }
+        if (this.longestModName < 9) { this.longestModName = 9; }
+        if (this.longestName < 8) { this.longestName = 8; }
+        if (this.longestDisplayName < 17) { this.longestDisplayName = 17; }
         String fmt = String.format("%%-%ds %%-%ds %%-%ds %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
 
         StringBuilder separator = new StringBuilder(256);
