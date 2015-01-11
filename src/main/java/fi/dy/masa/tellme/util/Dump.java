@@ -11,7 +11,6 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
@@ -55,11 +54,8 @@ public class Dump
             {
                 try
                 {
-                    Block block2 = (item instanceof ItemBlock && block.isFlowerPot() == false) ? Block.getBlockFromItem(item) : block;
-                    ItemStack stack = new ItemStack(block2, 1, 0);
                     //ItemStack stack = new ItemStack(block.getItemDropped(0, new Random(), 0), 1, 0);
-                    //ItemStack stack = new ItemStack(Item.getItemFromBlock(block), 1, 0);
-                    //ItemStack stack = new ItemStack(block, 1, 0);
+                    ItemStack stack = new ItemStack(block, 1, 0);
                     if (stack != null && stack.getItem() != null)
                     {
                         this.displayName = stack.getDisplayName();
