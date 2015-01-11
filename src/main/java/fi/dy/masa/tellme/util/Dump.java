@@ -11,6 +11,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.EntityRegistry;
@@ -34,53 +35,63 @@ public class Dump
         public String name;
         public String displayName;
         public int id;
+        public boolean hasSubtypes;
 
         public Data(Block block)
         {
             this.name = Block.blockRegistry.getNameForObject(block);
+            this.displayName = "";
             @SuppressWarnings("deprecation")
             ModContainer mod = GameData.findModOwner(this.name);
             this.modId = mod == null ? "minecraft" : mod.getModId();
             this.modName = mod == null ? "Minecraft" : mod.getName();
             this.id = Block.getIdFromBlock(block);
+            Item item = Item.getItemFromBlock(block);
+            this.hasSubtypes = (item != null && item.getHasSubtypes() == true);
 
-            try
+            // Get the display name for items that have no sub types (ie. we know there is a valid item at damage = 0)
+            if (this.hasSubtypes == false)
             {
-                ItemStack stack = new ItemStack(block, 1, 0); // FIXME is there any point in this for just meta 0?
-                if (stack != null && stack.getItem() != null)
+                try
                 {
-                    this.displayName = stack.getDisplayName();
+                    Block block2 = (item instanceof ItemBlock && block.isFlowerPot() == false) ? Block.getBlockFromItem(item) : block;
+                    ItemStack stack = new ItemStack(block2, 1, 0);
+                    //ItemStack stack = new ItemStack(block.getItemDropped(0, new Random(), 0), 1, 0);
+                    //ItemStack stack = new ItemStack(Item.getItemFromBlock(block), 1, 0);
+                    //ItemStack stack = new ItemStack(block, 1, 0);
+                    if (stack != null && stack.getItem() != null)
+                    {
+                        this.displayName = stack.getDisplayName();
+                    }
                 }
-                else
-                {
-                    this.displayName = this.name;
-                }
+                catch (Exception e) {}
             }
-            catch (Exception e) {}
         }
 
         public Data(Item item)
         {
             this.name = Item.itemRegistry.getNameForObject(item);
+            this.displayName = "";
             @SuppressWarnings("deprecation")
             ModContainer mod = GameData.findModOwner(this.name);
             this.modId = mod == null ? "minecraft" : mod.getModId();
             this.modName = mod == null ? "Minecraft" : mod.getName();
             this.id = Item.getIdFromItem(item);
+            this.hasSubtypes = item.getHasSubtypes();
 
-            try
+            // Get the display name for items that have no sub types (ie. we know there is a valid item at damage = 0)
+            if (this.hasSubtypes == false)
             {
-                ItemStack stack = new ItemStack(item, 1, 0); // FIXME is there any point in this for just damage 0?
-                if (stack != null && stack.getItem() != null)
+                try
                 {
-                    this.displayName = stack.getDisplayName();
+                    ItemStack stack = new ItemStack(item, 1, 0);
+                    if (stack != null && stack.getItem() != null)
+                    {
+                        this.displayName = stack.getDisplayName();
+                    }
                 }
-                else
-                {
-                    this.displayName = this.name;
-                }
+                catch (Exception e) {}
             }
-            catch (Exception e) {}
         }
 
         public Data(String entity, String dName, int id, String modId, String modName)
@@ -122,37 +133,44 @@ public class Dump
         this.longestModId = 0;
         this.longestModName = 0;
         this.longestName = 0;
+        this.longestDisplayName = 0;
 
-        Data bd;
+        Data data;
         while (iter.hasNext() == true)
         {
             if (isItem == true)
             {
-                bd = new Data((Item)iter.next());
+                data = new Data((Item)iter.next());
             }
             else
             {
-                bd = new Data((Block)iter.next());
+                data = new Data((Block)iter.next());
             }
 
-            list.add(bd);
+            list.add(data);
 
-            int len = bd.modId.length();
+            int len = data.modId.length();
             if (len > this.longestModId)
             {
                 this.longestModId = len;
             }
 
-            len = bd.modName.length();
+            len = data.modName.length();
             if (len > this.longestModName)
             {
                 this.longestModName = len;
             }
 
-            len = bd.name.length();
+            len = data.name.length();
             if (len > this.longestName)
             {
                 this.longestName = len;
+            }
+
+            len = data.displayName.length();
+            if (len > this.longestDisplayName)
+            {
+                this.longestDisplayName = len;
             }
         }
 
@@ -164,26 +182,40 @@ public class Dump
         Collections.sort(list);
 
         ArrayList<String> lines = new ArrayList<String>();
-        String fmt = String.format("%%-%ds %%-%ds %%-%ds", this.longestModName, this.longestModId, this.longestName);
+        String fmt = String.format("%%-%ds %%-%ds %%-%ds %%8d %%16s %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
+        String fmtTitle = String.format("%%-%ds %%-%ds %%-%ds %%8s %%16s %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
 
         StringBuilder separator = new StringBuilder(256);
-        int len = this.longestModId + this.longestModName + this.longestName + 11;
+        int len = this.longestModId + this.longestModName + this.longestName + this.longestDisplayName + 29;
         for (int i = 0; i < len; ++i) { separator.append("-"); }
 
-        if (isItem == true)
-        {
-            lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Item name", " Item ID"));
-        }
-        else
-        {
-            lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Block name", "Block ID"));
-        }
+        lines.add(separator.toString());
+        lines.add("*** WARNING ***");
+        lines.add("The block and item IDs are dynamic and will be different on each world!");
+        lines.add("DO NOT use them for anything \"proper\"!! (other than manual editing/fixing of raw world data or something)");
+        lines.add("*** WARNING ***");
+        lines.add(separator.toString());
+        lines.add("*** WARNING ***");
+        lines.add("The server doesn't have a list of the actual sub block and sub items.");
+        lines.add("That is why the block and item list dumps only contain one entry per block and item class (separate ID).");
+        lines.add("*** WARNING ***");
+        lines.add(separator.toString());
+
+        String typeName = isItem ? "Item" : "Block";
+        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", typeName + " name", typeName + " ID", "| Has subtypes |", "Displayname"));
 
         lines.add(separator.toString());
 
         for (Data d : list)
         {
-            lines.add(String.format(fmt + " %8d", d.modName, d.modId, d.name, d.id));
+            if (d.hasSubtypes == true)
+            {
+                lines.add(String.format(fmt, d.modName, d.modId, d.name, d.id, "true", ""));
+            }
+            else
+            {
+                lines.add(String.format(fmt, d.modName, d.modId, d.name, d.id, "", d.displayName));
+            }
         }
 
         return lines;
@@ -246,9 +278,9 @@ public class Dump
                     }
                     catch (IllegalAccessException e)
                     {
-                        TellMe.logger.error("Error while trying to read Entity IDs");
                         entities.add(new Data(name, c.getSimpleName(), -1, "minecraft", "Minecraft"));
-                        //e.printStackTrace();
+                        TellMe.logger.error("Error while trying to read Entity IDs");
+                        e.printStackTrace();
                     }
                 }
             }
