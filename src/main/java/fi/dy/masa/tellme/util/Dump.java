@@ -63,24 +63,35 @@ public class Dump
 
         public void setValues(UniqueIdentifier ui, int id, Item item)
         {
-            this.modId = ui.modId;
-            this.name = ui.name;
             this.displayName = "";
             this.id = id;
             this.hasSubtypes = item != null && item.getHasSubtypes();
 
-            Map<String, ModContainer> mods = Loader.instance().getIndexedModList();
-            if (mods != null && mods.get(ui.modId) != null)
+            if (ui == null)
             {
-                this.modName = mods.get(ui.modId).getName();
+                this.modId = "null";
+                this.modName = "null";
+                this.name = "" + item;
+                TellMe.logger.warn("UniqueIdentifier was null while identifying a block or item: " + item + " (id: " + id + ")");
             }
             else
             {
-                this.modName = "Minecraft";
+                this.modId = ui.modId;
+                this.name = ui.name;
+
+                Map<String, ModContainer> mods = Loader.instance().getIndexedModList();
+                if (mods != null && mods.get(ui.modId) != null)
+                {
+                    this.modName = mods.get(ui.modId).getName();
+                }
+                else
+                {
+                    this.modName = "Minecraft";
+                }
             }
 
             // Get the display name for items that have no sub types (ie. we know there is a valid item at damage = 0)
-            if (this.hasSubtypes == false)
+            if (this.hasSubtypes == false && item != null)
             {
                 try
                 {
