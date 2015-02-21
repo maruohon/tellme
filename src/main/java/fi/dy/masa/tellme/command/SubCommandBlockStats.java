@@ -43,8 +43,7 @@ public class SubCommandBlockStats extends SubCommand
             MinecraftServer srv = MinecraftServer.getServer();
             if (srv != null)
             {
-                //return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
-                return CommandBase.func_175762_a(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
+                return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
             }
         }
 
@@ -57,7 +56,7 @@ public class SubCommandBlockStats extends SubCommand
         // "/tellme bockstats"
         if (args.length < 2)
         {
-            String pre = "/" + CommandTellme.instance.getName() + " " + this.getCommandName();
+            String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
 
             sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
             sender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
@@ -117,8 +116,8 @@ public class SubCommandBlockStats extends SubCommand
             {
                 throw new WrongUsageException(StatCollector.translateToLocal("info.command.invalid.argument.number")
                     + " " + StatCollector.translateToLocal("info.command.usage") + ": /"
-                    + CommandTellme.instance.getName() + " " + this.getCommandName() + " count <playername> <x-distance> <y-distance> <z-distance>"
-                    + " or /" + CommandTellme.instance.getName() + " " + this.getCommandName()
+                    + CommandTellme.instance.getCommandName() + " " + this.getCommandName() + " count <playername> <x-distance> <y-distance> <z-distance>"
+                    + " or /" + CommandTellme.instance.getCommandName() + " " + this.getCommandName()
                     + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
             }
         }

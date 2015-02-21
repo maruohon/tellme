@@ -8,6 +8,7 @@
 *.md text
 *.properties text
 build.gradle text eol=lf
+build.properties text eol=lf
 gradlew text eol=lf
 gradlew.bat text eol=lf
 gradle/wrapper/gradle-wrapper.properties text eol=lf

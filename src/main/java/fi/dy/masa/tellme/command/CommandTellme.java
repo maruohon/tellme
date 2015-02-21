@@ -32,7 +32,7 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public String getName()
+    public String getCommandName()
     {
         return "tellme";
     }
@@ -40,13 +40,13 @@ public class CommandTellme extends CommandBase
     @Override
     public String getCommandUsage(ICommandSender icommandsender)
     {
-        return "/" + this.getName() + " help";
+        return "/" + this.getCommandName() + " help";
     }
 
     @Override
-    public boolean canCommandSenderUse(ICommandSender icommandsender)
+    public boolean canCommandSenderUseCommand(ICommandSender icommandsender)
     {
-        return icommandsender.canUseCommand(this.getRequiredPermissionLevel(), this.getName());
+        return icommandsender.canUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
     }
 
     @Override
@@ -61,8 +61,7 @@ public class CommandTellme extends CommandBase
     {
         if (strArr.length == 1)
         {
-            //return getListOfStringsFromIterableMatchingLastWord(strArr, subCommands.keySet());
-            return func_175762_a(strArr, subCommands.keySet());
+            return getListOfStringsMatchingLastWord(strArr, subCommands.keySet());
         }
         else if (subCommands.containsKey(strArr[0]))
         {
@@ -76,7 +75,7 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public void execute(ICommandSender icommandsender, String[] commandArgs) throws CommandException
+    public void processCommand(ICommandSender icommandsender, String[] commandArgs) throws CommandException
     {
         if (commandArgs.length > 0)
         {
@@ -91,7 +90,7 @@ public class CommandTellme extends CommandBase
             }
             else
             {
-                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown") + ": /" + this.getName() + " " + commandArgs[0], new Object[0]);
+                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown") + ": /" + this.getCommandName() + " " + commandArgs[0], new Object[0]);
             }
         }
 

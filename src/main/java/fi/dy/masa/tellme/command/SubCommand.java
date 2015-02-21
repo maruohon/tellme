@@ -31,8 +31,7 @@ public abstract class SubCommand implements ISubCommand
     {
         if (args.length == 2 || (args.length == 3 && args[1].equals("help")))
         {
-            //return CommandBase.getListOfStringsFromIterableMatchingLastWord(args, this.getSubCommands());
-            return CommandBase.func_175762_a(args, this.getSubCommands());
+            return CommandBase.getListOfStringsMatchingLastWord(args, this.getSubCommands());
         }
 
         return null;
