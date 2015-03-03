@@ -28,6 +28,7 @@ public class BlockInfo
         }
 
         IBlockState iBlockState = world.getBlockState(pos);
+        iBlockState = iBlockState.getBlock().getActualState(iBlockState, world, pos);
         Block block = iBlockState.getBlock();
 
         int id = Block.getIdFromBlock(block);
@@ -70,6 +71,7 @@ public class BlockInfo
         ArrayList<String> lines = getBasicBlockInfo(player, world, pos);
 
         IBlockState iBlockState = world.getBlockState(pos);
+        iBlockState = iBlockState.getBlock().getActualState(iBlockState, world, pos);
 
         /*lines.add("BlockState properties:");
         Iterator iter = iBlockState.getPropertyNames().iterator();

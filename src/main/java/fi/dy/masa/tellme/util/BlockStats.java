@@ -209,7 +209,7 @@ public class BlockStats
         int[] countsTE = new int[65536];
         IBlockState iBlockState;
         Block block;
-        int count = 0, nulls = 0, index = 0;
+        int count = 0, index = 0;
 
         // TODO profile this too:
         // 23:13:48 < diesieben07> there is BlockPos.getAllInBoxMutable
@@ -225,27 +225,22 @@ public class BlockStats
                     BlockPos pos = new BlockPos(x, y, z);
                     iBlockState = worldServer.getBlockState(pos);
                     block = iBlockState.getBlock();
-                    if (block != null)
-                    {
-                        index = Block.getIdFromBlock(block) << 4 | (block.getMetaFromState(iBlockState) & 0xF);
-                        count++;
-                        counts[index]++;
+                    iBlockState = block.getActualState(iBlockState, worldServer, pos);
 
-                        // Count the TileEntities for each block type
-                        if (worldServer.getTileEntity(pos) != null)
-                        {
-                            countsTE[index]++;
-                        }
-                    }
-                    else
+                    index = Block.getIdFromBlock(block) << 4 | (block.getMetaFromState(iBlockState) & 0xF);
+                    count++;
+                    counts[index]++;
+
+                    // Count the TileEntities for each block type
+                    if (worldServer.getTileEntity(pos) != null)
                     {
-                        nulls++;
+                        countsTE[index]++;
                     }
                 }
             }
         }
 
-        TellMe.logger.info("Counted " + count + " blocks; " + nulls + " blocks were null.");
+        TellMe.logger.info("Counted " + count + " blocks.");
 
         String name;
         String dname;
