@@ -70,7 +70,6 @@ public class SubCommandHelp extends SubCommand
         sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.help.subcommand") + " '/" + CommandTellme.instance.getCommandName() + " <sub_command> help'"));
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args)
     {

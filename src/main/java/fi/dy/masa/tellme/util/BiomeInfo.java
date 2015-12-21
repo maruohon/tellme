@@ -2,12 +2,12 @@ package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
 
+import fi.dy.masa.tellme.TellMe;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
-import fi.dy.masa.tellme.TellMe;
 
 public class BiomeInfo
 {
@@ -37,15 +37,15 @@ public class BiomeInfo
                     bgb.biomeName,
                     bgb.color,
                     bgb.color,
-                    bgb.waterColorMultiplier,
-                    bgb.waterColorMultiplier,
+                    bgb.getWaterColorMultiplier(),
+                    bgb.getWaterColorMultiplier(),
                     bgb.temperature,
                     bgb.rainfall,
-                    bgb.isSnowyBiome()));
+                    bgb.getEnableSnow()));
             }
             else
             {
-                lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %14f | %14f | %11s", i, 0, "<none>", 0, 0, 0, 0, 0.0f, 0.0f, ""));
+                lines.add(String.format("%6d | %7d | %-24s | %21s | %21s | %15s | %15s | %11s", i, 0, "<none>", " ", " ", " ", " ", " "));
             }
         }
 
@@ -57,14 +57,19 @@ public class BiomeInfo
     public static void printCurrentBiomeInfoToChat(EntityPlayer player)
     {
         World world = player.worldObj;
-        BiomeGenBase bgb = world.getBiomeGenForCoords(new BlockPos((int)player.posX, (int)player.posY, (int)player.posZ));
+        BlockPos pos = new BlockPos((int)player.posX, (int)player.posY, (int)player.posZ);
+        BiomeGenBase bgb = world.getBiomeGenForCoords(pos);
 
         player.addChatMessage(new ChatComponentText("Current biome info:"));
-        player.addChatMessage(new ChatComponentText(String.format("Name: %s - biomeID: %d", bgb.biomeName, bgb.biomeID)));
-        player.addChatMessage(new ChatComponentText(String.format("%s 0x%08X (%d)", "color:", bgb.color, bgb.color)));
-        player.addChatMessage(new ChatComponentText(String.format("%s 0x%08X (%d)", "waterColorMultiplier:", bgb.waterColorMultiplier, bgb.waterColorMultiplier)));
-        player.addChatMessage(new ChatComponentText(String.format("temperature: %f - rainfall: %f", bgb.temperature, bgb.rainfall)));
-        player.addChatMessage(new ChatComponentText(String.format("enableSnow: %s", bgb.isSnowyBiome())));
+        player.addChatMessage(new ChatComponentText(String.format("Name: %s - biome ID: %d", bgb.biomeName, bgb.biomeID)));
+        player.addChatMessage(new ChatComponentText(String.format("color: 0x%08X (%d)", bgb.color, bgb.color)));
+        player.addChatMessage(new ChatComponentText(String.format("waterColorMultiplier 0x%08X (%d)", bgb.getWaterColorMultiplier(), bgb.getWaterColorMultiplier())));
+        player.addChatMessage(new ChatComponentText(String.format("temperature: %f - rainfall: %f", bgb.getFloatTemperature(pos), bgb.rainfall)));
+        player.addChatMessage(new ChatComponentText(String.format("enableSnow: %s", bgb.getEnableSnow())));
+        player.addChatMessage(new ChatComponentText(String.format("Temperature Category: %s", bgb.getTempCategory())));
+        // These are client-side only:
+        //player.addChatMessage(new ChatComponentText(String.format("grass color 0x%08X (%d)", bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)), bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)))));
+        //player.addChatMessage(new ChatComponentText(String.format("foliage color 0x%08X (%d)", bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)), bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)))));
     }
 
     public static void printBiomeListToLogger()

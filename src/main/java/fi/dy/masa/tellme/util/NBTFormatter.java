@@ -1,8 +1,10 @@
 package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
+import java.util.IllegalFormatException;
 import java.util.Set;
 
+import fi.dy.masa.tellme.TellMe;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
@@ -50,8 +52,9 @@ public class NBTFormatter
             fmt = String.format("%%%ds", (depth * 4 + 3));
             pre2 = String.format(fmt, "");
         }
-        catch(Exception e)
+        catch(IllegalFormatException e)
         {
+            TellMe.logger.warn("Error while printing NBT data");
         }
 
         switch(nbt.getId())
@@ -142,7 +145,6 @@ public class NBTFormatter
                 lines.add(pre + "{");
 
                 NBTTagCompound tag = (NBTTagCompound)nbt;
-                @SuppressWarnings("unchecked")
                 Set<String> keys = tag.getKeySet();
 
                 for (String key : keys)

@@ -1,5 +1,9 @@
 package fi.dy.masa.tellme.event;
 
+import fi.dy.masa.tellme.util.BlockInfo;
+import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.ItemInfo;
+import fi.dy.masa.tellme.util.MOPHelper;
 import net.minecraft.init.Items;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MovingObjectPosition;
@@ -7,10 +11,6 @@ import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import fi.dy.masa.tellme.util.BlockInfo;
-import fi.dy.masa.tellme.util.EntityInfo;
-import fi.dy.masa.tellme.util.ItemInfo;
-import fi.dy.masa.tellme.util.MOPHelper;
 
 public class InteractEventHandler
 {
@@ -18,7 +18,7 @@ public class InteractEventHandler
     public void onPlayerInteract(PlayerInteractEvent event)
     {
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (event.world.isRemote == true || event.entityPlayer.canUseCommand(4, "getblockoritemnbtinfo") == false)
+        if (event.world.isRemote == true || event.entityPlayer.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }
@@ -116,7 +116,7 @@ public class InteractEventHandler
     public void onEntityInteract(EntityInteractEvent event)
     {
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (event.entityPlayer.worldObj.isRemote == true || event.entityPlayer.canUseCommand(4, "getblockoritemnbtinfo") == false)
+        if (event.entityPlayer.worldObj.isRemote == true || event.entityPlayer.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }

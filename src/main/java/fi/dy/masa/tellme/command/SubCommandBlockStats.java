@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import fi.dy.masa.tellme.util.BlockStats;
+import fi.dy.masa.tellme.util.DataDump;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -12,8 +14,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
-import fi.dy.masa.tellme.util.BlockStats;
-import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandBlockStats extends SubCommand
 {
@@ -34,7 +34,6 @@ public class SubCommandBlockStats extends SubCommand
         return "blockstats";
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<String> addTabCompletionOptions(ICommandSender icommandsender, String[] args)
     {

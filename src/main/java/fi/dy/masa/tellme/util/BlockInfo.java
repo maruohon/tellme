@@ -2,10 +2,13 @@ package fi.dy.masa.tellme.util;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Map.Entry;
 
+import com.google.common.collect.UnmodifiableIterator;
+
+import fi.dy.masa.tellme.TellMe;
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -14,7 +17,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
-import fi.dy.masa.tellme.TellMe;
 
 public class BlockInfo
 {
@@ -33,9 +35,8 @@ public class BlockInfo
 
         int id = Block.getIdFromBlock(block);
         int meta = block.getMetaFromState(iBlockState);
-        //ItemStack stack = new ItemStack(block, 1, block.damageDropped(iBlockState));
-        ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
-        //String name = GameRegistry.findUniqueIdentifierFor(block).toString();
+        ItemStack stack = new ItemStack(block, 1, block.damageDropped(iBlockState));
+        //ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
         String name = Block.blockRegistry.getNameForObject(block).toString();
         String dname;
 
@@ -59,8 +60,7 @@ public class BlockInfo
             teInfo = "no TE";
         }
 
-        String fmt = "%s (%s - %d:%d) %s";
-        lines.add(String.format(fmt, dname, name, id, meta, teInfo));
+        lines.add(String.format("%s (%s - %d:%d) %s", dname, name, id, meta, teInfo));
 
         return lines;
     }
@@ -80,10 +80,10 @@ public class BlockInfo
             lines.add(iter.next().toString());
         }*/
 
-        Iterator iter = iBlockState.getProperties().entrySet().iterator();
+        UnmodifiableIterator<Entry<IProperty, Comparable>> iter = iBlockState.getProperties().entrySet().iterator();
         while (iter.hasNext() == true)
         {
-            Map.Entry entry = (Map.Entry)iter.next();
+            Entry<IProperty, Comparable> entry = iter.next();
             lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
         }
 

@@ -8,19 +8,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import fi.dy.masa.tellme.TellMe;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry.UniqueIdentifier;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import fi.dy.masa.tellme.TellMe;
 
 
 public class Dump
@@ -42,14 +41,12 @@ public class Dump
 
         public Data(Block block)
         {
-            UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(block);
-            this.setValues(ui, Block.getIdFromBlock(block), Item.getItemFromBlock(block));
+            this(Block.blockRegistry.getNameForObject(block), Block.getIdFromBlock(block), Item.getItemFromBlock(block));
         }
 
         public Data(Item item)
         {
-            UniqueIdentifier ui = GameRegistry.findUniqueIdentifierFor(item);
-            this.setValues(ui, Item.getIdFromItem(item), item);
+            this(Item.itemRegistry.getNameForObject(item), Item.getIdFromItem(item), item);
         }
 
         public Data(String name, String dName, int id, String modId, String modName)
@@ -61,28 +58,28 @@ public class Dump
             this.id = id;
         }
 
-        public void setValues(UniqueIdentifier ui, int id, Item item)
+        public Data(ResourceLocation rl, int id, Item item)
         {
             this.displayName = "";
             this.id = id;
             this.hasSubtypes = item != null && item.getHasSubtypes();
 
-            if (ui == null)
+            if (rl == null)
             {
                 this.modId = "null";
                 this.modName = "null";
                 this.name = "" + item;
-                TellMe.logger.warn("UniqueIdentifier was null while identifying a block or item: " + item + " (id: " + id + ")");
+                TellMe.logger.warn("ResourceLocation was null while identifying a block or item: " + item + " (id: " + id + ")");
             }
             else
             {
-                this.modId = ui.modId;
-                this.name = ui.name;
+                this.modId = rl.getResourceDomain();
+                this.name = rl.getResourcePath();
 
                 Map<String, ModContainer> mods = Loader.instance().getIndexedModList();
-                if (mods != null && mods.get(ui.modId) != null)
+                if (mods != null && mods.get(this.modId) != null)
                 {
-                    this.modName = mods.get(ui.modId).getName();
+                    this.modName = mods.get(this.modId).getName();
                 }
                 else
                 {
@@ -105,6 +102,7 @@ public class Dump
             }
         }
 
+        @Override
         public int compareTo(Data other)
         {
             int result = this.modName.compareTo(other.modName);
@@ -247,7 +245,6 @@ public class Dump
                 this.longestName = len;
             }
 
-            @SuppressWarnings("unchecked")
             Class<? extends Entity> c = (Class<? extends Entity>)EntityList.stringToClassMapping.get(name);
             if (c != null)
             {

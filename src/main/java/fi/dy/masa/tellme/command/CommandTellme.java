@@ -46,7 +46,7 @@ public class CommandTellme extends CommandBase
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender icommandsender)
     {
-        return icommandsender.canUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
+        return icommandsender.canCommandSenderUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
     }
 
     @Override
@@ -55,9 +55,8 @@ public class CommandTellme extends CommandBase
         return 4;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public List addTabCompletionOptions(ICommandSender icommandsender, String[] strArr, BlockPos pos)
+    public List<String> addTabCompletionOptions(ICommandSender icommandsender, String[] strArr, BlockPos pos)
     {
         if (strArr.length == 1)
         {

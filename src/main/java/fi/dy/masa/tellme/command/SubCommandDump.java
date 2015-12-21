@@ -2,11 +2,11 @@ package fi.dy.masa.tellme.command;
 
 import java.io.File;
 
+import fi.dy.masa.tellme.util.DataDump;
+import fi.dy.masa.tellme.util.Dump;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
-import fi.dy.masa.tellme.util.DataDump;
-import fi.dy.masa.tellme.util.Dump;
 
 public class SubCommandDump extends SubCommand
 {
@@ -34,23 +34,29 @@ public class SubCommandDump extends SubCommand
             if (args[1].equals("blocks") || args[1].equals("items"))
             {
                 Dump d = Dump.instance;
-                File f;
+                File file;
                 if (args[1].equals("blocks"))
                 {
-                    f = DataDump.dumpDataToFile("block_dump", d.getItemOrBlockDump(d.getItemsOrBlocks(false), false));
+                    file = DataDump.dumpDataToFile("block_dump", d.getItemOrBlockDump(d.getItemsOrBlocks(false), false));
                 }
                 else
                 {
-                    f = DataDump.dumpDataToFile("item_dump", d.getItemOrBlockDump(d.getItemsOrBlocks(true), true));
+                    file = DataDump.dumpDataToFile("item_dump", d.getItemOrBlockDump(d.getItemsOrBlocks(true), true));
                 }
 
-                sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
+                if (file != null)
+                {
+                	sender.addChatMessage(new ChatComponentText("Output written to file " + file.getName()));
+                }
             }
             else if (args[1].equals("entities"))
             {
                 Dump d = Dump.instance;
-                File f = DataDump.dumpDataToFile("entity_dump", d.getEntityDump());
-                sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
+                File file = DataDump.dumpDataToFile("entity_dump", d.getEntityDump());
+                if (file != null)
+                {
+                	sender.addChatMessage(new ChatComponentText("Output written to file " + file.getName()));
+                }
             }
         }
     }
