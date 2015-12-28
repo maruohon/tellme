@@ -45,7 +45,7 @@ public class BiomeInfo
             }
             else
             {
-                lines.add(String.format("%6d | %7d | %-24s | %21s | %21s | %15s | %15s | %11s", i, 0, "<none>", " ", " ", " ", " ", " "));
+                lines.add(String.format("%6d | %7d | %-24s | %23s | %23s | %15s | %15s | %11s", i, 0, "<none>", " ", " ", " ", " ", " "));
             }
         }
 

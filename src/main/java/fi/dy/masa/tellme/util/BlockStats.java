@@ -368,6 +368,8 @@ public class BlockStats
                 this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.displayName, blockInfo.count, blockInfo.id, blockInfo.meta, blockInfo.countTE));
             }
         }
+
+        this.blockStatLines.add(separator.toString());
     }
 
     private boolean filterMatches(String filter, BlockInfo info)

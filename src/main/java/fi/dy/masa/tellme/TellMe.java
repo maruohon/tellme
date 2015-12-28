@@ -1,5 +1,9 @@
 package fi.dy.masa.tellme;
 
+import org.apache.logging.log4j.Logger;
+import fi.dy.masa.tellme.command.CommandTellme;
+import fi.dy.masa.tellme.event.InteractEventHandler;
+import fi.dy.masa.tellme.reference.Reference;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -8,12 +12,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-
-import org.apache.logging.log4j.Logger;
-
-import fi.dy.masa.tellme.command.CommandTellme;
-import fi.dy.masa.tellme.event.InteractEventHandler;
-import fi.dy.masa.tellme.reference.Reference;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION, acceptableRemoteVersions="*")
 public class TellMe
