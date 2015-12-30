@@ -66,6 +66,7 @@ public class BiomeInfo
         player.addChatMessage(new ChatComponentText(String.format("temperature: %f - rainfall: %f", bgb.getFloatTemperature(pos), bgb.rainfall)));
         player.addChatMessage(new ChatComponentText(String.format("enableSnow: %s", bgb.getEnableSnow())));
         player.addChatMessage(new ChatComponentText(String.format("Temperature Category: %s", bgb.getTempCategory())));
+        player.addChatMessage(new ChatComponentText("---------------------------------------------"));
         // These are client-side only:
         //player.addChatMessage(new ChatComponentText(String.format("grass color 0x%08X (%d)", bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)), bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)))));
         //player.addChatMessage(new ChatComponentText(String.format("foliage color 0x%08X (%d)", bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)), bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)))));
