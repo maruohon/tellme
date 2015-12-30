@@ -1,11 +1,11 @@
 package fi.dy.masa.tellme.util;
 
 import java.util.Map;
-import fi.dy.masa.tellme.TellMe;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import fi.dy.masa.tellme.TellMe;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 

@@ -2,10 +2,10 @@
 {
   "modid": "tellme",
   "name": "Tell Me",
-  "description": "Provides some information about various things",
+  "description": "Can provide information about blocks, items, entities, biomes etc.",
   "version": "${mod_version}",
   "mcversion": "${minecraft_version}",
-  "url": "",
+  "url": "http://minecraft.curseforge.com/projects/tellme",
   "updateUrl": "",
   "authorList": ["masa"],
   "credits": "",

@@ -1,13 +1,12 @@
 package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
-
-import fi.dy.masa.tellme.TellMe;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import fi.dy.masa.tellme.TellMe;
 
 public class BiomeInfo
 {
@@ -57,7 +56,7 @@ public class BiomeInfo
     public static void printCurrentBiomeInfoToChat(EntityPlayer player)
     {
         World world = player.worldObj;
-        BlockPos pos = new BlockPos((int)player.posX, (int)player.posY, (int)player.posZ);
+        BlockPos pos = new BlockPos(player.posX, player.posY, player.posZ);
         BiomeGenBase bgb = world.getBiomeGenForCoords(pos);
 
         player.addChatMessage(new ChatComponentText("Current biome info:"));
