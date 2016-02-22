@@ -24,11 +24,14 @@ public class MOPHelper
         float f6 = f3 * f4;
         float f7 = f2 * f4;
         double d3 = 5.0D;
-        if (playerIn instanceof net.minecraft.entity.player.EntityPlayerMP)
+
+        if (playerIn instanceof EntityPlayerMP)
         {
             d3 = ((EntityPlayerMP)playerIn).theItemInWorldManager.getBlockReachDistance();
         }
+
         Vec3 vec31 = vec3.addVector((double)f6 * d3, (double)f5 * d3, (double)f7 * d3);
+
         return worldIn.rayTraceBlocks(vec3, vec31, useLiquids, !useLiquids, false);
     }
 }

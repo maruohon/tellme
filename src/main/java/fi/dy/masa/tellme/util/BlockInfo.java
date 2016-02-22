@@ -2,11 +2,12 @@ package fi.dy.masa.tellme.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
 
-import fi.dy.masa.tellme.TellMe;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
@@ -18,11 +19,16 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
+
+import fi.dy.masa.tellme.TellMe;
+
 public class BlockInfo
 {
-    public static ArrayList<String> getBasicBlockInfo(EntityPlayer player, World world, BlockPos pos)
+    public static List<String> getBasicBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
-        ArrayList<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<String>();
 
         if (world == null)
         {
@@ -66,25 +72,43 @@ public class BlockInfo
     }
 
     @SuppressWarnings("rawtypes")
-    public static ArrayList<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
+    public static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
-        ArrayList<String> lines = getBasicBlockInfo(player, world, pos);
+        List<String> lines = getBasicBlockInfo(player, world, pos);
 
         IBlockState iBlockState = world.getBlockState(pos);
-        iBlockState = iBlockState.getBlock().getActualState(iBlockState, world, pos);
-
-        /*lines.add("BlockState properties:");
-        Iterator iter = iBlockState.getPropertyNames().iterator();
-        while (iter.hasNext() == true)
+        try
         {
-            lines.add(iter.next().toString());
-        }*/
+            iBlockState = iBlockState.getBlock().getActualState(iBlockState, world, pos);
+            iBlockState = iBlockState.getBlock().getExtendedState(iBlockState, world, pos);
+        }
+        catch (Exception e)
+        {
+            TellMe.logger.error("getFullBlockInfo(): Exception while calling getActualState() or getExtendedState() on the block");
+        }
+
+        lines.add("IBlockState properties, including getActualState():");
 
         UnmodifiableIterator<Entry<IProperty, Comparable>> iter = iBlockState.getProperties().entrySet().iterator();
+
         while (iter.hasNext() == true)
         {
             Entry<IProperty, Comparable> entry = iter.next();
             lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
+        }
+
+        if (iBlockState instanceof IExtendedBlockState)
+        {
+            lines.add("IExtendedBlockState properties:");
+
+            IExtendedBlockState extendedState = (IExtendedBlockState)iBlockState;
+            UnmodifiableIterator<Entry<IUnlistedProperty<?>, Optional<?>>> iterExt = extendedState.getUnlistedProperties().entrySet().iterator();
+
+            while (iterExt.hasNext() == true)
+            {
+                Entry<IUnlistedProperty<?>, Optional<?>> entry = iterExt.next();
+                lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
+            }
         }
 
         TileEntity te = world.getTileEntity(pos);
@@ -93,7 +117,7 @@ public class BlockInfo
             NBTTagCompound nbt = new NBTTagCompound();
             te.writeToNBT(nbt);
             lines.add("");
-            NBTFormatter.NBTFormatterPretty(lines, nbt);
+            NBTFormatter.getPrettyFormattedNBT(lines, nbt);
         }
 
         return lines;
@@ -109,7 +133,7 @@ public class BlockInfo
 
     public static void printBlockInfoToConsole(EntityPlayer player, World world, BlockPos pos)
     {
-        ArrayList<String> lines = getFullBlockInfo(player, world, pos);
+        List<String> lines = getFullBlockInfo(player, world, pos);
 
         for (String line : lines)
         {

@@ -1,16 +1,19 @@
 package fi.dy.masa.tellme.event;
 
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+
+import net.minecraftforge.event.entity.player.EntityInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
 import fi.dy.masa.tellme.util.MOPHelper;
-import net.minecraft.init.Items;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
-import net.minecraftforge.event.entity.player.EntityInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class InteractEventHandler
 {
@@ -91,20 +94,21 @@ public class InteractEventHandler
                     return;
                 }
 
-                if (event.entityPlayer.inventory.getStackInSlot(slot) == null)
+                ItemStack stack = event.entityPlayer.inventory.getStackInSlot(slot);
+                if (stack == null || stack.getItem() == null)
                 {
                     return;
                 }
 
-                ItemInfo.printBasicItemInfoToChat(event.entityPlayer, slot);
+                ItemInfo.printBasicItemInfoToChat(event.entityPlayer, stack);
 
                 if (event.entityPlayer.isSneaking() == true)
                 {
-                    ItemInfo.dumpItemInfoToFile(event.entityPlayer, slot);
+                    ItemInfo.dumpItemInfoToFile(event.entityPlayer, stack);
                 }
                 else
                 {
-                    ItemInfo.printItemInfoToConsole(event.entityPlayer, slot);
+                    ItemInfo.printItemInfoToConsole(stack);
                 }
 
                 event.setCanceled(true);
@@ -128,11 +132,11 @@ public class InteractEventHandler
 
             if (event.entityPlayer.isSneaking() == true)
             {
-                EntityInfo.dumpEntityInfoToFile(event.entityPlayer, event.target);
+                EntityInfo.dumpFullEntityInfoToFile(event.entityPlayer, event.target);
             }
             else
             {
-                EntityInfo.printEntityInfoToConsole(event.entityPlayer, event.target);
+                EntityInfo.printFullEntityInfoToConsole(event.entityPlayer, event.target);
             }
 
             event.setCanceled(true);

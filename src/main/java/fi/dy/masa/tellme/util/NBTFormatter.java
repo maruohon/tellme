@@ -1,30 +1,21 @@
 package fi.dy.masa.tellme.util;
 
-import java.util.ArrayList;
 import java.util.IllegalFormatException;
+import java.util.List;
 import java.util.Set;
 
-import fi.dy.masa.tellme.TellMe;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagByte;
-import net.minecraft.nbt.NBTTagByteArray;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagDouble;
-import net.minecraft.nbt.NBTTagFloat;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraft.nbt.NBTTagIntArray;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagLong;
-import net.minecraft.nbt.NBTTagShort;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.*;
+
 import net.minecraftforge.common.util.Constants;
+
+import fi.dy.masa.tellme.TellMe;
 
 public class NBTFormatter
 {
     public static final String[] TAG_NAMES = new String[] {"TAG_End", "TAG_Byte", "TAG_Short",
         "TAG_Int", "TAG_Long", "TAG_Float", "TAG_Double", "TAG_Byte_Array", "TAG_String", "TAG_List", "TAG_Compound", "TAG_Int_Array"};
 
-    public static String getTagName(int id)
+    private static String getTagName(int id)
     {
         if (id >= 0 && id < TAG_NAMES.length)
         {
@@ -34,12 +25,12 @@ public class NBTFormatter
         return "";
     }
 
-    public static String getTagDescription(int id, String name)
+    private static String getTagDescription(int id, String name)
     {
         return getTagName(id) + String.format(" (%d) ('%s')", id, name);
     }
 
-    public static void addFormattedLinePretty(ArrayList<String> lines, NBTBase nbt, String name, int depth)
+    private static void getPrettyFormattedLine(List<String> lines, NBTBase nbt, String name, int depth)
     {
         int len = 0;
         String line;
@@ -132,10 +123,8 @@ public class NBTFormatter
 
                 for (int i = 0; i < tagCount; ++i)
                 {
-                    addFormattedLinePretty(lines, tagList.get(i), "", depth + 1);
+                    getPrettyFormattedLine(lines, tagList.get(i), "", depth + 1);
                 }
-                //NBTFormatterPretty(lines, nbt, name, depth + 1);
-                //lines.add(pre + "TODO");
 
                 lines.add(pre + "}");
                 break;
@@ -149,7 +138,7 @@ public class NBTFormatter
 
                 for (String key : keys)
                 {
-                    addFormattedLinePretty(lines, tag.getTag(key), key, depth + 1);
+                    getPrettyFormattedLine(lines, tag.getTag(key), key, depth + 1);
                 }
 
                 lines.add(pre + "}");
@@ -190,13 +179,11 @@ public class NBTFormatter
         }
     }
 
-    public static void NBTFormatterPretty(ArrayList<String> lines, NBTTagCompound nbt)
+    public static void getPrettyFormattedNBT(List<String> lines, NBTTagCompound nbt)
     {
-        if (nbt == null)
+        if (nbt != null)
         {
-            return;
+            getPrettyFormattedLine(lines, nbt, "", 0);
         }
-
-        addFormattedLinePretty(lines, nbt, "", 0);
     }
 }

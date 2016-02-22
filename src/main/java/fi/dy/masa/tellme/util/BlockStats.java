@@ -15,12 +15,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.WorldServer;
+
 import fi.dy.masa.tellme.TellMe;
 
 public class BlockStats
 {
     private HashMap<String, BlockInfo> blockStats;
-    private ArrayList<String> blockStatLines;
+    private List<String> blockStatLines;
     private int longestName = 0;
     private int longestDisplayName = 0;
 
@@ -444,7 +445,7 @@ public class BlockStats
         }
     }
 
-    public ArrayList<String> getBlockStatsLines()
+    public List<String> getBlockStatsLines()
     {
         return this.blockStatLines;
     }

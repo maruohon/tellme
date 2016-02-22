@@ -9,7 +9,7 @@ import fi.dy.masa.tellme.TellMe;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 
-public class ItemData implements Comparable<ItemData>
+public class GameObjectData implements Comparable<GameObjectData>
 {
     public String modId;
     public String modName;
@@ -18,17 +18,17 @@ public class ItemData implements Comparable<ItemData>
     public int id;
     public boolean hasSubtypes;
 
-    public ItemData(Block block)
+    public GameObjectData(Block block)
     {
         this(Block.blockRegistry.getNameForObject(block), Block.getIdFromBlock(block), Item.getItemFromBlock(block));
     }
 
-    public ItemData(Item item)
+    public GameObjectData(Item item)
     {
         this(Item.itemRegistry.getNameForObject(item), Item.getIdFromItem(item), item);
     }
 
-    public ItemData(String name, String dName, int id, String modId, String modName)
+    public GameObjectData(String name, String dName, int id, String modId, String modName)
     {
         this.modId = modId;
         this.modName = modName;
@@ -37,7 +37,7 @@ public class ItemData implements Comparable<ItemData>
         this.id = id;
     }
 
-    public ItemData(ResourceLocation rl, int id, Item item)
+    public GameObjectData(ResourceLocation rl, int id, Item item)
     {
         this.displayName = "";
         this.id = id;
@@ -78,7 +78,7 @@ public class ItemData implements Comparable<ItemData>
     }
 
     @Override
-    public int compareTo(ItemData other)
+    public int compareTo(GameObjectData other)
     {
         int result = this.modId.compareTo(other.modId);
         if (result != 0)

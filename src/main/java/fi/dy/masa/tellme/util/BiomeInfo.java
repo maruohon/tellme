@@ -1,26 +1,31 @@
 package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+
 import fi.dy.masa.tellme.TellMe;
 
 public class BiomeInfo
 {
-    public static ArrayList<String> getBiomeList()
+    public static List<String> getBiomeList()
     {
-        ArrayList<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<String>();
         BiomeGenBase bgb;
 
         StringBuilder separator = new StringBuilder(256);
-        for (int i = 0; i < 143; ++i) { separator.append("-"); }
+        String header = String.format("%6s | %-7s | %-24s | %-23s | %-23s | %11s | %10s | %8s | %10s ",
+                "index", "biomeID", "biomeName", "color", "waterColorMultiplier", "temperature", "temp. cat.", "rainfall", "enableSnow");
+        for (int i = 0; i < 147; ++i) { separator.append("-"); }
         lines.add("Biome list:");
         lines.add(separator.toString());
-        lines.add(String.format("%6s | %-7s | %-24s | %-23s | %-23s | %14s | %14s | %11s",
-                "index", "biomeID", "biomeName", "color", "waterColorMultiplier", "temperature", "rainfall", "enableSnow"));
+        lines.add(header);
         lines.add(separator.toString());
 
         int biomeArrLen = BiomeGenBase.getBiomeGenArray().length;
@@ -30,7 +35,7 @@ public class BiomeInfo
 
             if (bgb != null)
             {
-                lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %14f | %14f | %11s",
+                lines.add(String.format("%6d | %7d | %-24s | 0x%08X (%10d) | 0x%08X (%10d) | %11f | %10s | %8f | %10s ",
                     i,
                     bgb.biomeID,
                     bgb.biomeName,
@@ -39,15 +44,18 @@ public class BiomeInfo
                     bgb.getWaterColorMultiplier(),
                     bgb.getWaterColorMultiplier(),
                     bgb.temperature,
+                    bgb.getTempCategory(),
                     bgb.rainfall,
                     bgb.getEnableSnow()));
             }
             else
             {
-                lines.add(String.format("%6d | %7d | %-24s | %23s | %23s | %15s | %15s | %11s", i, 0, "<none>", " ", " ", " ", " ", " "));
+                lines.add(String.format("%6d | %7d | %-24s | %23s | %23s | %11s | %10s | %8s | %10s ", i, 0, "<none>", " ", " ", " ", " ", " ", " "));
             }
         }
 
+        lines.add(separator.toString());
+        lines.add(header);
         lines.add(separator.toString());
 
         return lines;
@@ -56,25 +64,32 @@ public class BiomeInfo
     public static void printCurrentBiomeInfoToChat(EntityPlayer player)
     {
         World world = player.worldObj;
-        BlockPos pos = new BlockPos(player.posX, player.posY, player.posZ);
+        BlockPos pos = player.getPosition();
         BiomeGenBase bgb = world.getBiomeGenForCoords(pos);
 
-        player.addChatMessage(new ChatComponentText("Current biome info:"));
-        player.addChatMessage(new ChatComponentText(String.format("Name: %s - biome ID: %d", bgb.biomeName, bgb.biomeID)));
-        player.addChatMessage(new ChatComponentText(String.format("color: 0x%08X (%d)", bgb.color, bgb.color)));
-        player.addChatMessage(new ChatComponentText(String.format("waterColorMultiplier 0x%08X (%d)", bgb.getWaterColorMultiplier(), bgb.getWaterColorMultiplier())));
-        player.addChatMessage(new ChatComponentText(String.format("temperature: %f - rainfall: %f", bgb.getFloatTemperature(pos), bgb.rainfall)));
-        player.addChatMessage(new ChatComponentText(String.format("enableSnow: %s", bgb.getEnableSnow())));
-        player.addChatMessage(new ChatComponentText(String.format("Temperature Category: %s", bgb.getTempCategory())));
-        player.addChatMessage(new ChatComponentText("---------------------------------------------"));
-        // These are client-side only:
-        //player.addChatMessage(new ChatComponentText(String.format("grass color 0x%08X (%d)", bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)), bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)))));
-        //player.addChatMessage(new ChatComponentText(String.format("foliage color 0x%08X (%d)", bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)), bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)))));
+        String pre = EnumChatFormatting.YELLOW.toString();
+        String aq = EnumChatFormatting.AQUA.toString();
+        String rst = EnumChatFormatting.RESET.toString() + EnumChatFormatting.WHITE.toString();
+
+        player.addChatMessage(new ChatComponentText("------------- Current biome info ------------"));
+        player.addChatMessage(new ChatComponentText(String.format("%sBiome Name%s: %s - %sBiome ID%s: %d",
+                pre, rst, bgb.biomeName, pre, rst, bgb.biomeID)));
+        player.addChatMessage(new ChatComponentText(String.format("%scanRain%s: %s, %srainfall%s: %f - %senableSnow%s: %s",
+                pre, rst, bgb.canRain(), pre, rst, bgb.rainfall, pre, rst, bgb.getEnableSnow())));
+        player.addChatMessage(new ChatComponentText(String.format("%scolor%s: 0x%08X (%d)",
+                pre, rst, bgb.color, bgb.color)));
+        player.addChatMessage(new ChatComponentText(String.format("%swaterColorMultiplier%s: 0x%08X (%d)",
+                pre, rst, bgb.getWaterColorMultiplier(), bgb.getWaterColorMultiplier())));
+        player.addChatMessage(new ChatComponentText(String.format("%stemperature%s: %f, %stemp. category%s: %s%s%s",
+                pre, rst, bgb.getFloatTemperature(pos), pre, rst, aq, bgb.getTempCategory(), rst)));
+
+        // Get the grass and foliage colors, if called on the client side
+        TellMe.proxy.getCurrentBiomeInfoClientSide(player, bgb);
     }
 
     public static void printBiomeListToLogger()
     {
-        ArrayList<String> lines = getBiomeList();
+        List<String> lines = getBiomeList();
 
         for (int i = 0; i < lines.size(); ++i)
         {

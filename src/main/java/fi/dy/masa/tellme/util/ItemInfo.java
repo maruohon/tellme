@@ -2,26 +2,20 @@ package fi.dy.masa.tellme.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
+
 import fi.dy.masa.tellme.TellMe;
 
 public class ItemInfo
 {
-    public static ArrayList<String> getBasicItemInfo(EntityPlayer player, int slot)
+    private static List<String> getBasicItemInfo(ItemStack stack)
     {
-        ArrayList<String> lines = new ArrayList<String>();
-
-        ItemStack stack = player.inventory.getStackInSlot(slot);
-
-        if (stack == null || stack.getItem() == null)
-        {
-            return lines;
-        }
-
+        List<String> lines = new ArrayList<String>();
         String name = Item.itemRegistry.getNameForObject(stack.getItem()).toString();
         String dname = stack.getDisplayName();
         String nbtInfo;
@@ -41,34 +35,31 @@ public class ItemInfo
         return lines;
     }
 
-    public static ArrayList<String> getFullItemInfo(EntityPlayer player, int slot)
+    private static List<String> getFullItemInfo(ItemStack stack)
     {
-        ArrayList<String> lines = getBasicItemInfo(player, slot);
-
-        ItemStack stack = player.inventory.getStackInSlot(slot);
-
-        if (stack == null || stack.getItem() == null || stack.hasTagCompound() == false)
+        List<String> lines = getBasicItemInfo(stack);
+        if (stack.hasTagCompound() == false)
         {
             return lines;
         }
 
         lines.add("");
-        NBTFormatter.NBTFormatterPretty(lines, stack.getTagCompound());
+        NBTFormatter.getPrettyFormattedNBT(lines, stack.getTagCompound());
 
         return lines;
     }
 
-    public static void printBasicItemInfoToChat(EntityPlayer player, int slot)
+    public static void printBasicItemInfoToChat(EntityPlayer player, ItemStack stack)
     {
-        for (String line : getBasicItemInfo(player, slot))
+        for (String line : getBasicItemInfo(stack))
         {
             player.addChatMessage(new ChatComponentText(line));
         }
     }
 
-    public static void printItemInfoToConsole(EntityPlayer player, int slot)
+    public static void printItemInfoToConsole(ItemStack stack)
     {
-        ArrayList<String> lines = getFullItemInfo(player, slot);
+        List<String> lines = getFullItemInfo(stack);
 
         for (String line : lines)
         {
@@ -76,9 +67,9 @@ public class ItemInfo
         }
     }
 
-    public static void dumpItemInfoToFile(EntityPlayer player, int slot)
+    public static void dumpItemInfoToFile(EntityPlayer player, ItemStack stack)
     {
-        File f = DataDump.dumpDataToFile("item_data", getFullItemInfo(player, slot));
+        File f = DataDump.dumpDataToFile("item_data", getFullItemInfo(stack));
         player.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
     }
 }

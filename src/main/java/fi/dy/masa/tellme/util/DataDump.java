@@ -10,15 +10,19 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.commons.io.FileUtils;
-import fi.dy.masa.tellme.TellMe;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
+
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
+
+import fi.dy.masa.tellme.TellMe;
 
 public class DataDump
 {
@@ -45,9 +49,9 @@ public class DataDump
         this.longestDisplayName = dispNameLen;
     }
 
-    public void updateColumnWidths(List<ItemData> list)
+    public void updateColumnWidths(List<GameObjectData> list)
     {
-        for (ItemData data : list)
+        for (GameObjectData data : list)
         {
             int len = data.modId.length();
             if (len > this.longestModId)
@@ -78,12 +82,12 @@ public class DataDump
     public List<String> getFormattedBlockDump()
     {
         Iterator<Block> iter = Block.blockRegistry.iterator();
-        ArrayList<ItemData> list = new ArrayList<ItemData>();
+        List<GameObjectData> list = new ArrayList<GameObjectData>();
 
-        ItemData data;
+        GameObjectData data;
         while (iter.hasNext() == true)
         {
-            data = new ItemData(iter.next());
+            data = new GameObjectData(iter.next());
             list.add(data);
         }
 
@@ -93,25 +97,25 @@ public class DataDump
     public List<String> getFormattedItemDump()
     {
         Iterator<Item> iter = Item.itemRegistry.iterator();
-        ArrayList<ItemData> list = new ArrayList<ItemData>();
+        List<GameObjectData> list = new ArrayList<GameObjectData>();
 
-        ItemData data;
+        GameObjectData data;
         while (iter.hasNext() == true)
         {
-            data = new ItemData(iter.next());
+            data = new GameObjectData(iter.next());
             list.add(data);
         }
 
         return this.getFormattedDump(list);
     }
 
-    public List<String> getFormattedDump(List<ItemData> list)
+    public List<String> getFormattedDump(List<GameObjectData> list)
     {
         this.resetColumnWidths();
         this.updateColumnWidths(list);
 
         Collections.sort(list);
-        ArrayList<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<String>();
         String fmt = String.format("%%-%ds %%-%ds %%-%ds %%8d %%14s   %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
         String fmtTitle = String.format("%%-%ds %%-%ds %%-%ds %%8s %%16s %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
 
@@ -134,7 +138,7 @@ public class DataDump
 
         lines.add(separator.toString());
 
-        for (ItemData data : list)
+        for (GameObjectData data : list)
         {
             if (data.hasSubtypes == true)
             {
@@ -151,8 +155,8 @@ public class DataDump
 
     public List<String> getEntityDump()
     {
-        ArrayList<ItemData> entityData = new ArrayList<ItemData>();
-        ArrayList<String> lines = new ArrayList<String>();
+        List<GameObjectData> entityData = new ArrayList<GameObjectData>();
+        List<String> lines = new ArrayList<String>();
         this.longestModId = 0;
         this.longestModName = 0;
         this.longestName = 0;
@@ -168,7 +172,7 @@ public class DataDump
                 EntityRegistration er = EntityRegistry.instance().lookupModSpawn(c, true);
                 if (er != null)
                 {
-                    entityData.add(new ItemData(name, c.getSimpleName(), er.getModEntityId(), er.getContainer().getModId(), er.getContainer().getName()));
+                    entityData.add(new GameObjectData(name, c.getSimpleName(), er.getModEntityId(), er.getContainer().getModId(), er.getContainer().getName()));
                 }
                 else
                 {
@@ -176,12 +180,12 @@ public class DataDump
                     {
                         @SuppressWarnings("unchecked")
                         int id = ((Integer)((HashMap<String, Integer>)idField.get(null)).get(name)).intValue();
-                        entityData.add(new ItemData(name, c.getSimpleName(), id, "minecraft", "Minecraft"));
+                        entityData.add(new GameObjectData(name, c.getSimpleName(), id, "minecraft", "Minecraft"));
                     }
                     catch (IllegalAccessException e)
                     {
-                        entityData.add(new ItemData(name, c.getSimpleName(), -1, "minecraft", "Minecraft"));
-                        TellMe.logger.error("Error while trying to read Entity IDs");
+                        entityData.add(new GameObjectData(name, c.getSimpleName(), -1, "minecraft", "Minecraft"));
+                        TellMe.logger.error("getEntityDump(): Error while trying to read Entity IDs");
                         //e.printStackTrace();
                     }
                 }
@@ -200,7 +204,7 @@ public class DataDump
         lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Entity Identifier", "Entity class name", "Entity ID"));
         lines.add(separator.toString());
 
-        for (ItemData d : entityData)
+        for (GameObjectData d : entityData)
         {
             lines.add(String.format(fmt + " %9d", d.modName, d.modId, d.name, d.displayName, d.id));
         }
@@ -221,7 +225,7 @@ public class DataDump
             }
             catch (Exception e)
             {
-                TellMe.logger.error("Failed to create the configuration directory.");
+                TellMe.logger.error("dumpDataToFile(): Failed to create the configuration directory.");
                 e.printStackTrace();
                 return null;
             }
@@ -246,7 +250,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            TellMe.logger.error("Failed to create data dump file '" + fileName + "'");
+            TellMe.logger.error("dumpDataToFile(): Failed to create data dump file '" + fileName + "'");
             e.printStackTrace();
             return null;
         }
@@ -260,7 +264,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            TellMe.logger.error("Exception while writing data dump to file '" + fileName + "'");
+            TellMe.logger.error("dumpDataToFile(): Exception while writing data dump to file '" + fileName + "'");
             e.printStackTrace();
         }
 
