@@ -4,16 +4,17 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import fi.dy.masa.tellme.util.BlockStats;
-import fi.dy.masa.tellme.util.DataDump;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.translation.I18n;
+
+import fi.dy.masa.tellme.util.BlockStats;
+import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandBlockStats extends SubCommand
 {
@@ -35,44 +36,40 @@ public class SubCommandBlockStats extends SubCommand
     }
 
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender icommandsender, String[] args)
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args)
     {
         if (args.length == 3 && args[1].equals("count"))
         {
-            MinecraftServer srv = MinecraftServer.getServer();
-            if (srv != null)
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
-            }
+            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(server.getAllUsernames()));
         }
 
-        return super.addTabCompletionOptions(icommandsender, args);
+        return super.getTabCompletionOptions(server, sender, args);
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         // "/tellme bockstats"
         if (args.length < 2)
         {
             String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
 
-            sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
-            sender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
-            sender.addChatMessage(new ChatComponentText(pre + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
-            sender.addChatMessage(new ChatComponentText(pre + " query"));
-            sender.addChatMessage(new ChatComponentText(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
-            sender.addChatMessage(new ChatComponentText(pre + " dump"));
-            sender.addChatMessage(new ChatComponentText(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+            sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
+            sender.addChatMessage(new TextComponentString(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
+            sender.addChatMessage(new TextComponentString(pre + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
+            sender.addChatMessage(new TextComponentString(pre + " query"));
+            sender.addChatMessage(new TextComponentString(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+            sender.addChatMessage(new TextComponentString(pre + " dump"));
+            sender.addChatMessage(new TextComponentString(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
 
             return;
         }
 
-        super.processCommand(sender, args);
+        super.execute(server, sender, args);
 
         if (sender instanceof EntityPlayer == false)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.notplayer"));
+            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.notplayer"));
         }
 
         // Possible command formats are:
@@ -87,34 +84,30 @@ public class SubCommandBlockStats extends SubCommand
             // player, range
             if (args.length == 6)
             {
-                MinecraftServer srv = MinecraftServer.getServer();
-                if (srv != null)
+                // Get the player entity matching the name given as parameter
+                EntityPlayer player = server.getPlayerList().getPlayerByUsername(args[2]);
+                if (player != null)
                 {
-                    // Get the player entity matching the name given as parameter
-                    EntityPlayer player = srv.getConfigurationManager().getPlayerByUsername(args[2]);
-                    if (player != null)
-                    {
-                        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
-                        this.blockStats.calculateBlockStats(player, Arrays.asList(args).subList(3, args.length));
-                        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
-                    }
-                    else
-                    {
-                        throw new WrongUsageException(StatCollector.translateToLocal("info.command.player.notfound") + ": '" + args[2] + "'");
-                    }
+                    sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
+                    this.blockStats.calculateBlockStats(player, Arrays.asList(args).subList(3, args.length));
+                    sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
+                }
+                else
+                {
+                    throw new WrongUsageException(I18n.translateToLocal("info.command.player.notfound") + ": '" + args[2] + "'");
                 }
             }
             // cuboid corners
             else if (args.length == 9)
             {
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
+                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
                 this.blockStats.calculateBlockStats(Arrays.asList(args).subList(2, args.length));
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
+                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
             }
             else
             {
-                throw new WrongUsageException(StatCollector.translateToLocal("info.command.invalid.argument.number")
-                    + " " + StatCollector.translateToLocal("info.command.usage") + ": /"
+                throw new WrongUsageException(I18n.translateToLocal("info.command.invalid.argument.number")
+                    + " " + I18n.translateToLocal("info.command.usage") + ": /"
                     + CommandTellme.instance.getCommandName() + " " + this.getCommandName() + " count <playername> <x-distance> <y-distance> <z-distance>"
                     + " or /" + CommandTellme.instance.getCommandName() + " " + this.getCommandName()
                     + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
@@ -136,12 +129,12 @@ public class SubCommandBlockStats extends SubCommand
             if (args[1].equals("query"))
             {
                 this.blockStats.printBlockStatsToLogger();
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
+                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
             }
             else // dump
             {
                 File f = DataDump.dumpDataToFile("block_stats", this.blockStats.getBlockStatsLines());
-                sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
+                sender.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
             }
         }
     }

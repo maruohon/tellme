@@ -1,10 +1,10 @@
 package fi.dy.masa.tellme.event;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
-import fi.dy.masa.tellme.util.MOPHelper;
+import fi.dy.masa.tellme.util.RayTraceUtils;
 
 public class InteractEventHandler
 {
@@ -26,13 +26,15 @@ public class InteractEventHandler
             return;
         }
 
-        if (event.entityPlayer != null && event.entityPlayer.getCurrentEquippedItem() != null)
+        if (event.entityPlayer != null && event.entityPlayer.getHeldItemMainhand() != null)
         {
             // Show info for the block the player right clicks on with a gold nugget
-            if (event.entityPlayer.getCurrentEquippedItem().getItem() == Items.gold_nugget)
+            if (event.entityPlayer.getHeldItemMainhand().getItem() == Items.gold_nugget)
             {
-                if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK
-                    && event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR)
+                // FIXME update to new interact stuff when it is ready for 1.9
+                //if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK &&
+                //    event.action != PlayerInteractEvent.Action.RIGHT_CLICK_AIR)
+                if (event.action != PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)
                 {
                     return;
                 }
@@ -40,9 +42,9 @@ public class InteractEventHandler
                 BlockPos pos = event.pos;
 
                 // Ray tracing to be able to target fluid blocks, although currently it doesn't work for non-source blocks
-                MovingObjectPosition mop = MOPHelper.getMovingObjectPositionFromPlayer(event.world, event.entityPlayer, true);
+                RayTraceResult mop = RayTraceUtils.rayTraceFromPlayer(event.world, event.entityPlayer, true);
 
-                if (mop == null || mop.typeOfHit != MovingObjectType.BLOCK)
+                if (mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK)
                 {
                     return;
                 }
@@ -51,12 +53,15 @@ public class InteractEventHandler
                 {
                     pos = mop.getBlockPos();
 
-                    boolean isFluid = event.world.getBlockState(pos).getBlock().getMaterial().isLiquid();
+                    IBlockState iBlockState = event.world.getBlockState(pos);
+                    boolean isFluid = iBlockState.getBlock().getMaterial(iBlockState).isLiquid();
 
                     // If we ray traced to a fluid block, but the interact event is for a block (behind the fluid), then stop here
                     // Also, if the target block is not a fluid, then we don't want to do anything on the RIGHT_CLICK_AIR case, that would dupe the output
-                    if ((isFluid == true && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK)
-                        || (isFluid == false && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR))
+                    // FIXME update to new interact stuff when it is ready for 1.9
+                    //if ((isFluid == true && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) ||
+                    //    (isFluid == false && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR))
+                    if (isFluid == true && event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)
                     {
                         event.setCanceled(true);
                         return;
@@ -77,7 +82,9 @@ public class InteractEventHandler
                 event.setCanceled(true);
             }
             // Show info for the item to the right from the current slot when the player right clicks on air with a gold nugget
-            else if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR && event.entityPlayer.getCurrentEquippedItem().getItem() == Items.blaze_rod)
+            // FIXME update to new interact stuff when it is ready for 1.9
+            //else if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR && event.entityPlayer.getHeldItemMainhand().getItem() == Items.blaze_rod)
+            else if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK && event.entityPlayer.getHeldItemMainhand().getItem() == Items.blaze_rod)
             {
                 // Select the slot to the right from the current slot, or the first slot if the current slot is the last slot
                 int slot = event.entityPlayer.inventory.currentItem;
@@ -125,18 +132,18 @@ public class InteractEventHandler
             return;
         }
 
-        if (event.entityPlayer != null && event.entityPlayer.getCurrentEquippedItem() != null
-            && event.target != null && event.entityPlayer.getCurrentEquippedItem().getItem() == Items.gold_nugget)
+        if (event.entityPlayer != null && event.entityPlayer.getHeldItemMainhand() != null
+            && event.getTarget() != null && event.entityPlayer.getHeldItemMainhand().getItem() == Items.gold_nugget)
         {
-            EntityInfo.printBasicEntityInfoToChat(event.entityPlayer, event.target);
+            EntityInfo.printBasicEntityInfoToChat(event.entityPlayer, event.getTarget());
 
             if (event.entityPlayer.isSneaking() == true)
             {
-                EntityInfo.dumpFullEntityInfoToFile(event.entityPlayer, event.target);
+                EntityInfo.dumpFullEntityInfoToFile(event.entityPlayer, event.getTarget());
             }
             else
             {
-                EntityInfo.printFullEntityInfoToConsole(event.entityPlayer, event.target);
+                EntityInfo.printFullEntityInfoToConsole(event.entityPlayer, event.getTarget());
             }
 
             event.setCanceled(true);

@@ -15,8 +15,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 import net.minecraftforge.common.property.IExtendedBlockState;
@@ -71,7 +71,6 @@ public class BlockInfo
         return lines;
     }
 
-    @SuppressWarnings("rawtypes")
     public static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         List<String> lines = getBasicBlockInfo(player, world, pos);
@@ -89,11 +88,11 @@ public class BlockInfo
 
         lines.add("IBlockState properties, including getActualState():");
 
-        UnmodifiableIterator<Entry<IProperty, Comparable>> iter = iBlockState.getProperties().entrySet().iterator();
+        UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = iBlockState.getProperties().entrySet().iterator();
 
         while (iter.hasNext() == true)
         {
-            Entry<IProperty, Comparable> entry = iter.next();
+            Entry<IProperty<?>, Comparable<?>> entry = iter.next();
             lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
         }
 
@@ -127,7 +126,7 @@ public class BlockInfo
     {
         for (String line : getBasicBlockInfo(player, world, pos))
         {
-            player.addChatMessage(new ChatComponentText(line));
+            player.addChatMessage(new TextComponentString(line));
         }
     }
 
@@ -144,6 +143,6 @@ public class BlockInfo
     public static void dumpBlockInfoToFile(EntityPlayer player, World world, BlockPos pos)
     {
         File f = DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, pos));
-        player.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
+        player.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
     }
 }

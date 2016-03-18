@@ -7,8 +7,9 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.StatCollector;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.translation.I18n;
 
 public class SubCommandHelp extends SubCommand
 {
@@ -24,7 +25,7 @@ public class SubCommandHelp extends SubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         if (args.length == 0)
         {
@@ -33,18 +34,18 @@ public class SubCommandHelp extends SubCommand
 
         if (args.length > 2)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.usage") + ": /"
-                + CommandTellme.instance.getCommandName() + " " + getCommandName() + " [" + StatCollector.translateToLocal("info.command.name") + "]");
+            throw new WrongUsageException(I18n.translateToLocal("info.command.usage") + ": /"
+                + CommandTellme.instance.getCommandName() + " " + getCommandName() + " [" + I18n.translateToLocal("info.command.name") + "]");
         }
 
         if (args.length == 2)
         {
-            sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand." + args[1])));
+            sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[1])));
             return;
         }
 
         // args.length == 1, ie. "/tellme help"
-        StringBuilder str = new StringBuilder(StatCollector.translateToLocal("info.command.available") + ": ");
+        StringBuilder str = new StringBuilder(I18n.translateToLocal("info.command.available") + ": ");
         List<String> subCommands = new ArrayList<String>(CommandTellme.getSubCommandList());
 
         for (int i = 0; i < subCommands.size() - 2; ++i)
@@ -54,7 +55,7 @@ public class SubCommandHelp extends SubCommand
 
         if (subCommands.size() > 1)
         {
-            str.append("/" + CommandTellme.instance.getCommandName() + " " + subCommands.get(subCommands.size() - 2) + " " + StatCollector.translateToLocal("info.and") + " ");
+            str.append("/" + CommandTellme.instance.getCommandName() + " " + subCommands.get(subCommands.size() - 2) + " " + I18n.translateToLocal("info.and") + " ");
         }
 
         // Last or only command
@@ -64,14 +65,14 @@ public class SubCommandHelp extends SubCommand
         }
 
         // List of sub commands
-        sender.addChatMessage(new ChatComponentText(str.toString()));
+        sender.addChatMessage(new TextComponentString(str.toString()));
 
         // Sub command help
-        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.help.subcommand") + " '/" + CommandTellme.instance.getCommandName() + " <sub_command> help'"));
+        sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.help.subcommand") + " '/" + CommandTellme.instance.getCommandName() + " <sub_command> help'"));
     }
 
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args)
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args)
     {
         // "/tellme help ???"
         if (args.length == 2)

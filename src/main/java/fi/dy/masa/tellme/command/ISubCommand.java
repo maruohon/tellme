@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 
 public interface ISubCommand
 {
@@ -11,10 +12,10 @@ public interface ISubCommand
     String getCommandName();
 
     /* Processes the command */
-    void processCommand(ICommandSender sender, String[] args) throws CommandException;
+    void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException;
 
     /* Adds the tab completion options */
-    List<String> addTabCompletionOptions(ICommandSender sender, String[] args);
+    List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args);
 
     /* Gets the sub commands for this (sub) command.*/
     List<String> getSubCommands();

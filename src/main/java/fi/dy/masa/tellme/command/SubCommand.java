@@ -7,8 +7,9 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.StatCollector;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.translation.I18n;
 
 public abstract class SubCommand implements ISubCommand
 {
@@ -26,7 +27,7 @@ public abstract class SubCommand implements ISubCommand
     }
 
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender icommandsender, String[] args)
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args)
     {
         if (args.length == 2 || (args.length == 3 && args[1].equals("help")))
         {
@@ -39,7 +40,7 @@ public abstract class SubCommand implements ISubCommand
     @Override
     public String getSubCommandsHelpString()
     {
-        StringBuilder str = new StringBuilder(StatCollector.translateToLocal("info.subcommands.available") + ": ");
+        StringBuilder str = new StringBuilder(I18n.translateToLocal("info.subcommands.available") + ": ");
 
         for (int i = 0; i < this.subSubCommands.size() - 1; ++i)
         {
@@ -55,23 +56,23 @@ public abstract class SubCommand implements ISubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         // "/tellme command"
         if (args.length == 1)
         {
-            sender.addChatMessage(new ChatComponentText(this.getSubCommandsHelpString()));
+            sender.addChatMessage(new TextComponentString(this.getSubCommandsHelpString()));
         }
         // "/tellme command [help|unknown]"
         else if (args.length == 2)
         {
             if (args[1].equals("help"))
             {
-                sender.addChatMessage(new ChatComponentText(this.getSubCommandsHelpString()));
+                sender.addChatMessage(new TextComponentString(this.getSubCommandsHelpString()));
             }
             else if (this.subSubCommands.contains(args[1]) == false)
             {
-                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown.subcommand") + " '" + args[1] + "'", new Object[0]);
+                throw new WrongUsageException(I18n.translateToLocal("info.command.unknown.subcommand") + " '" + args[1] + "'", new Object[0]);
             }
         }
         // "/tellme command help subsubcommand"
@@ -79,15 +80,15 @@ public abstract class SubCommand implements ISubCommand
         {
             if (args[2].equals("help"))
             {
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommands.help")));
+                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommands.help")));
             }
             else if (this.subSubCommands.contains(args[2]) == true)
             {
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand." + args[0] + ".help." + args[2])));
+                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[0] + ".help." + args[2])));
             }
             else
             {
-                throw new WrongUsageException(StatCollector.translateToLocal("info.subcommands.help.unknown") + " " + args[3], new Object[0]);
+                throw new WrongUsageException(I18n.translateToLocal("info.subcommands.help.unknown") + " " + args[3], new Object[0]);
             }
         }
     }

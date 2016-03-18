@@ -7,7 +7,7 @@ import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.text.TextComponentString;
 
 import fi.dy.masa.tellme.TellMe;
 
@@ -37,7 +37,7 @@ public class EntityInfo
     {
         for (String line : getBasicEntityInfo(target))
         {
-            player.addChatMessage(new ChatComponentText(line));
+            player.addChatMessage(new TextComponentString(line));
         }
     }
 
@@ -54,6 +54,6 @@ public class EntityInfo
     public static void dumpFullEntityInfoToFile(EntityPlayer player, Entity target)
     {
         File f = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target));
-        player.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
+        player.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
     }
 }

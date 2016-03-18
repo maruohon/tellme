@@ -2,13 +2,15 @@ package fi.dy.masa.tellme.command;
 
 import java.io.File;
 
-import fi.dy.masa.tellme.util.BiomeInfo;
-import fi.dy.masa.tellme.util.DataDump;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.StatCollector;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.translation.I18n;
+
+import fi.dy.masa.tellme.util.BiomeInfo;
+import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandBiome extends SubCommand
 {
@@ -27,9 +29,9 @@ public class SubCommandBiome extends SubCommand
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        super.processCommand(sender, args);
+        super.execute(server, sender, args);
 
         if (args.length == 2)
         {
@@ -43,12 +45,12 @@ public class SubCommandBiome extends SubCommand
             else if (args[1].equals("dump"))
             {
                 File f = DataDump.dumpDataToFile("biome_dump", BiomeInfo.getBiomeList());
-                sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
+                sender.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
             }
             else if (args[1].equals("list"))
             {
                 BiomeInfo.printBiomeListToLogger();
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
+                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
             }
         }
     }

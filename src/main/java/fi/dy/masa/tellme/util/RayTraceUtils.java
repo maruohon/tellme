@@ -2,21 +2,21 @@ package fi.dy.masa.tellme.util;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class MOPHelper
+public class RayTraceUtils
 {
-    public static  MovingObjectPosition getMovingObjectPositionFromPlayer(World worldIn, EntityPlayer playerIn, boolean useLiquids)
+    public static RayTraceResult rayTraceFromPlayer(World worldIn, EntityPlayer playerIn, boolean useLiquids)
     {
         float f = playerIn.prevRotationPitch + (playerIn.rotationPitch - playerIn.prevRotationPitch);
         float f1 = playerIn.prevRotationYaw + (playerIn.rotationYaw - playerIn.prevRotationYaw);
         double d0 = playerIn.prevPosX + (playerIn.posX - playerIn.prevPosX);
         double d1 = playerIn.prevPosY + (playerIn.posY - playerIn.prevPosY) + (double)(worldIn.isRemote ? playerIn.getEyeHeight() - playerIn.getDefaultEyeHeight() : playerIn.getEyeHeight()); // isRemote check to revert changes to ray trace position due to adding the eye height clientside and player yOffset differences
         double d2 = playerIn.prevPosZ + (playerIn.posZ - playerIn.prevPosZ);
-        Vec3 vec3 = new Vec3(d0, d1, d2);
+        Vec3d vec3 = new Vec3d(d0, d1, d2);
         float f2 = MathHelper.cos(-f1 * 0.017453292F - (float)Math.PI);
         float f3 = MathHelper.sin(-f1 * 0.017453292F - (float)Math.PI);
         float f4 = -MathHelper.cos(-f * 0.017453292F);
@@ -27,10 +27,10 @@ public class MOPHelper
 
         if (playerIn instanceof EntityPlayerMP)
         {
-            d3 = ((EntityPlayerMP)playerIn).theItemInWorldManager.getBlockReachDistance();
+            d3 = ((EntityPlayerMP)playerIn).interactionManager.getBlockReachDistance();
         }
 
-        Vec3 vec31 = vec3.addVector((double)f6 * d3, (double)f5 * d3, (double)f7 * d3);
+        Vec3d vec31 = vec3.addVector((double)f6 * d3, (double)f5 * d3, (double)f7 * d3);
 
         return worldIn.rayTraceBlocks(vec3, vec31, useLiquids, !useLiquids, false);
     }

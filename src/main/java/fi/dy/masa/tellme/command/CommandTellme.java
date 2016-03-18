@@ -9,8 +9,10 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.StatCollector;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
+
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 /*
@@ -38,15 +40,9 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public String getCommandUsage(ICommandSender icommandsender)
+    public String getCommandUsage(ICommandSender sender)
     {
         return "/" + this.getCommandName() + " help";
-    }
-
-    @Override
-    public boolean canCommandSenderUseCommand(ICommandSender icommandsender)
-    {
-        return icommandsender.canCommandSenderUseCommand(this.getRequiredPermissionLevel(), this.getCommandName());
     }
 
     @Override
@@ -56,7 +52,7 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender icommandsender, String[] strArr, BlockPos pos)
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] strArr, BlockPos pos)
     {
         if (strArr.length == 1)
         {
@@ -67,14 +63,14 @@ public class CommandTellme extends CommandBase
             ISubCommand sc = subCommands.get(strArr[0]);
             if (sc != null)
             {
-                return sc.addTabCompletionOptions(icommandsender, strArr);
+                return sc.getTabCompletionOptions(server, sender, strArr);
             }
         }
         return null;
     }
 
     @Override
-    public void processCommand(ICommandSender icommandsender, String[] commandArgs) throws CommandException
+    public void execute(MinecraftServer server, ICommandSender sender, String[] commandArgs) throws CommandException
     {
         if (commandArgs.length > 0)
         {
@@ -83,17 +79,17 @@ public class CommandTellme extends CommandBase
                 ISubCommand cb = subCommands.get(commandArgs[0]);
                 if (cb != null)
                 {
-                    cb.processCommand(icommandsender, commandArgs);
+                    cb.execute(server, sender, commandArgs);
                     return;
                 }
             }
             else
             {
-                throw new WrongUsageException(StatCollector.translateToLocal("info.command.unknown") + ": /" + this.getCommandName() + " " + commandArgs[0], new Object[0]);
+                throw new WrongUsageException(I18n.translateToLocal("info.command.unknown") + ": /" + this.getCommandName() + " " + commandArgs[0], new Object[0]);
             }
         }
 
-        throw new WrongUsageException(StatCollector.translateToLocal("info.command.help") + ": '" + getCommandUsage(icommandsender) + "'", new Object[0]);
+        throw new WrongUsageException(I18n.translateToLocal("info.command.help") + ": '" + getCommandUsage(sender) + "'", new Object[0]);
     }
 
     public static void registerSubCommand(ISubCommand cmd)

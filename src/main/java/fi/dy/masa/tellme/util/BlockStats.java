@@ -11,10 +11,11 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldServer;
+
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import fi.dy.masa.tellme.TellMe;
 
@@ -81,27 +82,27 @@ public class BlockStats
     {
         if (y1 < 0 || y2 < 0)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.world") + ": y < 0");
+            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": y < 0");
         }
 
         if (y1 > 255 || y2 > 255)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.world") + ": y > 255");
+            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": y > 255");
         }
 
         if (x1 < -30000000 || x2 < -30000000 || z1 < -30000000 || z2 < -30000000)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.world") + ": x or z < -30000000");
+            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": x or z < -30000000");
         }
 
         if (x1 > 30000000 || x2 > 30000000 || z1 > 30000000 || z2 > 30000000)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.world") + ": x or z > 30000000");
+            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": x or z > 30000000");
         }
 
         if (Math.abs(x1 - x2) > 512 || Math.abs(z1 - z2) > 512)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange.toolarge"));
+            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.toolarge"));
         }
 
         return true;
@@ -125,13 +126,13 @@ public class BlockStats
         }
         catch (NumberFormatException e)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.invalid.argument.number"));
+            throw new WrongUsageException(I18n.translateToLocal("info.command.invalid.argument.number"));
         }
 
         // We don't allow ranges over 256 blocks from the player
         if (range_x > 256 || range_z > 256)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.argument.outofrange") + ": x or z > 256");
+            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange") + ": x or z > 256");
         }
 
         int y_min = (y - range_y) >=   0 ? y - range_y :   0;
@@ -141,7 +142,7 @@ public class BlockStats
 
         if (this.checkChunksAreLoaded(player.dimension, x - range_x, z - range_z, x + range_x, z + range_z) == false)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
+            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
         }
 
         this.calculateBlockStats(player.dimension, x - range_x, y_min, z - range_z, x + range_x, y_max, z + range_z);
@@ -165,12 +166,12 @@ public class BlockStats
         }
         catch (NumberFormatException e)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.command.invalid.argument.number"));
+            throw new WrongUsageException(I18n.translateToLocal("info.command.invalid.argument.number"));
         }
 
         if (this.checkChunksAreLoaded(dim, x1, z1, x2, z2) == false)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
+            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
         }
 
         int tmp;
@@ -185,7 +186,7 @@ public class BlockStats
 
         if (this.checkChunksAreLoaded(dim, x1, z1, x2, z2) == false)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
+            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
         }
 
         this.calculateBlockStats(dim, x1, y_min, z1, x2, y_max, z2);
@@ -197,10 +198,10 @@ public class BlockStats
     {
         //System.out.printf("dim: %d x1: %d, y1: %d, z1: %d x2: %d y2: %d z2: %d\n", dim, x1, y1, z1, x2, y2, z2);
 
-        WorldServer worldServer = MinecraftServer.getServer().worldServerForDimension(dim);
+        WorldServer worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
         if (worldServer == null)
         {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.invalid.dimension") + ": " + dim);
+            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.invalid.dimension") + ": " + dim);
         }
 
         this.blockStats = new HashMap<String, BlockInfo>();
