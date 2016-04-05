@@ -1,9 +1,9 @@
 package fi.dy.masa.tellme.event;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -26,7 +26,7 @@ public class InteractEventHandler
         ItemStack stack = player.getHeldItemMainhand();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (world.isRemote == true || stack == null || stack.getItem() != Items.gold_nugget ||
+        if (world.isRemote == true || stack == null || stack.getItem() != Items.gold_nugget || event.getHand() != EnumHand.MAIN_HAND ||
             player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
@@ -44,7 +44,7 @@ public class InteractEventHandler
         ItemStack stack = player.getHeldItemMainhand();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (world.isRemote == true || stack == null ||
+        if (world.isRemote == true || stack == null || event.getHand() != EnumHand.MAIN_HAND ||
             player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
@@ -58,7 +58,7 @@ public class InteractEventHandler
         // Block info for fluid blocks without clicking on a block behind the fluid
         else if (stack.getItem() == Items.gold_nugget)
         {
-            this.printBlockInfo(world, player);
+            //this.printBlockInfo(world, player);
             //event.setCanceled(true);
         }
     }
@@ -70,7 +70,7 @@ public class InteractEventHandler
         ItemStack stack = player.getHeldItemMainhand();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (player.worldObj.isRemote == true || stack == null || stack.getItem() != Items.gold_nugget ||
+        if (player.worldObj.isRemote == true || stack == null || stack.getItem() != Items.gold_nugget || event.getHand() != EnumHand.MAIN_HAND ||
             player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
@@ -105,8 +105,8 @@ public class InteractEventHandler
         {
             pos = mop.getBlockPos();
 
-            IBlockState iBlockState = world.getBlockState(pos);
-            boolean isFluid = iBlockState.getBlock().getMaterial(iBlockState).isLiquid();
+            //IBlockState iBlockState = world.getBlockState(pos);
+            //boolean isFluid = iBlockState.getBlock().getMaterial(iBlockState).isLiquid();
 
             // If we ray traced to a fluid block, but the interact event is for a block
             // (behind the fluid), then stop here.
