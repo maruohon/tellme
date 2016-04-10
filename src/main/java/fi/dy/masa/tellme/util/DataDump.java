@@ -81,7 +81,7 @@ public class DataDump
 
     public List<String> getFormattedBlockDump()
     {
-        Iterator<Block> iter = Block.blockRegistry.iterator();
+        Iterator<Block> iter = Block.REGISTRY.iterator();
         List<GameObjectData> list = new ArrayList<GameObjectData>();
 
         GameObjectData data;
@@ -96,7 +96,7 @@ public class DataDump
 
     public List<String> getFormattedItemDump()
     {
-        Iterator<Item> iter = Item.itemRegistry.iterator();
+        Iterator<Item> iter = Item.REGISTRY.iterator();
         List<GameObjectData> list = new ArrayList<GameObjectData>();
 
         GameObjectData data;
@@ -164,9 +164,9 @@ public class DataDump
 
         Field idField = ReflectionHelper.findField(EntityList.class, "g", "field_180126_g", "stringToIDMapping");
 
-        for (String name : EntityList.stringToClassMapping.keySet())
+        for (String name : EntityList.NAME_TO_CLASS.keySet())
         {
-            Class<? extends Entity> c = (Class<? extends Entity>)EntityList.stringToClassMapping.get(name);
+            Class<? extends Entity> c = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(name);
             if (c != null)
             {
                 EntityRegistration er = EntityRegistry.instance().lookupModSpawn(c, true);

@@ -26,7 +26,7 @@ public class InteractEventHandler
         ItemStack stack = player.getHeldItemMainhand();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (world.isRemote == true || stack == null || stack.getItem() != Items.gold_nugget || event.getHand() != EnumHand.MAIN_HAND ||
+        if (world.isRemote == true || stack == null || stack.getItem() != Items.GOLD_NUGGET || event.getHand() != EnumHand.MAIN_HAND ||
             player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
@@ -50,13 +50,13 @@ public class InteractEventHandler
             return;
         }
 
-        if (stack.getItem() == Items.blaze_rod)
+        if (stack.getItem() == Items.BLAZE_ROD)
         {
             this.printItemInfo(event.getEntityPlayer());
             //event.setCanceled(true);
         }
         // Block info for fluid blocks without clicking on a block behind the fluid
-        else if (stack.getItem() == Items.gold_nugget)
+        else if (stack.getItem() == Items.GOLD_NUGGET)
         {
             //this.printBlockInfo(world, player);
             //event.setCanceled(true);
@@ -70,7 +70,7 @@ public class InteractEventHandler
         ItemStack stack = player.getHeldItemMainhand();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (player.worldObj.isRemote == true || stack == null || stack.getItem() != Items.gold_nugget || event.getHand() != EnumHand.MAIN_HAND ||
+        if (player.worldObj.isRemote == true || stack == null || stack.getItem() != Items.GOLD_NUGGET || event.getHand() != EnumHand.MAIN_HAND ||
             player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;

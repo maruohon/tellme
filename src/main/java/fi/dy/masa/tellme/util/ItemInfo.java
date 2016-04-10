@@ -16,7 +16,7 @@ public class ItemInfo
     private static List<String> getBasicItemInfo(ItemStack stack)
     {
         List<String> lines = new ArrayList<String>();
-        String name = Item.itemRegistry.getNameForObject(stack.getItem()).toString();
+        String name = Item.REGISTRY.getNameForObject(stack.getItem()).toString();
         String dname = stack.getDisplayName();
         String nbtInfo;
 

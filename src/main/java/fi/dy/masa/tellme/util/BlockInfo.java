@@ -43,7 +43,7 @@ public class BlockInfo
         int meta = block.getMetaFromState(iBlockState);
         ItemStack stack = new ItemStack(block, 1, block.damageDropped(iBlockState));
         //ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
-        String name = Block.blockRegistry.getNameForObject(block).toString();
+        String name = Block.REGISTRY.getNameForObject(block).toString();
         String dname;
 
         if (stack != null && stack.getItem() != null)

@@ -29,7 +29,7 @@ public class BiomeInfo
         lines.add(header);
         lines.add(separator.toString());
 
-        Iterator<BiomeGenBase> iterator = BiomeGenBase.biomeRegistry.iterator();
+        Iterator<BiomeGenBase> iterator = BiomeGenBase.REGISTRY.iterator();
         while (iterator.hasNext() == true)
         {
             bgb = iterator.next();

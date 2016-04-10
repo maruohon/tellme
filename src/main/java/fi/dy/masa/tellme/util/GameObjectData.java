@@ -20,12 +20,12 @@ public class GameObjectData implements Comparable<GameObjectData>
 
     public GameObjectData(Block block)
     {
-        this(Block.blockRegistry.getNameForObject(block), Block.getIdFromBlock(block), Item.getItemFromBlock(block));
+        this(Block.REGISTRY.getNameForObject(block), Block.getIdFromBlock(block), Item.getItemFromBlock(block));
     }
 
     public GameObjectData(Item item)
     {
-        this(Item.itemRegistry.getNameForObject(item), Item.getIdFromItem(item), item);
+        this(Item.REGISTRY.getNameForObject(item), Item.getIdFromItem(item), item);
     }
 
     public GameObjectData(String name, String dName, int id, String modId, String modName)
