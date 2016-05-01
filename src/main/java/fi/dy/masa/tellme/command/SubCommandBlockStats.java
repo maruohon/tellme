@@ -3,26 +3,31 @@ package fi.dy.masa.tellme.command;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-import fi.dy.masa.tellme.util.BlockStats;
-import fi.dy.masa.tellme.util.DataDump;
+import com.google.common.collect.Maps;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
 
+import fi.dy.masa.tellme.util.BlockStats;
+import fi.dy.masa.tellme.util.DataDump;
+
 public class SubCommandBlockStats extends SubCommand
 {
-    private BlockStats blockStats;
+    private final Map<UUID, BlockStats> blockStats = Maps.newHashMap();
 
     public SubCommandBlockStats()
     {
         super();
-        this.blockStats = new BlockStats();
         this.subSubCommands.add("count");
         this.subSubCommands.add("dump");
         this.subSubCommands.add("query");
@@ -59,7 +64,8 @@ public class SubCommandBlockStats extends SubCommand
 
             sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
             sender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
-            sender.addChatMessage(new ChatComponentText(pre + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
+            sender.addChatMessage(new ChatComponentText(pre + " count <dimensionID> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
+            sender.addChatMessage(new ChatComponentText(pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
             sender.addChatMessage(new ChatComponentText(pre + " query"));
             sender.addChatMessage(new ChatComponentText(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
             sender.addChatMessage(new ChatComponentText(pre + " dump"));
@@ -74,6 +80,8 @@ public class SubCommandBlockStats extends SubCommand
         {
             throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.notplayer"));
         }
+
+        BlockStats blockStats = this.getBlockStats((EntityPlayer)sender);
 
         // Possible command formats are:
         // /tellme blockstats count <playername> <x-distance> <y-distance> <z-distance>
@@ -95,7 +103,11 @@ public class SubCommandBlockStats extends SubCommand
                     if (player != null)
                     {
                         sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
-                        this.blockStats.calculateBlockStats(player, Arrays.asList(args).subList(3, args.length));
+                        int dim = player.dimension;
+                        int rx = Math.abs(CommandBase.parseInt(args[3]));
+                        int ry = Math.abs(CommandBase.parseInt(args[4]));
+                        int rz = Math.abs(CommandBase.parseInt(args[5]));
+                        blockStats.calculateBlockStats(dim, player.getPosition(), rx, ry, rz);
                         sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
                     }
                     else
@@ -105,10 +117,13 @@ public class SubCommandBlockStats extends SubCommand
                 }
             }
             // cuboid corners
-            else if (args.length == 9)
+            else if (args.length == 8 || args.length == 9)
             {
                 sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
-                this.blockStats.calculateBlockStats(Arrays.asList(args).subList(2, args.length));
+                int dim = args.length == 9 ? CommandBase.parseInt(args[2]) : ((EntityPlayer)sender).dimension;
+                BlockPos pos1 = CommandBase.parseBlockPos(sender, args, args.length == 9 ? 3 : 2, false);
+                BlockPos pos2 = CommandBase.parseBlockPos(sender, args, args.length == 9 ? 6 : 5, false);
+                blockStats.calculateBlockStats(dim, pos1, pos2);
                 sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
             }
             else
@@ -117,7 +132,7 @@ public class SubCommandBlockStats extends SubCommand
                     + " " + StatCollector.translateToLocal("info.command.usage") + ": /"
                     + CommandTellme.instance.getCommandName() + " " + this.getCommandName() + " count <playername> <x-distance> <y-distance> <z-distance>"
                     + " or /" + CommandTellme.instance.getCommandName() + " " + this.getCommandName()
-                    + " count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
+                    + " count <dimensionID> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
             }
         }
         // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
@@ -126,23 +141,36 @@ public class SubCommandBlockStats extends SubCommand
             // We have some filters specified
             if (args.length > 2)
             {
-                this.blockStats.query(Arrays.asList(args).subList(2, args.length));
+                blockStats.query(Arrays.asList(args).subList(2, args.length));
             }
             else
             {
-                this.blockStats.queryAll();
+                blockStats.queryAll();
             }
 
             if (args[1].equals("query"))
             {
-                this.blockStats.printBlockStatsToLogger();
+                blockStats.printBlockStatsToLogger();
                 sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
             }
             else // dump
             {
-                File f = DataDump.dumpDataToFile("block_stats", this.blockStats.getBlockStatsLines());
+                File f = DataDump.dumpDataToFile("block_stats", blockStats.getBlockStatsLines());
                 sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
             }
         }
+    }
+
+    private BlockStats getBlockStats(EntityPlayer player)
+    {
+        BlockStats stats = this.blockStats.get(player.getUniqueID());
+
+        if (stats == null)
+        {
+            stats = new BlockStats();
+            this.blockStats.put(player.getUniqueID(), stats);
+        }
+
+        return stats;
     }
 }
