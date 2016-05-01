@@ -2,7 +2,6 @@ package fi.dy.masa.tellme.command;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,7 +12,6 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
@@ -25,9 +23,9 @@ public class SubCommandBlockStats extends SubCommand
 {
     private final Map<UUID, BlockStats> blockStats = Maps.newHashMap();
 
-    public SubCommandBlockStats()
+    public SubCommandBlockStats(CommandTellme baseCommand)
     {
-        super();
+        super(baseCommand);
         this.subSubCommands.add("count");
         this.subSubCommands.add("dump");
         this.subSubCommands.add("query");
@@ -40,99 +38,71 @@ public class SubCommandBlockStats extends SubCommand
     }
 
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender icommandsender, String[] args)
-    {
-        if (args.length == 3 && args[1].equals("count"))
-        {
-            MinecraftServer srv = MinecraftServer.getServer();
-            if (srv != null)
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(srv.getConfigurationManager().getAllUsernames()));
-            }
-        }
-
-        return super.addTabCompletionOptions(icommandsender, args);
-    }
-
-    @Override
     public void processCommand(ICommandSender sender, String[] args) throws CommandException
     {
-        // "/tellme bockstats"
-        if (args.length < 2)
-        {
-            String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
-
-            sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
-            sender.addChatMessage(new ChatComponentText(pre + " count <playername> <x-distance> <y-distance> <z-distance>"));
-            sender.addChatMessage(new ChatComponentText(pre + " count <dimensionID> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
-            sender.addChatMessage(new ChatComponentText(pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
-            sender.addChatMessage(new ChatComponentText(pre + " query"));
-            sender.addChatMessage(new ChatComponentText(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
-            sender.addChatMessage(new ChatComponentText(pre + " dump"));
-            sender.addChatMessage(new ChatComponentText(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
-
-            return;
-        }
-
-        super.processCommand(sender, args);
-
         if (sender instanceof EntityPlayer == false)
         {
             throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.notplayer"));
         }
 
-        BlockStats blockStats = this.getBlockStats((EntityPlayer)sender);
+        EntityPlayer player = (EntityPlayer) sender;
+
+        // "/tellme bockstats"
+        if (args.length < 2)
+        {
+            String pre = "/" + this.getBaseCommand().getCommandName() + " " + this.getCommandName();
+
+            player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.usage") + ": "));
+            player.addChatMessage(new ChatComponentText(pre + " count <x-distance> <y-distance> <z-distance>"));
+            player.addChatMessage(new ChatComponentText(pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
+            player.addChatMessage(new ChatComponentText(pre + " query"));
+            player.addChatMessage(new ChatComponentText(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+            player.addChatMessage(new ChatComponentText(pre + " dump"));
+            player.addChatMessage(new ChatComponentText(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+
+            return;
+        }
+
+        super.processCommand(player, args);
+
+
+        BlockStats blockStats = this.getBlockStats(player);
 
         // Possible command formats are:
-        // /tellme blockstats count <playername> <x-distance> <y-distance> <z-distance>
-        // /tellme blockstats count <dimension> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>
+        // /tellme blockstats count <x-distance> <y-distance> <z-distance>
+        // /tellme blockstats count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>
         // /tellme blockstats query
         // /tellme blockstats query [blockname blockname ...]
 
         // "/tellme blockstats count ..."
         if (args[1].equals("count"))
         {
-            // player, range
-            if (args.length == 6)
+            // range
+            if (args.length == 5)
             {
-                MinecraftServer srv = MinecraftServer.getServer();
-                if (srv != null)
-                {
-                    // Get the player entity matching the name given as parameter
-                    EntityPlayer player = srv.getConfigurationManager().getPlayerByUsername(args[2]);
-                    if (player != null)
-                    {
-                        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
-                        int dim = player.dimension;
-                        int rx = Math.abs(CommandBase.parseInt(args[3]));
-                        int ry = Math.abs(CommandBase.parseInt(args[4]));
-                        int rz = Math.abs(CommandBase.parseInt(args[5]));
-                        blockStats.calculateBlockStats(dim, player.getPosition(), rx, ry, rz);
-                        sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
-                    }
-                    else
-                    {
-                        throw new WrongUsageException(StatCollector.translateToLocal("info.command.player.notfound") + ": '" + args[2] + "'");
-                    }
-                }
+                player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
+                int rx = Math.abs(CommandBase.parseInt(args[2]));
+                int ry = Math.abs(CommandBase.parseInt(args[3]));
+                int rz = Math.abs(CommandBase.parseInt(args[4]));
+                blockStats.calculateBlockStats(player.worldObj, player.getPosition(), rx, ry, rz);
+                player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
             }
             // cuboid corners
-            else if (args.length == 8 || args.length == 9)
+            else if (args.length == 8)
             {
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
-                int dim = args.length == 9 ? CommandBase.parseInt(args[2]) : ((EntityPlayer)sender).dimension;
-                BlockPos pos1 = CommandBase.parseBlockPos(sender, args, args.length == 9 ? 3 : 2, false);
-                BlockPos pos2 = CommandBase.parseBlockPos(sender, args, args.length == 9 ? 6 : 5, false);
-                blockStats.calculateBlockStats(dim, pos1, pos2);
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
+                player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.subcommand.blockstats.calculating")));
+                BlockPos pos1 = CommandBase.parseBlockPos(player, args, 2, false);
+                BlockPos pos2 = CommandBase.parseBlockPos(player, args, 5, false);
+                blockStats.calculateBlockStats(player.worldObj, pos1, pos2);
+                player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.command.done")));
             }
             else
             {
                 throw new WrongUsageException(StatCollector.translateToLocal("info.command.invalid.argument.number")
                     + " " + StatCollector.translateToLocal("info.command.usage") + ": /"
-                    + CommandTellme.instance.getCommandName() + " " + this.getCommandName() + " count <playername> <x-distance> <y-distance> <z-distance>"
-                    + " or /" + CommandTellme.instance.getCommandName() + " " + this.getCommandName()
-                    + " count <dimensionID> <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
+                    + this.getBaseCommand().getCommandName() + " " + this.getCommandName() + " count <x-distance> <y-distance> <z-distance>"
+                    + " or /" + this.getBaseCommand().getCommandName() + " " + this.getCommandName()
+                    + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
             }
         }
         // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
@@ -151,12 +121,12 @@ public class SubCommandBlockStats extends SubCommand
             if (args[1].equals("query"))
             {
                 blockStats.printBlockStatsToLogger();
-                sender.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
+                player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("info.output.to.console")));
             }
             else // dump
             {
                 File f = DataDump.dumpDataToFile("block_stats", blockStats.getBlockStatsLines());
-                sender.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
+                player.addChatMessage(new ChatComponentText("Output written to file " + f.getName()));
             }
         }
     }

@@ -6,4 +6,6 @@ import net.minecraft.world.biome.BiomeGenBase;
 public class CommonProxy
 {
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, BiomeGenBase bgb) {}
+
+    public void registerClientCommand() { }
 }

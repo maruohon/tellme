@@ -6,6 +6,11 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.biome.BiomeGenBase;
 
+import net.minecraftforge.client.ClientCommandHandler;
+
+import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.ClientCommandTellme;
+
 public class ClientProxy extends CommonProxy
 {
     @Override
@@ -20,5 +25,12 @@ public class ClientProxy extends CommonProxy
                 pre, rst, bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)), bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)))));
         player.addChatMessage(new ChatComponentText(String.format("%sFoliage color%s: 0x%08X (%d)",
                 pre, rst, bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)), bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)))));
+    }
+
+    @Override
+    public void registerClientCommand()
+    {
+        TellMe.logger.info("Registering the client-side command");
+        ClientCommandHandler.instance.registerCommand(new ClientCommandTellme());
     }
 }

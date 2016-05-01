@@ -35,11 +35,12 @@ public class TellMe
         logger = event.getModLog();
         configDirPath = event.getModConfigurationDirectory().getAbsolutePath().concat("/" + Reference.MOD_ID);
         MinecraftForge.EVENT_BUS.register(new InteractEventHandler());
+        proxy.registerClientCommand();
     }
 
     @EventHandler
     public void serverStarting(FMLServerStartingEvent event)
     {
-        CommandTellme.registerCommand(event);
+        event.registerServerCommand(new CommandTellme());
     }
 }

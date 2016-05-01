@@ -10,12 +10,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 
 import fi.dy.masa.tellme.TellMe;
 
@@ -125,30 +123,24 @@ public class BlockStats
         return true;
     }
 
-    public void calculateBlockStats(int dimension, BlockPos playerPos, int rangeX, int rangeY, int rangeZ) throws CommandException
+    public void calculateBlockStats(World world, BlockPos playerPos, int rangeX, int rangeY, int rangeZ) throws CommandException
     {
         BlockPos pos1 = playerPos.add(-rangeX, -rangeY, -rangeZ);
         BlockPos pos2 = playerPos.add( rangeX,  rangeY,  rangeZ);
 
-        this.calculateBlockStats(dimension, pos1, pos2);
+        this.calculateBlockStats(world, pos1, pos2);
     }
 
-    public void calculateBlockStats(int dimension, BlockPos pos1, BlockPos pos2) throws CommandException
+    public void calculateBlockStats(World world, BlockPos pos1, BlockPos pos2) throws CommandException
     {
         this.setAndFixPositions(pos1, pos2);
         this.areCoordinatesValid();
-        this.calculateBlockStats(dimension);
+        this.calculateBlockStats(world);
     }
 
-    private void calculateBlockStats(int dimension) throws CommandException
+    private void calculateBlockStats(World world) throws CommandException
     {
         //System.out.printf("dim: %d x1: %d, y1: %d, z1: %d x2: %d y2: %d z2: %d\n", dim, x1, y1, z1, x2, y2, z2);
-
-        WorldServer world = MinecraftServer.getServer().worldServerForDimension(dimension);
-        if (world == null)
-        {
-            throw new WrongUsageException(StatCollector.translateToLocal("info.subcommand.blockstats.invalid.dimension") + ": " + dimension);
-        }
 
         if (this.checkChunksAreLoaded(world) == false)
         {
