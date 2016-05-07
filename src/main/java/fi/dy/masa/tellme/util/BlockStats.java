@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Locale;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.BlockPos.MutableBlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-
 import fi.dy.masa.tellme.TellMe;
 
 public class BlockStats
@@ -167,6 +167,9 @@ public class BlockStats
         // 23:13:48 < diesieben07> there is BlockPos.getAllInBoxMutable
         // 23:14:06 < diesieben07> which returns an Iterable for all BlockPos' in a box, but re-uses the same instance
 
+        long timeBefore = System.currentTimeMillis();
+        MutableBlockPos pos = new MutableBlockPos(0, 0, 0);
+
         // Calculate the number of each block type identified by: "id << 4 | meta"
         for (int y = y1; y <= y2; ++y)
         {
@@ -174,10 +177,9 @@ public class BlockStats
             {
                 for (int z = z1; z <= z2; ++z)
                 {
-                    BlockPos pos = new BlockPos(x, y, z);
+                    pos.set(x, y, z);
                     iBlockState = world.getBlockState(pos);
                     block = iBlockState.getBlock();
-                    iBlockState = block.getActualState(iBlockState, world, pos);
 
                     index = Block.getIdFromBlock(block) << 4 | (block.getMetaFromState(iBlockState) & 0xF);
                     count++;
@@ -192,7 +194,8 @@ public class BlockStats
             }
         }
 
-        TellMe.logger.info("Counted " + count + " blocks.");
+        long timeAfter = System.currentTimeMillis();
+        TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %.3f seconds.", count, (timeAfter - timeBefore) / 1000f));
 
         String name;
         String dname;
