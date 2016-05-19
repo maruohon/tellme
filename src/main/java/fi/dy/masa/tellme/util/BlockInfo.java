@@ -4,10 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
@@ -18,10 +16,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
-
 import fi.dy.masa.tellme.TellMe;
 
 public class BlockInfo
@@ -36,7 +32,7 @@ public class BlockInfo
         }
 
         IBlockState iBlockState = world.getBlockState(pos);
-        iBlockState = iBlockState.getBlock().getActualState(iBlockState, world, pos);
+        iBlockState = iBlockState.getActualState(world, pos);
         Block block = iBlockState.getBlock();
 
         int id = Block.getIdFromBlock(block);
@@ -78,7 +74,7 @@ public class BlockInfo
         IBlockState iBlockState = world.getBlockState(pos);
         try
         {
-            iBlockState = iBlockState.getBlock().getActualState(iBlockState, world, pos);
+            iBlockState = iBlockState.getActualState(world, pos);
             iBlockState = iBlockState.getBlock().getExtendedState(iBlockState, world, pos);
         }
         catch (Exception e)

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
@@ -14,9 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldServer;
-
 import net.minecraftforge.fml.common.FMLCommonHandler;
-
 import fi.dy.masa.tellme.TellMe;
 
 public class BlockStats
@@ -225,9 +222,8 @@ public class BlockStats
                 for (int z = z1; z <= z2; ++z)
                 {
                     BlockPos pos = new BlockPos(x, y, z);
-                    iBlockState = worldServer.getBlockState(pos);
+                    iBlockState = worldServer.getBlockState(pos).getActualState(worldServer, pos);
                     block = iBlockState.getBlock();
-                    iBlockState = block.getActualState(iBlockState, worldServer, pos);
 
                     index = Block.getIdFromBlock(block) << 4 | (block.getMetaFromState(iBlockState) & 0xF);
                     count++;

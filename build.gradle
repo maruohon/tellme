@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
     }
 }
 
@@ -39,7 +39,7 @@ minecraft {
     ext.mod_version = "${config.mod_version}"
 
     if (mod_version.endsWith('-dev')) {
-        mod_version = mod_version + "-" + new Date().format('yyyyMMdd_HHmmss')
+        mod_version = mod_version + "." + new Date().format('yyyy.MM.dd.HH.mm.ss')
     }
 
     replaceIn "reference/Reference.java"
@@ -74,6 +74,9 @@ processResources
 {
     // Exclude the GIMP image files
     exclude '**/*.xcf'
+
+    // Exclude the Cubik model files
+    exclude '**/*.bdc3D'
 
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version

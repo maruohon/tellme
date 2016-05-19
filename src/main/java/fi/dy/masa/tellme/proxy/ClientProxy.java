@@ -4,12 +4,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.Biome;
 
 public class ClientProxy extends CommonProxy
 {
     @Override
-    public void getCurrentBiomeInfoClientSide(EntityPlayer player, BiomeGenBase bgb)
+    public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb)
     {
         BlockPos pos = player.getPosition();
         String pre = TextFormatting.YELLOW.toString();

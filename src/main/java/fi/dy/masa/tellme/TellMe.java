@@ -17,7 +17,7 @@ import fi.dy.masa.tellme.reference.Reference;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION,
     dependencies = "required-after:Forge@[12.16.0.1859,);",
-    acceptableRemoteVersions = "*", acceptedMinecraftVersions = "1.9")
+    acceptableRemoteVersions = "*", acceptedMinecraftVersions = "1.9.4")
 public class TellMe
 {
     @Instance(Reference.MOD_ID)
