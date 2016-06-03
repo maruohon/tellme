@@ -61,7 +61,7 @@ public class BiomeInfo
     {
         World world = player.worldObj;
         BlockPos pos = player.getPosition();
-        Biome bgb = world.getBiomeGenForCoords(pos);
+        Biome bgb = world.getBiome(pos);
 
         String pre = TextFormatting.YELLOW.toString();
         String aq = TextFormatting.AQUA.toString();
