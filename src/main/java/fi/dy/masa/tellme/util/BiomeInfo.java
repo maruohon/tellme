@@ -68,14 +68,14 @@ public class BiomeInfo
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
         player.addChatMessage(new TextComponentString("------------- Current biome info ------------"));
-        player.addChatMessage(new TextComponentString(String.format("%sBiome Name%s: %s - %sBiome ID%s: %d",
-                pre, rst, bgb.getBiomeName(), pre, rst, Biome.getIdForBiome(bgb))));
-        player.addChatMessage(new TextComponentString(String.format("%scanRain%s: %s, %srainfall%s: %f - %senableSnow%s: %s",
-                pre, rst, bgb.canRain(), pre, rst, bgb.getRainfall(), pre, rst, bgb.getEnableSnow())));
-        player.addChatMessage(new TextComponentString(String.format("%swaterColorMultiplier%s: 0x%08X (%d)",
-                pre, rst, bgb.getWaterColorMultiplier(), bgb.getWaterColorMultiplier())));
-        player.addChatMessage(new TextComponentString(String.format("%stemperature%s: %f, %stemp. category%s: %s%s%s",
-                pre, rst, bgb.getFloatTemperature(pos), pre, rst, aq, bgb.getTempCategory(), rst)));
+        player.addChatMessage(new TextComponentString(String.format("Biome Name: %s%s%s - Biome ID: %s%d%s",
+                pre, bgb.getBiomeName(), rst, pre, Biome.getIdForBiome(bgb), rst)));
+        player.addChatMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s%s",
+                pre, bgb.canRain(), rst, pre, bgb.getRainfall(), rst, pre, bgb.getEnableSnow(), rst)));
+        player.addChatMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
+                pre, bgb.getWaterColorMultiplier(), bgb.getWaterColorMultiplier(), rst)));
+        player.addChatMessage(new TextComponentString(String.format("temperature: %s%f%s, temp. category: %s%s%s",
+                pre, bgb.getFloatTemperature(pos), rst, aq, bgb.getTempCategory(), rst)));
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.proxy.getCurrentBiomeInfoClientSide(player, bgb);

@@ -4,22 +4,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.translation.I18n;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraft.world.World;
 import fi.dy.masa.tellme.TellMe;
 
 public class BlockStats
 {
     private HashMap<String, BlockInfo> blockStats;
     private List<String> blockStatLines;
+    private BlockPos pos1;
+    private BlockPos pos2;
     private int longestName = 0;
     private int longestDisplayName = 0;
 
@@ -69,35 +72,50 @@ public class BlockStats
         this.blockStatLines = new ArrayList<String>();
     }
 
-    public boolean checkChunksAreLoaded(int dim, int x1, int z1, int x2, int z2)
+    private void setAndFixPositions(BlockPos pos1, BlockPos pos2)
     {
-        // TODO Do we need/want this anyway?
-        return true;
+        int xMin = Math.min(pos1.getX(), pos2.getX());
+        int yMin = Math.min(pos1.getY(), pos2.getY());
+        int zMin = Math.min(pos1.getZ(), pos2.getZ());
+        int xMax = Math.max(pos1.getX(), pos2.getX());
+        int yMax = Math.max(pos1.getY(), pos2.getY());
+        int zMax = Math.max(pos1.getZ(), pos2.getZ());
+
+        yMin = MathHelper.clamp_int(yMin, 0, 255);
+        yMax = MathHelper.clamp_int(yMax, 0, 255);
+
+        this.pos1 = new BlockPos(xMin, yMin, zMin);
+        this.pos2 = new BlockPos(xMax, yMax, zMax);
     }
 
-    private boolean areCoordinatesValid(int x1, int y1, int z1, int x2, int y2, int z2) throws CommandException
+    private boolean checkChunksAreLoaded(World world)
     {
-        if (y1 < 0 || y2 < 0)
+        return world.isAreaLoaded(this.pos1, this.pos2, true);
+    }
+
+    private boolean areCoordinatesValid() throws CommandException
+    {
+        if (this.pos1.getY() < 0 || this.pos2.getY() < 0)
         {
             throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": y < 0");
         }
 
-        if (y1 > 255 || y2 > 255)
+        if (this.pos1.getY() > 255 || this.pos2.getY() > 255)
         {
             throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": y > 255");
         }
 
-        if (x1 < -30000000 || x2 < -30000000 || z1 < -30000000 || z2 < -30000000)
+        if (this.pos1.getX() < -30000000 || this.pos2.getX() < -30000000 || this.pos1.getZ() < -30000000 || this.pos2.getZ() < -30000000)
         {
             throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": x or z < -30000000");
         }
 
-        if (x1 > 30000000 || x2 > 30000000 || z1 > 30000000 || z2 > 30000000)
+        if (this.pos1.getX() > 30000000 || this.pos2.getX() > 30000000 || this.pos1.getZ() > 30000000 || this.pos2.getZ() > 30000000)
         {
             throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": x or z > 30000000");
         }
 
-        if (Math.abs(x1 - x2) > 512 || Math.abs(z1 - z2) > 512)
+        if (Math.abs(this.pos1.getX() - this.pos2.getX()) > 512 || Math.abs(this.pos1.getZ() - this.pos2.getZ()) > 512)
         {
             throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.toolarge"));
         }
@@ -105,101 +123,36 @@ public class BlockStats
         return true;
     }
 
-    public HashMap<String, BlockInfo> calculateBlockStats(EntityPlayer player, List<String> ranges) throws CommandException
+    public void calculateBlockStats(World world, BlockPos playerPos, int rangeX, int rangeY, int rangeZ) throws CommandException
     {
-        if (player == null)
-        {
-            return null;
-        }
+        BlockPos pos1 = playerPos.add(-rangeX, -rangeY, -rangeZ);
+        BlockPos pos2 = playerPos.add( rangeX,  rangeY,  rangeZ);
 
-        int x = (int)player.posX, y = (int)player.posY, z = (int)player.posZ;
-        int range_x = 0, range_y = 0, range_z = 0;
-
-        try
-        {
-            range_x = Math.abs(Integer.parseInt(ranges.get(0)));
-            range_y = Math.abs(Integer.parseInt(ranges.get(1)));
-            range_z = Math.abs(Integer.parseInt(ranges.get(2)));
-        }
-        catch (NumberFormatException e)
-        {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.invalid.argument.number"));
-        }
-
-        // We don't allow ranges over 256 blocks from the player
-        if (range_x > 256 || range_z > 256)
-        {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange") + ": x or z > 256");
-        }
-
-        int y_min = (y - range_y) >=   0 ? y - range_y :   0;
-        int y_max = (y + range_y) <= 255 ? y + range_y : 255;
-
-        this.areCoordinatesValid(x - range_x, y_min, z - range_z, x + range_x, y_max, z + range_z);
-
-        if (this.checkChunksAreLoaded(player.dimension, x - range_x, z - range_z, x + range_x, z + range_z) == false)
-        {
-            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
-        }
-
-        this.calculateBlockStats(player.dimension, x - range_x, y_min, z - range_z, x + range_x, y_max, z + range_z);
-
-        return this.blockStats;
+        this.calculateBlockStats(world, pos1, pos2);
     }
 
-    public HashMap<String, BlockInfo> calculateBlockStats(List<String> params) throws CommandException
+    public void calculateBlockStats(World world, BlockPos pos1, BlockPos pos2) throws CommandException
     {
-        int dim = 0, x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0;
-
-        try
-        {
-            dim = Integer.parseInt(params.get(0));
-            x1 = Integer.parseInt(params.get(1));
-            y1 = Integer.parseInt(params.get(2));
-            z1 = Integer.parseInt(params.get(3));
-            x2 = Integer.parseInt(params.get(4));
-            y2 = Integer.parseInt(params.get(5));
-            z2 = Integer.parseInt(params.get(6));
-        }
-        catch (NumberFormatException e)
-        {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.invalid.argument.number"));
-        }
-
-        if (this.checkChunksAreLoaded(dim, x1, z1, x2, z2) == false)
-        {
-            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
-        }
-
-        int tmp;
-        if (x1 > x2) { tmp = x1; x1 = x2; x2 = tmp; }
-        if (y1 > y2) { tmp = y1; y1 = y2; y2 = tmp; }
-        if (z1 > z2) { tmp = z1; z1 = z2; z2 = tmp; }
-
-        int y_min = y1 >=   0 ? y1 :   0;
-        int y_max = y2 <= 255 ? y2 : 255;
-
-        this.areCoordinatesValid(x1, y_min, z1, x2, y_max, z2);
-
-        if (this.checkChunksAreLoaded(dim, x1, z1, x2, z2) == false)
-        {
-            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
-        }
-
-        this.calculateBlockStats(dim, x1, y_min, z1, x2, y_max, z2);
-
-        return this.blockStats;
+        this.setAndFixPositions(pos1, pos2);
+        this.areCoordinatesValid();
+        this.calculateBlockStats(world);
     }
 
-    private void calculateBlockStats(int dim, int x1, int y1, int z1, int x2, int y2, int z2) throws CommandException
+    private void calculateBlockStats(World world) throws CommandException
     {
         //System.out.printf("dim: %d x1: %d, y1: %d, z1: %d x2: %d y2: %d z2: %d\n", dim, x1, y1, z1, x2, y2, z2);
 
-        WorldServer worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(dim);
-        if (worldServer == null)
+        if (this.checkChunksAreLoaded(world) == false)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.invalid.dimension") + ": " + dim);
+            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
         }
+
+        int x1 = this.pos1.getX();
+        int y1 = this.pos1.getY();
+        int z1 = this.pos1.getZ();
+        int x2 = this.pos2.getX();
+        int y2 = this.pos2.getY();
+        int z2 = this.pos2.getZ();
 
         this.blockStats = new HashMap<String, BlockInfo>();
         this.longestName = 0;
@@ -214,6 +167,9 @@ public class BlockStats
         // 23:13:48 < diesieben07> there is BlockPos.getAllInBoxMutable
         // 23:14:06 < diesieben07> which returns an Iterable for all BlockPos' in a box, but re-uses the same instance
 
+        long timeBefore = System.currentTimeMillis();
+        MutableBlockPos pos = new MutableBlockPos(0, 0, 0);
+
         // Calculate the number of each block type identified by: "id << 4 | meta"
         for (int y = y1; y <= y2; ++y)
         {
@@ -221,8 +177,8 @@ public class BlockStats
             {
                 for (int z = z1; z <= z2; ++z)
                 {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    iBlockState = worldServer.getBlockState(pos).getActualState(worldServer, pos);
+                    pos.setPos(x, y, z);
+                    iBlockState = world.getBlockState(pos);
                     block = iBlockState.getBlock();
 
                     index = Block.getIdFromBlock(block) << 4 | (block.getMetaFromState(iBlockState) & 0xF);
@@ -230,7 +186,7 @@ public class BlockStats
                     counts[index]++;
 
                     // Count the TileEntities for each block type
-                    if (worldServer.getTileEntity(pos) != null)
+                    if (world.getTileEntity(pos) != null)
                     {
                         countsTE[index]++;
                     }
@@ -238,7 +194,8 @@ public class BlockStats
             }
         }
 
-        TellMe.logger.info("Counted " + count + " blocks.");
+        long timeAfter = System.currentTimeMillis();
+        TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %.3f seconds.", count, (timeAfter - timeBefore) / 1000f));
 
         String name;
         String dname;

@@ -84,11 +84,9 @@ public class DataDump
         Iterator<Block> iter = Block.REGISTRY.iterator();
         List<GameObjectData> list = new ArrayList<GameObjectData>();
 
-        GameObjectData data;
         while (iter.hasNext() == true)
         {
-            data = new GameObjectData(iter.next());
-            list.add(data);
+            list.add(new GameObjectData(iter.next()));
         }
 
         return this.getFormattedDump(list);
@@ -99,11 +97,9 @@ public class DataDump
         Iterator<Item> iter = Item.REGISTRY.iterator();
         List<GameObjectData> list = new ArrayList<GameObjectData>();
 
-        GameObjectData data;
         while (iter.hasNext() == true)
         {
-            data = new GameObjectData(iter.next());
-            list.add(data);
+            list.add(new GameObjectData(iter.next()));
         }
 
         return this.getFormattedDump(list);

@@ -9,11 +9,13 @@ import net.minecraft.util.text.TextComponentString;
 
 import fi.dy.masa.tellme.util.DataDump;
 
+import fi.dy.masa.tellme.util.DataDump;
+
 public class SubCommandDump extends SubCommand
 {
-    public SubCommandDump()
+    public SubCommandDump(CommandTellme baseCommand)
     {
-        super();
+        super(baseCommand);
         this.subSubCommands.add("blocks");
         this.subSubCommands.add("entities");
         this.subSubCommands.add("items");

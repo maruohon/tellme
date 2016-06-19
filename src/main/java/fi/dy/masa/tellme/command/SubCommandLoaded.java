@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.command;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import net.minecraft.command.CommandBase;
@@ -17,12 +18,12 @@ import fi.dy.masa.tellme.util.EntityInfo.EntityListType;
 
 public class SubCommandLoaded extends SubCommand
 {
-    public static final String[] ENTITIES_2 = new String[] { "chunk", "type" };
-    public static final String[] ENTITIES_3 = new String[] { "dump", "list" };
+    public static final String[] ENTITIES_3 = new String[] { "chunk", "type" };
+    public static final String[] ENTITIES_4 = new String[] { "dump", "list" };
 
-    public SubCommandLoaded()
+    public SubCommandLoaded(CommandTellme baseCommand)
     {
-        super();
+        super(baseCommand);
 
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("entities");
@@ -40,11 +41,11 @@ public class SubCommandLoaded extends SubCommand
     {
         if (args.length == 3 && args[1].equals("entities"))
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_2));
+            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_3));
         }
         else if (args.length == 4 && args[1].equals("entities"))
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_3));
+            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_4));
         }
 
         return super.getTabCompletionOptions(server, sender, args);
@@ -57,7 +58,7 @@ public class SubCommandLoaded extends SubCommand
 
         if (args.length < 2)
         {
-            String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
+            String pre = "/" + this.getBaseCommand().getCommandName() + " " + this.getCommandName();
 
             sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
             sender.addChatMessage(new TextComponentString(pre + " dimensions (not implemented yet)"));
@@ -74,7 +75,7 @@ public class SubCommandLoaded extends SubCommand
         {
             if (args.length < 4)
             {
-                String pre = "/" + CommandTellme.instance.getCommandName() + " " + this.getCommandName();
+                String pre = "/" + this.getBaseCommand().getCommandName() + " " + this.getCommandName();
 
                 sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
                 sender.addChatMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
@@ -106,10 +107,13 @@ public class SubCommandLoaded extends SubCommand
                 {
                     TellMe.logger.info(line);
                 }
+
+                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
             }
             else if (args[3].equals("dump"))
             {
-                DataDump.dumpDataToFile("loaded_entities", EntityInfo.getEntityCounts(world, type));
+                File f = DataDump.dumpDataToFile("loaded_entities", EntityInfo.getEntityCounts(world, type));
+                sender.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
             }
         }
         else if (args[1].equals("tileentities"))

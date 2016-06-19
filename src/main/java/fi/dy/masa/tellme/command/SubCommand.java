@@ -13,11 +13,18 @@ import net.minecraft.util.text.translation.I18n;
 
 public abstract class SubCommand implements ISubCommand
 {
-    protected ArrayList<String> subSubCommands = new ArrayList<String>();
+    protected final CommandTellme baseCommand;
+    protected final ArrayList<String> subSubCommands = new ArrayList<String>();
 
-    public SubCommand()
+    public SubCommand(CommandTellme baseCommand)
     {
+        this.baseCommand = baseCommand;
         this.subSubCommands.add("help");
+    }
+
+    public CommandTellme getBaseCommand()
+    {
+        return this.baseCommand;
     }
 
     @Override
