@@ -31,6 +31,7 @@ public class CommandTellme extends CommandBase
         registerSubCommand(new SubCommandBlockStats());
         registerSubCommand(new SubCommandDump());
         registerSubCommand(new SubCommandHelp());
+        registerSubCommand(new SubCommandLoaded());
     }
 
     @Override
