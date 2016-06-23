@@ -1,17 +1,12 @@
 package fi.dy.masa.tellme.command;
 
 import java.io.File;
-
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.translation.I18n;
-
-import fi.dy.masa.tellme.util.BiomeInfo;
-import fi.dy.masa.tellme.util.DataDump;
-
 import fi.dy.masa.tellme.util.BiomeInfo;
 import fi.dy.masa.tellme.util.DataDump;
 

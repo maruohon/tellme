@@ -2,26 +2,19 @@ package fi.dy.masa.tellme.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
-
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 
 public class DataDump
@@ -81,12 +74,11 @@ public class DataDump
 
     public List<String> getFormattedBlockDump()
     {
-        Iterator<Block> iter = Block.REGISTRY.iterator();
         List<GameObjectData> list = new ArrayList<GameObjectData>();
 
-        while (iter.hasNext() == true)
+        for (Block block : ForgeRegistries.BLOCKS)
         {
-            list.add(new GameObjectData(iter.next()));
+            list.add(new GameObjectData(block));
         }
 
         return this.getFormattedDump(list);
@@ -94,12 +86,11 @@ public class DataDump
 
     public List<String> getFormattedItemDump()
     {
-        Iterator<Item> iter = Item.REGISTRY.iterator();
         List<GameObjectData> list = new ArrayList<GameObjectData>();
 
-        while (iter.hasNext() == true)
+        for (Item item : ForgeRegistries.ITEMS)
         {
-            list.add(new GameObjectData(iter.next()));
+            list.add(new GameObjectData(item));
         }
 
         return this.getFormattedDump(list);
@@ -158,8 +149,6 @@ public class DataDump
         this.longestName = 0;
         this.longestDisplayName = 0;
 
-        Field idField = ReflectionHelper.findField(EntityList.class, "g", "field_180126_g", "stringToIDMapping");
-
         for (String name : EntityList.NAME_TO_CLASS.keySet())
         {
             Class<? extends Entity> c = (Class<? extends Entity>)EntityList.NAME_TO_CLASS.get(name);
@@ -172,18 +161,7 @@ public class DataDump
                 }
                 else
                 {
-                    try
-                    {
-                        @SuppressWarnings("unchecked")
-                        int id = ((Integer)((HashMap<String, Integer>)idField.get(null)).get(name)).intValue();
-                        entityData.add(new GameObjectData(name, c.getSimpleName(), id, "minecraft", "Minecraft"));
-                    }
-                    catch (IllegalAccessException e)
-                    {
-                        entityData.add(new GameObjectData(name, c.getSimpleName(), -1, "minecraft", "Minecraft"));
-                        TellMe.logger.error("getEntityDump(): Error while trying to read Entity IDs");
-                        //e.printStackTrace();
-                    }
+                    entityData.add(new GameObjectData(name, c.getSimpleName(), EntityList.getIDFromString(name), "minecraft", "Minecraft"));
                 }
             }
         }
