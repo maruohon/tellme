@@ -14,7 +14,7 @@ import fi.dy.masa.tellme.proxy.CommonProxy;
 import fi.dy.masa.tellme.reference.Reference;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION,
-    acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.9.4,1.10]")
+    acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.9.4,1.10.2]")
 public class TellMe
 {
     @Instance(Reference.MOD_ID)
