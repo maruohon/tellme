@@ -1,14 +1,10 @@
 package fi.dy.masa.tellme.command;
 
 import java.io.File;
-
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
-
-import fi.dy.masa.tellme.util.DataDump;
-
 import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandDump extends SubCommand
@@ -36,7 +32,7 @@ public class SubCommandDump extends SubCommand
         {
             if (args[1].equals("blocks"))
             {
-                File file = DataDump.dumpDataToFile("block_dump", new DataDump().getFormattedBlockDump());
+                File file = DataDump.dumpDataToFile("block_dump", DataDump.getFormattedBlockDump());
                 if (file != null)
                 {
                     sender.addChatMessage(new TextComponentString("Output written to file " + file.getName()));
@@ -44,7 +40,7 @@ public class SubCommandDump extends SubCommand
             }
             else if (args[1].equals("items"))
             {
-                File file = DataDump.dumpDataToFile("item_dump", new DataDump().getFormattedItemDump());
+                File file = DataDump.dumpDataToFile("item_dump", DataDump.getFormattedItemDump());
                 if (file != null)
                 {
                     sender.addChatMessage(new TextComponentString("Output written to file " + file.getName()));
@@ -52,7 +48,7 @@ public class SubCommandDump extends SubCommand
             }
             else if (args[1].equals("entities"))
             {
-                File file = DataDump.dumpDataToFile("entity_dump", new DataDump().getEntityDump());
+                File file = DataDump.dumpDataToFile("entity_dump", DataDump.getEntityDump());
                 if (file != null)
                 {
                     sender.addChatMessage(new TextComponentString("Output written to file " + file.getName()));

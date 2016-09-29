@@ -1,32 +1,26 @@
 package fi.dy.masa.tellme.util;
 
+import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import fi.dy.masa.tellme.TellMe;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
+import fi.dy.masa.tellme.TellMe;
 
 public class GameObjectData implements Comparable<GameObjectData>
 {
-    public String modId;
-    public String modName;
-    public String name;
-    public String displayName;
-    public int id;
-    public boolean hasSubtypes;
-
-    public GameObjectData(Block block)
-    {
-        this(Block.REGISTRY.getNameForObject(block), Block.getIdFromBlock(block), Item.getItemFromBlock(block));
-    }
-
-    public GameObjectData(Item item)
-    {
-        this(Item.REGISTRY.getNameForObject(item), Item.getIdFromItem(item), item);
-    }
+    private String modId;
+    private String modName;
+    private String name;
+    private String displayName;
+    private int id;
+    private int meta;
+    private boolean hasSubtypes;
+    private boolean subtypesKnown = true;
 
     public GameObjectData(String name, String dName, int id, String modId, String modName)
     {
@@ -37,11 +31,24 @@ public class GameObjectData implements Comparable<GameObjectData>
         this.id = id;
     }
 
-    public GameObjectData(ResourceLocation rl, int id, Item item)
+    public GameObjectData(ResourceLocation rl, int id, Block block)
+    {
+        this(rl, id, 0, block, false, null);
+
+        this.subtypesKnown = false;
+    }
+
+    public GameObjectData(ResourceLocation rl, int id, int meta, Block block, boolean hasSubTypes, @Nullable ItemStack stack)
+    {
+        this(rl, id, meta, Item.getItemFromBlock(block), hasSubTypes, stack);
+    }
+
+    public GameObjectData(ResourceLocation rl, int id, int meta, Item item, boolean hasSubTypes, @Nullable ItemStack stack)
     {
         this.displayName = "";
         this.id = id;
-        this.hasSubtypes = item != null && item.getHasSubtypes();
+        this.meta = meta;
+        this.hasSubtypes = hasSubTypes;
 
         if (rl == null)
         {
@@ -66,14 +73,10 @@ public class GameObjectData implements Comparable<GameObjectData>
             }
         }
 
-        // Get the display name for items that have no sub types (ie. we know there is a valid item at damage = 0)
-        if (this.hasSubtypes == false && item != null)
+        // Get the display name for items that we know a valid metadata/ItemStack for
+        if (stack != null)
         {
-            ItemStack stack = new ItemStack(item, 1, 0);
-            if (stack != null && stack.getItem() != null)
-            {
-                this.displayName = stack.getDisplayName();
-            }
+            this.displayName = stack.getDisplayName();
         }
     }
 
@@ -87,5 +90,66 @@ public class GameObjectData implements Comparable<GameObjectData>
         }
 
         return this.name.compareTo(other.name);
+    }
+
+    public String getModId()
+    {
+        return this.modId;
+    }
+
+    public String getModName()
+    {
+        return this.modName;
+    }
+
+    public String getName()
+    {
+        return this.name;
+    }
+
+    public String getDisplayName()
+    {
+        return this.displayName;
+    }
+
+    public int getId()
+    {
+        return this.id;
+    }
+
+    public int getMeta()
+    {
+        return this.meta;
+    }
+
+    public boolean areSubtypesKnown()
+    {
+        return this.subtypesKnown;
+    }
+
+    public boolean hasSubtypes()
+    {
+        return this.hasSubtypes;
+    }
+
+    public static void getDataForBlock(Block block, ResourceLocation rl, List<GameObjectData> list)
+    {
+        if (block != null)
+        {
+            int id = Block.getIdFromBlock(block);
+
+            TellMe.proxy.getBlockSubtypes(list, block, rl, id);
+        }
+
+    }
+
+    public static void getDataForItem(Item item, ResourceLocation rl, List<GameObjectData> list)
+    {
+        if (item != null)
+        {
+            int id = Item.getIdFromItem(item);
+
+            TellMe.proxy.getItemSubtypes(list, item, rl, id);
+        }
     }
 }

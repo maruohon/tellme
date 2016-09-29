@@ -6,12 +6,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -19,22 +22,22 @@ import fi.dy.masa.tellme.TellMe;
 
 public class DataDump
 {
-    public int longestModId = 0;
-    public int longestModName = 0;
-    public int longestName = 0;
-    public int longestDisplayName = 0;
+    private int longestModId = 0;
+    private int longestModName = 0;
+    private int longestName = 0;
+    private int longestDisplayName = 0;
 
-    public DataDump()
+    private DataDump()
     {
         this.resetColumnWidths();
     }
 
-    public void resetColumnWidths()
+    private void resetColumnWidths()
     {
         this.setColumnWidths(10, 10, 10, 5);
     }
 
-    public void setColumnWidths(int idLen, int modNameLen, int nameLen, int dispNameLen)
+    private void setColumnWidths(int idLen, int modNameLen, int nameLen, int dispNameLen)
     {
         this.longestModId = idLen;
         this.longestModName = modNameLen;
@@ -42,29 +45,29 @@ public class DataDump
         this.longestDisplayName = dispNameLen;
     }
 
-    public void updateColumnWidths(List<GameObjectData> list)
+    private void updateColumnWidths(List<GameObjectData> list)
     {
         for (GameObjectData data : list)
         {
-            int len = data.modId.length();
+            int len = data.getModId().length();
             if (len > this.longestModId)
             {
                 this.longestModId = len;
             }
 
-            len = data.modName.length();
+            len = data.getModName().length();
             if (len > this.longestModName)
             {
                 this.longestModName = len;
             }
 
-            len = data.name.length();
+            len = data.getName().length();
             if (len > this.longestName)
             {
                 this.longestName = len;
             }
 
-            len = data.displayName.length();
+            len = data.getDisplayName().length();
             if (len > this.longestDisplayName)
             {
                 this.longestDisplayName = len;
@@ -72,42 +75,18 @@ public class DataDump
         }
     }
 
-    public List<String> getFormattedBlockDump()
-    {
-        List<GameObjectData> list = new ArrayList<GameObjectData>();
-
-        for (Block block : ForgeRegistries.BLOCKS)
-        {
-            list.add(new GameObjectData(block));
-        }
-
-        return this.getFormattedDump(list);
-    }
-
-    public List<String> getFormattedItemDump()
-    {
-        List<GameObjectData> list = new ArrayList<GameObjectData>();
-
-        for (Item item : ForgeRegistries.ITEMS)
-        {
-            list.add(new GameObjectData(item));
-        }
-
-        return this.getFormattedDump(list);
-    }
-
-    public List<String> getFormattedDump(List<GameObjectData> list)
+    private List<String> getFormattedDump(List<GameObjectData> list)
     {
         this.resetColumnWidths();
         this.updateColumnWidths(list);
 
         Collections.sort(list);
         List<String> lines = new ArrayList<String>();
-        String fmt = String.format("%%-%ds %%-%ds %%-%ds %%8d %%14s   %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
-        String fmtTitle = String.format("%%-%ds %%-%ds %%-%ds %%8s %%16s %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
+        String fmt = String.format("%%-%ds  %%-%ds  %%-%ds %%8d %%10d %%9s  %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
+        String fmtTitle = String.format("%%-%ds  %%-%ds  %%-%ds %%8s %%10s %%9s  %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
 
         StringBuilder separator = new StringBuilder(256);
-        int len = this.longestModId + this.longestModName + this.longestName + this.longestDisplayName + 29;
+        int len = this.longestModId + this.longestModName + this.longestName + this.longestDisplayName + 36;
         for (int i = 0; i < len; ++i) { separator.append("-"); }
 
         lines.add(separator.toString());
@@ -118,36 +97,66 @@ public class DataDump
         lines.add("*** WARNING ***");
         lines.add("The server doesn't have a list of sub block and sub items");
         lines.add("(= items with different damage value or blocks with different metadata).");
-        lines.add("That is why the block and item list dumps only contain one entry per block/item class (separate ID).");
+        lines.add("That is why the block and item list dumps only contain one entry per block/item class (separate ID) when run on a server.");
+        lines.add("NOTE: The metadata value displayed is from the ItemStacks from getSubBlocks(), it's NOT necessarily the meta value in world!!");
+        lines.add("NOTE: For blocks, Subtypes = true is only based on the number of returned ItemStacks from getSubBlocks() being > 1");
+        lines.add("NOTE: For blocks, Subtypes = ? means that Item.getItemFromBlock(block) returned null or the command was run on the server side");
+
         lines.add(separator.toString());
-
-        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", "Name", "ID", "| Has subtypes |", "Display Name"));
-
+        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", "Name", "ID", "Item Meta", "Subtypes", "Display Name"));
         lines.add(separator.toString());
 
         for (GameObjectData data : list)
         {
-            if (data.hasSubtypes == true)
-            {
-                lines.add(String.format(fmt, data.modName, data.modId, data.name, data.id, "true", ""));
-            }
-            else
-            {
-                lines.add(String.format(fmt, data.modName, data.modId, data.name, data.id, "-", data.displayName));
-            }
+            String subtypes = data.areSubtypesKnown() == false ? "?" : (data.hasSubtypes() ? "true" : "false");
+
+            lines.add(String.format(fmt, data.getModName(), data.getModId(), data.getName(), data.getId(), data.getMeta(), subtypes, data.getDisplayName()));
         }
+
+        lines.add(separator.toString());
+        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", "Name", "ID", "Item Meta", "Subtypes", "Display Name"));
+        lines.add(separator.toString());
 
         return lines;
     }
 
-    public List<String> getEntityDump()
+    public static List<String> getFormattedBlockDump()
     {
+        DataDump data = new DataDump();
+        List<GameObjectData> list = new ArrayList<GameObjectData>();
+
+        Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
+
+        while (iter.hasNext())
+        {
+            Map.Entry<ResourceLocation, Block> entry = iter.next();
+            GameObjectData.getDataForBlock(entry.getValue(), entry.getKey(), list);
+        }
+
+        return data.getFormattedDump(list);
+    }
+
+    public static List<String> getFormattedItemDump()
+    {
+        DataDump data = new DataDump();
+        List<GameObjectData> list = new ArrayList<GameObjectData>();
+
+        Iterator<Map.Entry<ResourceLocation, Item>> iter = ForgeRegistries.ITEMS.getEntries().iterator();
+
+        while (iter.hasNext())
+        {
+            Map.Entry<ResourceLocation, Item> entry = iter.next();
+            GameObjectData.getDataForItem(entry.getValue(), entry.getKey(), list);
+        }
+
+        return data.getFormattedDump(list);
+    }
+
+    public static List<String> getEntityDump()
+    {
+        DataDump data = new DataDump();
         List<GameObjectData> entityData = new ArrayList<GameObjectData>();
         List<String> lines = new ArrayList<String>();
-        this.longestModId = 0;
-        this.longestModName = 0;
-        this.longestName = 0;
-        this.longestDisplayName = 0;
 
         for (String name : EntityList.NAME_TO_CLASS.keySet())
         {
@@ -166,13 +175,13 @@ public class DataDump
             }
         }
 
-        this.setColumnWidths(10, 10, 18, 19);
-        this.updateColumnWidths(entityData);
+        data.setColumnWidths(10, 10, 18, 19);
+        data.updateColumnWidths(entityData);
         Collections.sort(entityData);
-        String fmt = String.format("%%-%ds %%-%ds %%-%ds %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
+        String fmt = String.format("%%-%ds %%-%ds %%-%ds %%-%ds", data.longestModName, data.longestModId, data.longestName, data.longestDisplayName);
 
         StringBuilder separator = new StringBuilder(256);
-        int len = this.longestModId + this.longestModName + this.longestName + this.longestDisplayName + 13;
+        int len = data.longestModId + data.longestModName + data.longestName + data.longestDisplayName + 13;
         for (int i = 0; i < len; ++i) { separator.append("-"); }
 
         lines.add(String.format(fmt + " %s", "Mod Name", "Mod ID", "Entity Identifier", "Entity class name", "Entity ID"));
@@ -180,7 +189,7 @@ public class DataDump
 
         for (GameObjectData d : entityData)
         {
-            lines.add(String.format(fmt + " %9d", d.modName, d.modId, d.name, d.displayName, d.id));
+            lines.add(String.format(fmt + " %9d", d.getModName(), d.getModId(), d.getName(), d.getDisplayName(), d.getId()));
         }
 
         return lines;
