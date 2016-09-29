@@ -1,5 +1,7 @@
 package fi.dy.masa.tellme.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -9,14 +11,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.oredict.OreDictionary;
 import fi.dy.masa.tellme.TellMe;
 
 public class GameObjectData implements Comparable<GameObjectData>
 {
+    private static final String EMPTY = "";
+
     private String modId;
     private String modName;
     private String name;
     private String displayName;
+    private String oredictKeys = EMPTY;
     private int id;
     private int meta;
     private boolean hasSubtypes;
@@ -78,6 +84,46 @@ public class GameObjectData implements Comparable<GameObjectData>
         {
             this.displayName = stack.getDisplayName();
         }
+
+        this.oredictKeys = getOredictKeysJoined(stack);
+    }
+
+    public static String getOredictKeysJoined(@Nullable ItemStack stack)
+    {
+        if (stack == null)
+        {
+            return EMPTY;
+        }
+
+        StringBuilder str = new StringBuilder(128);
+        int[] ids = OreDictionary.getOreIDs(stack);
+
+        if (ids.length == 0)
+        {
+            return EMPTY;
+        }
+
+        List<String> names = new ArrayList<String>();
+
+        for (int id : ids)
+        {
+            names.add(OreDictionary.getOreName(id));
+        }
+
+        if (names.size() == 1)
+        {
+            return names.get(0);
+        }
+
+        Collections.sort(names);
+        str.append(names.get(0));
+
+        for (int i = 1; i < names.size(); i++)
+        {
+            str.append(", ").append(names.get(i));
+        }
+
+        return str.toString();
     }
 
     @Override
@@ -110,6 +156,11 @@ public class GameObjectData implements Comparable<GameObjectData>
     public String getDisplayName()
     {
         return this.displayName;
+    }
+
+    public String getOreDictKeys()
+    {
+        return this.oredictKeys;
     }
 
     public int getId()

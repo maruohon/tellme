@@ -26,6 +26,7 @@ public class DataDump
     private int longestModName = 0;
     private int longestName = 0;
     private int longestDisplayName = 0;
+    private int longestOreDictString = 0;
 
     private DataDump()
     {
@@ -34,15 +35,16 @@ public class DataDump
 
     private void resetColumnWidths()
     {
-        this.setColumnWidths(10, 10, 10, 5);
+        this.setColumnWidths(10, 10, 10, 5, 0);
     }
 
-    private void setColumnWidths(int idLen, int modNameLen, int nameLen, int dispNameLen)
+    private void setColumnWidths(int idLen, int modNameLen, int nameLen, int dispNameLen, int oreDictLen)
     {
         this.longestModId = idLen;
         this.longestModName = modNameLen;
         this.longestName = nameLen;
         this.longestDisplayName = dispNameLen;
+        this.longestOreDictString = oreDictLen;
     }
 
     private void updateColumnWidths(List<GameObjectData> list)
@@ -72,6 +74,12 @@ public class DataDump
             {
                 this.longestDisplayName = len;
             }
+
+            len = data.getOreDictKeys().length();
+            if (len > this.longestOreDictString)
+            {
+                this.longestOreDictString = len;
+            }
         }
     }
 
@@ -82,11 +90,13 @@ public class DataDump
 
         Collections.sort(list);
         List<String> lines = new ArrayList<String>();
-        String fmt = String.format("%%-%ds  %%-%ds  %%-%ds %%8d %%10d %%9s  %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
-        String fmtTitle = String.format("%%-%ds  %%-%ds  %%-%ds %%8s %%10s %%9s  %%-%ds", this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
+        String fmt = String.format("%%-%ds  %%-%ds  %%-%ds %%8d %%10d %%9s  %%-%ds  %%s",
+                this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
+        String fmtTitle = String.format("%%-%ds  %%-%ds  %%-%ds %%8s %%10s %%9s  %%-%ds  %%s",
+                this.longestModName, this.longestModId, this.longestName, this.longestDisplayName);
 
         StringBuilder separator = new StringBuilder(256);
-        int len = this.longestModId + this.longestModName + this.longestName + this.longestDisplayName + 36;
+        int len = this.longestModId + this.longestModName + this.longestName + this.longestDisplayName + this.longestOreDictString + 38;
         for (int i = 0; i < len; ++i) { separator.append("-"); }
 
         lines.add(separator.toString());
@@ -103,18 +113,19 @@ public class DataDump
         lines.add("NOTE: For blocks, Subtypes = ? means that Item.getItemFromBlock(block) returned null or the command was run on the server side");
 
         lines.add(separator.toString());
-        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", "Name", "ID", "Item Meta", "Subtypes", "Display Name"));
+        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", "Name", "ID", "Item Meta", "Subtypes", "Display Name", "OreDict keys"));
         lines.add(separator.toString());
 
         for (GameObjectData data : list)
         {
             String subtypes = data.areSubtypesKnown() == false ? "?" : (data.hasSubtypes() ? "true" : "false");
 
-            lines.add(String.format(fmt, data.getModName(), data.getModId(), data.getName(), data.getId(), data.getMeta(), subtypes, data.getDisplayName()));
+            lines.add(String.format(fmt, data.getModName(), data.getModId(), data.getName(), data.getId(), data.getMeta(),
+                    subtypes, data.getDisplayName(), data.getOreDictKeys()));
         }
 
         lines.add(separator.toString());
-        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", "Name", "ID", "Item Meta", "Subtypes", "Display Name"));
+        lines.add(String.format(fmtTitle, "Mod Name", "Mod ID", "Name", "ID", "Item Meta", "Subtypes", "Display Name", "OreDict keys"));
         lines.add(separator.toString());
 
         return lines;
@@ -175,7 +186,7 @@ public class DataDump
             }
         }
 
-        data.setColumnWidths(10, 10, 18, 19);
+        data.setColumnWidths(10, 10, 18, 19, 0);
         data.updateColumnWidths(entityData);
         Collections.sort(entityData);
         String fmt = String.format("%%-%ds %%-%ds %%-%ds %%-%ds", data.longestModName, data.longestModId, data.longestName, data.longestDisplayName);
