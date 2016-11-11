@@ -2,10 +2,13 @@ package fi.dy.masa.tellme.proxy;
 
 import java.util.List;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import fi.dy.masa.tellme.util.GameObjectData;
 
@@ -28,6 +31,10 @@ public class CommonProxy
         {
             list.add(new GameObjectData(rl, id, 0, item, false, new ItemStack(item, 1, 0)));
         }
+    }
+
+    public void getExtendedBlockStateInfo(World world, IBlockState state, BlockPos pos, List<String> lines)
+    {
     }
 
     public void registerClientCommand() { }
