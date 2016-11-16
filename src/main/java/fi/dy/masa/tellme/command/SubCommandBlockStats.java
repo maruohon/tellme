@@ -81,7 +81,7 @@ public class SubCommandBlockStats extends SubCommand
                 int rx = Math.abs(CommandBase.parseInt(args[2]));
                 int ry = Math.abs(CommandBase.parseInt(args[3]));
                 int rz = Math.abs(CommandBase.parseInt(args[4]));
-                blockStats.calculateBlockStats(player.worldObj, player.getPosition(), rx, ry, rz);
+                blockStats.calculateBlockStats(player.getEntityWorld(), player.getPosition(), rx, ry, rz);
                 player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
             }
             // cuboid corners
@@ -90,7 +90,7 @@ public class SubCommandBlockStats extends SubCommand
                 player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
                 BlockPos pos1 = CommandBase.parseBlockPos(player, args, 2, false);
                 BlockPos pos2 = CommandBase.parseBlockPos(player, args, 5, false);
-                blockStats.calculateBlockStats(player.worldObj, pos1, pos2);
+                blockStats.calculateBlockStats(player.getEntityWorld(), pos1, pos2);
                 player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
             }
             else

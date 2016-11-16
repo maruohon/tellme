@@ -81,8 +81,8 @@ public class BlockStats
         int yMax = Math.max(pos1.getY(), pos2.getY());
         int zMax = Math.max(pos1.getZ(), pos2.getZ());
 
-        yMin = MathHelper.clamp_int(yMin, 0, 255);
-        yMax = MathHelper.clamp_int(yMax, 0, 255);
+        yMin = MathHelper.clamp(yMin, 0, 255);
+        yMax = MathHelper.clamp(yMax, 0, 255);
 
         this.pos1 = new BlockPos(xMin, yMin, zMin);
         this.pos2 = new BlockPos(xMax, yMax, zMax);
@@ -214,6 +214,7 @@ public class BlockStats
                     // We don't want to use getItemDropped(), that would turn Stone into Cobblestone etc.
                     //ItemStack stack = new ItemStack(block.getItemDropped(meta, worldServer.rand, 0), 1, block.damageDropped(meta));
 
+                    @SuppressWarnings("deprecation")
                     ItemStack stack = new ItemStack(block, 1, block.damageDropped(block.getStateFromMeta(meta)));
                     name = Block.REGISTRY.getNameForObject(block).toString();
 

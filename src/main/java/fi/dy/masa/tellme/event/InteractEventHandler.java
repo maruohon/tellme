@@ -7,10 +7,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
-
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
@@ -70,8 +68,8 @@ public class InteractEventHandler
         ItemStack stack = player.getHeldItemMainhand();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (player.worldObj.isRemote == true || stack == null || stack.getItem() != Items.GOLD_NUGGET || event.getHand() != EnumHand.MAIN_HAND ||
-            player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
+        if (player.getEntityWorld().isRemote == true || stack == null || stack.getItem() != Items.GOLD_NUGGET ||
+            event.getHand() != EnumHand.MAIN_HAND || player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }

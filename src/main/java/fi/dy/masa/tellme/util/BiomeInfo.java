@@ -59,7 +59,7 @@ public class BiomeInfo
 
     public static void printCurrentBiomeInfoToChat(EntityPlayer player)
     {
-        World world = player.worldObj;
+        World world = player.getEntityWorld();
         BlockPos pos = player.getPosition();
         Biome bgb = world.getBiome(pos);
 
