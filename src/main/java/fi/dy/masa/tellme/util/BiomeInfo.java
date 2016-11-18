@@ -67,14 +67,14 @@ public class BiomeInfo
         String aq = TextFormatting.AQUA.toString();
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
-        player.addChatMessage(new TextComponentString("------------- Current biome info ------------"));
-        player.addChatMessage(new TextComponentString(String.format("Biome Name: %s%s%s - Biome ID: %s%d%s",
+        player.sendMessage(new TextComponentString("------------- Current biome info ------------"));
+        player.sendMessage(new TextComponentString(String.format("Biome Name: %s%s%s - Biome ID: %s%d%s",
                 pre, bgb.getBiomeName(), rst, pre, Biome.getIdForBiome(bgb), rst)));
-        player.addChatMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s%s",
+        player.sendMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s%s",
                 pre, bgb.canRain(), rst, pre, bgb.getRainfall(), rst, pre, bgb.getEnableSnow(), rst)));
-        player.addChatMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
+        player.sendMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
                 pre, bgb.getWaterColorMultiplier(), bgb.getWaterColorMultiplier(), rst)));
-        player.addChatMessage(new TextComponentString(String.format("temperature: %s%f%s, temp. category: %s%s%s",
+        player.sendMessage(new TextComponentString(String.format("temperature: %s%f%s, temp. category: %s%s%s",
                 pre, bgb.getFloatTemperature(pos), rst, aq, bgb.getTempCategory(), rst)));
 
         // Get the grass and foliage colors, if called on the client side

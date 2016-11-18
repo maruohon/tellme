@@ -21,7 +21,7 @@ public class SubCommandBiome extends SubCommand
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "biome";
     }
@@ -43,12 +43,12 @@ public class SubCommandBiome extends SubCommand
             else if (args[1].equals("dump"))
             {
                 File f = DataDump.dumpDataToFile("biome_dump", BiomeInfo.getBiomeList());
-                sender.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
+                sender.sendMessage(new TextComponentString("Output written to file " + f.getName()));
             }
             else if (args[1].equals("list"))
             {
                 BiomeInfo.printBiomeListToLogger();
-                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
+                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
             }
         }
     }

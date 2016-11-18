@@ -30,7 +30,7 @@ public class SubCommandBlockStats extends SubCommand
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "blockstats";
     }
@@ -48,15 +48,15 @@ public class SubCommandBlockStats extends SubCommand
         // "/tellme bockstats"
         if (args.length < 2)
         {
-            String pre = "/" + this.getBaseCommand().getCommandName() + " " + this.getCommandName();
+            String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
 
-            player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
-            player.addChatMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
-            player.addChatMessage(new TextComponentString(pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
-            player.addChatMessage(new TextComponentString(pre + " query"));
-            player.addChatMessage(new TextComponentString(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
-            player.addChatMessage(new TextComponentString(pre + " dump"));
-            player.addChatMessage(new TextComponentString(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+            player.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
+            player.sendMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
+            player.sendMessage(new TextComponentString(pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
+            player.sendMessage(new TextComponentString(pre + " query"));
+            player.sendMessage(new TextComponentString(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+            player.sendMessage(new TextComponentString(pre + " dump"));
+            player.sendMessage(new TextComponentString(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
 
             return;
         }
@@ -77,28 +77,28 @@ public class SubCommandBlockStats extends SubCommand
             // range
             if (args.length == 5)
             {
-                player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
+                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
                 int rx = Math.abs(CommandBase.parseInt(args[2]));
                 int ry = Math.abs(CommandBase.parseInt(args[3]));
                 int rz = Math.abs(CommandBase.parseInt(args[4]));
                 blockStats.calculateBlockStats(player.getEntityWorld(), player.getPosition(), rx, ry, rz);
-                player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
+                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
             }
             // cuboid corners
             else if (args.length == 8)
             {
-                player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
+                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
                 BlockPos pos1 = CommandBase.parseBlockPos(player, args, 2, false);
                 BlockPos pos2 = CommandBase.parseBlockPos(player, args, 5, false);
                 blockStats.calculateBlockStats(player.getEntityWorld(), pos1, pos2);
-                player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
+                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
             }
             else
             {
                 throw new WrongUsageException(I18n.translateToLocal("info.command.invalid.argument.number")
                     + " " + I18n.translateToLocal("info.command.usage") + ": /"
-                    + this.getBaseCommand().getCommandName() + " " + this.getCommandName() + " count <x-distance> <y-distance> <z-distance>"
-                    + " or /" + this.getBaseCommand().getCommandName() + " " + this.getCommandName()
+                    + this.getBaseCommand().getName() + " " + this.getName() + " count <x-distance> <y-distance> <z-distance>"
+                    + " or /" + this.getBaseCommand().getName() + " " + this.getName()
                     + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
             }
         }
@@ -118,12 +118,12 @@ public class SubCommandBlockStats extends SubCommand
             if (args[1].equals("query"))
             {
                 blockStats.printBlockStatsToLogger();
-                player.addChatMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
+                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
             }
             else // dump
             {
                 File f = DataDump.dumpDataToFile("block_stats", blockStats.getBlockStatsLines());
-                player.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
+                player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
             }
         }
     }

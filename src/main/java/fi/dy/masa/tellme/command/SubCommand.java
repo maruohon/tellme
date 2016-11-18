@@ -2,7 +2,6 @@ package fi.dy.masa.tellme.command;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -34,7 +33,7 @@ public abstract class SubCommand implements ISubCommand
     }
 
     @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
         if (args.length == 2 || (args.length == 3 && args[1].equals("help")))
         {
@@ -45,21 +44,16 @@ public abstract class SubCommand implements ISubCommand
     }
 
     @Override
-    public String getSubCommandsHelpString()
+    public String getHelpString()
     {
-        StringBuilder str = new StringBuilder(I18n.translateToLocal("info.subcommands.available") + ": ");
-
-        for (int i = 0; i < this.subSubCommands.size() - 1; ++i)
+        if (this.subSubCommands.size() == 0)
         {
-            str.append(this.subSubCommands.get(i) + ", ");
-        }
-        if (this.subSubCommands.size() >= 1)
-        {
-            str.append(this.subSubCommands.get(this.subSubCommands.size() - 1));
-            return str.toString();
+            return "";
         }
 
-        return "";
+        StringBuilder str = new StringBuilder("Available sub-commands: ");
+        str.append(String.join(", ", this.subSubCommands));
+        return str.toString();
     }
 
     @Override
@@ -68,14 +62,14 @@ public abstract class SubCommand implements ISubCommand
         // "/tellme command"
         if (args.length == 1)
         {
-            sender.addChatMessage(new TextComponentString(this.getSubCommandsHelpString()));
+            sender.sendMessage(new TextComponentString(this.getHelpString()));
         }
         // "/tellme command [help|unknown]"
         else if (args.length == 2)
         {
             if (args[1].equals("help"))
             {
-                sender.addChatMessage(new TextComponentString(this.getSubCommandsHelpString()));
+                sender.sendMessage(new TextComponentString(this.getHelpString()));
             }
             else if (this.subSubCommands.contains(args[1]) == false)
             {
@@ -87,11 +81,11 @@ public abstract class SubCommand implements ISubCommand
         {
             if (args[2].equals("help"))
             {
-                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommands.help")));
+                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommands.help")));
             }
             else if (this.subSubCommands.contains(args[2]) == true)
             {
-                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[0] + ".help." + args[2])));
+                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[0] + ".help." + args[2])));
             }
             else
             {

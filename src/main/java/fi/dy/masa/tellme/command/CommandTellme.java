@@ -31,15 +31,15 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "tellme";
     }
 
     @Override
-    public String getCommandUsage(ICommandSender sender)
+    public String getUsage(ICommandSender sender)
     {
-        return "/" + this.getCommandName() + " help";
+        return "/" + this.getName() + " help";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] strArr, BlockPos pos)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] strArr, BlockPos pos)
     {
         if (strArr.length == 1)
         {
@@ -60,7 +60,7 @@ public class CommandTellme extends CommandBase
             ISubCommand sc = this.subCommands.get(strArr[0]);
             if (sc != null)
             {
-                return sc.getTabCompletionOptions(server, sender, strArr);
+                return sc.getTabCompletions(server, sender, strArr);
             }
         }
         return null;
@@ -82,18 +82,18 @@ public class CommandTellme extends CommandBase
             }
             else
             {
-                throw new WrongUsageException(I18n.translateToLocal("info.command.unknown") + ": /" + this.getCommandName() + " " + commandArgs[0], new Object[0]);
+                throw new WrongUsageException(I18n.translateToLocal("info.command.unknown") + ": /" + this.getName() + " " + commandArgs[0], new Object[0]);
             }
         }
 
-        throw new WrongUsageException(I18n.translateToLocal("info.command.help") + ": '" + getCommandUsage(sender) + "'", new Object[0]);
+        throw new WrongUsageException(I18n.translateToLocal("info.command.help") + ": '" + getUsage(sender) + "'", new Object[0]);
     }
 
     public void registerSubCommand(ISubCommand cmd)
     {
-        if (this.subCommands.containsKey(cmd.getCommandName()) == false)
+        if (this.subCommands.containsKey(cmd.getName()) == false)
         {
-            this.subCommands.put(cmd.getCommandName(), cmd);
+            this.subCommands.put(cmd.getName(), cmd);
         }
     }
 

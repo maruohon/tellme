@@ -18,7 +18,7 @@ public class SubCommandHelp extends SubCommand
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "help";
     }
@@ -34,12 +34,12 @@ public class SubCommandHelp extends SubCommand
         if (args.length > 2)
         {
             throw new WrongUsageException(I18n.translateToLocal("info.command.usage") + ": /"
-                + this.getBaseCommand().getCommandName() + " " + getCommandName() + " [" + I18n.translateToLocal("info.command.name") + "]");
+                + this.getBaseCommand().getName() + " " + getName() + " [" + I18n.translateToLocal("info.command.name") + "]");
         }
 
         if (args.length == 2)
         {
-            sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[1])));
+            sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[1])));
             return;
         }
 
@@ -49,29 +49,29 @@ public class SubCommandHelp extends SubCommand
 
         for (int i = 0; i < subCommands.size() - 2; ++i)
         {
-            str.append("/" + this.getBaseCommand().getCommandName() + " " + subCommands.get(i) + ", ");
+            str.append("/" + this.getBaseCommand().getName() + " " + subCommands.get(i) + ", ");
         }
 
         if (subCommands.size() > 1)
         {
-            str.append("/" + this.getBaseCommand().getCommandName() + " " + subCommands.get(subCommands.size() - 2) + " " + I18n.translateToLocal("info.and") + " ");
+            str.append("/" + this.getBaseCommand().getName() + " " + subCommands.get(subCommands.size() - 2) + " " + I18n.translateToLocal("info.and") + " ");
         }
 
         // Last or only command
         if (subCommands.size() >= 1)
         {
-            str.append("/" + this.getBaseCommand().getCommandName() + " " + subCommands.get(subCommands.size() - 1));
+            str.append("/" + this.getBaseCommand().getName() + " " + subCommands.get(subCommands.size() - 1));
         }
 
         // List of sub commands
-        sender.addChatMessage(new TextComponentString(str.toString()));
+        sender.sendMessage(new TextComponentString(str.toString()));
 
         // Sub command help
-        sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.help.subcommand") + " '/" + this.getBaseCommand().getCommandName() + " <sub_command> help'"));
+        sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.help.subcommand") + " '/" + this.getBaseCommand().getName() + " <sub_command> help'"));
     }
 
     @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
         // "/tellme help ???"
         if (args.length == 2)

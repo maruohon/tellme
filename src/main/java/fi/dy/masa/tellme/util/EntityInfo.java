@@ -47,7 +47,7 @@ public class EntityInfo
     {
         for (String line : getBasicEntityInfo(target))
         {
-            player.addChatMessage(new TextComponentString(line));
+            player.sendMessage(new TextComponentString(line));
         }
     }
 
@@ -64,7 +64,7 @@ public class EntityInfo
     public static void dumpFullEntityInfoToFile(EntityPlayer player, Entity target)
     {
         File f = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target));
-        player.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
+        player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
     }
 
     public static List<String> getEntityCounts(World world, EntityListType type)

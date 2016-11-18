@@ -53,7 +53,7 @@ public class ItemInfo
     {
         for (String line : getBasicItemInfo(stack))
         {
-            player.addChatMessage(new TextComponentString(line));
+            player.sendMessage(new TextComponentString(line));
         }
     }
 
@@ -70,6 +70,6 @@ public class ItemInfo
     public static void dumpItemInfoToFile(EntityPlayer player, ItemStack stack)
     {
         File f = DataDump.dumpDataToFile("item_data", getFullItemInfo(stack));
-        player.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
+        player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
     }
 }

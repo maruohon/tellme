@@ -25,7 +25,7 @@ public class InteractEventHandler
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (world.isRemote == true || stack == null || stack.getItem() != Items.GOLD_NUGGET || event.getHand() != EnumHand.MAIN_HAND ||
-            player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
+            player.canUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }
@@ -43,7 +43,7 @@ public class InteractEventHandler
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (world.isRemote == true || stack == null || event.getHand() != EnumHand.MAIN_HAND ||
-            player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
+            player.canUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }
@@ -69,7 +69,7 @@ public class InteractEventHandler
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (player.getEntityWorld().isRemote == true || stack == null || stack.getItem() != Items.GOLD_NUGGET ||
-            event.getHand() != EnumHand.MAIN_HAND || player.canCommandSenderUseCommand(4, "getblockoritemnbtinfo") == false)
+            event.getHand() != EnumHand.MAIN_HAND || player.canUseCommand(4, "getblockoritemnbtinfo") == false)
         {
             return;
         }

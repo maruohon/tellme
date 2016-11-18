@@ -31,13 +31,13 @@ public class SubCommandLoaded extends SubCommand
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "loaded";
     }
 
     @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
         if (args.length == 3 && args[1].equals("entities"))
         {
@@ -48,7 +48,7 @@ public class SubCommandLoaded extends SubCommand
             return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_4));
         }
 
-        return super.getTabCompletionOptions(server, sender, args);
+        return super.getTabCompletions(server, sender, args);
     }
 
     @Override
@@ -58,12 +58,12 @@ public class SubCommandLoaded extends SubCommand
 
         if (args.length < 2)
         {
-            String pre = "/" + this.getBaseCommand().getCommandName() + " " + this.getCommandName();
+            String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
 
-            sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
-            sender.addChatMessage(new TextComponentString(pre + " dimensions (not implemented yet)"));
-            sender.addChatMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
-            sender.addChatMessage(new TextComponentString(pre + " tileentities (not implemented yet)"));
+            sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
+            sender.sendMessage(new TextComponentString(pre + " dimensions (not implemented yet)"));
+            sender.sendMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
+            sender.sendMessage(new TextComponentString(pre + " tileentities (not implemented yet)"));
 
             return;
         }
@@ -75,10 +75,10 @@ public class SubCommandLoaded extends SubCommand
         {
             if (args.length < 4)
             {
-                String pre = "/" + this.getBaseCommand().getCommandName() + " " + this.getCommandName();
+                String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
 
-                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
-                sender.addChatMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
+                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
+                sender.sendMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
 
                 return;
             }
@@ -108,12 +108,12 @@ public class SubCommandLoaded extends SubCommand
                     TellMe.logger.info(line);
                 }
 
-                sender.addChatMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
+                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
             }
             else if (args[3].equals("dump"))
             {
                 File f = DataDump.dumpDataToFile("loaded_entities", EntityInfo.getEntityCounts(world, type));
-                sender.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
+                sender.sendMessage(new TextComponentString("Output written to file " + f.getName()));
             }
         }
         else if (args[1].equals("tileentities"))

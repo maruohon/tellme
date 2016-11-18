@@ -3,7 +3,7 @@ package fi.dy.masa.tellme.command;
 public class ClientCommandTellme extends CommandTellme
 {
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "ctellme";
     }

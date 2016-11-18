@@ -95,7 +95,7 @@ public class BlockInfo
     {
         for (String line : getBasicBlockInfo(player, world, pos))
         {
-            player.addChatMessage(new TextComponentString(line));
+            player.sendMessage(new TextComponentString(line));
         }
     }
 
@@ -112,6 +112,6 @@ public class BlockInfo
     public static void dumpBlockInfoToFile(EntityPlayer player, World world, BlockPos pos)
     {
         File f = DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, pos));
-        player.addChatMessage(new TextComponentString("Output written to file " + f.getName()));
+        player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
     }
 }
