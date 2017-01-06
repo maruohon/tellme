@@ -18,7 +18,7 @@ public class SubCommandDump extends SubCommand
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "dump";
     }
@@ -35,7 +35,7 @@ public class SubCommandDump extends SubCommand
                 File file = DataDump.dumpDataToFile("block_dump", DataDump.getFormattedBlockDump());
                 if (file != null)
                 {
-                    sender.addChatMessage(new TextComponentString("Output written to file " + file.getName()));
+                    sender.sendMessage(new TextComponentString("Output written to file " + file.getName()));
                 }
             }
             else if (args[1].equals("items"))
@@ -43,7 +43,7 @@ public class SubCommandDump extends SubCommand
                 File file = DataDump.dumpDataToFile("item_dump", DataDump.getFormattedItemDump());
                 if (file != null)
                 {
-                    sender.addChatMessage(new TextComponentString("Output written to file " + file.getName()));
+                    sender.sendMessage(new TextComponentString("Output written to file " + file.getName()));
                 }
             }
             else if (args[1].equals("entities"))
@@ -51,7 +51,7 @@ public class SubCommandDump extends SubCommand
                 File file = DataDump.dumpDataToFile("entity_dump", DataDump.getEntityDump());
                 if (file != null)
                 {
-                    sender.addChatMessage(new TextComponentString("Output written to file " + file.getName()));
+                    sender.sendMessage(new TextComponentString("Output written to file " + file.getName()));
                 }
             }
         }
