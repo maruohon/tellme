@@ -1,10 +1,10 @@
 package fi.dy.masa.tellme.command;
 
 import java.util.List;
-
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
 
 public interface ISubCommand
 {
@@ -20,6 +20,6 @@ public interface ISubCommand
     /* Gets the sub commands for this (sub) command.*/
     List<String> getSubCommands();
 
-    /* Gets the sub command help string ready for printing. */
-    String getHelpString();
+    /* Gets the sub command help string. */
+    ITextComponent getHelp();
 }

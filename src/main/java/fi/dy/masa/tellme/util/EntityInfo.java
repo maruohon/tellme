@@ -96,9 +96,9 @@ public class EntityInfo
             perTypeCount.put(entity.getClass(), count);
         }
 
-        lines.add("--------------------------------------");
-        lines.add("    Loaded entities by entity type    ");
-        lines.add("--------------------------------------");
+        lines.add("---------------------------------------------------------------");
+        lines.add("  Loaded entities by entity type");
+        lines.add("---------------------------------------------------------------");
         lines.add(String.format("World '%s' (dim: %d):", world.provider.getDimensionType().name(), world.provider.getDimension()));
         List<EntitiesPerTypeHolder> counts = new ArrayList<EntitiesPerTypeHolder>();
 
@@ -120,7 +120,7 @@ public class EntityInfo
             lines.add(String.format("%18s: %5d entities", name, holder.count));
         }
 
-        lines.add("--------------------------------------");
+        lines.add("---------------------------------------------------------------");
 
         return lines;
     }
@@ -153,9 +153,9 @@ public class EntityInfo
                 perChunkCount.put(chunk.getChunkCoordIntPair(), count);
             }
 
-            lines.add("--------------------------------");
-            lines.add("    Loaded entities by chunk    ");
-            lines.add("--------------------------------");
+            lines.add("---------------------------------------------------------------");
+            lines.add("  Loaded entities by chunk");
+            lines.add("---------------------------------------------------------------");
             lines.add(String.format("World '%s' (dim: %d):", world.provider.getDimensionType().name(), world.provider.getDimension()));
             List<EntitiesPerChunkHolder> counts = new ArrayList<EntitiesPerChunkHolder>();
             int countNoEntities = 0;
@@ -178,11 +178,11 @@ public class EntityInfo
 
             for (EntitiesPerChunkHolder holder : counts)
             {
-                lines.add(String.format("Chunk [%3d, %3d] has %5d entities", holder.pos.chunkXPos, holder.pos.chunkZPos, holder.count));
+                lines.add(String.format("Chunk [%5d, %5d] has %4d entities", holder.pos.chunkXPos, holder.pos.chunkZPos, holder.count));
             }
 
             lines.add(String.format("There were also %d loaded chunks with no entities", countNoEntities));
-            lines.add("--------------------------------");
+            lines.add("---------------------------------------------------------------");
         }
 
         return lines;

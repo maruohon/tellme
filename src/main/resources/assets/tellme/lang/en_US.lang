@@ -2,45 +2,44 @@ language.name=English
 language.region=US
 language.code=en_US
 
-info.and=and
+tellme.command.error.unknown.subcommand=Unrecognized sub command or option: %s
+tellme.command.error.argument.outofrange=Argument(s) out of range
+tellme.command.error.argument.outofrange.toolarge=Argument(s) out of range: x or z distance > 512
+tellme.command.error.argument.outofrange.world=Argument(s) out of range (world limits): %s
+tellme.command.error.argument.invalid.number=Invalid number of argument(s)!
+tellme.command.error.playernotfound=No player found by name
+tellme.command.error.unknown=Unrecognized command: %s
+tellme.command.error.output.to.file.failed=Failed to write output to file
 
-info.command.argument.outofrange=Argument(s) out of range
-info.command.argument.outofrange.toolarge=Argument(s) out of range: x or z distance > 512
-info.command.argument.outofrange.world=Argument(s) out of range (world limits)
-info.command.available=Available commands are
-info.command.done=Done
-info.command.help=For help, type
-info.command.help.subcommand=For help about sub commands, type
-info.command.invalid.argument.number=Invalid number of argument(s)!
-info.command.name=command_name
-info.command.player.notfound=No player found by name
-info.command.output.to.file.failed=Failed to write output to file
-info.command.unknown=Unrecognized command
-info.command.unknown.subcommand=Unrecognized sub command or option
-info.command.usage=Usage
+tellme.command.info.commands.available=Available commands are:
+tellme.command.info.done=Done
+tellme.command.info.help=For help, type: '%s'
+tellme.command.info.help.subcommand=For help about sub commands, type
+tellme.command.info.name=command_name
+tellme.command.info.usage=Usage: %s
+tellme.command.info.usage.noparam=Usage:
 
-info.output.to.console=Command output printed to console
-info.output.to.file.cfgdir=Command output dumped to a file in the configuration directory
+tellme.info.output.to.console=Command output printed to console
+tellme.info.output.to.file=Output written to file '%s'
+tellme.info.output.to.file.cfgdir=Command output dumped to a file in the configuration directory
 
-info.subcommands.available=Available subcommands are
-info.subcommands.help=Gives information about the sub commands
-info.subcommands.help.unknown=Unknown sub command
+tellme.subcommand.blockstats.calculating=Calculating block statistics...
+tellme.subcommand.blockstats.error.chunksnotloaded=All the chunks for the requested range are not loaded, aborting!
+tellme.subcommand.blockstats.error.invalid.dimension=Invalid dimension!
+tellme.subcommand.blockstats.error.notplayer=This command can only be run by a player
+tellme.subcommand.blockstats.info.count=Counts all the blocks in the given area
+tellme.subcommand.blockstats.info.dump=Dumps the stats from a previous 'count' command into a file in config/tellme/
+tellme.subcommand.blockstats.info.main=Calculates the number of each block type in a given area
+tellme.subcommand.blockstats.info.query=Prints the stats from a previous 'count' command into the console
 
-info.subcommand.biome=Gives some information about biomes
-info.subcommand.biome.help.current=Prints information about the current biome to chat
-info.subcommand.biome.help.dump=Dumps the complete biome list into a timestamped file in config/tellme/
-info.subcommand.biome.help.list=Prints the complete biome list to the console
+tellme.subcommand.help.info.main=Gives information about the commands
 
-info.subcommand.dump=Dump block, entity and item lists
+tellme.subcommand.info.available=Available sub-commands are: %s
+tellme.subcommand.info.dump=Dump block, entity and item lists
+tellme.subcommand.info.help=Gives information about the sub-commands
+tellme.subcommand.info.unknown=Unknown sub command '%s'
 
-info.subcommand.help=Gives some information about the commands
-
-info.subcommand.blockstats=Calculates the number of each block type in a given area
-info.subcommand.blockstats.calculating=Calculating block statistics...
-info.subcommand.blockstats.chunksnotloaded=All the chunks for the requested range are not loaded, aborting!
-info.subcommand.blockstats.notplayer=This command can only be run by a player
-info.subcommand.blockstats.invalid.dimension=Invalid dimension!
-
-info.subcommand.blockstats.help.count=Counts all the blocks in the given area
-info.subcommand.blockstats.help.dump=Dumps the stats from a previous 'count' command into a file in config/tellme/
-info.subcommand.blockstats.help.query=Prints the stats from a previous 'count' command into the console
+tellme.subcommand.biome.info.current=Prints information about the current biome to chat
+tellme.subcommand.biome.info.dump=Dumps the complete biome list into a timestamped file in config/tellme/
+tellme.subcommand.biome.info.list=Prints the complete biome list to the console
+tellme.subcommand.biome.info.main=Gives some information about biomes

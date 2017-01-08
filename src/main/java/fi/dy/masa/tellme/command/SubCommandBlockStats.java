@@ -8,12 +8,12 @@ import com.google.common.collect.Maps;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.translation.I18n;
 import fi.dy.masa.tellme.util.BlockStats;
 import fi.dy.masa.tellme.util.DataDump;
 
@@ -38,19 +38,18 @@ public class SubCommandBlockStats extends SubCommand
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        if (sender instanceof EntityPlayer == false)
+        if ((sender instanceof EntityPlayer) == false)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.notplayer"));
+            throw new WrongUsageException("tellme.subcommand.blockstats.error.notplayer");
         }
 
         EntityPlayer player = (EntityPlayer) sender;
+        String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
 
         // "/tellme bockstats"
         if (args.length < 2)
         {
-            String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
-
-            player.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
+            this.sendMessage(sender, "tellme.command.info.usage.noparam");
             player.sendMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
             player.sendMessage(new TextComponentString(pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>"));
             player.sendMessage(new TextComponentString(pre + " query"));
@@ -77,29 +76,39 @@ public class SubCommandBlockStats extends SubCommand
             // range
             if (args.length == 5)
             {
-                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
-                int rx = Math.abs(CommandBase.parseInt(args[2]));
-                int ry = Math.abs(CommandBase.parseInt(args[3]));
-                int rz = Math.abs(CommandBase.parseInt(args[4]));
-                blockStats.calculateBlockStats(player.getEntityWorld(), player.getPosition(), rx, ry, rz);
-                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
+                try
+                {
+                    this.sendMessage(sender, "tellme.subcommand.blockstats.calculating");
+                    int rx = Math.abs(CommandBase.parseInt(args[2]));
+                    int ry = Math.abs(CommandBase.parseInt(args[3]));
+                    int rz = Math.abs(CommandBase.parseInt(args[4]));
+                    blockStats.calculateBlockStats(player.getEntityWorld(), player.getPosition(), rx, ry, rz);
+                    this.sendMessage(sender, "tellme.command.info.done");
+                }
+                catch (NumberInvalidException e)
+                {
+                    throw new WrongUsageException("tellme.command.info.usage", pre + " count <x-distance> <y-distance> <z-distance>");
+                }
             }
             // cuboid corners
             else if (args.length == 8)
             {
-                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand.blockstats.calculating")));
-                BlockPos pos1 = CommandBase.parseBlockPos(player, args, 2, false);
-                BlockPos pos2 = CommandBase.parseBlockPos(player, args, 5, false);
-                blockStats.calculateBlockStats(player.getEntityWorld(), pos1, pos2);
-                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.done")));
+                try
+                {
+                    this.sendMessage(sender, "tellme.subcommand.blockstats.calculating");
+                    BlockPos pos1 = CommandBase.parseBlockPos(player, args, 2, false);
+                    BlockPos pos2 = CommandBase.parseBlockPos(player, args, 5, false);
+                    blockStats.calculateBlockStats(player.getEntityWorld(), pos1, pos2);
+                    this.sendMessage(sender, "tellme.command.info.done");
+                }
+                catch (NumberInvalidException e)
+                {
+                    throw new WrongUsageException("tellme.command.info.usage", pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
+                }
             }
             else
             {
-                throw new WrongUsageException(I18n.translateToLocal("info.command.invalid.argument.number")
-                    + " " + I18n.translateToLocal("info.command.usage") + ": /"
-                    + this.getBaseCommand().getName() + " " + this.getName() + " count <x-distance> <y-distance> <z-distance>"
-                    + " or /" + this.getBaseCommand().getName() + " " + this.getName()
-                    + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
+                throw new WrongUsageException("tellme.command.error.argument.invalid.number");
             }
         }
         // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
@@ -118,12 +127,12 @@ public class SubCommandBlockStats extends SubCommand
             if (args[1].equals("query"))
             {
                 blockStats.printBlockStatsToLogger();
-                player.sendMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
+                this.sendMessage(sender, "tellme.info.output.to.console");
             }
             else // dump
             {
                 File f = DataDump.dumpDataToFile("block_stats", blockStats.getBlockStatsLines());
-                player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+                this.sendMessage(sender, "tellme.info.output.to.file", f.getName());
             }
         }
     }

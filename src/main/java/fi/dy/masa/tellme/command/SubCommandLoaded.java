@@ -8,7 +8,6 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.TellMe;
@@ -56,11 +55,11 @@ public class SubCommandLoaded extends SubCommand
     {
         super.execute(server, sender, args);
 
+        String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
+
         if (args.length < 2)
         {
-            String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
-
-            sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
+            this.sendMessage(sender, "tellme.command.info.usage.noparam");
             sender.sendMessage(new TextComponentString(pre + " dimensions (not implemented yet)"));
             sender.sendMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
             sender.sendMessage(new TextComponentString(pre + " tileentities (not implemented yet)"));
@@ -75,11 +74,8 @@ public class SubCommandLoaded extends SubCommand
         {
             if (args.length < 4)
             {
-                String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
-
-                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.usage") + ": "));
+                this.sendMessage(sender, "tellme.command.info.usage.noparam");
                 sender.sendMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
-
                 return;
             }
 
@@ -108,12 +104,12 @@ public class SubCommandLoaded extends SubCommand
                     TellMe.logger.info(line);
                 }
 
-                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
+                this.sendMessage(sender, "tellme.info.output.to.console");
             }
             else if (args[3].equals("dump"))
             {
                 File f = DataDump.dumpDataToFile("loaded_entities", EntityInfo.getEntityCounts(world, type));
-                sender.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+                this.sendMessage(sender, "tellme.info.output.to.file", f.getName());
             }
         }
         else if (args[1].equals("tileentities"))

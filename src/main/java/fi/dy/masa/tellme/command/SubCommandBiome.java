@@ -5,8 +5,6 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.translation.I18n;
 import fi.dy.masa.tellme.util.BiomeInfo;
 import fi.dy.masa.tellme.util.DataDump;
 
@@ -43,12 +41,12 @@ public class SubCommandBiome extends SubCommand
             else if (args[1].equals("dump"))
             {
                 File f = DataDump.dumpDataToFile("biome_dump", BiomeInfo.getBiomeList());
-                sender.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+                this.sendMessage(sender, "tellme.info.output.to.file", f.getName());
             }
             else if (args[1].equals("list"))
             {
                 BiomeInfo.printBiomeListToLogger();
-                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.output.to.console")));
+                this.sendMessage(sender, "tellme.info.output.to.console");
             }
         }
     }

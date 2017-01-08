@@ -7,8 +7,9 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.util.text.TextComponentTranslation;
 
 public abstract class SubCommand implements ISubCommand
 {
@@ -44,53 +45,56 @@ public abstract class SubCommand implements ISubCommand
     }
 
     @Override
-    public String getHelpString()
+    public ITextComponent getHelp()
     {
         if (this.subSubCommands.size() == 0)
         {
-            return "";
+            return new TextComponentString("");
         }
 
-        StringBuilder str = new StringBuilder("Available sub-commands: ");
-        str.append(String.join(", ", this.subSubCommands));
-        return str.toString();
+        return new TextComponentTranslation("tellme.subcommand.info.available", String.join(", ", this.subSubCommands));
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        // "/tellme command"
+        // "/tellme sub-command"
         if (args.length == 1)
         {
-            sender.sendMessage(new TextComponentString(this.getHelpString()));
+            sender.sendMessage(this.getHelp());
         }
-        // "/tellme command [help|unknown]"
+        // "/tellme sub-command [help|unknown]"
         else if (args.length == 2)
         {
             if (args[1].equals("help"))
             {
-                sender.sendMessage(new TextComponentString(this.getHelpString()));
+                sender.sendMessage(this.getHelp());
             }
             else if (this.subSubCommands.contains(args[1]) == false)
             {
-                throw new WrongUsageException(I18n.translateToLocal("info.command.unknown.subcommand") + " '" + args[1] + "'", new Object[0]);
+                throw new WrongUsageException("tellme.subcommand.info.unknown", args[1]);
             }
         }
-        // "/tellme command help subsubcommand"
+        // "/tellme sub-command help sub-sub-command"
         else if (args.length == 3 && args[1].equals("help"))
         {
             if (args[2].equals("help"))
             {
-                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommands.help")));
+                this.sendMessage(sender, "tellme.subcommand.info.help");
             }
-            else if (this.subSubCommands.contains(args[2]) == true)
+            else if (this.subSubCommands.contains(args[2]))
             {
-                sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[0] + ".help." + args[2])));
+                this.sendMessage(sender, "tellme.subcommand." + args[0] + ".info." + args[2]);
             }
             else
             {
-                throw new WrongUsageException(I18n.translateToLocal("info.subcommands.help.unknown") + " " + args[3], new Object[0]);
+                throw new WrongUsageException("tellme.subcommand.info.unknown", args[3]);
             }
         }
+    }
+
+    protected void sendMessage(ICommandSender sender, String message, Object... args)
+    {
+        sender.sendMessage(new TextComponentTranslation(message, args));
     }
 }

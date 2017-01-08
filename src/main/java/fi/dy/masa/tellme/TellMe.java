@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme;
 
+import java.io.File;
 import org.apache.logging.log4j.Logger;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -29,7 +30,7 @@ public class TellMe
     {
         instance = this;
         logger = event.getModLog();
-        configDirPath = event.getModConfigurationDirectory().getAbsolutePath().concat("/" + Reference.MOD_ID);
+        configDirPath = new File(event.getModConfigurationDirectory(), Reference.MOD_ID).getAbsolutePath();
         MinecraftForge.EVENT_BUS.register(new InteractEventHandler());
         proxy.registerClientCommand();
     }

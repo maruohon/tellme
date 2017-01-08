@@ -13,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.TellMe;
 
@@ -97,27 +96,27 @@ public class BlockStats
     {
         if (this.pos1.getY() < 0 || this.pos2.getY() < 0)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": y < 0");
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y < 0");
         }
 
         if (this.pos1.getY() > 255 || this.pos2.getY() > 255)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": y > 255");
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y > 255");
         }
 
         if (this.pos1.getX() < -30000000 || this.pos2.getX() < -30000000 || this.pos1.getZ() < -30000000 || this.pos2.getZ() < -30000000)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": x or z < -30000000");
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z < -30M");
         }
 
         if (this.pos1.getX() > 30000000 || this.pos2.getX() > 30000000 || this.pos1.getZ() > 30000000 || this.pos2.getZ() > 30000000)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.world") + ": x or z > 30000000");
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z > 30M");
         }
 
         if (Math.abs(this.pos1.getX() - this.pos2.getX()) > 512 || Math.abs(this.pos1.getZ() - this.pos2.getZ()) > 512)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.argument.outofrange.toolarge"));
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.toolarge");
         }
 
         return true;
@@ -144,7 +143,7 @@ public class BlockStats
 
         if (this.checkChunksAreLoaded(world) == false)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.subcommand.blockstats.chunksnotloaded"));
+            throw new WrongUsageException("tellme.subcommand.blockstats.error.chunksnotloaded");
         }
 
         int x1 = this.pos1.getX();
@@ -276,7 +275,7 @@ public class BlockStats
 
             for (BlockInfo blockInfo : values)
             {
-                if (this.filterFound(filters, blockInfo) == true)
+                if (this.filterFound(filters, blockInfo))
                 {
                     if (blockInfo.name.length() > nameLen)
                     {
@@ -319,7 +318,7 @@ public class BlockStats
 
         for (BlockInfo blockInfo : values)
         {
-            if (filters == null || this.filterFound(filters, blockInfo) == true)
+            if (filters == null || this.filterFound(filters, blockInfo))
             {
                 this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.displayName, blockInfo.count, blockInfo.id, blockInfo.meta, blockInfo.countTE));
             }
@@ -383,7 +382,7 @@ public class BlockStats
         // Try to parse the filter strings and handle possible meta restrictions etc.
         for (String filter : filters)
         {
-            if (this.filterMatches(filter, info) == true)
+            if (this.filterMatches(filter, info))
             {
                 return true;
             }

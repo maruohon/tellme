@@ -61,7 +61,7 @@ public class GameObjectData implements Comparable<GameObjectData>
             this.modId = "null";
             this.modName = "null";
             this.name = "" + item;
-            TellMe.logger.warn("ResourceLocation was null while identifying a block or item: " + item + " (id: " + id + ")");
+            TellMe.logger.warn("ResourceLocation was null while identifying a block or item: '" + item + "' (id: " + id + ")");
         }
         else
         {

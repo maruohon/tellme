@@ -211,6 +211,7 @@ public class DataDump
         File outFile = null;
 
         File cfgDir = new File(TellMe.configDirPath);
+
         if (cfgDir.exists() == false)
         {
             try
@@ -219,8 +220,7 @@ public class DataDump
             }
             catch (Exception e)
             {
-                TellMe.logger.error("dumpDataToFile(): Failed to create the configuration directory.");
-                e.printStackTrace();
+                TellMe.logger.error("dumpDataToFile(): Failed to create the configuration directory", e);
                 return null;
             }
 
@@ -231,7 +231,7 @@ public class DataDump
         outFile = new File(cfgDir, fileName);
         int postFix = 1;
 
-        while (outFile.exists() == true)
+        while (outFile.exists())
         {
             fileName = fileNameBaseWithDate + "_" + postFix + ".txt";
             outFile = new File(cfgDir, fileName);
@@ -244,8 +244,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            TellMe.logger.error("dumpDataToFile(): Failed to create data dump file '" + fileName + "'");
-            e.printStackTrace();
+            TellMe.logger.error("dumpDataToFile(): Failed to create data dump file '" + fileName + "'", e);
             return null;
         }
 
@@ -258,8 +257,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            TellMe.logger.error("dumpDataToFile(): Exception while writing data dump to file '" + fileName + "'");
-            e.printStackTrace();
+            TellMe.logger.error("dumpDataToFile(): Exception while writing data dump to file '" + fileName + "'", e);
         }
 
         return outFile;

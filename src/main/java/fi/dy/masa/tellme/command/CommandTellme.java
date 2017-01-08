@@ -1,22 +1,16 @@
 package fi.dy.masa.tellme.command;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.translation.I18n;
 
-/*
- * Base class for handling all the commands of this mod.
- *
- * The structure of this class is based on that of CoFHCore.
- */
 public class CommandTellme extends CommandBase
 {
     private final Map<String, ISubCommand> subCommands = new HashMap<String, ISubCommand>();
@@ -82,11 +76,11 @@ public class CommandTellme extends CommandBase
             }
             else
             {
-                throw new WrongUsageException(I18n.translateToLocal("info.command.unknown") + ": /" + this.getName() + " " + commandArgs[0], new Object[0]);
+                throw new WrongUsageException("tellme.command.error.unknown", "/" + this.getName() + " " + commandArgs[0]);
             }
         }
 
-        throw new WrongUsageException(I18n.translateToLocal("info.command.help") + ": '" + getUsage(sender) + "'", new Object[0]);
+        throw new WrongUsageException("tellme.command.info.help", getUsage(sender));
     }
 
     public void registerSubCommand(ISubCommand cmd)
@@ -97,8 +91,10 @@ public class CommandTellme extends CommandBase
         }
     }
 
-    public Set<String> getSubCommandList()
+    public List<String> getSubCommandList()
     {
-        return this.subCommands.keySet();
+        List<String> cmds = new ArrayList<String>();
+        cmds.addAll(this.subCommands.keySet());
+        return cmds;
     }
 }

@@ -4,7 +4,6 @@ import java.io.File;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
 import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandDump extends SubCommand
@@ -30,29 +29,24 @@ public class SubCommandDump extends SubCommand
 
         if (args.length == 2)
         {
+            File file = null;
+
             if (args[1].equals("blocks"))
             {
-                File file = DataDump.dumpDataToFile("block_dump", DataDump.getFormattedBlockDump());
-                if (file != null)
-                {
-                    sender.sendMessage(new TextComponentString("Output written to file " + file.getName()));
-                }
+                file = DataDump.dumpDataToFile("block_dump", DataDump.getFormattedBlockDump());
             }
             else if (args[1].equals("items"))
             {
-                File file = DataDump.dumpDataToFile("item_dump", DataDump.getFormattedItemDump());
-                if (file != null)
-                {
-                    sender.sendMessage(new TextComponentString("Output written to file " + file.getName()));
-                }
+                file = DataDump.dumpDataToFile("item_dump", DataDump.getFormattedItemDump());
             }
             else if (args[1].equals("entities"))
             {
-                File file = DataDump.dumpDataToFile("entity_dump", DataDump.getEntityDump());
-                if (file != null)
-                {
-                    sender.sendMessage(new TextComponentString("Output written to file " + file.getName()));
-                }
+                file = DataDump.dumpDataToFile("entity_dump", DataDump.getEntityDump());
+            }
+
+            if (file != null)
+            {
+                this.sendMessage(sender, "tellme.info.output.to.file", file.getName());
             }
         }
     }

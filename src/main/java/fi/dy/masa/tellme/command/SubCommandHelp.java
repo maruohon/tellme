@@ -1,6 +1,6 @@
 package fi.dy.masa.tellme.command;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -8,7 +8,6 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.translation.I18n;
 
 public class SubCommandHelp extends SubCommand
 {
@@ -33,41 +32,27 @@ public class SubCommandHelp extends SubCommand
 
         if (args.length > 2)
         {
-            throw new WrongUsageException(I18n.translateToLocal("info.command.usage") + ": /"
-                + this.getBaseCommand().getName() + " " + getName() + " [" + I18n.translateToLocal("info.command.name") + "]");
+            throw new WrongUsageException("tellme.command.info.usage",
+                "/" + this.getBaseCommand().getName() + " " + getName() + " [",
+                "tellme.command.info.name",
+                "]");
         }
 
         if (args.length == 2)
         {
-            sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.subcommand." + args[1])));
+            this.sendMessage(sender, "tellme.subcommand." + args[1] + ".info.main");
             return;
         }
 
         // args.length == 1, ie. "/tellme help"
-        StringBuilder str = new StringBuilder(I18n.translateToLocal("info.command.available") + ": ");
-        List<String> subCommands = new ArrayList<String>(this.getBaseCommand().getSubCommandList());
+        this.sendMessage(sender, "tellme.command.info.commands.available");
+        List<String> subCommands = this.getBaseCommand().getSubCommandList();
+        Collections.sort(subCommands);
 
-        for (int i = 0; i < subCommands.size() - 2; ++i)
+        for (int i = 0; i < subCommands.size(); i++)
         {
-            str.append("/" + this.getBaseCommand().getName() + " " + subCommands.get(i) + ", ");
+            sender.sendMessage(new TextComponentString("/" + this.getBaseCommand().getName() + " " + subCommands.get(i)));
         }
-
-        if (subCommands.size() > 1)
-        {
-            str.append("/" + this.getBaseCommand().getName() + " " + subCommands.get(subCommands.size() - 2) + " " + I18n.translateToLocal("info.and") + " ");
-        }
-
-        // Last or only command
-        if (subCommands.size() >= 1)
-        {
-            str.append("/" + this.getBaseCommand().getName() + " " + subCommands.get(subCommands.size() - 1));
-        }
-
-        // List of sub commands
-        sender.sendMessage(new TextComponentString(str.toString()));
-
-        // Sub command help
-        sender.sendMessage(new TextComponentString(I18n.translateToLocal("info.command.help.subcommand") + " '/" + this.getBaseCommand().getName() + " <sub_command> help'"));
     }
 
     @Override
@@ -79,6 +64,6 @@ public class SubCommandHelp extends SubCommand
             return CommandBase.getListOfStringsMatchingLastWord(args, this.getBaseCommand().getSubCommandList());
         }
 
-        return null;
+        return Collections.<String>emptyList();
     }
 }
