@@ -38,4 +38,6 @@ public class CommonProxy
     }
 
     public void registerClientCommand() { }
+
+    public void registerEventHandlers() { }
 }

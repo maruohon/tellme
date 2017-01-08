@@ -8,11 +8,13 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import fi.dy.masa.tellme.command.CommandTellme;
+import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.event.InteractEventHandler;
 import fi.dy.masa.tellme.proxy.CommonProxy;
 import fi.dy.masa.tellme.reference.Reference;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION,
+    guiFactory = "fi.dy.masa.tellme.config.TellMeGuiFactory",
     acceptableRemoteVersions = "*", acceptedMinecraftVersions = "1.10.2")
 public class TellMe
 {
@@ -28,11 +30,13 @@ public class TellMe
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        instance = this;
         logger = event.getModLog();
         configDirPath = new File(event.getModConfigurationDirectory(), Reference.MOD_ID).getAbsolutePath();
+        Configs.loadConfigsFromFile(event.getSuggestedConfigurationFile());
+
         MinecraftForge.EVENT_BUS.register(new InteractEventHandler());
         proxy.registerClientCommand();
+        proxy.registerEventHandlers();
     }
 
     @Mod.EventHandler

@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -20,7 +21,7 @@ import fi.dy.masa.tellme.TellMe;
 
 public class BlockInfo
 {
-    public static List<String> getBasicBlockInfo(EntityPlayer player, World world, BlockPos pos)
+    private static List<String> getBasicBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         List<String> lines = new ArrayList<String>();
 
@@ -62,7 +63,7 @@ public class BlockInfo
         return lines;
     }
 
-    public static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
+    private static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         List<String> lines = getBasicBlockInfo(player, world, pos);
         IBlockState state = world.getBlockState(pos).getActualState(world, pos);
@@ -113,5 +114,28 @@ public class BlockInfo
     {
         File f = DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, pos));
         player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+    }
+
+    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player)
+    {
+        // Ray tracing to be able to target fluid blocks, although currently it doesn't work for non-source blocks
+        RayTraceResult mop = RayTraceUtils.rayTraceFromPlayer(world, player, true);
+        BlockPos pos;
+
+        // Ray traced to a block
+        if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK)
+        {
+            pos = mop.getBlockPos();
+            BlockInfo.printBasicBlockInfoToChat(player, world, pos);
+
+            if (player.isSneaking())
+            {
+                BlockInfo.dumpBlockInfoToFile(player, world, pos);
+            }
+            else
+            {
+                BlockInfo.printBlockInfoToConsole(player, world, pos);
+            }
+        }
     }
 }

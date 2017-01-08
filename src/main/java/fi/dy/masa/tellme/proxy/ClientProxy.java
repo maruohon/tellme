@@ -18,10 +18,12 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
+import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.util.GameObjectData;
 
 public class ClientProxy extends CommonProxy
@@ -117,5 +119,11 @@ public class ClientProxy extends CommonProxy
     {
         TellMe.logger.info("Registering the client-side command");
         ClientCommandHandler.instance.registerCommand(new ClientCommandTellme());
+    }
+
+    @Override
+    public void registerEventHandlers()
+    {
+        MinecraftForge.EVENT_BUS.register(new Configs());
     }
 }
