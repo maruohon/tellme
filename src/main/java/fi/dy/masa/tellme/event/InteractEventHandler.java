@@ -1,6 +1,5 @@
 package fi.dy.masa.tellme.event;
 
-import javax.annotation.Nullable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -34,12 +33,12 @@ public class InteractEventHandler
         if (Configs.enableDebugItemForItems && event.getWorld().isRemote == false &&
             event.getHand() == EnumHand.MAIN_HAND && player.canUseCommand(4, "tellme"))
         {
-            if (areItemStacksEqual(Configs.debugItemItems, player.getHeldItemMainhand()))
+            if (ItemInfo.areItemStacksEqual(Configs.debugItemItems, player.getHeldItemMainhand()))
             {
                 this.printItemInfo(event.getEntityPlayer());
             }
             /*
-            else if (areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+            else if (ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
             {
               this.printBlockInfo(world, player);
               event.setCanceled(true);
@@ -55,19 +54,9 @@ public class InteractEventHandler
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.enableDebugItemForBlockAndEntities && event.getWorld().isRemote == false && event.getHand() == EnumHand.MAIN_HAND &&
-            player.canUseCommand(4, "tellme") && areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+            player.canUseCommand(4, "tellme") && ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
-            EntityInfo.printBasicEntityInfoToChat(player, event.getTarget());
-
-            if (player.isSneaking() == true)
-            {
-                EntityInfo.dumpFullEntityInfoToFile(player, event.getTarget());
-            }
-            else
-            {
-                EntityInfo.printFullEntityInfoToConsole(player, event.getTarget());
-            }
-
+            EntityInfo.printEntityInfo(player, event.getTarget(), player.isSneaking());
             event.setCanceled(true);
         }
     }
@@ -78,7 +67,7 @@ public class InteractEventHandler
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.enableDebugItemForBlockAndEntities && event.getWorld().isRemote == false && event.getHand() == EnumHand.MAIN_HAND &&
-            player.canUseCommand(4, "tellme") && areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+            player.canUseCommand(4, "tellme") && ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
             BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player);
             event.setCanceled(true);
@@ -103,30 +92,10 @@ public class InteractEventHandler
         }
 
         ItemStack stack = player.inventory.getStackInSlot(slot);
-        if (stack == null || stack.getItem() == null)
-        {
-            return;
-        }
 
-        ItemInfo.printBasicItemInfoToChat(player, stack);
-
-        if (player.isSneaking())
+        if (stack != null && stack.getItem() != null)
         {
-            ItemInfo.dumpItemInfoToFile(player, stack);
+            ItemInfo.printItemInfo(player, stack, player.isSneaking());
         }
-        else
-        {
-            ItemInfo.printItemInfoToConsole(stack);
-        }
-    }
-
-    public static boolean areItemStacksEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2)
-    {
-        if (stack1 == null || stack2 == null)
-        {
-            return stack1 == stack2;
-        }
-
-        return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
     }
 }

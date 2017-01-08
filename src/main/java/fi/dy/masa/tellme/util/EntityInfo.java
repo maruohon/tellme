@@ -61,6 +61,20 @@ public class EntityInfo
         }
     }
 
+    public static void printEntityInfo(EntityPlayer player, Entity target, boolean dumpToFile)
+    {
+        EntityInfo.printBasicEntityInfoToChat(player, target);
+
+        if (dumpToFile)
+        {
+            EntityInfo.dumpFullEntityInfoToFile(player, target);
+        }
+        else
+        {
+            EntityInfo.printFullEntityInfoToConsole(player, target);
+        }
+    }
+
     public static void dumpFullEntityInfoToFile(EntityPlayer player, Entity target)
     {
         File f = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target));

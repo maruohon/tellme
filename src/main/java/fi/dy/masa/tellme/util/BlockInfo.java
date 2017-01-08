@@ -118,6 +118,11 @@ public class BlockInfo
 
     public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player)
     {
+        getBlockInfoFromRayTracedTarget(world, player, player.isSneaking());
+    }
+
+    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, boolean dumpToFile)
+    {
         // Ray tracing to be able to target fluid blocks, although currently it doesn't work for non-source blocks
         RayTraceResult mop = RayTraceUtils.rayTraceFromPlayer(world, player, true);
         BlockPos pos;
@@ -128,7 +133,7 @@ public class BlockInfo
             pos = mop.getBlockPos();
             BlockInfo.printBasicBlockInfoToChat(player, world, pos);
 
-            if (player.isSneaking())
+            if (dumpToFile)
             {
                 BlockInfo.dumpBlockInfoToFile(player, world, pos);
             }

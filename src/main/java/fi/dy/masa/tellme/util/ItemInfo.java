@@ -3,16 +3,26 @@ package fi.dy.masa.tellme.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentString;
-
 import fi.dy.masa.tellme.TellMe;
 
 public class ItemInfo
 {
+    public static boolean areItemStacksEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2)
+    {
+        if (stack1 == null || stack2 == null)
+        {
+            return stack1 == stack2;
+        }
+
+        return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
+    }
+
     private static List<String> getBasicItemInfo(ItemStack stack)
     {
         List<String> lines = new ArrayList<String>();
@@ -71,5 +81,19 @@ public class ItemInfo
     {
         File f = DataDump.dumpDataToFile("item_data", getFullItemInfo(stack));
         player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+    }
+
+    public static void printItemInfo(EntityPlayer player, @Nonnull ItemStack stack, boolean dumpToFile)
+    {
+        ItemInfo.printBasicItemInfoToChat(player, stack);
+
+        if (dumpToFile)
+        {
+            ItemInfo.dumpItemInfoToFile(player, stack);
+        }
+        else
+        {
+            ItemInfo.printItemInfoToConsole(stack);
+        }
     }
 }

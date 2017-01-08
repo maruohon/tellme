@@ -21,7 +21,9 @@ public class CommandTellme extends CommandBase
         this.registerSubCommand(new SubCommandBlockStats(this));
         this.registerSubCommand(new SubCommandDump(this));
         this.registerSubCommand(new SubCommandHelp(this));
+        this.registerSubCommand(new SubCommandHolding(this));
         this.registerSubCommand(new SubCommandLoaded(this));
+        this.registerSubCommand(new SubCommandLookingAt(this));
     }
 
     @Override
