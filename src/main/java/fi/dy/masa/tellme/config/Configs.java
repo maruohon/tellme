@@ -52,12 +52,12 @@ public class Configs
     {
         Property prop;
 
-        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForBlockAndEntities", true).setRequiresMcRestart(false);
+        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForBlocksAndEntities", true).setRequiresMcRestart(false);
         prop.setComment("Enables the debug item to right click on blocks or entities");
         enableDebugItemForBlockAndEntities = prop.getBoolean();
 
         prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForItems", true).setRequiresMcRestart(false);
-        prop.setComment("Enables the debug item to right click on blocks or entities");
+        prop.setComment("Enables the debug item to right with to dump data from the item next to the right of it on the hotbar");
         enableDebugItemForItems = prop.getBoolean();
 
         prop = conf.get(CATEGORY_GENERIC, "debugItemNameBlocks", "minecraft:gold_nugget").setRequiresMcRestart(false);
