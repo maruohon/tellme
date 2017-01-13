@@ -9,6 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class PotionDump extends DataDump
 {
@@ -16,7 +17,7 @@ public class PotionDump extends DataDump
 
     private PotionDump()
     {
-        super(6);
+        super(7);
     }
 
     public static List<String> getFormattedPotionDump()
@@ -28,20 +29,22 @@ public class PotionDump extends DataDump
         {
             Map.Entry<ResourceLocation, Potion> entry = iter.next();
             Potion potion = entry.getValue();
-            String regName = entry.getKey().toString();
+            ResourceLocation rl = entry.getKey();
+            String modName = ModNameUtils.getModName(rl);
+            String regName = rl.toString();
             String id = String.valueOf(Potion.getIdFromPotion(potion));
             String name = potion.getName();
             String color = String.format("0x%08X (%10d)", potion.getLiquidColor(), potion.getLiquidColor());
             String isBad = String.valueOf(potion.isBadEffect());
             String isBeneficial = getIsBeneficial(potion);
 
-            potionDump.addData(regName, name, id, color, isBad, isBeneficial);
+            potionDump.addData(modName, regName, name, id, color, isBad, isBeneficial);
         }
 
-        potionDump.addTitle("Registry name", "Potion Name", "ID", "Liquid color", "Is bad", "Is beneficial");
-        potionDump.setColumnAlignment(2, Alignment.RIGHT); // id
-        potionDump.setColumnAlignment(4, Alignment.RIGHT); // is bad
-        potionDump.setColumnAlignment(5, Alignment.RIGHT); // is beneficial
+        potionDump.addTitle("Mod name", "Registry name", "Potion Name", "ID", "Liquid color", "Is bad", "Is beneficial");
+        potionDump.setColumnAlignment(3, Alignment.RIGHT); // id
+        potionDump.setColumnAlignment(5, Alignment.RIGHT); // is bad
+        potionDump.setColumnAlignment(6, Alignment.RIGHT); // is beneficial
         potionDump.setUseColumnSeparator(true);
 
         return potionDump.getLines();
