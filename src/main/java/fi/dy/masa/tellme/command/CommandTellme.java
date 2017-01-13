@@ -22,6 +22,7 @@ public class CommandTellme extends CommandBase
         this.registerSubCommand(new SubCommandDump(this));
         this.registerSubCommand(new SubCommandHelp(this));
         this.registerSubCommand(new SubCommandHolding(this));
+        this.registerSubCommand(new SubCommandList(this));
         this.registerSubCommand(new SubCommandLoaded(this));
         this.registerSubCommand(new SubCommandLookingAt(this));
     }
@@ -69,10 +70,11 @@ public class CommandTellme extends CommandBase
         {
             if (this.subCommands.containsKey(commandArgs[0]) == true)
             {
-                ISubCommand cb = this.subCommands.get(commandArgs[0]);
-                if (cb != null)
+                ISubCommand cmd = this.subCommands.get(commandArgs[0]);
+
+                if (cmd != null)
                 {
-                    cb.execute(server, sender, commandArgs);
+                    cmd.execute(server, sender, commandArgs);
                     return;
                 }
             }

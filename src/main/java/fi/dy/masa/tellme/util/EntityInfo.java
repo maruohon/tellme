@@ -20,6 +20,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class EntityInfo
 {

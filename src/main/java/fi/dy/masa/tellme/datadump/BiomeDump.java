@@ -1,6 +1,5 @@
-package fi.dy.masa.tellme.util;
+package fi.dy.masa.tellme.datadump;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,50 +10,42 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import fi.dy.masa.tellme.TellMe;
 
-public class BiomeInfo
+public class BiomeDump extends DataDump
 {
-    public static List<String> getBiomeList()
+    private BiomeDump()
     {
-        List<String> lines = new ArrayList<String>();
-        Biome bgb;
+        super(8);
 
-        StringBuilder separator = new StringBuilder(256);
-        String header = String.format("%-7s | %-24s | %-23s | %11s | %10s | %8s | %10s ",
-                "biomeID", "biomeName", "waterColorMultiplier", "temperature", "temp. cat.", "rainfall", "enableSnow");
-        for (int i = 0; i < 147; ++i) { separator.append("-"); }
-        lines.add("Biome list:");
-        lines.add(separator.toString());
-        lines.add(header);
-        lines.add(separator.toString());
+        this.setSort(false);
+    }
 
-        Iterator<Biome> iterator = Biome.REGISTRY.iterator();
-        while (iterator.hasNext() == true)
+    public static List<String> getFormattedBiomeDump()
+    {
+        BiomeDump biomeDump = new BiomeDump();
+        Iterator<Biome> iter = Biome.REGISTRY.iterator();
+
+        while (iter.hasNext())
         {
-            bgb = iterator.next();
+            Biome biome = iter.next();
+            String id = String.valueOf(Biome.getIdForBiome(biome));
+            String regName = biome.getRegistryName().toString();
+            String name = biome.getBiomeName();
+            String waterColor = String.format("0x%08X (%10d)", biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier());
+            String temp = String.format("%5.2f", biome.getTemperature());
+            String tempCat = biome.getTempCategory().toString();
+            String rain = String.format("%.2f", biome.getRainfall());
+            String snow = String.valueOf(biome.getEnableSnow());
 
-            if (bgb != null)
-            {
-                lines.add(String.format("%7d | %-24s | 0x%08X (%10d) | %11f | %10s | %8f | %10s ",
-                    Biome.getIdForBiome(bgb),
-                    bgb.getBiomeName(),
-                    bgb.getWaterColorMultiplier(),
-                    bgb.getWaterColorMultiplier(),
-                    bgb.getTemperature(),
-                    bgb.getTempCategory(),
-                    bgb.getRainfall(),
-                    bgb.getEnableSnow()));
-            }
-            else
-            {
-                lines.add(String.format("%7d | %-24s | %23s | %11s | %10s | %8s | %10s ", 0, "<none>", " ", " ", " ", " ", " "));
-            }
+            biomeDump.addData(id, regName, name, waterColor, temp, tempCat, rain, snow);
         }
 
-        lines.add(separator.toString());
-        lines.add(header);
-        lines.add(separator.toString());
+        biomeDump.addTitle("ID", "Registry name", "Biome Name",
+                "waterColorMultiplier", "temperature", "temp. category", "rainfall", "enableSnow");
+        biomeDump.setColumnAlignment(0, Alignment.RIGHT); // id
+        biomeDump.setColumnAlignment(7, Alignment.RIGHT); // snow
+        biomeDump.setUseColumnSeparator(true);
 
-        return lines;
+        return biomeDump.getLines();
     }
 
     public static void printCurrentBiomeInfoToChat(EntityPlayer player)
@@ -79,15 +70,5 @@ public class BiomeInfo
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.proxy.getCurrentBiomeInfoClientSide(player, bgb);
-    }
-
-    public static void printBiomeListToLogger()
-    {
-        List<String> lines = getBiomeList();
-
-        for (int i = 0; i < lines.size(); ++i)
-        {
-            TellMe.logger.info(lines.get(i));
-        }
     }
 }

@@ -11,7 +11,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.util.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.EntityInfo.EntityListType;
 

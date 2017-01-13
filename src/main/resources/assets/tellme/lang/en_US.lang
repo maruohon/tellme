@@ -2,13 +2,14 @@ language.name=English
 language.region=US
 language.code=en_US
 
-tellme.command.error.unknown.subcommand=Unrecognized sub command or option: %s
 tellme.command.error.argument.outofrange=Argument(s) out of range
 tellme.command.error.argument.outofrange.toolarge=Argument(s) out of range: x or z distance > 512
 tellme.command.error.argument.outofrange.world=Argument(s) out of range (world limits): %s
 tellme.command.error.argument.invalid.number=Invalid number of argument(s)!
 tellme.command.error.playernotfound=No player found by name
 tellme.command.error.unknown=Unrecognized command: %s
+tellme.command.error.unknown.parameter=Unrecognized parameter '%s'
+tellme.command.error.unknown.subcommand=Unrecognized sub command or option: %s
 tellme.command.error.output.to.file.failed=Failed to write output to file
 
 tellme.command.info.commands.available=Available commands are:

@@ -24,7 +24,8 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.config.Configs;
-import fi.dy.masa.tellme.util.GameObjectData;
+import fi.dy.masa.tellme.datadump.BlockDump;
+import fi.dy.masa.tellme.datadump.ItemDump;
 
 public class ClientProxy extends CommonProxy
 {
@@ -43,30 +44,30 @@ public class ClientProxy extends CommonProxy
     }
 
     @Override
-    public void getBlockSubtypes(List<GameObjectData> list, Block block, ResourceLocation rl, int id)
+    public void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
     {
-        CreativeTabs tab = block.getCreativeTabToDisplayOn();
         Item item = Item.getItemFromBlock(block);
 
         if (item != null)
         {
             List<ItemStack> stacks = new ArrayList<ItemStack>();
+            CreativeTabs tab = block.getCreativeTabToDisplayOn();
             block.getSubBlocks(item, tab, stacks);
             boolean subtypes = stacks.size() > 1;
 
             for (ItemStack stack : stacks)
             {
-                list.add(new GameObjectData(rl, id, stack.getMetadata(), block, subtypes, stack));
+                blockDump.addData(block, rl, true, subtypes, stack);
             }
         }
         else
         {
-            list.add(new GameObjectData(rl, id, block));
+            blockDump.addData(block, rl, false, false, null);
         }
     }
 
     @Override
-    public void getItemSubtypes(List<GameObjectData> list, Item item, ResourceLocation rl, int id)
+    public void getDataForItemSubtypes(Item item, ResourceLocation rl, ItemDump itemDump)
     {
         if (item.getHasSubtypes())
         {
@@ -77,13 +78,14 @@ public class ClientProxy extends CommonProxy
 
                 for (ItemStack stack : stacks)
                 {
-                    list.add(new GameObjectData(rl, id, stack.getMetadata(), item, true, stack));
+                    // FIXME: Ignore identical duplicate entries from different tabs...
+                    itemDump.addData(item, rl, true, stack);
                 }
             }
         }
         else
         {
-            list.add(new GameObjectData(rl, id, 0, item, false, new ItemStack(item, 1, 0)));
+            itemDump.addData(item, rl, false, new ItemStack(item, 1, 0));
         }
     }
 

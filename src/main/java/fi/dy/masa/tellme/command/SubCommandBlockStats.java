@@ -14,8 +14,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BlockStats;
-import fi.dy.masa.tellme.util.DataDump;
 
 public class SubCommandBlockStats extends SubCommand
 {

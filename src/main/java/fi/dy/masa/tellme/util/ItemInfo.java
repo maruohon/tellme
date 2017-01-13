@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentString;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class ItemInfo
 {

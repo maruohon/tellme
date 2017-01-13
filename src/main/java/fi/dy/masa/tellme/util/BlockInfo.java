@@ -18,6 +18,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class BlockInfo
 {

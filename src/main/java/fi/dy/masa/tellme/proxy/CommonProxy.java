@@ -10,26 +10,27 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import fi.dy.masa.tellme.util.GameObjectData;
+import fi.dy.masa.tellme.datadump.BlockDump;
+import fi.dy.masa.tellme.datadump.ItemDump;
 
 public class CommonProxy
 {
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb) {}
 
-    public void getBlockSubtypes(List<GameObjectData> list, Block block, ResourceLocation rl, int id)
+    public void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
     {
-        list.add(new GameObjectData(rl, id, block));
+        blockDump.addData(block, rl, false, false, null);
     }
 
-    public void getItemSubtypes(List<GameObjectData> list, Item item, ResourceLocation rl, int id)
+    public void getDataForItemSubtypes(Item item, ResourceLocation rl, ItemDump itemDump)
     {
         if (item.getHasSubtypes())
         {
-            list.add(new GameObjectData(rl, id, 0, item, true, null));
+            itemDump.addData(item, rl, true, null);
         }
         else
         {
-            list.add(new GameObjectData(rl, id, 0, item, false, new ItemStack(item, 1, 0)));
+            itemDump.addData(item, rl, false, new ItemStack(item, 1, 0));
         }
     }
 
