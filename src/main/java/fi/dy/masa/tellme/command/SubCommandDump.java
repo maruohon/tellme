@@ -6,11 +6,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import fi.dy.masa.tellme.datadump.BiomeDump;
-import fi.dy.masa.tellme.datadump.BlockDump;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.EntityDump;
-import fi.dy.masa.tellme.datadump.ItemDump;
+import fi.dy.masa.tellme.datadump.*;
 
 public class SubCommandDump extends SubCommand
 {
@@ -21,9 +17,18 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("biomes");
         this.subSubCommands.add("blocks");
         this.subSubCommands.add("blocks-with-nbt");
+        this.subSubCommands.add("dimensions");
+        this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
+        this.subSubCommands.add("fluids");
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
+        this.subSubCommands.add("oredictionary-by-key");
+        this.subSubCommands.add("oredictionary-by-item");
+        this.subSubCommands.add("potions");
+        this.subSubCommands.add("soundevents");
+        this.subSubCommands.add("tileentities");
+        this.subSubCommands.add("villagerprofessions");
     }
 
     @Override
@@ -77,6 +82,22 @@ public class SubCommandDump extends SubCommand
         {
             return BlockDump.getFormattedBlockDump(true);
         }
+        else if (type.equals("dimensions"))
+        {
+            return DimensionDump.getFormattedDimensionDump();
+        }
+        else if (type.equals("enchantments"))
+        {
+            return EnchantmentDump.getFormattedEnchantmentDump();
+        }
+        else if (type.equals("entities"))
+        {
+            return EntityDump.getFormattedEntityDump();
+        }
+        else if (type.equals("fluids"))
+        {
+            return FluidRegistryDump.getFormattedFluidRegistryDump();
+        }
         else if (type.equals("items"))
         {
             return ItemDump.getFormattedItemDump(false);
@@ -85,9 +106,29 @@ public class SubCommandDump extends SubCommand
         {
             return ItemDump.getFormattedItemDump(true);
         }
-        else if (type.equals("entities"))
+        else if (type.equals("oredictionary-by-key"))
         {
-            return EntityDump.getFormattedEntityDump();
+            return OreDictionaryDump.getFormattedOreDictionaryDump(false);
+        }
+        else if (type.equals("oredictionary-by-item"))
+        {
+            return OreDictionaryDump.getFormattedOreDictionaryDump(true);
+        }
+        else if (type.equals("potions"))
+        {
+            return PotionDump.getFormattedPotionDump();
+        }
+        else if (type.equals("soundevents"))
+        {
+            return SoundEventDump.getFormattedSoundEventDump();
+        }
+        else if (type.equals("tileentities"))
+        {
+            return TileEntityDump.getFormattedTileEntityDump();
+        }
+        else if (type.equals("villagerprofessions"))
+        {
+            return VillagerProfessionDump.getFormattedVillagerProfessionDump();
         }
 
         return null;

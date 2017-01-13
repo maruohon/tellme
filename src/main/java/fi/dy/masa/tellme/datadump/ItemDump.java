@@ -141,4 +141,22 @@ public class ItemDump extends DataDump
 
         return String.join(", ", names);
     }
+
+    public static String getStackInfo(ItemStack stack)
+    {
+        if (isStackEmpty(stack) == false)
+        {
+            // old: [%s @ %d - display: %s - NBT: %s]
+            return String.format("[%s@%d - '%s' - %s]",
+                    stack.getItem().getRegistryName(), stack.getMetadata(), stack.getDisplayName(),
+                    stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
+        }
+
+        return "";
+    }
+
+    public static boolean isStackEmpty(ItemStack stack)
+    {
+        return stack == null;
+    }
 }
