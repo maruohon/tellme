@@ -9,11 +9,10 @@ import javax.annotation.Nullable;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class ItemDump extends DataDump
 {
@@ -52,22 +51,9 @@ public class ItemDump extends DataDump
         int id = Item.getIdFromItem(item);
         int meta = stack != null ? stack.getMetadata() : 0;
 
-        String modId = rl.getResourceDomain();
-        String modName;
+        String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = stack != null ? stack.getDisplayName() : EMPTY_STRING;
-
-        Map<String, ModContainer> mods = Loader.instance().getIndexedModList();
-        ModContainer modContainer;
-
-        if (mods != null && (modContainer = mods.get(modId)) != null)
-        {
-            modName = modContainer.getName();
-        }
-        else
-        {
-            modName = "Minecraft";
-        }
 
         if (this.dumpNBT)
         {

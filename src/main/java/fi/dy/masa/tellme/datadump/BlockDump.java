@@ -9,10 +9,9 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class BlockDump extends DataDump
 {
@@ -52,26 +51,12 @@ public class BlockDump extends DataDump
     public void addData(Block block, ResourceLocation rl, boolean subTypesKnown, boolean hasSubTypes, @Nullable ItemStack stack)
     {
         String blockId = String.valueOf(Block.getIdFromBlock(block));
-        String modId = rl.getResourceDomain();
-        String modName;
+        String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = stack != null ? stack.getDisplayName() : block.getLocalizedName();
         Item item = Item.getItemFromBlock(block);
         String itemId = item != null ? String.valueOf(Item.getIdFromItem(item)) : "-";
         String itemMeta = String.valueOf(stack != null ? stack.getMetadata() : 0);
-
-        Map<String, ModContainer> mods = Loader.instance().getIndexedModList();
-        ModContainer modContainer;
-
-        if (mods != null && (modContainer = mods.get(modId)) != null)
-        {
-            modName = modContainer.getName();
-        }
-        else
-        {
-            modName = "Minecraft";
-        }
-
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
 
         if (this.dumpNBT)

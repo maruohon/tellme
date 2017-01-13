@@ -42,6 +42,8 @@ public class BiomeDump extends DataDump
         biomeDump.addTitle("ID", "Registry name", "Biome Name",
                 "waterColorMultiplier", "temperature", "temp. category", "rainfall", "enableSnow");
         biomeDump.setColumnAlignment(0, Alignment.RIGHT); // id
+        biomeDump.setColumnAlignment(4, Alignment.RIGHT); // temperature
+        biomeDump.setColumnAlignment(6, Alignment.RIGHT); // rainfall
         biomeDump.setColumnAlignment(7, Alignment.RIGHT); // snow
         biomeDump.setUseColumnSeparator(true);
 
