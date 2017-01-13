@@ -16,7 +16,7 @@ public class PotionDump extends DataDump
 
     private PotionDump()
     {
-        super(7);
+        super(6);
     }
 
     public static List<String> getFormattedPotionDump()
@@ -32,18 +32,16 @@ public class PotionDump extends DataDump
             String id = String.valueOf(Potion.getIdFromPotion(potion));
             String name = potion.getName();
             String color = String.format("0x%08X (%10d)", potion.getLiquidColor(), potion.getLiquidColor());
-            String iconIndex = String.valueOf(potion.getStatusIconIndex());
             String isBad = String.valueOf(potion.isBadEffect());
             String isBeneficial = getIsBeneficial(potion);
 
-            potionDump.addData(regName, name, id, color, iconIndex, isBad, isBeneficial);
+            potionDump.addData(regName, name, id, color, isBad, isBeneficial);
         }
 
-        potionDump.addTitle("Registry name", "Potion Name", "ID", "Liquid color", "Icon index", "Is bad", "Is beneficial");
+        potionDump.addTitle("Registry name", "Potion Name", "ID", "Liquid color", "Is bad", "Is beneficial");
         potionDump.setColumnAlignment(2, Alignment.RIGHT); // id
-        potionDump.setColumnAlignment(4, Alignment.RIGHT); // icon index
-        potionDump.setColumnAlignment(5, Alignment.RIGHT); // is bad
-        potionDump.setColumnAlignment(6, Alignment.RIGHT); // is beneficial
+        potionDump.setColumnAlignment(4, Alignment.RIGHT); // is bad
+        potionDump.setColumnAlignment(5, Alignment.RIGHT); // is beneficial
         potionDump.setUseColumnSeparator(true);
 
         return potionDump.getLines();
