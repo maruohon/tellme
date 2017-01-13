@@ -55,6 +55,8 @@ public class ItemInfo
         }
 
         lines.add("");
+        lines.add(stack.getTagCompound().toString());
+        lines.add("");
         NBTFormatter.getPrettyFormattedNBT(lines, stack.getTagCompound());
 
         return lines;
