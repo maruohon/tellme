@@ -44,9 +44,9 @@ public class ItemType
 
         ItemType other = (ItemType) obj;
 
-        if (this.stack == null || other.stack == null)
+        if (this.stack.isEmpty() || other.stack.isEmpty())
         {
-            if (this.stack != other.stack)
+            if (this.stack.isEmpty() != other.stack.isEmpty())
                 return false;
         }
         else

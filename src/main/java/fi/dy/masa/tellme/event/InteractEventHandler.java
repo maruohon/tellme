@@ -93,7 +93,7 @@ public class InteractEventHandler
 
         ItemStack stack = player.inventory.getStackInSlot(slot);
 
-        if (stack != null && stack.getItem() != null)
+        if (stack.isEmpty() == false && stack.getItem() != null)
         {
             ItemInfo.printItemInfo(player, stack, player.isSneaking());
         }

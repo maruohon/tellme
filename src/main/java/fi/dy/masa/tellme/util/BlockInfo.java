@@ -42,7 +42,7 @@ public class BlockInfo
         String name = ForgeRegistries.BLOCKS.getKey(block).toString();
         String dname;
 
-        if (stack != null && stack.getItem() != null)
+        if (stack.isEmpty() == false)
         {
             dname = stack.getDisplayName();
         }

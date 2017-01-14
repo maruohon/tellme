@@ -16,9 +16,9 @@ public class ItemInfo
 {
     public static boolean areItemStacksEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2)
     {
-        if (stack1 == null || stack2 == null)
+        if (stack1.isEmpty() || stack2.isEmpty())
         {
-            return stack1 == stack2;
+            return stack1.isEmpty() == stack2.isEmpty();
         }
 
         return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
@@ -31,7 +31,7 @@ public class ItemInfo
         String dname = stack.getDisplayName();
         String nbtInfo;
 
-        if (stack.hasTagCompound() == true)
+        if (stack.hasTagCompound())
         {
             nbtInfo = "has NBT data";
         }

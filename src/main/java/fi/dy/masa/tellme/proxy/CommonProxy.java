@@ -19,14 +19,14 @@ public class CommonProxy
 
     public void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
     {
-        blockDump.addData(block, rl, false, false, null);
+        blockDump.addData(block, rl, false, false, ItemStack.EMPTY);
     }
 
     public void getDataForItemSubtypes(Item item, ResourceLocation rl, ItemDump itemDump)
     {
         if (item.getHasSubtypes())
         {
-            itemDump.addData(item, rl, true, null);
+            itemDump.addData(item, rl, true, ItemStack.EMPTY);
         }
         else
         {

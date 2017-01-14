@@ -217,7 +217,7 @@ public class BlockStats
                     ItemStack stack = new ItemStack(block, 1, block.damageDropped(block.getStateFromMeta(meta)));
                     name = Block.REGISTRY.getNameForObject(block).toString();
 
-                    if (stack != null && stack.getItem() != null)
+                    if (stack.isEmpty() == false)
                     {
                         dname = stack.getDisplayName();
                     }

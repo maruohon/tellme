@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -46,25 +46,25 @@ public class ItemDump extends DataDump
         return lines;
     }
 
-    public void addData(Item item, ResourceLocation rl, boolean hasSubTypes, @Nullable ItemStack stack)
+    public void addData(Item item, ResourceLocation rl, boolean hasSubTypes, @Nonnull ItemStack stack)
     {
         int id = Item.getIdFromItem(item);
-        int meta = stack != null ? stack.getMetadata() : 0;
+        int meta = stack.isEmpty() == false ? stack.getMetadata() : 0;
 
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
-        String displayName = stack != null ? stack.getDisplayName() : EMPTY_STRING;
+        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : EMPTY_STRING;
 
         if (this.dumpNBT)
         {
-            String nbt = stack != null && stack.getTagCompound() != null ? stack.getTagCompound().toString() : "-";
+            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : "-";
 
-            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+            this.addData(modName, registryName, String.format("%5d", id), String.format("%5d", meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack), nbt);
         }
         else
         {
-            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+            this.addData(modName, registryName, String.format("%5d", id), String.format("%5d", meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack));
         }
     }
@@ -97,9 +97,9 @@ public class ItemDump extends DataDump
         return itemDump.getLines();
     }
 
-    public static String getOredictKeysJoined(@Nullable ItemStack stack)
+    public static String getOredictKeysJoined(@Nonnull ItemStack stack)
     {
-        if (stack == null)
+        if (stack.isEmpty())
         {
             return EMPTY_STRING;
         }
@@ -130,7 +130,7 @@ public class ItemDump extends DataDump
 
     public static String getStackInfo(ItemStack stack)
     {
-        if (isStackEmpty(stack) == false)
+        if (stack.isEmpty() == false)
         {
             // old: [%s @ %d - display: %s - NBT: %s]
             return String.format("[%s@%d - '%s' - %s]",
@@ -139,10 +139,5 @@ public class ItemDump extends DataDump
         }
 
         return "";
-    }
-
-    public static boolean isStackEmpty(ItemStack stack)
-    {
-        return stack == null;
     }
 }

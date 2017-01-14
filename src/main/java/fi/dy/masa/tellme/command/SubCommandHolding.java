@@ -40,7 +40,7 @@ public class SubCommandHolding extends SubCommand
     {
         ItemStack stack = player.getHeldItemMainhand();
 
-        if (stack != null)
+        if (stack.isEmpty() == false)
         {
             ItemInfo.printItemInfo(player, stack, dumpToFile);
         }

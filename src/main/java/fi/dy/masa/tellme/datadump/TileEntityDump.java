@@ -1,16 +1,17 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.lang.reflect.Field;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 
 public class TileEntityDump extends DataDump
 {
-    private static final Field field_nameToClassMap = ReflectionHelper.findField(TileEntity.class, "field_145855_i", "nameToClassMap");
+    private static final Field field_REGISTRY = ReflectionHelper.findField(TileEntity.class, "field_190562_f", "REGISTRY");
 
     private TileEntityDump()
     {
@@ -23,15 +24,16 @@ public class TileEntityDump extends DataDump
         try
         {
             @SuppressWarnings("unchecked")
-            Iterator<Map.Entry<String, Class<? extends TileEntity>>> iter = ((Map<String, Class<? extends TileEntity>>) field_nameToClassMap.get(null)).entrySet().iterator();
+            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = (RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>>) field_REGISTRY.get(null);
+            Set<ResourceLocation> keys = registry.getKeys();
 
-            while (iter.hasNext())
+            for (ResourceLocation key : keys)
             {
-                Map.Entry<String, Class<? extends TileEntity>> entry = iter.next();
-                tileEntityDump.addData(entry.getValue().getName(), entry.getKey());
+                Class <? extends TileEntity> clazz = registry.getObject(key);
+                tileEntityDump.addData(clazz.getName(), key.toString());
             }
 
-            tileEntityDump.addTitle("Class", "Name");
+            tileEntityDump.addTitle("Class", "Registry name");
             tileEntityDump.setUseColumnSeparator(true);
         }
         catch (Exception e)

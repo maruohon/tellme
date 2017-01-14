@@ -99,6 +99,6 @@ public class Configs
 
         Item item = Item.REGISTRY.getObject(new ResourceLocation(name));
 
-        return item != null ? new ItemStack(item, 1, meta) : null;
+        return item != null ? new ItemStack(item, 1, meta) : ItemStack.EMPTY;
     }
 }

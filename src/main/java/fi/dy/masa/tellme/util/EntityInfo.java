@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EntitySelectors;
@@ -19,6 +18,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraftforge.fml.common.registry.EntityEntry;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 
@@ -115,21 +116,27 @@ public class EntityInfo
         lines.add("  Loaded entities by entity type");
         lines.add("---------------------------------------------------------------");
         lines.add(String.format("World '%s' (dim: %d):", world.provider.getDimensionType().name(), world.provider.getDimension()));
-        List<EntitiesPerTypeHolder> counts = new ArrayList<EntitiesPerTypeHolder>();
+        List<EntitiesPerType> counts = new ArrayList<EntitiesPerType>();
 
         for (Class <? extends Entity> clazz : perTypeCount.keySet())
         {
-            counts.add(new EntitiesPerTypeHolder(clazz, perTypeCount.get(clazz)));
+            counts.add(new EntitiesPerType(clazz, perTypeCount.get(clazz)));
         }
 
         Collections.sort(counts);
 
-        for (EntitiesPerTypeHolder holder : counts)
+        for (EntitiesPerType holder : counts)
         {
-            String name = EntityList.getEntityStringFromClass(holder.clazz);
-            if (name == null)
+            EntityEntry entry = EntityRegistry.getEntry(holder.clazz);
+            String name;
+
+            if (entry == null || entry.getName() == null)
             {
                 name = holder.clazz.getSimpleName();
+            }
+            else
+            {
+                name = entry.getName();
             }
 
             lines.add(String.format("%18s: %5d entities", name, holder.count));
@@ -165,14 +172,14 @@ public class EntityInfo
                     }
                 }
 
-                perChunkCount.put(chunk.getChunkCoordIntPair(), count);
+                perChunkCount.put(chunk.getPos(), count);
             }
 
             lines.add("---------------------------------------------------------------");
             lines.add("  Loaded entities by chunk");
             lines.add("---------------------------------------------------------------");
             lines.add(String.format("World '%s' (dim: %d):", world.provider.getDimensionType().name(), world.provider.getDimension()));
-            List<EntitiesPerChunkHolder> counts = new ArrayList<EntitiesPerChunkHolder>();
+            List<EntitiesPerChunk> counts = new ArrayList<EntitiesPerChunk>();
             int countNoEntities = 0;
 
             for (ChunkPos pos : perChunkCount.keySet())
@@ -181,7 +188,7 @@ public class EntityInfo
 
                 if (count > 0)
                 {
-                    counts.add(new EntitiesPerChunkHolder(pos, count));
+                    counts.add(new EntitiesPerChunk(pos, count));
                 }
                 else
                 {
@@ -191,7 +198,7 @@ public class EntityInfo
 
             Collections.sort(counts);
 
-            for (EntitiesPerChunkHolder holder : counts)
+            for (EntitiesPerChunk holder : counts)
             {
                 lines.add(String.format("Chunk [%5d, %5d] has %4d entities", holder.pos.chunkXPos, holder.pos.chunkZPos, holder.count));
             }
@@ -203,33 +210,43 @@ public class EntityInfo
         return lines;
     }
 
-    public static class EntitiesPerTypeHolder implements Comparable<EntitiesPerTypeHolder>
+    public static class EntitiesPerType implements Comparable<EntitiesPerType>
     {
         public final Class <? extends Entity> clazz;
         public final int count;
 
-        public EntitiesPerTypeHolder(Class <? extends Entity> clazz, int count)
+        public EntitiesPerType(Class <? extends Entity> clazz, int count)
         {
             this.clazz = clazz;
             this.count = count;
         }
 
         @Override
-        public int compareTo(EntitiesPerTypeHolder other)
+        public int compareTo(EntitiesPerType other)
         {
             if (this.count == other.count)
             {
-                String nameThis = EntityList.getEntityStringFromClass(this.clazz);
-                String nameOther = EntityList.getEntityStringFromClass(other.clazz);
+                EntityEntry entryThis = EntityRegistry.getEntry(this.clazz);
+                EntityEntry entryOther = EntityRegistry.getEntry(other.clazz);
+                String nameThis;
+                String nameOther;
 
-                if (nameThis == null)
+                if (entryThis == null || entryThis.getName() == null)
                 {
                     nameThis = this.clazz.getSimpleName();
                 }
+                else
+                {
+                    nameThis = entryThis.getName();
+                }
 
-                if (nameOther == null)
+                if (entryOther == null || entryOther.getName() == null)
                 {
                     nameOther = other.clazz.getSimpleName();
+                }
+                else
+                {
+                    nameOther = entryOther.getName();
                 }
 
                 return nameThis.compareTo(nameOther);
@@ -239,19 +256,19 @@ public class EntityInfo
         }
     }
 
-    public static class EntitiesPerChunkHolder implements Comparable<EntitiesPerChunkHolder>
+    public static class EntitiesPerChunk implements Comparable<EntitiesPerChunk>
     {
         public final ChunkPos pos;
         public final int count;
 
-        public EntitiesPerChunkHolder(ChunkPos pos, int count)
+        public EntitiesPerChunk(ChunkPos pos, int count)
         {
             this.pos = pos;
             this.count = count;
         }
 
         @Override
-        public int compareTo(EntitiesPerChunkHolder other)
+        public int compareTo(EntitiesPerChunk other)
         {
             if (this.count == other.count)
             {
