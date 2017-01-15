@@ -17,8 +17,8 @@ public class DataDump
     protected final int columns;
     protected Alignment[] alignment;
     protected Row title;
-    protected List<Row> header = new ArrayList<Row>();
-    protected List<Row> footer = new ArrayList<Row>();
+    protected List<Row> headers = new ArrayList<Row>();
+    protected List<Row> footers = new ArrayList<Row>();
     protected List<Row> lines = new ArrayList<Row>();
     protected int[] widths;
     protected int totalWidth;
@@ -79,13 +79,13 @@ public class DataDump
     public void addHeader(String... data)
     {
         this.checkHeaderData(data);
-        this.header.add(new Row(data));
+        this.headers.add(new Row(data));
     }
 
     public void addFooter(String... data)
     {
         this.checkHeaderData(data);
-        this.footer.add(new Row(data));
+        this.footers.add(new Row(data));
     }
 
     public void addData(String... data)
@@ -100,25 +100,51 @@ public class DataDump
         {
             this.checkData(data);
         }
-        else
+    }
+
+    protected void checkAllHeaders()
+    {
+        if (this.columns != 1)
         {
-            int columns = this.widths.length;
-            int len = data[0].length();
-            int space = this.totalWidth + (Math.max(columns - 1, 0) * 3);
+            this.checkHeaderLength(this.title);
 
-            // The title is longer than all the columns and padding character put together,
-            // so we will add to each column width just enough to widen the entire table enough to fit the title.
-            if (len > space)
+            int size = this.headers.size();
+            for (int i = 0; i < size; i++)
             {
-                int diff = len - space;
-                int addPerColumn = (int) Math.ceil((double) diff / (double) columns);
-                this.totalWidth += addPerColumn * columns;
-
-                for (int i = 0; i < columns; i++)
-                {
-                    this.widths[i] += addPerColumn;
-                }
+                this.checkHeaderLength(this.headers.get(i));
             }
+
+            size = this.footers.size();
+            for (int i = 0; i < size; i++)
+            {
+                this.checkHeaderLength(this.footers.get(i));
+            }
+        }
+    }
+
+    private void checkHeaderLength(Row row)
+    {
+        Object[] values = row.getValues();
+
+        if (values.length == 1)
+        {
+            this.checkHeaderLength(String.valueOf(values[0]));
+        }
+    }
+
+    private void checkHeaderLength(String header)
+    {
+        int len = header.length();
+        int columns = this.widths.length;
+        int space = this.totalWidth + (Math.max(columns - 1, 0) * 3);
+
+        // The title is longer than all the columns and padding character put together,
+        // so we will add to the last column's width enough to widen the entire table enough to fit the header.
+        if (len > space)
+        {
+            int diff = len - space;
+            this.widths[this.widths.length - 1] += diff;
+            this.totalWidth += diff;
         }
     }
 
@@ -151,6 +177,8 @@ public class DataDump
 
     protected void generateFormatStrings()
     {
+        this.checkAllHeaders();
+
         String colSep = this.useColumnSeparator ? "|" : " ";
         String lineColSep = this.useColumnSeparator ? "+" : "-";
         StringBuilder sbFmt = new StringBuilder(128);
@@ -231,13 +259,13 @@ public class DataDump
 
         lines.add(this.lineSeparator);
 
-        int len = this.header.size();
+        int len = this.headers.size();
 
         if (len > 0)
         {
             for (int i = 0; i < len; i++)
             {
-                lines.add(this.getFormattedLine(this.header.get(i)));
+                lines.add(this.getFormattedLine(this.headers.get(i)));
             }
 
             lines.add(this.lineSeparator);
@@ -254,13 +282,13 @@ public class DataDump
         }
 
         lines.add(this.lineSeparator);
-        len = this.footer.size();
+        len = this.footers.size();
 
         if (len > 0)
         {
             for (int i = 0; i < len; i++)
             {
-                lines.add(this.getFormattedLine(this.footer.get(i)));
+                lines.add(this.getFormattedLine(this.footers.get(i)));
             }
 
             lines.add(this.lineSeparator);
