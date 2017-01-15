@@ -11,18 +11,19 @@ import fi.dy.masa.tellme.util.ItemType;
 
 public class OreDictionaryDump extends DataDump
 {
-    private OreDictionaryDump()
+    private OreDictionaryDump(int columns)
     {
-        super(2);
+        super(columns);
     }
 
     public static List<String> getFormattedOreDictionaryDump(boolean byItemStack)
     {
-        OreDictionaryDump oreDictDump = new OreDictionaryDump();
+        OreDictionaryDump oreDictDump;
         String[] oreNames = OreDictionary.getOreNames();
 
         if (byItemStack)
         {
+            oreDictDump = new OreDictionaryDump(5);
             Set<ItemType> allStacks = new HashSet<ItemType>();
 
             for (String name : oreNames)
@@ -40,14 +41,20 @@ public class OreDictionaryDump extends DataDump
             while (iter.hasNext())
             {
                 ItemStack stack = iter.next().getStack();
-                oreDictDump.addData(ItemDump.getStackInfo(stack), ItemDump.getOredictKeysJoined(stack));
+                String strMeta = stack.getMetadata() == OreDictionary.WILDCARD_VALUE ?
+                        String.format("(WILDCARD) %5d", stack.getMetadata()) : String.format("%5d", stack.getMetadata());
+                String strNBT = stack.hasTagCompound() ? stack.getTagCompound().toString() : "-";
+                oreDictDump.addData(stack.getItem().getRegistryName().toString(), strMeta,
+                        stack.getDisplayName(), ItemDump.getOredictKeysJoined(stack), strNBT);
             }
 
-            oreDictDump.addTitle("ItemStack", "Keys");
+            oreDictDump.addTitle("Registry name", "Meta/dmg", "Display name", "Ore Dict Keys", "NBT");
+            oreDictDump.setColumnAlignment(1, Alignment.RIGHT);
             oreDictDump.setUseColumnSeparator(true);
         }
         else
         {
+            oreDictDump = new OreDictionaryDump(2);
             for (String name : oreNames)
             {
                 List<ItemStack> stacks = OreDictionary.getOres(name);
