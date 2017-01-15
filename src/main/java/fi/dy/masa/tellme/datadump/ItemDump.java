@@ -59,12 +59,12 @@ public class ItemDump extends DataDump
         {
             String nbt = stack != null && stack.getTagCompound() != null ? stack.getTagCompound().toString() : "-";
 
-            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+            this.addData(modName, registryName, String.format("%5d", id), String.format("%5d", meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack), nbt);
         }
         else
         {
-            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+            this.addData(modName, registryName, String.format("%5d", id), String.format("%5d", meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack));
         }
     }

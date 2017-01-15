@@ -12,8 +12,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.util.EntityInfo;
-import fi.dy.masa.tellme.util.EntityInfo.EntityListType;
+import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.datadump.EntityCountDump.EntityListType;
+import fi.dy.masa.tellme.util.WorldUtils;
 
 public class SubCommandLoaded extends SubCommand
 {
@@ -38,11 +39,11 @@ public class SubCommandLoaded extends SubCommand
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
-        if (args.length == 3 && args[1].equals("entities"))
+        if (args.length == 3 && (args[1].equals("entities") || args[1].equals("tileentities")))
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_3));
         }
-        else if (args.length == 4 && args[1].equals("entities"))
+        else if (args.length == 4 && (args[1].equals("entities") || args[1].equals("tileentities")))
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_4));
         }
@@ -60,22 +61,37 @@ public class SubCommandLoaded extends SubCommand
         if (args.length < 2)
         {
             this.sendMessage(sender, "tellme.command.info.usage.noparam");
-            sender.sendMessage(new TextComponentString(pre + " dimensions (not implemented yet)"));
+            //sender.sendMessage(new TextComponentString(pre + " chunks (not implemented yet)"));
+            sender.sendMessage(new TextComponentString(pre + " dimensions"));
             sender.sendMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " tileentities (not implemented yet)"));
+            sender.sendMessage(new TextComponentString(pre + " tileentities <chunk | type> <list | dump> [dimension]"));
 
             return;
         }
 
         if (args[1].equals("dimensions") && args.length == 2)
         {
+            Integer[] dims = DimensionManager.getIDs();
+
+            for (int id : dims)
+            {
+                World world = DimensionManager.getWorld(id);
+
+                if (world != null)
+                {
+                    TellMe.logger.info(String.format("DIM %4d: %-16s [%4d loaded chunks, %4d loaded entities]",
+                            id, world.provider.getDimensionType().getName(), WorldUtils.getLoadedChunkCount(world), world.loadedEntityList.size()));
+                }
+            }
+
+            this.sendMessage(sender, "tellme.info.output.to.console");
         }
-        else if (args[1].equals("entities"))
+        else if (args[1].equals("entities") || args[1].equals("tileentities"))
         {
             if (args.length < 4)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + " entities <chunk | type> <list | dump> [dimension]"));
+                sender.sendMessage(new TextComponentString(pre + " " + args[1] + " <chunk | type> <list | dump> [dimension]"));
                 return;
             }
 
@@ -96,10 +112,19 @@ public class SubCommandLoaded extends SubCommand
                 return;
             }
 
-            EntityListType type = args[2].equals("chunk") ? EntityListType.BY_CHUNK : EntityListType.BY_ENTITY_TYPE;
+            EntityListType type;
+            if (args[1].equals("entities"))
+            {
+                type = args[2].equals("chunk") ? EntityListType.ENTITIES_BY_CHUNK : EntityListType.ENTITIES_BY_TYPE;
+            }
+            else
+            {
+                type = args[2].equals("chunk") ? EntityListType.TILEENTITIES_BY_CHUNK : EntityListType.TILEENTITIES_BY_TYPE;
+            }
+
             if (args[3].equals("list"))
             {
-                for (String line : EntityInfo.getEntityCounts(world, type))
+                for (String line : EntityCountDump.getFormattedEntityCountDump(world, type))
                 {
                     TellMe.logger.info(line);
                 }
@@ -108,12 +133,14 @@ public class SubCommandLoaded extends SubCommand
             }
             else if (args[3].equals("dump"))
             {
-                File f = DataDump.dumpDataToFile("loaded_entities", EntityInfo.getEntityCounts(world, type));
+                File f = DataDump.dumpDataToFile("loaded_" + args[1], EntityCountDump.getFormattedEntityCountDump(world, type));
                 this.sendMessage(sender, "tellme.info.output.to.file", f.getName());
             }
-        }
-        else if (args[1].equals("tileentities"))
-        {
+            else
+            {
+                this.sendMessage(sender, "tellme.command.info.usage.noparam");
+                sender.sendMessage(new TextComponentString(pre + " " + args[1] + " <chunk | type> <list | dump> [dimension]"));
+            }
         }
     }
 }

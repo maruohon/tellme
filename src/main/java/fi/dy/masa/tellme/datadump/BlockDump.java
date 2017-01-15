@@ -55,8 +55,8 @@ public class BlockDump extends DataDump
         String registryName = rl.toString();
         String displayName = stack != null ? stack.getDisplayName() : block.getLocalizedName();
         Item item = Item.getItemFromBlock(block);
-        String itemId = item != null ? String.valueOf(Item.getIdFromItem(item)) : "-";
-        String itemMeta = String.valueOf(stack != null ? stack.getMetadata() : 0);
+        String itemId = item != null ? String.format("%5d", Item.getIdFromItem(item)) : "-";
+        String itemMeta = String.format("%5d", stack != null ? stack.getMetadata() : 0);
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
 
         if (this.dumpNBT)
