@@ -102,17 +102,19 @@ public class DataDump
         }
         else
         {
+            int columns = this.widths.length;
             int len = data[0].length();
+            int space = this.totalWidth + (Math.max(columns - 1, 0) * 3);
 
             // The title is longer than all the columns and padding character put together,
             // so we will add to each column width just enough to widen the entire table enough to fit the title.
-            if (len > (this.totalWidth + (Math.max(this.columns - 1, 0) * 3)))
+            if (len > space)
             {
-                int diff = len - this.totalWidth;
-                int addPerColumn = (int) Math.ceil((double) diff / (double) this.columns);
-                this.totalWidth += addPerColumn * this.columns;
+                int diff = len - space;
+                int addPerColumn = (int) Math.ceil((double) diff / (double) columns);
+                this.totalWidth += addPerColumn * columns;
 
-                for (int i = 0; i < this.widths.length; i++)
+                for (int i = 0; i < columns; i++)
                 {
                     this.widths[i] += addPerColumn;
                 }
@@ -141,7 +143,7 @@ public class DataDump
                 this.widths[i] = len;
             }
 
-            total += width;
+            total += this.widths[i];
         }
 
         this.totalWidth = total;
