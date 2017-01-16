@@ -96,11 +96,22 @@ public class EntityCountDump extends DataDump
     public static List<String> getFormattedEntityCountDumpArea(World world, EntityListType type, ChunkPos pos1In, ChunkPos pos2In)
     {
         EntityCountDump entityCountDump = initDump(type);
+        ChunkPos pos1 = new ChunkPos(Math.min(pos1In.chunkXPos, pos2In.chunkXPos), Math.min(pos1In.chunkZPos, pos2In.chunkZPos));
+        ChunkPos pos2 = new ChunkPos(Math.max(pos1In.chunkXPos, pos2In.chunkXPos), Math.max(pos1In.chunkZPos, pos2In.chunkZPos));
 
-        entityCountDump.processChunksInArea(world, entityCountDump.counter, pos1In, pos2In);
+        entityCountDump.processChunksInArea(world, entityCountDump.counter, pos1, pos2);
         entityCountDump.setUseColumnSeparator(true);
 
         entityCountDump.addHeader(String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), world.provider.getDimension()));
+
+        if (pos1.equals(pos2))
+        {
+            entityCountDump.addHeader(String.format("Chunk: [%d, %d]", pos1.chunkXPos, pos1.chunkZPos));
+        }
+        else
+        {
+            entityCountDump.addHeader(String.format("Chunks: [%d, %d] to [%d, %d]", pos1.chunkXPos, pos1.chunkZPos, pos2.chunkXPos, pos2.chunkZPos));
+        }
 
         if (entityCountDump.emptyChunks != 0)
         {
@@ -129,10 +140,8 @@ public class EntityCountDump extends DataDump
         this.emptyChunks = chunkProcessor.emptyChunks;
     }
 
-    private void processChunksInArea(World world, ChunkProcessor chunkProcessor, ChunkPos pos1In, ChunkPos pos2In)
+    private void processChunksInArea(World world, ChunkProcessor chunkProcessor, ChunkPos pos1, ChunkPos pos2)
     {
-        ChunkPos pos1 = new ChunkPos(Math.min(pos1In.chunkXPos, pos2In.chunkXPos), Math.min(pos1In.chunkZPos, pos2In.chunkZPos));
-        ChunkPos pos2 = new ChunkPos(Math.max(pos1In.chunkXPos, pos2In.chunkXPos), Math.max(pos1In.chunkZPos, pos2In.chunkZPos));
         IChunkProvider provider = world.getChunkProvider();
 
         for (int chunkZ = pos1.chunkZPos; chunkZ <= pos2.chunkZPos; chunkZ++)
