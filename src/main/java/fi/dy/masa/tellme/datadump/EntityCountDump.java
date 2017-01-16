@@ -23,6 +23,8 @@ import fi.dy.masa.tellme.util.WorldUtils;
 public class EntityCountDump extends DataDump
 {
     protected int emptyChunks;
+    private ChunkProcessor counter;
+    private String strFooter;
 
     private EntityCountDump(int columns)
     {
@@ -32,46 +34,51 @@ public class EntityCountDump extends DataDump
         this.setRepeatTitleAtBottom(false);
     }
 
-    public static List<String> getFormattedEntityCountDump(World world, EntityListType type)
+    private static EntityCountDump initDump(EntityListType type)
     {
         EntityCountDump entityCountDump = null;
-        String strFooter = "";
-        ChunkProcessor counter = null;
 
         if (type == EntityListType.ENTITIES_BY_TYPE)
         {
             entityCountDump = new EntityCountDump(2);
-            counter = new EntitiesPerTypeCounter();
+            entityCountDump.counter = new EntitiesPerTypeCounter();
             entityCountDump.addHeader("Loaded entities by entity type");
             entityCountDump.addTitle("Entity type", "Count");
-            strFooter = "with no entities.";
+            entityCountDump.strFooter = "with no entities.";
         }
         else if (type == EntityListType.ENTITIES_BY_CHUNK)
         {
             entityCountDump = new EntityCountDump(2);
-            counter = new EntitiesPerChunkCounter();
+            entityCountDump.counter = new EntitiesPerChunkCounter();
             entityCountDump.addHeader("Loaded entities by chunk");
             entityCountDump.addTitle("Chunk", "Count");
-            strFooter = "with no entities.";
+            entityCountDump.strFooter = "with no entities.";
         }
         else if (type == EntityListType.TILEENTITIES_BY_TYPE)
         {
             entityCountDump = new EntityCountDump(3);
-            counter = new TileEntitiesPerTypeCounter();
+            entityCountDump.counter = new TileEntitiesPerTypeCounter();
             entityCountDump.addHeader("Loaded TileEntities by type");
             entityCountDump.addTitle("TileEntity type", "Count", "Is ticking?");
-            strFooter = "with no TileEntities.";
+            entityCountDump.strFooter = "with no TileEntities.";
         }
         else if (type == EntityListType.TILEENTITIES_BY_CHUNK)
         {
             entityCountDump = new EntityCountDump(3);
-            counter = new TileEntitiesPerChunkCounter();
+            entityCountDump.counter = new TileEntitiesPerChunkCounter();
             entityCountDump.addHeader("Loaded TileEntities by chunk");
             entityCountDump.addTitle("Chunk", "Total Count", "Ticking");
-            strFooter = "with no TileEntities.";
+            entityCountDump.strFooter = "with no TileEntities.";
         }
 
-        entityCountDump.processLoadedChunks(world, counter);
+        return entityCountDump;
+    }
+
+    public static List<String> getFormattedEntityCountDumpAll(World world, EntityListType type)
+    {
+        EntityCountDump entityCountDump = initDump(type);
+
+        entityCountDump.processAllLoadedChunks(world, entityCountDump.counter);
         entityCountDump.setUseColumnSeparator(true);
 
         entityCountDump.addHeader(String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), world.provider.getDimension()));
@@ -80,13 +87,31 @@ public class EntityCountDump extends DataDump
         if (entityCountDump.emptyChunks != 0)
         {
             entityCountDump.addFooter(String.format("There were %d loaded chunks", entityCountDump.emptyChunks));
-            entityCountDump.addFooter(strFooter);
+            entityCountDump.addFooter(entityCountDump.strFooter);
         }
 
         return entityCountDump.getLines();
     }
 
-    protected void processLoadedChunks(World world, ChunkProcessor chunkProcessor)
+    public static List<String> getFormattedEntityCountDumpArea(World world, EntityListType type, ChunkPos pos1In, ChunkPos pos2In)
+    {
+        EntityCountDump entityCountDump = initDump(type);
+
+        entityCountDump.processChunksInArea(world, entityCountDump.counter, pos1In, pos2In);
+        entityCountDump.setUseColumnSeparator(true);
+
+        entityCountDump.addHeader(String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), world.provider.getDimension()));
+
+        if (entityCountDump.emptyChunks != 0)
+        {
+            entityCountDump.addFooter(String.format("There were %d chunks in the selected area", entityCountDump.emptyChunks));
+            entityCountDump.addFooter(entityCountDump.strFooter);
+        }
+
+        return entityCountDump.getLines();
+    }
+
+    private void processAllLoadedChunks(World world, ChunkProcessor chunkProcessor)
     {
         IChunkProvider provider = world.getChunkProvider();
 
@@ -97,6 +122,29 @@ public class EntityCountDump extends DataDump
             for (Chunk chunk : loadedChunks)
             {
                 chunkProcessor.processChunk(chunk);
+            }
+        }
+
+        chunkProcessor.getData(this);
+        this.emptyChunks = chunkProcessor.emptyChunks;
+    }
+
+    private void processChunksInArea(World world, ChunkProcessor chunkProcessor, ChunkPos pos1In, ChunkPos pos2In)
+    {
+        ChunkPos pos1 = new ChunkPos(Math.min(pos1In.chunkXPos, pos2In.chunkXPos), Math.min(pos1In.chunkZPos, pos2In.chunkZPos));
+        ChunkPos pos2 = new ChunkPos(Math.max(pos1In.chunkXPos, pos2In.chunkXPos), Math.max(pos1In.chunkZPos, pos2In.chunkZPos));
+        IChunkProvider provider = world.getChunkProvider();
+
+        for (int chunkZ = pos1.chunkZPos; chunkZ <= pos2.chunkZPos; chunkZ++)
+        {
+            for (int chunkX = pos1.chunkXPos; chunkX <= pos2.chunkXPos; chunkX++)
+            {
+                Chunk chunk = provider.getLoadedChunk(chunkX, chunkZ);
+
+                if (chunk != null)
+                {
+                    chunkProcessor.processChunk(chunk);
+                }
             }
         }
 
