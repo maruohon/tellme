@@ -26,7 +26,9 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("oredictionary-by-key");
         this.subSubCommands.add("oredictionary-by-item");
         this.subSubCommands.add("potions");
+        this.subSubCommands.add("potiontypes");
         this.subSubCommands.add("soundevents");
+        this.subSubCommands.add("spawneggs");
         this.subSubCommands.add("tileentities");
         this.subSubCommands.add("villagerprofessions");
     }
@@ -118,9 +120,17 @@ public class SubCommandDump extends SubCommand
         {
             return PotionDump.getFormattedPotionDump();
         }
+        else if (type.equals("potiontypes"))
+        {
+            return PotionTypeDump.getFormattedPotionTypeDump();
+        }
         else if (type.equals("soundevents"))
         {
             return SoundEventDump.getFormattedSoundEventDump();
+        }
+        else if (type.equals("spawneggs"))
+        {
+            return SpawnEggDump.getFormattedSpawnEggDump();
         }
         else if (type.equals("tileentities"))
         {

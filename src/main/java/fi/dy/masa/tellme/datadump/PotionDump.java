@@ -50,7 +50,7 @@ public class PotionDump extends DataDump
         return potionDump.getLines();
     }
 
-    private static String getIsBeneficial(Potion potion)
+    public static String getIsBeneficial(Potion potion)
     {
         try
         {
