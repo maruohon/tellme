@@ -17,6 +17,8 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("biomes");
         this.subSubCommands.add("blocks");
         this.subSubCommands.add("blocks-with-nbt");
+        this.subSubCommands.add("blockstates-by-block");
+        this.subSubCommands.add("blockstates-by-state");
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
@@ -83,6 +85,14 @@ public class SubCommandDump extends SubCommand
         else if (type.equals("blocks-with-nbt"))
         {
             return BlockDump.getFormattedBlockDump(true);
+        }
+        else if (type.equals("blockstates-by-block"))
+        {
+            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
+        }
+        else if (type.equals("blockstates-by-state"))
+        {
+            return BlockStatesDump.getFormattedBlockStatesDumpByState();
         }
         else if (type.equals("dimensions"))
         {
