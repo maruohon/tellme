@@ -17,6 +17,8 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("biomes");
         this.subSubCommands.add("blocks");
         this.subSubCommands.add("blocks-with-nbt");
+        this.subSubCommands.add("blockstates-by-block");
+        this.subSubCommands.add("blockstates-by-state");
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
@@ -26,7 +28,9 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("oredictionary-by-key");
         this.subSubCommands.add("oredictionary-by-item");
         this.subSubCommands.add("potions");
+        this.subSubCommands.add("potiontypes");
         this.subSubCommands.add("soundevents");
+        this.subSubCommands.add("spawneggs");
         this.subSubCommands.add("tileentities");
         this.subSubCommands.add("villagerprofessions");
     }
@@ -82,6 +86,14 @@ public class SubCommandDump extends SubCommand
         {
             return BlockDump.getFormattedBlockDump(true);
         }
+        else if (type.equals("blockstates-by-block"))
+        {
+            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
+        }
+        else if (type.equals("blockstates-by-state"))
+        {
+            return BlockStatesDump.getFormattedBlockStatesDumpByState();
+        }
         else if (type.equals("dimensions"))
         {
             return DimensionDump.getFormattedDimensionDump();
@@ -118,9 +130,17 @@ public class SubCommandDump extends SubCommand
         {
             return PotionDump.getFormattedPotionDump();
         }
+        else if (type.equals("potiontypes"))
+        {
+            return PotionTypeDump.getFormattedPotionTypeDump();
+        }
         else if (type.equals("soundevents"))
         {
             return SoundEventDump.getFormattedSoundEventDump();
+        }
+        else if (type.equals("spawneggs"))
+        {
+            return SpawnEggDump.getFormattedSpawnEggDump();
         }
         else if (type.equals("tileentities"))
         {

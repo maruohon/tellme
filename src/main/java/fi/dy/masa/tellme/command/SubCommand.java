@@ -1,6 +1,7 @@
 package fi.dy.masa.tellme.command;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -41,7 +42,7 @@ public abstract class SubCommand implements ISubCommand
             return CommandBase.getListOfStringsMatchingLastWord(args, this.getSubCommands());
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

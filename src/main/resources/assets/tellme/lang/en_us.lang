@@ -11,6 +11,7 @@ tellme.command.error.unknown=Unrecognized command: %s
 tellme.command.error.unknown.parameter=Unrecognized parameter '%s'
 tellme.command.error.unknown.subcommand=Unrecognized sub command or option: %s
 tellme.command.error.output.to.file.failed=Failed to write output to file
+tellme.command.error.world.not.loaded=The requested world is not currently loaded
 
 tellme.command.info.commands.available=Available commands are:
 tellme.command.info.done=Done
