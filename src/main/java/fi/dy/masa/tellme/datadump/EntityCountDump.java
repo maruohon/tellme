@@ -23,6 +23,7 @@ import fi.dy.masa.tellme.util.WorldUtils;
 public class EntityCountDump extends DataDump
 {
     protected int emptyChunks;
+    protected int unloadedChunks;
     private ChunkProcessor counter;
     private String strFooter;
 
@@ -119,6 +120,11 @@ public class EntityCountDump extends DataDump
             entityCountDump.addFooter(entityCountDump.strFooter);
         }
 
+        if (entityCountDump.unloadedChunks != 0)
+        {
+            entityCountDump.addFooter(String.format("There were %d unloaded chunks in the selected area.", entityCountDump.unloadedChunks));
+        }
+
         return entityCountDump.getLines();
     }
 
@@ -153,6 +159,10 @@ public class EntityCountDump extends DataDump
                 if (chunk != null)
                 {
                     chunkProcessor.processChunk(chunk);
+                }
+                else
+                {
+                    this.unloadedChunks++;
                 }
             }
         }
