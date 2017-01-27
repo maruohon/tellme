@@ -69,7 +69,8 @@ public class InteractEventHandler
         if (Configs.enableDebugItemForBlockAndEntities && event.getWorld().isRemote == false && event.getHand() == EnumHand.MAIN_HAND &&
             player.canUseCommand(4, "tellme") && ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
-            BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player);
+            BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player,
+                    ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand()));
             event.setCanceled(true);
         }
     }

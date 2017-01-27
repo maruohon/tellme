@@ -52,13 +52,32 @@ public class BlockInfo
             dname = name;
         }
 
-        if (block.hasTileEntity(iBlockState))
+        boolean teInWorld = world.getTileEntity(pos) != null;
+        boolean shouldHaveTE = block.hasTileEntity(iBlockState);
+
+        if (teInWorld == shouldHaveTE)
         {
-            lines.add(String.format("%s (%s - %d:%d) has a TileEntity", dname, name, id, meta));
+            if (teInWorld)
+            {
+                lines.add(String.format("%s (%s - %d:%d) has a TileEntity", dname, name, id, meta));
+            }
+            else
+            {
+                lines.add(String.format("%s (%s - %d:%d) no TileEntity", dname, name, id, meta));
+            }
         }
         else
         {
-            lines.add(String.format("%s (%s - %d:%d) no TileEntity", dname, name, id, meta));
+            if (teInWorld)
+            {
+                lines.add(String.format("%s (%s - %d:%d) !! is not supposed to have a TileEntity, but there is one in the world !!",
+                        dname, name, id, meta));
+            }
+            else
+            {
+                lines.add(String.format("%s (%s - %d:%d) !! is supposed to have a TileEntity, but there isn't one in the world !!",
+                        dname, name, id, meta));
+            }
         }
 
         return lines;
@@ -117,12 +136,12 @@ public class BlockInfo
         player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
     }
 
-    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player)
+    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, boolean adjacent)
     {
-        getBlockInfoFromRayTracedTarget(world, player, player.isSneaking());
+        getBlockInfoFromRayTracedTarget(world, player, adjacent, player.isSneaking());
     }
 
-    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, boolean dumpToFile)
+    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, boolean adjacent, boolean dumpToFile)
     {
         // Ray tracing to be able to target fluid blocks, although currently it doesn't work for non-source blocks
         RayTraceResult mop = RayTraceUtils.rayTraceFromPlayer(world, player, true);
@@ -131,7 +150,7 @@ public class BlockInfo
         // Ray traced to a block
         if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK)
         {
-            pos = mop.getBlockPos();
+            pos = adjacent ? mop.getBlockPos().offset(mop.sideHit) : mop.getBlockPos();
             BlockInfo.printBasicBlockInfoToChat(player, world, pos);
 
             if (dumpToFile)
