@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.event;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -50,13 +51,24 @@ public class InteractEventHandler
     @SubscribeEvent
     public void onEntityInteract(PlayerInteractEvent.EntityInteract event)
     {
+        this.printEntityInfo(event, event.getTarget());
+    }
+
+    @SubscribeEvent
+    public void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event)
+    {
+        this.printEntityInfo(event, event.getTarget());
+    }
+
+    private void printEntityInfo(PlayerInteractEvent event, Entity entity)
+    {
         EntityPlayer player = event.getEntityPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.enableDebugItemForBlockAndEntities && event.getWorld().isRemote == false && event.getHand() == EnumHand.MAIN_HAND &&
             player.canUseCommand(4, "tellme") && ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
-            EntityInfo.printEntityInfo(player, event.getTarget(), player.isSneaking());
+            EntityInfo.printEntityInfo(player, entity, player.isSneaking());
             event.setCanceled(true);
         }
     }
