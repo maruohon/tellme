@@ -10,6 +10,7 @@ import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
+import fi.dy.masa.tellme.util.RayTraceUtils;
 
 public class InteractEventHandler
 {
@@ -82,6 +83,7 @@ public class InteractEventHandler
             player.canUseCommand(4, "tellme") && ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
             BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player,
+                    RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, true),
                     ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand()));
             event.setCanceled(true);
         }

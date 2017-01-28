@@ -136,21 +136,17 @@ public class BlockInfo
         player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
     }
 
-    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, boolean adjacent)
+    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, RayTraceResult trace, boolean adjacent)
     {
-        getBlockInfoFromRayTracedTarget(world, player, adjacent, player.isSneaking());
+        getBlockInfoFromRayTracedTarget(world, player, trace, adjacent, player.isSneaking());
     }
 
-    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, boolean adjacent, boolean dumpToFile)
+    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, RayTraceResult trace, boolean adjacent, boolean dumpToFile)
     {
-        // Ray tracing to be able to target fluid blocks, although currently it doesn't work for non-source blocks
-        RayTraceResult mop = RayTraceUtils.rayTraceFromPlayer(world, player, true);
-        BlockPos pos;
-
         // Ray traced to a block
-        if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK)
+        if (trace.typeOfHit == RayTraceResult.Type.BLOCK)
         {
-            pos = adjacent ? mop.getBlockPos().offset(mop.sideHit) : mop.getBlockPos();
+            BlockPos pos = adjacent ? trace.getBlockPos().offset(trace.sideHit) : trace.getBlockPos();
             BlockInfo.printBasicBlockInfoToChat(player, world, pos);
 
             if (dumpToFile)
