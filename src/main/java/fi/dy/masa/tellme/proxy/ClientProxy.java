@@ -1,12 +1,15 @@
 package fi.dy.masa.tellme.proxy;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -17,6 +20,8 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.property.IExtendedBlockState;
@@ -114,6 +119,39 @@ public class ClientProxy extends CommonProxy
                 lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
             }
         }
+    }
+
+    @Override
+    public Collection<Chunk> getLoadedChunks(World world)
+    {
+        EntityPlayer player = Minecraft.getMinecraft().player;
+
+        if (player != null)
+        {
+            BlockPos pos = player.getPosition();
+            int cX = pos.getX() >> 4;
+            int cZ = pos.getZ() >> 4;
+            int radius = Minecraft.getMinecraft().gameSettings.renderDistanceChunks + 1;
+            IChunkProvider provider = world.getChunkProvider();
+            List<Chunk> chunks = new ArrayList<Chunk>();
+
+            for (int z = cZ - radius; z < (cZ + radius); z++)
+            {
+                for (int x = cX - radius; x < (cX + radius); x++)
+                {
+                    Chunk chunk = provider.getLoadedChunk(x, z);
+
+                    if (chunk != null)
+                    {
+                        chunks.add(chunk);
+                    }
+                }
+            }
+
+            return chunks;
+        }
+
+        return Collections.emptyList();
     }
 
     @Override
