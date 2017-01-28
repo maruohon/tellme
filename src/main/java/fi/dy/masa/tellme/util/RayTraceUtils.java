@@ -38,6 +38,7 @@ public class RayTraceUtils
         RayTraceResult result = worldIn.rayTraceBlocks(eyesVec, lookVec, useLiquids, !useLiquids, false);
 
         Entity targetEntity = null;
+        RayTraceResult entityTrace = null;
         AxisAlignedBB bb = new AxisAlignedBB(lookVec.xCoord, lookVec.yCoord, lookVec.zCoord, lookVec.xCoord, lookVec.yCoord, lookVec.zCoord);
         List<Entity> list = worldIn.getEntitiesWithinAABBExcludingEntity(playerIn, bb.expand(8, 8, 8));
         double closest = 0.0D;
@@ -55,6 +56,7 @@ public class RayTraceUtils
                 if (tmp < closest || closest == 0.0D)
                 {
                     targetEntity = entity;
+                    entityTrace = traceTmp;
                     closest = tmp;
                 }
             }
@@ -62,7 +64,7 @@ public class RayTraceUtils
 
         if (targetEntity != null)
         {
-            result = new RayTraceResult(targetEntity);
+            result = new RayTraceResult(targetEntity, entityTrace.hitVec);
         }
 
         return result;
