@@ -14,6 +14,11 @@ public class RayTraceUtils
 {
     public static RayTraceResult rayTraceFromPlayer(World worldIn, EntityPlayer playerIn, boolean useLiquids)
     {
+        return rayTraceFromPlayer(worldIn, playerIn, useLiquids, 10.0d);
+    }
+
+    public static RayTraceResult rayTraceFromPlayer(World worldIn, EntityPlayer playerIn, boolean useLiquids, double reach)
+    {
         float f = playerIn.prevRotationPitch + (playerIn.rotationPitch - playerIn.prevRotationPitch);
         float f1 = playerIn.prevRotationYaw + (playerIn.rotationYaw - playerIn.prevRotationYaw);
         double d0 = playerIn.prevPosX + (playerIn.posX - playerIn.prevPosX);
@@ -26,7 +31,6 @@ public class RayTraceUtils
         float f5 = MathHelper.sin(-f * 0.017453292F);
         float f6 = f3 * f4;
         float f7 = f2 * f4;
-        double reach = 5.0D;
 
         if (playerIn instanceof EntityPlayerMP)
         {
@@ -39,8 +43,8 @@ public class RayTraceUtils
 
         Entity targetEntity = null;
         RayTraceResult entityTrace = null;
-        AxisAlignedBB bb = new AxisAlignedBB(lookVec.xCoord, lookVec.yCoord, lookVec.zCoord, lookVec.xCoord, lookVec.yCoord, lookVec.zCoord);
-        List<Entity> list = worldIn.getEntitiesWithinAABBExcludingEntity(playerIn, bb.expand(8, 8, 8));
+        AxisAlignedBB bb = new AxisAlignedBB(eyesVec.xCoord, eyesVec.yCoord, eyesVec.zCoord, eyesVec.xCoord, eyesVec.yCoord, eyesVec.zCoord);
+        List<Entity> list = worldIn.getEntitiesWithinAABBExcludingEntity(playerIn, bb.expand(reach, reach, reach));
         double closest = 0.0D;
 
         for (int i = 0; i < list.size(); ++i)
