@@ -14,7 +14,14 @@ public class RayTraceUtils
 {
     public static RayTraceResult rayTraceFromPlayer(World worldIn, EntityPlayer playerIn, boolean useLiquids)
     {
-        return rayTraceFromPlayer(worldIn, playerIn, useLiquids, 10.0d);
+        double reach = 5.0d;
+
+        if (playerIn instanceof EntityPlayerMP)
+        {
+            reach = ((EntityPlayerMP) playerIn).interactionManager.getBlockReachDistance();
+        }
+
+        return rayTraceFromPlayer(worldIn, playerIn, useLiquids, reach);
     }
 
     public static RayTraceResult rayTraceFromPlayer(World worldIn, EntityPlayer playerIn, boolean useLiquids, double reach)
@@ -31,12 +38,6 @@ public class RayTraceUtils
         float f5 = MathHelper.sin(-f * 0.017453292F);
         float f6 = f3 * f4;
         float f7 = f2 * f4;
-
-        if (playerIn instanceof EntityPlayerMP)
-        {
-            reach = ((EntityPlayerMP) playerIn).interactionManager.getBlockReachDistance();
-        }
-
         Vec3d lookVec = eyesVec.addVector((double)f6 * reach, (double)f5 * reach, (double)f7 * reach);
 
         RayTraceResult result = worldIn.rayTraceBlocks(eyesVec, lookVec, useLiquids, !useLiquids, false);

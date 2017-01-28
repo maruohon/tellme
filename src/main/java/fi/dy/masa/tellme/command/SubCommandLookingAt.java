@@ -53,7 +53,7 @@ public class SubCommandLookingAt extends SubCommand
 
     private void handleLookedAtObject(EntityPlayer player, boolean adjacent, boolean dumpToFile)
     {
-        RayTraceResult result = RayTraceUtils.rayTraceFromPlayer(player.getEntityWorld(), player, true);
+        RayTraceResult result = RayTraceUtils.rayTraceFromPlayer(player.getEntityWorld(), player, true, 10d);
 
         if (result != null)
         {
