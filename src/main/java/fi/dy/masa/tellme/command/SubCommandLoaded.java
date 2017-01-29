@@ -7,8 +7,10 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
@@ -125,8 +127,24 @@ public class SubCommandLoaded extends SubCommand
             }
 
             EntityListType type = this.getListType(cmdType, args, 2);
-            ChunkPos pos1 = new ChunkPos(CommandBase.parseInt(args[4]) >> 4, CommandBase.parseInt(args[5]) >> 4);
-            ChunkPos pos2 = new ChunkPos(CommandBase.parseInt(args[6]) >> 4, CommandBase.parseInt(args[7]) >> 4);
+            Entity senderEntity = sender.getCommandSenderEntity();
+            ChunkPos pos1;
+            ChunkPos pos2;
+
+            if (senderEntity != null)
+            {
+                Vec3d senderPos = senderEntity.getPositionVector();
+                pos1 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[4], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[5], false).getResult()) >> 4);
+                pos2 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[6], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[7], false).getResult()) >> 4);
+            }
+            else
+            {
+                pos1 = new ChunkPos(CommandBase.parseInt(args[4]) >> 4, CommandBase.parseInt(args[5]) >> 4);
+                pos2 = new ChunkPos(CommandBase.parseInt(args[6]) >> 4, CommandBase.parseInt(args[7]) >> 4);
+            }
+
             World world = this.checkAndGetWorld(sender, args, 8);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos1, pos2);
         }
@@ -140,7 +158,20 @@ public class SubCommandLoaded extends SubCommand
             }
 
             EntityListType type = this.getListType(cmdType, args, 2);
-            ChunkPos pos = new ChunkPos(CommandBase.parseInt(args[4]), CommandBase.parseInt(args[5]));
+            Entity senderEntity = sender.getCommandSenderEntity();
+            ChunkPos pos;
+
+            if (senderEntity != null)
+            {
+                Vec3d senderPos = senderEntity.getPositionVector();
+                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[4], false).getResult()) >> 4,
+                                   ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[5], false).getResult()) >> 4);
+            }
+            else
+            {
+                pos = new ChunkPos(CommandBase.parseInt(args[4]), CommandBase.parseInt(args[5]));
+            }
+
             World world = this.checkAndGetWorld(sender, args, 6);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos, pos);
         }
