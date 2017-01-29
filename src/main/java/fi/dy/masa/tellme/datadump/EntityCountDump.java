@@ -16,7 +16,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.gen.ChunkProviderServer;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
 
@@ -130,16 +130,11 @@ public class EntityCountDump extends DataDump
 
     private void processAllLoadedChunks(World world, ChunkProcessor chunkProcessor)
     {
-        IChunkProvider provider = world.getChunkProvider();
+        Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
 
-        if (provider instanceof ChunkProviderServer)
+        for (Chunk chunk : loadedChunks)
         {
-            Collection<Chunk> loadedChunks = ((ChunkProviderServer) provider).getLoadedChunks();
-
-            for (Chunk chunk : loadedChunks)
-            {
-                chunkProcessor.processChunk(chunk);
-            }
+            chunkProcessor.processChunk(chunk);
         }
 
         chunkProcessor.getData(this);
