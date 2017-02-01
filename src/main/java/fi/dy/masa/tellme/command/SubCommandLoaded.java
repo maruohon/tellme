@@ -71,11 +71,11 @@ public class SubCommandLoaded extends SubCommand
             this.sendMessage(sender, "tellme.command.info.usage.noparam");
             //sender.sendMessage(new TextComponentString(pre + " chunks (not implemented yet)"));
             sender.sendMessage(new TextComponentString(pre + " dimensions"));
-            sender.sendMessage(new TextComponentString(pre + " all-entities <by-chunk | by-type> <list | dump> [dimension]"));
+            sender.sendMessage(new TextComponentString(pre + " all-entities <all | by-chunk | by-type> <list | dump> [dimension]"));
             sender.sendMessage(new TextComponentString(pre + " all-tileentities <by-chunk | by-type> <list | dump> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " entities-in-area <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
+            sender.sendMessage(new TextComponentString(pre + " entities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
             sender.sendMessage(new TextComponentString(pre + " tileentities-in-area <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " entities-in-chunk <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
+            sender.sendMessage(new TextComponentString(pre + " entities-in-chunk <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
             sender.sendMessage(new TextComponentString(pre + " tileentities-in-chunk <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
 
             return;
@@ -109,7 +109,7 @@ public class SubCommandLoaded extends SubCommand
             if (args.length < 4 || args.length > 5)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <by-chunk | by-type> <list | dump> [dimension]"));
+                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <all | by-chunk | by-type> <list | dump> [dimension]"));
                 return;
             }
 
@@ -122,7 +122,7 @@ public class SubCommandLoaded extends SubCommand
             if (args.length < 8 || args.length > 9)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
+                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
                 return;
             }
 
@@ -153,7 +153,7 @@ public class SubCommandLoaded extends SubCommand
             if (args.length < 6 || args.length > 7)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
+                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
                 return;
             }
 
@@ -223,11 +223,25 @@ public class SubCommandLoaded extends SubCommand
     {
         if (cmdType.contains("tileentities"))
         {
-            return args[indexDataType].equals("by-chunk") ? EntityListType.TILEENTITIES_BY_CHUNK : EntityListType.TILEENTITIES_BY_TYPE;
+            if (args[indexDataType].equals("by-chunk"))
+            {
+                return EntityListType.TILEENTITIES_BY_CHUNK;
+            }
+
+            return EntityListType.TILEENTITIES_BY_TYPE;
         }
         else
         {
-            return args[indexDataType].equals("by-chunk") ? EntityListType.ENTITIES_BY_CHUNK : EntityListType.ENTITIES_BY_TYPE;
+            if (args[indexDataType].equals("by-chunk"))
+            {
+                return EntityListType.ENTITIES_BY_CHUNK;
+            }
+            else if (args[indexDataType].equals("by-type"))
+            {
+                return EntityListType.ENTITIES_BY_TYPE;
+            }
+
+            return EntityListType.ALL_ENTITIES;
         }
     }
 }
