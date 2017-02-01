@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.ITickable;
@@ -53,6 +54,16 @@ public class EntityCountDump extends DataDump
             entityCountDump.addHeader("Loaded entities by chunk");
             entityCountDump.addTitle("Chunk", "Count");
             entityCountDump.strFooter = "with no entities.";
+        }
+        else if (type == EntityListType.ALL_ENTITIES)
+        {
+            entityCountDump = new EntityCountDump(5);
+            entityCountDump.counter = new AllEntitiesLister();
+            entityCountDump.addHeader("All currently loaded entities");
+            entityCountDump.addTitle("Name", "Health", "Location", "Chunk", "Region");
+            entityCountDump.strFooter = "with no entities.";
+            entityCountDump.setColumnAlignment(1, Alignment.RIGHT); // health
+            entityCountDump.setSort(true);
         }
         else if (type == EntityListType.TILEENTITIES_BY_TYPE)
         {
@@ -274,6 +285,58 @@ public class EntityCountDump extends DataDump
         }
     }
 
+    private static class AllEntitiesLister extends ChunkProcessor
+    {
+        private List<Entity> entities = new ArrayList<Entity>();
+        private int totalCount;
+
+        @Override
+        public void processChunk(Chunk chunk)
+        {
+            ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
+            int total = 0;
+
+            for (int i = 0; i < entityLists.length; i++)
+            {
+                Iterator<Entity> iter = entityLists[i].iterator();
+
+                while (iter.hasNext())
+                {
+                    this.entities.add(iter.next());
+                }
+
+                total += entityLists[i].size();
+            }
+
+            if (total == 0)
+            {
+                this.emptyChunks++;
+            }
+            else
+            {
+                this.totalCount += total;
+            }
+        }
+
+        @Override
+        public void getData(EntityCountDump dump)
+        {
+            for (Entity entity : this.entities)
+            {
+                BlockPos pos = entity.getPosition();
+
+                dump.addData(
+                        entity.getName(),
+                        entity instanceof EntityLivingBase ? String.format("%.2f", ((EntityLivingBase) entity).getHealth()) : "-",
+                        String.format("x = %8.2f, y = %8.2f, z = %8.2f", entity.posX, entity.posY, entity.posZ),
+                        String.format("[%5d, %5d]", pos.getX() >> 4, pos.getZ() >> 4),
+                        String.format("r.%d.%d", pos.getX() >> 9, pos.getZ() >> 9));
+            }
+
+            dump.addFooter(String.format("In total there were %d loaded entities.", this.totalCount));
+        }
+    }
+
     public static class TileEntitiesPerTypeCounter extends ChunkProcessor
     {
         private Map<Class <? extends TileEntity>, Integer> perTypeCount = new HashMap<Class <? extends TileEntity>, Integer>();
@@ -481,6 +544,7 @@ public class EntityCountDump extends DataDump
     {
         ENTITIES_BY_TYPE,
         ENTITIES_BY_CHUNK,
+        ALL_ENTITIES,
         TILEENTITIES_BY_TYPE,
         TILEENTITIES_BY_CHUNK;
     }
