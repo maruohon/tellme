@@ -1,13 +1,14 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
 import fi.dy.masa.tellme.TellMe;
 
 public class DataDump
@@ -316,7 +317,6 @@ public class DataDump
     public static File dumpDataToFile(String fileNameBase, List<String> lines)
     {
         File outFile = null;
-
         File cfgDir = new File(TellMe.configDirPath);
 
         if (cfgDir.exists() == false)
@@ -357,10 +357,16 @@ public class DataDump
 
         try
         {
-            for (int i = 0; i < lines.size(); ++i)
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));
+            int size = lines.size();
+
+            for (int i = 0; i < size; i++)
             {
-                FileUtils.writeStringToFile(outFile, lines.get(i) + System.getProperty("line.separator"), true);
+                writer.write(lines.get(i));
+                writer.newLine();
             }
+
+            writer.close();
         }
         catch (IOException e)
         {
