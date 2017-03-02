@@ -1,6 +1,7 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class BlockDump extends DataDump
@@ -97,5 +99,27 @@ public class BlockDump extends DataDump
         blockDump.setUseColumnSeparator(true);
 
         return blockDump.getLines();
+    }
+
+    public static List<String> getBlockDumpIdToRegistryName()
+    {
+        List<IdToStringHolder> data = new ArrayList<IdToStringHolder>();
+        List<String> lines = new ArrayList<String>();
+        Iterator<Block> iter = Block.REGISTRY.iterator();
+
+        while (iter.hasNext())
+        {
+            Block block = iter.next();
+            data.add(new IdToStringHolder(Block.getIdFromBlock(block), block.getRegistryName().toString()));
+        }
+
+        Collections.sort(data);
+
+        for (IdToStringHolder holder : data)
+        {
+            lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+        }
+
+        return lines;
     }
 }

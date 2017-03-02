@@ -31,7 +31,9 @@ public class SubCommandDump extends SubCommand
         super(baseCommand);
 
         this.subSubCommands.add("biomes");
+        this.subSubCommands.add("biomes-id-to-name");
         this.subSubCommands.add("blocks");
+        this.subSubCommands.add("blocks-id-to-registryname");
         this.subSubCommands.add("blocks-with-nbt");
         this.subSubCommands.add("blockstates-by-block");
         this.subSubCommands.add("blockstates-by-state");
@@ -94,9 +96,17 @@ public class SubCommandDump extends SubCommand
         {
             return BiomeDump.getFormattedBiomeDump();
         }
+        else if (type.equals("biomes-id-to-name"))
+        {
+            return BiomeDump.getBiomeDumpIdToName();
+        }
         else if (type.equals("blocks"))
         {
             return BlockDump.getFormattedBlockDump(false);
+        }
+        else if (type.equals("blocks-id-to-registryname"))
+        {
+            return BlockDump.getBlockDumpIdToRegistryName();
         }
         else if (type.equals("blocks-with-nbt"))
         {

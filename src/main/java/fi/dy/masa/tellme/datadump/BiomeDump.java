@@ -1,5 +1,7 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
@@ -71,5 +73,64 @@ public class BiomeDump extends DataDump
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.proxy.getCurrentBiomeInfoClientSide(player, biome);
+    }
+
+    public static List<String> getBiomeDumpIdToName()
+    {
+        List<IdToStringHolder> data = new ArrayList<IdToStringHolder>();
+        List<String> lines = new ArrayList<String>();
+        Iterator<Biome> iter = Biome.REGISTRY.iterator();
+
+        while (iter.hasNext())
+        {
+            Biome biome = iter.next();
+            data.add(new IdToStringHolder(Biome.getIdForBiome(biome), biome.getBiomeName()));
+        }
+
+        Collections.sort(data);
+
+        for (IdToStringHolder holder : data)
+        {
+            lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+        }
+
+        return lines;
+    }
+
+    public static class IdToStringHolder implements Comparable<IdToStringHolder>
+    {
+        private final int id;
+        private final String str;
+
+        public IdToStringHolder(int id, String str)
+        {
+            this.id = id;
+            this.str = str;
+        }
+
+        public int getId()
+        {
+            return this.id;
+        }
+
+        public String getString()
+        {
+            return this.str;
+        }
+
+        @Override
+        public int compareTo(IdToStringHolder other)
+        {
+            if (this.id < other.id)
+            {
+                return -1;
+            }
+            else if (this.id > other.id)
+            {
+                return 1;
+            }
+
+            return 0;
+        }
     }
 }
