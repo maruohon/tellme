@@ -8,7 +8,6 @@ import java.util.Map;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -59,7 +58,7 @@ public class CommandTellme extends CommandBase
 
             if (sc != null)
             {
-                return sc.getTabCompletions(server, sender, args);
+                return sc.getTabCompletions(server, sender, SubCommand.dropFirstStrings(args, 1));
             }
         }
 
@@ -69,25 +68,25 @@ public class CommandTellme extends CommandBase
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        if (args.length > 0)
+        if (args.length == 0)
         {
-            if (this.subCommands.containsKey(args[0]))
-            {
-                ISubCommand cmd = this.subCommands.get(args[0]);
-
-                if (cmd != null)
-                {
-                    cmd.execute(server, sender, args);
-                    return;
-                }
-            }
-            else
-            {
-                throw new WrongUsageException("tellme.command.error.unknown", "/" + this.getName() + " " + args[0]);
-            }
+            args = new String[] { "help" };
         }
 
-        throw new WrongUsageException("tellme.command.info.help", getUsage(sender));
+        if (this.subCommands.containsKey(args[0]))
+        {
+            ISubCommand cmd = this.subCommands.get(args[0]);
+
+            if (cmd != null)
+            {
+                cmd.execute(server, sender, SubCommand.dropFirstStrings(args, 1));
+                return;
+            }
+        }
+        else
+        {
+            throw new CommandException("tellme.command.error.unknown", "/" + this.getName() + " " + args[0]);
+        }
     }
 
     private void registerSubCommand(ISubCommand cmd)

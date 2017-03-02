@@ -55,17 +55,17 @@ public class SubCommandLoaded extends SubCommand
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
-        String cmd = args[1];
+        String cmd = args[0];
 
-        if (args.length == 3 && cmd.startsWith("tileentities"))
+        if (args.length == 2 && cmd.startsWith("tileentities"))
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "by-chunk", "by-type");
         }
-        else if (args.length == 3 && cmd.startsWith("entities"))
+        else if (args.length == 2 && cmd.startsWith("entities"))
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "all", "by-chunk", "by-type");
         }
-        else if (args.length == 4 && cmd.contains("entities"))
+        else if (args.length == 3 && cmd.contains("entities"))
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "dump", "list");
         }
@@ -80,7 +80,7 @@ public class SubCommandLoaded extends SubCommand
 
         String pre = "/" + this.getBaseCommand().getName() + " " + this.getName() + " ";
 
-        if (args.length < 2 || this.subSubCommands.contains(args[1]) == false)
+        if (args.length < 1 || this.subSubCommands.contains(args[0]) == false)
         {
             this.sendMessage(sender, "tellme.command.info.usage.noparam");
             //sender.sendMessage(new TextComponentString(pre + " chunks (not implemented yet)"));
@@ -93,9 +93,9 @@ public class SubCommandLoaded extends SubCommand
             return;
         }
 
-        String cmd = args[1];
+        String cmd = args[0];
 
-        if (cmd.equals("dimensions") && args.length == 2)
+        if (cmd.equals("dimensions") && args.length == 1)
         {
             Integer[] dims = DimensionManager.getIDs();
 
@@ -118,20 +118,20 @@ public class SubCommandLoaded extends SubCommand
 
         if (cmd.equals("entities-all") || cmd.equals("tileentities-all"))
         {
-            if (args.length < 4)
+            if (args.length < 3)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
                 sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
                 return;
             }
 
-            EntityListType type = this.getListType(cmd, args[2]);
-            World world = this.checkAndGetWorld(sender, args, 4);
+            EntityListType type = this.getListType(cmd, args[1]);
+            World world = this.checkAndGetWorld(sender, args, 3);
             data = EntityCountDump.getFormattedEntityCountDumpAll(world, type);
         }
         else if (cmd.equals("entities-in-area") || cmd.equals("tileentities-in-area"))
         {
-            if (args.length < 8)
+            if (args.length < 7)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
                 sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
@@ -146,51 +146,51 @@ public class SubCommandLoaded extends SubCommand
             if (senderEntity != null)
             {
                 Vec3d senderPos = senderEntity.getPositionVector();
-                pos1 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[4], false).getResult()) >> 4,
-                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[5], false).getResult()) >> 4);
-                pos2 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[6], false).getResult()) >> 4,
-                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[7], false).getResult()) >> 4);
+                pos1 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[3], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[4], false).getResult()) >> 4);
+                pos2 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[5], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[6], false).getResult()) >> 4);
             }
             else
             {
-                pos1 = new ChunkPos(CommandBase.parseInt(args[4]) >> 4, CommandBase.parseInt(args[5]) >> 4);
-                pos2 = new ChunkPos(CommandBase.parseInt(args[6]) >> 4, CommandBase.parseInt(args[7]) >> 4);
+                pos1 = new ChunkPos(CommandBase.parseInt(args[3]) >> 4, CommandBase.parseInt(args[4]) >> 4);
+                pos2 = new ChunkPos(CommandBase.parseInt(args[5]) >> 4, CommandBase.parseInt(args[6]) >> 4);
             }
 
-            World world = this.checkAndGetWorld(sender, args, 8);
+            World world = this.checkAndGetWorld(sender, args, 7);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos1, pos2);
         }
         else if (cmd.equals("entities-in-chunk") || cmd.equals("tileentities-in-chunk"))
         {
-            if (args.length < 6)
+            if (args.length < 5)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
                 sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
                 return;
             }
 
-            EntityListType type = this.getListType(cmd, args[2]);
+            EntityListType type = this.getListType(cmd, args[1]);
             Entity senderEntity = sender.getCommandSenderEntity();
             ChunkPos pos;
 
             if (senderEntity != null)
             {
                 Vec3d senderPos = senderEntity.getPositionVector();
-                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[4], false).getResult()) >> 4,
-                                   ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[5], false).getResult()) >> 4);
+                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[3], false).getResult()) >> 4,
+                                   ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[4], false).getResult()) >> 4);
             }
             else
             {
-                pos = new ChunkPos(CommandBase.parseInt(args[4]), CommandBase.parseInt(args[5]));
+                pos = new ChunkPos(CommandBase.parseInt(args[3]), CommandBase.parseInt(args[4]));
             }
 
-            World world = this.checkAndGetWorld(sender, args, 6);
+            World world = this.checkAndGetWorld(sender, args, 5);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos, pos);
         }
 
         if (data != null)
         {
-            String outputType = args[3];
+            String outputType = args[2];
 
             if (outputType.equals("list"))
             {

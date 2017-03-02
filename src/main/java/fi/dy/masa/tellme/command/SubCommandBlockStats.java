@@ -44,10 +44,10 @@ public class SubCommandBlockStats extends SubCommand
         }
 
         EntityPlayer player = (EntityPlayer) sender;
-        String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
+        String pre = this.getUsageCommon();
 
         // "/tellme bockstats"
-        if (args.length < 2)
+        if (args.length < 1)
         {
             this.sendMessage(sender, "tellme.command.info.usage.noparam");
             player.sendMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
@@ -71,17 +71,17 @@ public class SubCommandBlockStats extends SubCommand
         // /tellme blockstats query [blockname blockname ...]
 
         // "/tellme blockstats count ..."
-        if (args[1].equals("count"))
+        if (args[0].equals("count"))
         {
             // range
-            if (args.length == 5)
+            if (args.length == 4)
             {
                 try
                 {
                     this.sendMessage(sender, "tellme.subcommand.blockstats.calculating");
-                    int rx = Math.abs(CommandBase.parseInt(args[2]));
-                    int ry = Math.abs(CommandBase.parseInt(args[3]));
-                    int rz = Math.abs(CommandBase.parseInt(args[4]));
+                    int rx = Math.abs(CommandBase.parseInt(args[1]));
+                    int ry = Math.abs(CommandBase.parseInt(args[2]));
+                    int rz = Math.abs(CommandBase.parseInt(args[3]));
                     blockStats.calculateBlockStats(player.getEntityWorld(), player.getPosition(), rx, ry, rz);
                     this.sendMessage(sender, "tellme.command.info.done");
                 }
@@ -91,13 +91,13 @@ public class SubCommandBlockStats extends SubCommand
                 }
             }
             // cuboid corners
-            else if (args.length == 8)
+            else if (args.length == 7)
             {
                 try
                 {
                     this.sendMessage(sender, "tellme.subcommand.blockstats.calculating");
-                    BlockPos pos1 = CommandBase.parseBlockPos(player, args, 2, false);
-                    BlockPos pos2 = CommandBase.parseBlockPos(player, args, 5, false);
+                    BlockPos pos1 = CommandBase.parseBlockPos(player, args, 1, false);
+                    BlockPos pos2 = CommandBase.parseBlockPos(player, args, 4, false);
                     blockStats.calculateBlockStats(player.getEntityWorld(), pos1, pos2);
                     this.sendMessage(sender, "tellme.command.info.done");
                 }
@@ -112,19 +112,19 @@ public class SubCommandBlockStats extends SubCommand
             }
         }
         // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
-        else if (args[1].equals("query") || args[1].equals("dump"))
+        else if (args[0].equals("query") || args[0].equals("dump"))
         {
             // We have some filters specified
-            if (args.length > 2)
+            if (args.length > 1)
             {
-                blockStats.query(Arrays.asList(args).subList(2, args.length));
+                blockStats.query(Arrays.asList(args).subList(1, args.length));
             }
             else
             {
                 blockStats.queryAll();
             }
 
-            if (args[1].equals("query"))
+            if (args[0].equals("query"))
             {
                 blockStats.printBlockStatsToLogger();
                 this.sendMessage(sender, "tellme.info.output.to.console");

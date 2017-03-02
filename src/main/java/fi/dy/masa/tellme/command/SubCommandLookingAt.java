@@ -7,6 +7,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.TextComponentTranslation;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.RayTraceUtils;
@@ -29,7 +30,7 @@ public class SubCommandLookingAt extends SubCommand
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
-        if (args.length == 3)
+        if (args.length == 2)
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "adjacent");
         }
@@ -42,12 +43,9 @@ public class SubCommandLookingAt extends SubCommand
     {
         super.execute(server, sender, args);
 
-        if (args.length >= 2 && sender instanceof EntityPlayer)
+        if (args.length >= 1 && (args[0].equals("dump") || args[0].equals("print")) && sender instanceof EntityPlayer)
         {
-            if (args[1].equals("dump") || args[1].equals("print"))
-            {
-                this.handleLookedAtObject((EntityPlayer) sender, args.length == 3 && args[2].equals("adjacent"), args[1].equals("dump"));
-            }
+            this.handleLookedAtObject((EntityPlayer) sender, args.length == 2 && args[1].equals("adjacent"), args[0].equals("dump"));
         }
     }
 
@@ -62,6 +60,10 @@ public class SubCommandLookingAt extends SubCommand
         else if (trace.typeOfHit == RayTraceResult.Type.ENTITY)
         {
             EntityInfo.printEntityInfo(player, trace.entityHit, dumpToFile);
+        }
+        else
+        {
+            player.sendMessage(new TextComponentTranslation("tellme.command.error.notlookingatanything"));
         }
     }
 }

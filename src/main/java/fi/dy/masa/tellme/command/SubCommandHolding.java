@@ -27,11 +27,11 @@ public class SubCommandHolding extends SubCommand
     {
         super.execute(server, sender, args);
 
-        if (args.length == 2 && sender instanceof EntityPlayer)
+        if (args.length == 1 && sender instanceof EntityPlayer)
         {
-            if (args[1].equals("dump") || args[1].equals("print"))
+            if (args[0].equals("dump") || args[0].equals("print"))
             {
-                this.handleHeldObject((EntityPlayer) sender, args[1].equals("dump"));
+                this.handleHeldObject((EntityPlayer) sender, args[0].equals("dump"));
             }
         }
     }
