@@ -38,7 +38,7 @@ public class ClientProxy extends CommonProxy
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb)
     {
         BlockPos pos = player.getPosition();
-        String pre = TextFormatting.YELLOW.toString();
+        String pre = TextFormatting.GREEN.toString();
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
         // These are client-side only:
