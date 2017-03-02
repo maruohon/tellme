@@ -1,12 +1,28 @@
 package fi.dy.masa.tellme.command;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import fi.dy.masa.tellme.datadump.*;
+import fi.dy.masa.tellme.datadump.BiomeDump;
+import fi.dy.masa.tellme.datadump.BlockDump;
+import fi.dy.masa.tellme.datadump.BlockStatesDump;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DimensionDump;
+import fi.dy.masa.tellme.datadump.EnchantmentDump;
+import fi.dy.masa.tellme.datadump.EntityDump;
+import fi.dy.masa.tellme.datadump.FluidRegistryDump;
+import fi.dy.masa.tellme.datadump.ItemDump;
+import fi.dy.masa.tellme.datadump.OreDictionaryDump;
+import fi.dy.masa.tellme.datadump.PotionDump;
+import fi.dy.masa.tellme.datadump.PotionTypeDump;
+import fi.dy.masa.tellme.datadump.SoundEventDump;
+import fi.dy.masa.tellme.datadump.SpawnEggDump;
+import fi.dy.masa.tellme.datadump.TileEntityDump;
+import fi.dy.masa.tellme.datadump.VillagerProfessionDump;
 
 public class SubCommandDump extends SubCommand
 {
@@ -15,7 +31,9 @@ public class SubCommandDump extends SubCommand
         super(baseCommand);
 
         this.subSubCommands.add("biomes");
+        this.subSubCommands.add("biomes-id-to-name");
         this.subSubCommands.add("blocks");
+        this.subSubCommands.add("blocks-id-to-registryname");
         this.subSubCommands.add("blocks-with-nbt");
         this.subSubCommands.add("blockstates-by-block");
         this.subSubCommands.add("blockstates-by-state");
@@ -46,25 +64,25 @@ public class SubCommandDump extends SubCommand
     {
         super.execute(server, sender, args);
 
-        if (args.length == 2)
+        if (args.length == 1)
         {
-            List<String> data = this.getData(args[1]);
+            List<String> data = this.getData(args[0]);
 
             if (data.isEmpty())
             {
-                throw new WrongUsageException("tellme.command.error.unknown.parameter", args[1]);
+                throw new WrongUsageException("tellme.command.error.unknown.parameter", args[0]);
             }
 
-            if (args[0].equals("dump"))
+            if (this.getName().equals("dump"))
             {
-                File file = DataDump.dumpDataToFile(args[1], data);
+                File file = DataDump.dumpDataToFile(args[0], data);
 
                 if (file != null)
                 {
                     this.sendMessage(sender, "tellme.info.output.to.file", file.getName());
                 }
             }
-            else if (args[0].equals("list"))
+            else if (this.getName().equals("list"))
             {
                 DataDump.printDataToLogger(data);
                 this.sendMessage(sender, "tellme.info.output.to.console");
@@ -78,9 +96,17 @@ public class SubCommandDump extends SubCommand
         {
             return BiomeDump.getFormattedBiomeDump();
         }
+        else if (type.equals("biomes-id-to-name"))
+        {
+            return BiomeDump.getBiomeDumpIdToName();
+        }
         else if (type.equals("blocks"))
         {
             return BlockDump.getFormattedBlockDump(false);
+        }
+        else if (type.equals("blocks-id-to-registryname"))
+        {
+            return BlockDump.getBlockDumpIdToRegistryName();
         }
         else if (type.equals("blocks-with-nbt"))
         {
@@ -151,6 +177,6 @@ public class SubCommandDump extends SubCommand
             return VillagerProfessionDump.getFormattedVillagerProfessionDump();
         }
 
-        return null;
+        return Collections.emptyList();
     }
 }

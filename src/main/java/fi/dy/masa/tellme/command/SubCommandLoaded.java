@@ -1,8 +1,9 @@
 package fi.dy.masa.tellme.command;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -22,20 +23,27 @@ import fi.dy.masa.tellme.util.WorldUtils;
 
 public class SubCommandLoaded extends SubCommand
 {
-    public static final String[] ENTITIES_3 = new String[] { "by-chunk", "by-type" };
-    public static final String[] ENTITIES_4 = new String[] { "dump", "list" };
+    private final Map<String, String> usage = new HashMap<String, String>();
 
     public SubCommandLoaded(CommandTellme baseCommand)
     {
         super(baseCommand);
 
-        this.subSubCommands.add("all-entities");
-        this.subSubCommands.add("all-tileentities");
         this.subSubCommands.add("dimensions");
+        this.subSubCommands.add("entities-all");
         this.subSubCommands.add("entities-in-area");
         this.subSubCommands.add("entities-in-chunk");
+        this.subSubCommands.add("tileentities-all");
         this.subSubCommands.add("tileentities-in-area");
         this.subSubCommands.add("tileentities-in-chunk");
+
+        this.usage.put("dimensions",            "dimensions");
+        this.usage.put("entities-all",          "entities-all <all | by-chunk | by-type> <list | dump> [dimension]");
+        this.usage.put("entities-in-area",      "entities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
+        this.usage.put("entities-in-chunk",     "entities-in-chunk <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
+        this.usage.put("tileentities-all",      "tileentities-all <by-chunk | by-type> <list | dump> [dimension]");
+        this.usage.put("tileentities-in-area",  "tileentities-in-area <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
+        this.usage.put("tileentities-in-chunk", "tileentities-in-chunk <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
     }
 
     @Override
@@ -47,13 +55,19 @@ public class SubCommandLoaded extends SubCommand
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
-        if (args.length == 3 && (args[1].equals("dimensions") == false && this.subSubCommands.contains(args[1])))
+        String cmd = args[0];
+
+        if (args.length == 2 && cmd.startsWith("tileentities"))
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_3));
+            return CommandBase.getListOfStringsMatchingLastWord(args, "by-chunk", "by-type");
         }
-        else if (args.length == 4 && (args[1].equals("dimensions") == false && this.subSubCommands.contains(args[1])))
+        else if (args.length == 2 && cmd.startsWith("entities"))
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(ENTITIES_4));
+            return CommandBase.getListOfStringsMatchingLastWord(args, "all", "by-chunk", "by-type");
+        }
+        else if (args.length == 3 && cmd.contains("entities"))
+        {
+            return CommandBase.getListOfStringsMatchingLastWord(args, "dump", "list");
         }
 
         return super.getTabCompletions(server, sender, args);
@@ -64,26 +78,24 @@ public class SubCommandLoaded extends SubCommand
     {
         super.execute(server, sender, args);
 
-        String pre = "/" + this.getBaseCommand().getName() + " " + this.getName();
+        String pre = "/" + this.getBaseCommand().getName() + " " + this.getName() + " ";
 
-        if (args.length < 2 || this.subSubCommands.contains(args[1]) == false)
+        if (args.length < 1 || this.subSubCommands.contains(args[0]) == false)
         {
             this.sendMessage(sender, "tellme.command.info.usage.noparam");
             //sender.sendMessage(new TextComponentString(pre + " chunks (not implemented yet)"));
-            sender.sendMessage(new TextComponentString(pre + " dimensions"));
-            sender.sendMessage(new TextComponentString(pre + " all-entities <all | by-chunk | by-type> <list | dump> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " all-tileentities <by-chunk | by-type> <list | dump> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " entities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " tileentities-in-area <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " entities-in-chunk <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
-            sender.sendMessage(new TextComponentString(pre + " tileentities-in-chunk <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
+
+            for (String cmd : this.subSubCommands)
+            {
+                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
+            }
 
             return;
         }
 
-        String cmdType = args[1];
+        String cmd = args[0];
 
-        if (cmdType.equals("dimensions") && args.length == 2)
+        if (cmd.equals("dimensions") && args.length == 1)
         {
             Integer[] dims = DimensionManager.getIDs();
 
@@ -104,29 +116,29 @@ public class SubCommandLoaded extends SubCommand
 
         List<String> data = null;
 
-        if (cmdType.equals("all-entities") || cmdType.equals("all-tileentities"))
+        if (cmd.equals("entities-all") || cmd.equals("tileentities-all"))
         {
-            if (args.length < 4 || args.length > 5)
+            if (args.length < 3 || args.length > 4)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <all | by-chunk | by-type> <list | dump> [dimension]"));
+                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
                 return;
             }
 
-            EntityListType type = this.getListType(cmdType, args, 2);
-            World world = this.checkAndGetWorld(sender, args, 4);
+            EntityListType type = this.getListType(cmd, args[1]);
+            World world = this.checkAndGetWorld(sender, args, 3);
             data = EntityCountDump.getFormattedEntityCountDumpAll(world, type);
         }
-        else if (cmdType.equals("entities-in-area") || cmdType.equals("tileentities-in-area"))
+        else if (cmd.equals("entities-in-area") || cmd.equals("tileentities-in-area"))
         {
-            if (args.length < 8 || args.length > 9)
+            if (args.length < 7 || args.length > 8)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]"));
+                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
                 return;
             }
 
-            EntityListType type = this.getListType(cmdType, args, 2);
+            EntityListType type = this.getListType(cmd, args[2]);
             Entity senderEntity = sender.getCommandSenderEntity();
             ChunkPos pos1;
             ChunkPos pos2;
@@ -134,51 +146,51 @@ public class SubCommandLoaded extends SubCommand
             if (senderEntity != null)
             {
                 Vec3d senderPos = senderEntity.getPositionVector();
-                pos1 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[4], false).getResult()) >> 4,
-                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[5], false).getResult()) >> 4);
-                pos2 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[6], false).getResult()) >> 4,
-                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[7], false).getResult()) >> 4);
+                pos1 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[3], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[4], false).getResult()) >> 4);
+                pos2 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[5], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[6], false).getResult()) >> 4);
             }
             else
             {
-                pos1 = new ChunkPos(CommandBase.parseInt(args[4]) >> 4, CommandBase.parseInt(args[5]) >> 4);
-                pos2 = new ChunkPos(CommandBase.parseInt(args[6]) >> 4, CommandBase.parseInt(args[7]) >> 4);
+                pos1 = new ChunkPos(CommandBase.parseInt(args[3]) >> 4, CommandBase.parseInt(args[4]) >> 4);
+                pos2 = new ChunkPos(CommandBase.parseInt(args[5]) >> 4, CommandBase.parseInt(args[6]) >> 4);
             }
 
-            World world = this.checkAndGetWorld(sender, args, 8);
+            World world = this.checkAndGetWorld(sender, args, 7);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos1, pos2);
         }
-        else if (cmdType.equals("entities-in-chunk") || cmdType.equals("tileentities-in-chunk"))
+        else if (cmd.equals("entities-in-chunk") || cmd.equals("tileentities-in-chunk"))
         {
-            if (args.length < 6 || args.length > 7)
+            if (args.length < 5 || args.length > 6)
             {
                 this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + " " + cmdType + " <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]"));
+                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
                 return;
             }
 
-            EntityListType type = this.getListType(cmdType, args, 2);
+            EntityListType type = this.getListType(cmd, args[1]);
             Entity senderEntity = sender.getCommandSenderEntity();
             ChunkPos pos;
 
             if (senderEntity != null)
             {
                 Vec3d senderPos = senderEntity.getPositionVector();
-                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[4], false).getResult()) >> 4,
-                                   ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[5], false).getResult()) >> 4);
+                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[3], false).getResult()) >> 4,
+                                   ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[4], false).getResult()) >> 4);
             }
             else
             {
-                pos = new ChunkPos(CommandBase.parseInt(args[4]), CommandBase.parseInt(args[5]));
+                pos = new ChunkPos(CommandBase.parseInt(args[3]), CommandBase.parseInt(args[4]));
             }
 
-            World world = this.checkAndGetWorld(sender, args, 6);
+            World world = this.checkAndGetWorld(sender, args, 5);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos, pos);
         }
 
         if (data != null)
         {
-            String outputType = args[3];
+            String outputType = args[2];
 
             if (outputType.equals("list"))
             {
@@ -187,7 +199,7 @@ public class SubCommandLoaded extends SubCommand
             }
             else if (outputType.equals("dump"))
             {
-                File f = DataDump.dumpDataToFile("loaded_" + cmdType, data);
+                File f = DataDump.dumpDataToFile("loaded_" + cmd, data);
                 this.sendMessage(sender, "tellme.info.output.to.file", f.getName());
             }
             else
@@ -219,11 +231,11 @@ public class SubCommandLoaded extends SubCommand
         return world;
     }
 
-    private EntityListType getListType(String cmdType, String[] args, int indexDataType)
+    private EntityListType getListType(String cmd, String arg)
     {
-        if (cmdType.contains("tileentities"))
+        if (cmd.contains("tileentities"))
         {
-            if (args[indexDataType].equals("by-chunk"))
+            if (arg.equals("by-chunk"))
             {
                 return EntityListType.TILEENTITIES_BY_CHUNK;
             }
@@ -232,11 +244,11 @@ public class SubCommandLoaded extends SubCommand
         }
         else
         {
-            if (args[indexDataType].equals("by-chunk"))
+            if (arg.equals("by-chunk"))
             {
                 return EntityListType.ENTITIES_BY_CHUNK;
             }
-            else if (args[indexDataType].equals("by-type"))
+            else if (arg.equals("by-type"))
             {
                 return EntityListType.ENTITIES_BY_TYPE;
             }

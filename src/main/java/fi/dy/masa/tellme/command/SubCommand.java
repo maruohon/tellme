@@ -37,7 +37,7 @@ public abstract class SubCommand implements ISubCommand
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
     {
-        if (args.length == 2 || (args.length == 3 && args[1].equals("help")))
+        if (args.length == 1 || (args.length == 2 && args[0].equals("help")))
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, this.getSubCommands());
         }
@@ -56,40 +56,45 @@ public abstract class SubCommand implements ISubCommand
         return new TextComponentTranslation("tellme.subcommand.info.available", String.join(", ", this.subSubCommands));
     }
 
+    protected String getUsageCommon()
+    {
+        return "/" + this.getBaseCommand().getName() + " " + this.getName();
+    }
+
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         // "/tellme sub-command"
-        if (args.length == 1)
+        if (args.length == 0)
         {
             sender.sendMessage(this.getHelp());
         }
         // "/tellme sub-command [help|unknown]"
-        else if (args.length == 2)
+        else if (args.length == 1)
         {
-            if (args[1].equals("help"))
+            if (args[0].equals("help"))
             {
                 sender.sendMessage(this.getHelp());
             }
-            else if (this.subSubCommands.contains(args[1]) == false)
+            else if (this.subSubCommands.contains(args[0]) == false)
             {
-                throw new WrongUsageException("tellme.subcommand.info.unknown", args[1]);
+                throw new WrongUsageException("tellme.subcommand.info.unknown", args[0]);
             }
         }
         // "/tellme sub-command help sub-sub-command"
-        else if (args.length == 3 && args[1].equals("help"))
+        else if (args.length == 2 && args[0].equals("help"))
         {
-            if (args[2].equals("help"))
+            if (args[1].equals("help"))
             {
                 this.sendMessage(sender, "tellme.subcommand.info.help");
             }
-            else if (this.subSubCommands.contains(args[2]))
+            else if (this.subSubCommands.contains(args[1]))
             {
-                this.sendMessage(sender, "tellme.subcommand." + args[0] + ".info." + args[2]);
+                this.sendMessage(sender, "tellme.subcommand." + this.getName() + ".info." + args[1]);
             }
             else
             {
-                throw new WrongUsageException("tellme.subcommand.info.unknown", args[3]);
+                throw new WrongUsageException("tellme.subcommand.info.unknown", args[1]);
             }
         }
     }
@@ -97,5 +102,17 @@ public abstract class SubCommand implements ISubCommand
     protected void sendMessage(ICommandSender sender, String message, Object... args)
     {
         sender.sendMessage(new TextComponentTranslation(message, args));
+    }
+
+    public static String[] dropFirstStrings(String[] input, int toDrop)
+    {
+        if (toDrop >= input.length)
+        {
+            return new String[0];
+        }
+
+        String[] arr = new String[input.length - toDrop];
+        System.arraycopy(input, toDrop, arr, 0, input.length - toDrop);
+        return arr;
     }
 }

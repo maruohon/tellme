@@ -1,5 +1,7 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
@@ -54,23 +56,81 @@ public class BiomeDump extends DataDump
     {
         World world = player.getEntityWorld();
         BlockPos pos = player.getPosition();
-        Biome bgb = world.getBiome(pos);
+        Biome biome = world.getBiome(pos);
 
-        String pre = TextFormatting.YELLOW.toString();
-        String aq = TextFormatting.AQUA.toString();
+        String pre = TextFormatting.GREEN.toString();
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
         player.sendMessage(new TextComponentString("------------- Current biome info ------------"));
-        player.sendMessage(new TextComponentString(String.format("Biome Name: %s%s%s - Biome ID: %s%d%s",
-                pre, bgb.getBiomeName(), rst, pre, Biome.getIdForBiome(bgb), rst)));
+        player.sendMessage(new TextComponentString(String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s%s%s",
+                pre, biome.getBiomeName(), rst, pre, Biome.getIdForBiome(biome), rst, pre, biome.getRegistryName().toString(), rst)));
         player.sendMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s%s",
-                pre, bgb.canRain(), rst, pre, bgb.getRainfall(), rst, pre, bgb.getEnableSnow(), rst)));
+                pre, biome.canRain(), rst, pre, biome.getRainfall(), rst, pre, biome.getEnableSnow(), rst)));
         player.sendMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
-                pre, bgb.getWaterColorMultiplier(), bgb.getWaterColorMultiplier(), rst)));
+                pre, biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier(), rst)));
         player.sendMessage(new TextComponentString(String.format("temperature: %s%f%s, temp. category: %s%s%s",
-                pre, bgb.getFloatTemperature(pos), rst, aq, bgb.getTempCategory(), rst)));
+                pre, biome.getFloatTemperature(pos), rst, pre, biome.getTempCategory(), rst)));
 
         // Get the grass and foliage colors, if called on the client side
-        TellMe.proxy.getCurrentBiomeInfoClientSide(player, bgb);
+        TellMe.proxy.getCurrentBiomeInfoClientSide(player, biome);
+    }
+
+    public static List<String> getBiomeDumpIdToName()
+    {
+        List<IdToStringHolder> data = new ArrayList<IdToStringHolder>();
+        List<String> lines = new ArrayList<String>();
+        Iterator<Biome> iter = Biome.REGISTRY.iterator();
+
+        while (iter.hasNext())
+        {
+            Biome biome = iter.next();
+            data.add(new IdToStringHolder(Biome.getIdForBiome(biome), biome.getBiomeName()));
+        }
+
+        Collections.sort(data);
+
+        for (IdToStringHolder holder : data)
+        {
+            lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+        }
+
+        return lines;
+    }
+
+    public static class IdToStringHolder implements Comparable<IdToStringHolder>
+    {
+        private final int id;
+        private final String str;
+
+        public IdToStringHolder(int id, String str)
+        {
+            this.id = id;
+            this.str = str;
+        }
+
+        public int getId()
+        {
+            return this.id;
+        }
+
+        public String getString()
+        {
+            return this.str;
+        }
+
+        @Override
+        public int compareTo(IdToStringHolder other)
+        {
+            if (this.id < other.id)
+            {
+                return -1;
+            }
+            else if (this.id > other.id)
+            {
+                return 1;
+            }
+
+            return 0;
+        }
     }
 }

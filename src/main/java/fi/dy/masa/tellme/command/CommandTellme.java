@@ -1,13 +1,13 @@
 package fi.dy.masa.tellme.command;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -46,48 +46,50 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] strArr, BlockPos pos)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos)
     {
-        if (strArr.length == 1)
+        if (args.length == 1)
         {
-            return getListOfStringsMatchingLastWord(strArr, this.subCommands.keySet());
+            return getListOfStringsMatchingLastWord(args, this.subCommands.keySet());
         }
-        else if (this.subCommands.containsKey(strArr[0]))
+        else if (this.subCommands.containsKey(args[0]))
         {
-            ISubCommand sc = this.subCommands.get(strArr[0]);
+            ISubCommand sc = this.subCommands.get(args[0]);
+
             if (sc != null)
             {
-                return sc.getTabCompletions(server, sender, strArr);
+                return sc.getTabCompletions(server, sender, SubCommand.dropFirstStrings(args, 1));
             }
         }
-        return null;
+
+        return Collections.emptyList();
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] commandArgs) throws CommandException
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        if (commandArgs.length > 0)
+        if (args.length == 0)
         {
-            if (this.subCommands.containsKey(commandArgs[0]) == true)
-            {
-                ISubCommand cmd = this.subCommands.get(commandArgs[0]);
-
-                if (cmd != null)
-                {
-                    cmd.execute(server, sender, commandArgs);
-                    return;
-                }
-            }
-            else
-            {
-                throw new WrongUsageException("tellme.command.error.unknown", "/" + this.getName() + " " + commandArgs[0]);
-            }
+            args = new String[] { "help" };
         }
 
-        throw new WrongUsageException("tellme.command.info.help", getUsage(sender));
+        if (this.subCommands.containsKey(args[0]))
+        {
+            ISubCommand cmd = this.subCommands.get(args[0]);
+
+            if (cmd != null)
+            {
+                cmd.execute(server, sender, SubCommand.dropFirstStrings(args, 1));
+                return;
+            }
+        }
+        else
+        {
+            throw new CommandException("tellme.command.error.unknown", "/" + this.getName() + " " + args[0]);
+        }
     }
 
-    public void registerSubCommand(ISubCommand cmd)
+    private void registerSubCommand(ISubCommand cmd)
     {
         if (this.subCommands.containsKey(cmd.getName()) == false)
         {
