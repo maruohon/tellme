@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.util;
 
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 
 /**
@@ -10,7 +11,7 @@ public class ItemType
 {
     private final ItemStack stack;
 
-    public ItemType(ItemStack stack)
+    public ItemType(@Nonnull ItemStack stack)
     {
         this.stack = stack.copy();
     }
