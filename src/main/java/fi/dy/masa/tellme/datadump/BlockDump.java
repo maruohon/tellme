@@ -11,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.registry.GameData;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -21,7 +22,7 @@ public class BlockDump extends DataDump
 
     private BlockDump(boolean dumpNBT)
     {
-        super(dumpNBT ? 9 : 8);
+        super(dumpNBT ? 10 : 9);
 
         this.dumpNBT = dumpNBT;
     }
@@ -43,6 +44,8 @@ public class BlockDump extends DataDump
         lines.add("NOTE: The metadata value displayed is from the ItemStacks from getSubBlocks(), it's NOT necessarily the metadata value in world!!");
         lines.add("NOTE: For blocks, Subtypes = true is only based on the number of returned ItemStacks from getSubBlocks() being > 1");
         lines.add("NOTE: For blocks, Subtypes = ? means that Item.getItemFromBlock(block) returned null or the command was run on the server side");
+        lines.add("The Exists column indicates whether the block currently exists in the game,");
+        lines.add("or is just a placeholder dummy air block for a remove block read from the block ID map in the level.dat file");
 
         // Get the actual data
         this.getFormattedData(lines);
@@ -60,15 +63,17 @@ public class BlockDump extends DataDump
         String itemId = item != null ? String.format("%5d", Item.getIdFromItem(item)) : "-";
         String itemMeta = String.format("%5d", stack != null ? stack.getMetadata() : 0);
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
+        @SuppressWarnings("deprecation")
+        String exists = GameData.getBlockRegistry().isDummied(rl) ? "false" : "true";
 
         if (this.dumpNBT)
         {
             String nbt = stack != null && stack.getTagCompound() != null ? stack.getTagCompound().toString() : "-";
-            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, ItemDump.getOredictKeysJoined(stack), nbt);
+            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, exists, ItemDump.getOredictKeysJoined(stack), nbt);
         }
         else
         {
-            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, ItemDump.getOredictKeysJoined(stack));
+            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, exists, ItemDump.getOredictKeysJoined(stack));
         }
     }
 
@@ -85,11 +90,11 @@ public class BlockDump extends DataDump
 
         if (dumpNBT)
         {
-            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "Ore Dict keys", "NBT");
+            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "Exists", "Ore Dict keys", "NBT");
         }
         else
         {
-            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "Ore Dict keys");
+            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "Exists", "Ore Dict keys");
         }
 
         blockDump.setColumnAlignment(2, Alignment.RIGHT); // ID
