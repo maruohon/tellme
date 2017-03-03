@@ -124,6 +124,13 @@ public class ClientProxy extends CommonProxy
     @Override
     public Collection<Chunk> getLoadedChunks(World world)
     {
+        Collection<Chunk> chunksServer = super.getLoadedChunks(world);
+
+        if (chunksServer.isEmpty() == false)
+        {
+            return chunksServer;
+        }
+
         EntityPlayer player = Minecraft.getMinecraft().player;
 
         if (player != null)
