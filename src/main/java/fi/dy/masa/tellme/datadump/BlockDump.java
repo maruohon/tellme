@@ -61,7 +61,7 @@ public class BlockDump extends DataDump
         String displayName = stack != null ? stack.getDisplayName() : block.getLocalizedName();
         Item item = Item.getItemFromBlock(block);
         String itemId = item != null ? String.format("%5d", Item.getIdFromItem(item)) : "-";
-        String itemMeta = String.format("%5d", stack != null ? stack.getMetadata() : 0);
+        String itemMeta = stack != null ? String.format("%5d", stack.getMetadata()) : "-";
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
         @SuppressWarnings("deprecation")
         String exists = GameData.getBlockRegistry().isDummied(rl) ? "false" : "true";
