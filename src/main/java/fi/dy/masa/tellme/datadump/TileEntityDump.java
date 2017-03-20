@@ -12,14 +12,14 @@ public class TileEntityDump extends DataDump
 {
     private static final Field field_nameToClassMap = ReflectionHelper.findField(TileEntity.class, "field_145855_i", "nameToClassMap");
 
-    private TileEntityDump()
+    private TileEntityDump(Format format)
     {
-        super(2);
+        super(2, format);
     }
 
-    public static List<String> getFormattedTileEntityDump()
+    public static List<String> getFormattedTileEntityDump(Format format)
     {
-        TileEntityDump tileEntityDump = new TileEntityDump();
+        TileEntityDump tileEntityDump = new TileEntityDump(format);
         try
         {
             @SuppressWarnings("unchecked")

@@ -14,16 +14,16 @@ import fi.dy.masa.tellme.TellMe;
 
 public class BiomeDump extends DataDump
 {
-    private BiomeDump()
+    private BiomeDump(Format format)
     {
-        super(8);
+        super(8, format);
 
         this.setSort(false);
     }
 
-    public static List<String> getFormattedBiomeDump()
+    public static List<String> getFormattedBiomeDump(Format format)
     {
-        BiomeDump biomeDump = new BiomeDump();
+        BiomeDump biomeDump = new BiomeDump(format);
         Iterator<Biome> iter = Biome.REGISTRY.iterator();
 
         while (iter.hasNext())
@@ -75,7 +75,7 @@ public class BiomeDump extends DataDump
         TellMe.proxy.getCurrentBiomeInfoClientSide(player, biome);
     }
 
-    public static List<String> getBiomeDumpIdToName()
+    public static List<String> getBiomeDumpIdToName(Format format)
     {
         List<IdToStringHolder> data = new ArrayList<IdToStringHolder>();
         List<String> lines = new ArrayList<String>();
@@ -89,9 +89,19 @@ public class BiomeDump extends DataDump
 
         Collections.sort(data);
 
-        for (IdToStringHolder holder : data)
+        if (format == Format.ASCII)
         {
-            lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+            for (IdToStringHolder holder : data)
+            {
+                lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+            }
+        }
+        else if (format == Format.CSV)
+        {
+            for (IdToStringHolder holder : data)
+            {
+                lines.add(String.valueOf(holder.getId()) + ", " + holder.getString());
+            }
         }
 
         return lines;

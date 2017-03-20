@@ -10,14 +10,14 @@ import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
 
 public class EntityDump extends DataDump
 {
-    private EntityDump()
+    private EntityDump(Format format)
     {
-        super(5);
+        super(5, format);
     }
 
-    public static List<String> getFormattedEntityDump()
+    public static List<String> getFormattedEntityDump(Format format)
     {
-        EntityDump entityDump = new EntityDump();
+        EntityDump entityDump = new EntityDump(format);
         Iterator<Map.Entry<String, Class<? extends Entity>>> iter = EntityList.NAME_TO_CLASS.entrySet().iterator();
 
         while (iter.hasNext())

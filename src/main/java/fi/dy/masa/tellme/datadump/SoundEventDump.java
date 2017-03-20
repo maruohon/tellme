@@ -9,14 +9,14 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class SoundEventDump extends DataDump
 {
-    private SoundEventDump()
+    private SoundEventDump(Format format)
     {
-        super(2);
+        super(2, format);
     }
 
-    public static List<String> getFormattedSoundEventDump()
+    public static List<String> getFormattedSoundEventDump(Format format)
     {
-        SoundEventDump soundEventDump = new SoundEventDump();
+        SoundEventDump soundEventDump = new SoundEventDump(format);
         Iterator<Map.Entry<ResourceLocation, SoundEvent>> iter = ForgeRegistries.SOUND_EVENTS.getEntries().iterator();
 
         while (iter.hasNext())

@@ -18,15 +18,20 @@ public class ItemDump extends DataDump
 {
     private boolean dumpNBT;
 
-    private ItemDump(boolean dumpNBT)
+    private ItemDump(Format format, boolean dumpNBT)
     {
-        super(dumpNBT ? 8 : 7);
+        super(dumpNBT ? 8 : 7, format);
 
         this.dumpNBT = dumpNBT;
     }
 
     protected List<String> getLines()
     {
+        if (this.getFormat() != Format.ASCII)
+        {
+            return super.getLines();
+        }
+
         List<String> lines = new ArrayList<String>();
 
         this.generateFormatStrings();
@@ -69,9 +74,9 @@ public class ItemDump extends DataDump
         }
     }
 
-    public static List<String> getFormattedItemDump(boolean dumpNBT)
+    public static List<String> getFormattedItemDump(Format format, boolean dumpNBT)
     {
-        ItemDump itemDump = new ItemDump(dumpNBT);
+        ItemDump itemDump = new ItemDump(format, dumpNBT);
         Iterator<Map.Entry<ResourceLocation, Item>> iter = ForgeRegistries.ITEMS.getEntries().iterator();
 
         while (iter.hasNext())

@@ -7,14 +7,14 @@ import net.minecraft.entity.EntityList;
 
 public class SpawnEggDump extends DataDump
 {
-    protected SpawnEggDump()
+    protected SpawnEggDump(Format format)
     {
-        super(4);
+        super(4, format);
     }
 
-    public static List<String> getFormattedSpawnEggDump()
+    public static List<String> getFormattedSpawnEggDump(Format format)
     {
-        SpawnEggDump spawnEggDump = new SpawnEggDump();
+        SpawnEggDump spawnEggDump = new SpawnEggDump(format);
         Iterator<Map.Entry<String, EntityList.EntityEggInfo>> iter = EntityList.ENTITY_EGGS.entrySet().iterator();
 
         while (iter.hasNext())

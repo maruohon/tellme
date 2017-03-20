@@ -31,10 +31,17 @@ public class DataDump
     protected boolean centerTitle = false;
     protected boolean repeatTitleAtBottom = true;
     private boolean sort = true;
+    private Format format = Format.ASCII;
 
     protected DataDump(int columns)
     {
+        this(columns, Format.ASCII);
+    }
+
+    protected DataDump(int columns, Format format)
+    {
         this.columns = columns;
+        this.format = format;
         this.alignment = new Alignment[this.columns];
         this.widths = new int[this.columns];
         for (int i = 0; i < this.columns; i++) { this.alignment[i] = Alignment.LEFT; }
@@ -49,6 +56,16 @@ public class DataDump
 
         this.alignment[columnId] = align;
         return this;
+    }
+
+    protected Format getFormat()
+    {
+        return this.format;
+    }
+
+    protected void setFormat(Format format)
+    {
+        this.format = format;
     }
 
     protected void setSort(boolean sort)
@@ -95,7 +112,7 @@ public class DataDump
         this.lines.add(new Row(data));
     }
 
-    protected void checkHeaderData(String... data)
+    private void checkHeaderData(String... data)
     {
         if (data.length != 1 || this.columns == 1)
         {
@@ -103,9 +120,9 @@ public class DataDump
         }
     }
 
-    protected void checkAllHeaders()
+    private void checkAllHeaders()
     {
-        if (this.columns != 1)
+        if (this.format == Format.ASCII && this.columns != 1)
         {
             this.checkHeaderLength(this.title);
 
@@ -149,12 +166,17 @@ public class DataDump
         }
     }
 
-    protected void checkData(String... data)
+    private void checkData(String... data)
     {
         if (data.length != this.columns)
         {
             throw new IllegalArgumentException("Invalid number of columns, you must add exactly " +
                     this.columns + " columns for this type of DataDump");
+        }
+
+        if (this.format != Format.ASCII)
+        {
+            return;
         }
 
         int total = 0;
@@ -177,6 +199,32 @@ public class DataDump
     }
 
     protected void generateFormatStrings()
+    {
+        if (this.format == Format.ASCII)
+        {
+            this.generateFormatStringsASCII();
+        }
+        else if (this.format == Format.CSV)
+        {
+            this.generateFormatStringsCSV();
+        }
+    }
+
+    private String getFormattedLine(Row row)
+    {
+        if (this.format == Format.ASCII)
+        {
+            return this.getFormattedLineASCII(row);
+        }
+        else if (this.format == Format.CSV)
+        {
+            return this.getFormattedLineCSV(row);
+        }
+
+        return EMPTY_STRING;
+    }
+
+    protected void generateFormatStringsASCII()
     {
         this.checkAllHeaders();
 
@@ -214,7 +262,7 @@ public class DataDump
         this.formatStringSingleLeft = colSep + " %%-%ds " + colSep;
     }
 
-    protected String getFormattedLine(Row row)
+    private String getFormattedLineASCII(Row row)
     {
         Object[] values = row.getValues();
 
@@ -249,6 +297,40 @@ public class DataDump
         }
 
         return String.format(this.formatStringColumns, values);
+    }
+
+    protected void generateFormatStringsCSV()
+    {
+        StringBuilder sbFmtColumn = new StringBuilder(128);
+        StringBuilder sbFmtTitle = new StringBuilder(128);
+        sbFmtTitle.append("%s");
+
+        for (int i = 0; i < this.columns - 1; i++)
+        {
+            sbFmtColumn.append("%s, ");
+            sbFmtTitle.append(",");
+        }
+
+        sbFmtColumn.append("%s");
+
+        this.formatStringColumns = sbFmtColumn.toString();
+        this.lineSeparator = EMPTY_STRING;
+        this.formatStringSingleCenter = EMPTY_STRING;
+        this.formatStringSingleLeft = sbFmtTitle.toString();
+    }
+
+    private String getFormattedLineCSV(Row row)
+    {
+        Object[] values = row.getValues();
+
+        if (values.length == 1 && this.columns > 1)
+        {
+            return String.format(this.formatStringSingleLeft, values[0]);
+        }
+        else
+        {
+            return String.format(this.formatStringColumns, values);
+        }
     }
 
     protected List<String> getFormattedData(List<String> lines)
@@ -416,9 +498,16 @@ public class DataDump
             return 0;
         }
     }
+
     public static enum Alignment
     {
         LEFT,
         RIGHT;
+    }
+
+    public enum Format
+    {
+        ASCII,
+        CSV;
     }
 }

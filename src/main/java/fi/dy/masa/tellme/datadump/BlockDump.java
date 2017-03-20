@@ -20,15 +20,20 @@ public class BlockDump extends DataDump
 {
     private boolean dumpNBT;
 
-    private BlockDump(boolean dumpNBT)
+    private BlockDump(Format format, boolean dumpNBT)
     {
-        super(dumpNBT ? 10 : 9);
+        super(dumpNBT ? 10 : 9, format);
 
         this.dumpNBT = dumpNBT;
     }
 
     protected List<String> getLines()
     {
+        if (this.getFormat() != Format.ASCII)
+        {
+            return super.getLines();
+        }
+
         List<String> lines = new ArrayList<String>();
 
         this.generateFormatStrings();
@@ -77,9 +82,9 @@ public class BlockDump extends DataDump
         }
     }
 
-    public static List<String> getFormattedBlockDump(boolean dumpNBT)
+    public static List<String> getFormattedBlockDump(Format format, boolean dumpNBT)
     {
-        BlockDump blockDump = new BlockDump(dumpNBT);
+        BlockDump blockDump = new BlockDump(format, dumpNBT);
         Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
 
         while (iter.hasNext())
@@ -106,7 +111,7 @@ public class BlockDump extends DataDump
         return blockDump.getLines();
     }
 
-    public static List<String> getBlockDumpIdToRegistryName()
+    public static List<String> getBlockDumpIdToRegistryName(Format format)
     {
         List<IdToStringHolder> data = new ArrayList<IdToStringHolder>();
         List<String> lines = new ArrayList<String>();
@@ -120,9 +125,19 @@ public class BlockDump extends DataDump
 
         Collections.sort(data);
 
-        for (IdToStringHolder holder : data)
+        if (format == Format.ASCII)
         {
-            lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+            for (IdToStringHolder holder : data)
+            {
+                lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+            }
+        }
+        else if (format == Format.CSV)
+        {
+            for (IdToStringHolder holder : data)
+            {
+                lines.add(String.valueOf(holder.getId()) + ", " + holder.getString());
+            }
         }
 
         return lines;
