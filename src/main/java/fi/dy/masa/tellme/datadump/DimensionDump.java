@@ -11,17 +11,17 @@ public class DimensionDump extends DataDump
 {
     private static final Field field_worldProvider = ReflectionHelper.findField(DimensionType.class, "field_186077_g", "clazz");
 
-    private DimensionDump()
+    private DimensionDump(Format format)
     {
-        super(6);
+        super(6, format);
 
         this.setSort(false);
     }
 
     @SuppressWarnings("unchecked")
-    public static List<String> getFormattedDimensionDump()
+    public static List<String> getFormattedDimensionDump(Format format)
     {
-        DimensionDump dimensionDump = new DimensionDump();
+        DimensionDump dimensionDump = new DimensionDump(format);
         Integer[] ids = DimensionManager.getStaticDimensionIDs();
 
         for (int i = 0; i < ids.length; i++)

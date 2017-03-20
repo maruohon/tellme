@@ -15,14 +15,14 @@ public class VillagerProfessionDump extends DataDump
 {
     private static final Field field_careers = ReflectionHelper.findField(VillagerProfession.class, "careers");
 
-    private VillagerProfessionDump()
+    private VillagerProfessionDump(Format format)
     {
-        super (2);
+        super (2, format);
     }
 
-    public static List<String> getFormattedVillagerProfessionDump()
+    public static List<String> getFormattedVillagerProfessionDump(Format format)
     {
-        VillagerProfessionDump villagerProfessionDump = new VillagerProfessionDump();
+        VillagerProfessionDump villagerProfessionDump = new VillagerProfessionDump(format);
         Iterator<Map.Entry<ResourceLocation, VillagerProfession>> iter = ForgeRegistries.VILLAGER_PROFESSIONS.getEntries().iterator();
 
         while (iter.hasNext())

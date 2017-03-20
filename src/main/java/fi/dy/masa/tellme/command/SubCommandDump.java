@@ -11,6 +11,7 @@ import fi.dy.masa.tellme.datadump.BiomeDump;
 import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.BlockStatesDump;
 import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.datadump.DimensionDump;
 import fi.dy.masa.tellme.datadump.EnchantmentDump;
 import fi.dy.masa.tellme.datadump.EntityDump;
@@ -66,14 +67,15 @@ public class SubCommandDump extends SubCommand
 
         if (args.length == 1)
         {
-            List<String> data = this.getData(args[0]);
+            Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
+            List<String> data = this.getData(args[0], format);
 
             if (data.isEmpty())
             {
                 throw new WrongUsageException("tellme.command.error.unknown.parameter", args[0]);
             }
 
-            if (this.getName().equals("dump"))
+            if (this.getName().startsWith("dump"))
             {
                 File file = DataDump.dumpDataToFile(args[0], data);
 
@@ -82,7 +84,7 @@ public class SubCommandDump extends SubCommand
                     this.sendMessage(sender, "tellme.info.output.to.file", file.getName());
                 }
             }
-            else if (this.getName().equals("list"))
+            else if (this.getName().startsWith("list"))
             {
                 DataDump.printDataToLogger(data);
                 this.sendMessage(sender, "tellme.info.output.to.console");
@@ -90,27 +92,27 @@ public class SubCommandDump extends SubCommand
         }
     }
 
-    protected List<String> getData(String type)
+    protected List<String> getData(String type, Format format)
     {
         if (type.equals("biomes"))
         {
-            return BiomeDump.getFormattedBiomeDump();
+            return BiomeDump.getFormattedBiomeDump(format);
         }
         else if (type.equals("biomes-id-to-name"))
         {
-            return BiomeDump.getBiomeDumpIdToName();
+            return BiomeDump.getBiomeDumpIdToName(format);
         }
         else if (type.equals("blocks"))
         {
-            return BlockDump.getFormattedBlockDump(false);
+            return BlockDump.getFormattedBlockDump(format, false);
         }
         else if (type.equals("blocks-id-to-registryname"))
         {
-            return BlockDump.getBlockDumpIdToRegistryName();
+            return BlockDump.getBlockDumpIdToRegistryName(format);
         }
         else if (type.equals("blocks-with-nbt"))
         {
-            return BlockDump.getFormattedBlockDump(true);
+            return BlockDump.getFormattedBlockDump(format, true);
         }
         else if (type.equals("blockstates-by-block"))
         {
@@ -118,63 +120,63 @@ public class SubCommandDump extends SubCommand
         }
         else if (type.equals("blockstates-by-state"))
         {
-            return BlockStatesDump.getFormattedBlockStatesDumpByState();
+            return BlockStatesDump.getFormattedBlockStatesDumpByState(format);
         }
         else if (type.equals("dimensions"))
         {
-            return DimensionDump.getFormattedDimensionDump();
+            return DimensionDump.getFormattedDimensionDump(format);
         }
         else if (type.equals("enchantments"))
         {
-            return EnchantmentDump.getFormattedEnchantmentDump();
+            return EnchantmentDump.getFormattedEnchantmentDump(format);
         }
         else if (type.equals("entities"))
         {
-            return EntityDump.getFormattedEntityDump();
+            return EntityDump.getFormattedEntityDump(format);
         }
         else if (type.equals("fluids"))
         {
-            return FluidRegistryDump.getFormattedFluidRegistryDump();
+            return FluidRegistryDump.getFormattedFluidRegistryDump(format);
         }
         else if (type.equals("items"))
         {
-            return ItemDump.getFormattedItemDump(false);
+            return ItemDump.getFormattedItemDump(format, false);
         }
         else if (type.equals("items-with-nbt"))
         {
-            return ItemDump.getFormattedItemDump(true);
+            return ItemDump.getFormattedItemDump(format, true);
         }
         else if (type.equals("oredictionary-by-key"))
         {
-            return OreDictionaryDump.getFormattedOreDictionaryDump(false);
+            return OreDictionaryDump.getFormattedOreDictionaryDump(format, false);
         }
         else if (type.equals("oredictionary-by-item"))
         {
-            return OreDictionaryDump.getFormattedOreDictionaryDump(true);
+            return OreDictionaryDump.getFormattedOreDictionaryDump(format, true);
         }
         else if (type.equals("potions"))
         {
-            return PotionDump.getFormattedPotionDump();
+            return PotionDump.getFormattedPotionDump(format);
         }
         else if (type.equals("potiontypes"))
         {
-            return PotionTypeDump.getFormattedPotionTypeDump();
+            return PotionTypeDump.getFormattedPotionTypeDump(format);
         }
         else if (type.equals("soundevents"))
         {
-            return SoundEventDump.getFormattedSoundEventDump();
+            return SoundEventDump.getFormattedSoundEventDump(format);
         }
         else if (type.equals("spawneggs"))
         {
-            return SpawnEggDump.getFormattedSpawnEggDump();
+            return SpawnEggDump.getFormattedSpawnEggDump(format);
         }
         else if (type.equals("tileentities"))
         {
-            return TileEntityDump.getFormattedTileEntityDump();
+            return TileEntityDump.getFormattedTileEntityDump(format);
         }
         else if (type.equals("villagerprofessions"))
         {
-            return VillagerProfessionDump.getFormattedVillagerProfessionDump();
+            return VillagerProfessionDump.getFormattedVillagerProfessionDump(format);
         }
 
         return Collections.emptyList();

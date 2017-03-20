@@ -17,14 +17,14 @@ public class PotionTypeDump extends DataDump
 {
     private static final Field field_isSplashPotion = ReflectionHelper.findField(PotionEffect.class, "field_82723_d", "isSplashPotion");
 
-    protected PotionTypeDump()
+    protected PotionTypeDump(Format format)
     {
-        super(3);
+        super(3, format);
     }
 
-    public static List<String> getFormattedPotionTypeDump()
+    public static List<String> getFormattedPotionTypeDump(Format format)
     {
-        PotionTypeDump potionTypeDump = new PotionTypeDump();
+        PotionTypeDump potionTypeDump = new PotionTypeDump(format);
         Iterator<Map.Entry<ResourceLocation, PotionType>> iter = ForgeRegistries.POTION_TYPES.getEntries().iterator();
 
         while (iter.hasNext())

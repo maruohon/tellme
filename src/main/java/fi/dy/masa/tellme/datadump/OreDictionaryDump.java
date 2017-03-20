@@ -11,19 +11,19 @@ import fi.dy.masa.tellme.util.ItemType;
 
 public class OreDictionaryDump extends DataDump
 {
-    private OreDictionaryDump(int columns)
+    private OreDictionaryDump(int columns, Format format)
     {
-        super(columns);
+        super(columns, format);
     }
 
-    public static List<String> getFormattedOreDictionaryDump(boolean byItemStack)
+    public static List<String> getFormattedOreDictionaryDump(Format format, boolean byItemStack)
     {
         OreDictionaryDump oreDictDump;
         String[] oreNames = OreDictionary.getOreNames();
 
         if (byItemStack)
         {
-            oreDictDump = new OreDictionaryDump(5);
+            oreDictDump = new OreDictionaryDump(5, format);
             Set<ItemType> allStacks = new HashSet<ItemType>();
 
             for (String name : oreNames)
@@ -54,7 +54,7 @@ public class OreDictionaryDump extends DataDump
         }
         else
         {
-            oreDictDump = new OreDictionaryDump(2);
+            oreDictDump = new OreDictionaryDump(2, format);
             for (String name : oreNames)
             {
                 List<ItemStack> stacks = OreDictionary.getOres(name);

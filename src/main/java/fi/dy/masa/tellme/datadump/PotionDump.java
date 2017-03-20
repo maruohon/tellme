@@ -15,14 +15,14 @@ public class PotionDump extends DataDump
 {
     private static final Field field_isBeneficial = ReflectionHelper.findField(Potion.class, "field_188415_h", "beneficial");
 
-    private PotionDump()
+    private PotionDump(Format format)
     {
-        super(7);
+        super(7, format);
     }
 
-    public static List<String> getFormattedPotionDump()
+    public static List<String> getFormattedPotionDump(Format format)
     {
-        PotionDump potionDump = new PotionDump();
+        PotionDump potionDump = new PotionDump(format);
         Iterator<Map.Entry<ResourceLocation, Potion>> iter = ForgeRegistries.POTIONS.getEntries().iterator();
 
         while (iter.hasNext())

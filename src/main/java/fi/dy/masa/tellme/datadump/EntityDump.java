@@ -13,14 +13,14 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class EntityDump extends DataDump
 {
-    private EntityDump()
+    private EntityDump(Format format)
     {
-        super(4);
+        super(4, format);
     }
 
-    public static List<String> getFormattedEntityDump()
+    public static List<String> getFormattedEntityDump(Format format)
     {
-        EntityDump entityDump = new EntityDump();
+        EntityDump entityDump = new EntityDump(format);
         Iterator<Map.Entry<ResourceLocation, EntityEntry>> iter = ForgeRegistries.ENTITIES.getEntries().iterator();
 
         while(iter.hasNext())

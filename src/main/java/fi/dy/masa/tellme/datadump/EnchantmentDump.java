@@ -9,14 +9,14 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class EnchantmentDump extends DataDump
 {
-    private EnchantmentDump()
+    private EnchantmentDump(Format format)
     {
-        super(4);
+        super(4, format);
     }
 
-    public static List<String> getFormattedEnchantmentDump()
+    public static List<String> getFormattedEnchantmentDump(Format format)
     {
-        EnchantmentDump enchantmentDump = new EnchantmentDump();
+        EnchantmentDump enchantmentDump = new EnchantmentDump(format);
         Iterator<Map.Entry<ResourceLocation, Enchantment>> iter = ForgeRegistries.ENCHANTMENTS.getEntries().iterator();
 
         while (iter.hasNext())

@@ -8,14 +8,14 @@ import net.minecraftforge.fluids.FluidRegistry;
 
 public class FluidRegistryDump extends DataDump
 {
-    private FluidRegistryDump()
+    private FluidRegistryDump(Format format)
     {
-        super(8);
+        super(8, format);
     }
 
-    public static List<String> getFormattedFluidRegistryDump()
+    public static List<String> getFormattedFluidRegistryDump(Format format)
     {
-        FluidRegistryDump fluidRegistryDump = new FluidRegistryDump();
+        FluidRegistryDump fluidRegistryDump = new FluidRegistryDump(format);
         Iterator<Map.Entry<String, Fluid>> iter = FluidRegistry.getRegisteredFluids().entrySet().iterator();
 
         while (iter.hasNext())

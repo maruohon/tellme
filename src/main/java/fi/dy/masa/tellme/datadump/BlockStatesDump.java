@@ -16,9 +16,9 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class BlockStatesDump extends DataDump
 {
-    protected BlockStatesDump(int columns)
+    protected BlockStatesDump(int columns, Format format)
     {
-        super(columns);
+        super(columns, format);
     }
 
     public static List<String> getFormattedBlockStatesDumpByBlock()
@@ -50,9 +50,9 @@ public class BlockStatesDump extends DataDump
         return outputLines;
     }
 
-    public static List<String> getFormattedBlockStatesDumpByState()
+    public static List<String> getFormattedBlockStatesDumpByState(Format format)
     {
-        BlockStatesDump blockStatesDump = new BlockStatesDump(2);
+        BlockStatesDump blockStatesDump = new BlockStatesDump(2, format);
         Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
 
         while (iter.hasNext())
