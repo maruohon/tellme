@@ -120,7 +120,11 @@ public class BlockDump extends DataDump
         while (iter.hasNext())
         {
             Block block = iter.next();
-            data.add(new IdToStringHolder(Block.getIdFromBlock(block), block.getRegistryName().toString()));
+
+            if (block != null && block.getRegistryName() != null)
+            {
+                data.add(new IdToStringHolder(Block.getIdFromBlock(block), block.getRegistryName().toString()));
+            }
         }
 
         Collections.sort(data);
