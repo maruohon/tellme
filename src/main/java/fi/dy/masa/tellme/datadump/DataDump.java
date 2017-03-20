@@ -142,11 +142,11 @@ public class DataDump
 
     private void checkHeaderLength(Row row)
     {
-        Object[] values = row.getValues();
+        String[] values = row.getValues();
 
         if (values.length == 1)
         {
-            this.checkHeaderLength(String.valueOf(values[0]));
+            this.checkHeaderLength(values[0]);
         }
     }
 
@@ -321,15 +321,22 @@ public class DataDump
 
     private String getFormattedLineCSV(Row row)
     {
-        Object[] values = row.getValues();
+        String[] valuesStr = row.getValues();
+        Object[] valuesObj = new Object[valuesStr.length];
 
-        if (values.length == 1 && this.columns > 1)
+        for (int i = 0; i < valuesObj.length; i++)
         {
-            return String.format(this.formatStringSingleLeft, values[0]);
+            // Fix the values so that they don't break the CSV format or look ugly
+            valuesObj[i] = valuesStr[i].replace(",", ";").trim();
+        }
+
+        if (valuesObj.length == 1 && this.columns > 1)
+        {
+            return String.format(this.formatStringSingleLeft, valuesObj[0]);
         }
         else
         {
-            return String.format(this.formatStringColumns, values);
+            return String.format(this.formatStringColumns, valuesObj);
         }
     }
 
@@ -477,7 +484,7 @@ public class DataDump
             this.strings = strings;
         }
 
-        public Object[] getValues()
+        public String[] getValues()
         {
             return this.strings;
         }
