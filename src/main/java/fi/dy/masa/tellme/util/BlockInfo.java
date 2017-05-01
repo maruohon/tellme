@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -88,6 +89,10 @@ public class BlockInfo
         List<String> lines = getBasicBlockInfo(player, world, pos);
         IBlockState state = world.getBlockState(pos).getActualState(world, pos);
 
+        lines.add(String.format("Hardness: %.4f, Resistance: %.4f, Material: %s",
+                state.getBlockHardness(world, pos),
+                state.getBlock().getExplosionResistance(player) * 5f,
+                getMaterialName(state.getMaterial())));
         lines.add("IBlockState properties, including getActualState():");
 
         UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = state.getProperties().entrySet().iterator();
@@ -110,6 +115,48 @@ public class BlockInfo
         }
 
         return lines;
+    }
+
+    public static String getMaterialName(Material material)
+    {
+        if (material == Material.AIR)           { return "AIR";         }
+        if (material == Material.GRASS)         { return "GRASS";       }
+        if (material == Material.GROUND)        { return "GROUND";      }
+        if (material == Material.WOOD)          { return "WOOD";        }
+        if (material == Material.ROCK)          { return "ROCK";        }
+        if (material == Material.IRON)          { return "IRON";        }
+        if (material == Material.ANVIL)         { return "ANVIL";       }
+        if (material == Material.WATER)         { return "WATER";       }
+        if (material == Material.LAVA)          { return "LAVA";        }
+        if (material == Material.LEAVES)        { return "LEAVES";      }
+        if (material == Material.PLANTS)        { return "PLANTS";      }
+        if (material == Material.VINE)          { return "VINE";        }
+        if (material == Material.SPONGE)        { return "SPONGE";      }
+        if (material == Material.CLOTH)         { return "CLOTH";       }
+        if (material == Material.FIRE)          { return "FIRE";        }
+        if (material == Material.SAND)          { return "SAND";        }
+        if (material == Material.CIRCUITS)      { return "CIRCUITS";    }
+        if (material == Material.CARPET)        { return "CARPET";      }
+        if (material == Material.GLASS)         { return "GLASS";       }
+        if (material == Material.REDSTONE_LIGHT){ return "REDSTONE_LIGHT"; }
+        if (material == Material.TNT)           { return "TNT";         }
+        if (material == Material.CORAL)         { return "CORAL";       }
+        if (material == Material.ICE)           { return "ICE";         }
+        if (material == Material.PACKED_ICE)    { return "PACKED_ICE";  }
+        if (material == Material.SNOW)          { return "SNOW";        }
+        if (material == Material.CRAFTED_SNOW)  { return "CRAFTED_SNOW";}
+        if (material == Material.CACTUS)        { return "CACTUS";      }
+        if (material == Material.CLAY)          { return "CLAY";        }
+        if (material == Material.GOURD)         { return "GOURD";       }
+        if (material == Material.DRAGON_EGG)    { return "DRAGON_EGG";  }
+        if (material == Material.PORTAL)        { return "PORTAL";      }
+        if (material == Material.CAKE)          { return "CAKE";        }
+        if (material == Material.WEB)           { return "WEB";         }
+        if (material == Material.PISTON)        { return "PISTON";      }
+        if (material == Material.BARRIER)       { return "BARRIER";     }
+        if (material == Material.STRUCTURE_VOID){ return "STRUCTURE_VOID"; }
+
+        return "unknown";
     }
 
     public static void printBasicBlockInfoToChat(EntityPlayer player, World world, BlockPos pos)
