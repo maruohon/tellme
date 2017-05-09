@@ -41,11 +41,20 @@ public class OreDictionaryDump extends DataDump
             while (iter.hasNext())
             {
                 ItemStack stack = iter.next().getStack();
-                String strMeta = stack.getMetadata() == OreDictionary.WILDCARD_VALUE ?
-                        String.format("(WILDCARD) %5d", stack.getMetadata()) : String.format("%5d", stack.getMetadata());
+                int meta = stack.getMetadata();
+                String regName = stack.getItem().getRegistryName().toString();
                 String strNBT = stack.hasTagCompound() ? stack.getTagCompound().toString() : "-";
-                oreDictDump.addData(stack.getItem().getRegistryName().toString(), strMeta,
-                        stack.getDisplayName(), ItemDump.getOredictKeysJoined(stack), strNBT);
+
+                if (meta == OreDictionary.WILDCARD_VALUE)
+                {
+                    oreDictDump.addData(regName, String.format("(WILDCARD) %5d", stack.getMetadata()),
+                            "-", ItemDump.getOredictKeysJoined(stack), strNBT);
+                }
+                else
+                {
+                    oreDictDump.addData(stack.getItem().getRegistryName().toString(), String.format("%5d", stack.getMetadata()),
+                            stack.getDisplayName(), ItemDump.getOredictKeysJoined(stack), strNBT);
+                }
             }
 
             oreDictDump.addTitle("Registry name", "Meta/dmg", "Display name", "Ore Dict Keys", "NBT");
