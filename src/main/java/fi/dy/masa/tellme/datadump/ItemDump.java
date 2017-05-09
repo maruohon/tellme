@@ -138,8 +138,10 @@ public class ItemDump extends DataDump
         if (stack.isEmpty() == false)
         {
             // old: [%s @ %d - display: %s - NBT: %s]
-            return String.format("[%s@%d - '%s' - %s]",
-                    stack.getItem().getRegistryName(), stack.getMetadata(), stack.getDisplayName(),
+            int meta = stack.getMetadata();
+            String regName = stack.getItem().getRegistryName().toString();
+
+            return String.format("[%s@%d - '%s' - %s]", regName, meta, meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName(),
                     stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
         }
 
