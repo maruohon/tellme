@@ -34,7 +34,11 @@ public class EntityInfo
         List<String> lines = getBasicEntityInfo(target);
         NBTTagCompound nbt = new NBTTagCompound();
 
-        target.writeToNBT(nbt);
+        if (target.writeToNBTOptional(nbt) == false)
+        {
+            target.writeToNBT(nbt);
+        }
+
         NBTFormatter.getPrettyFormattedNBT(lines, nbt);
 
         return lines;
