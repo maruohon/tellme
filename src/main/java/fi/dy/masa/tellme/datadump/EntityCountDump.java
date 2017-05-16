@@ -108,8 +108,8 @@ public class EntityCountDump extends DataDump
     public static List<String> getFormattedEntityCountDumpArea(World world, EntityListType type, ChunkPos pos1In, ChunkPos pos2In)
     {
         EntityCountDump entityCountDump = initDump(type);
-        ChunkPos pos1 = new ChunkPos(Math.min(pos1In.chunkXPos, pos2In.chunkXPos), Math.min(pos1In.chunkZPos, pos2In.chunkZPos));
-        ChunkPos pos2 = new ChunkPos(Math.max(pos1In.chunkXPos, pos2In.chunkXPos), Math.max(pos1In.chunkZPos, pos2In.chunkZPos));
+        ChunkPos pos1 = new ChunkPos(Math.min(pos1In.x, pos2In.x), Math.min(pos1In.z, pos2In.z));
+        ChunkPos pos2 = new ChunkPos(Math.max(pos1In.x, pos2In.x), Math.max(pos1In.z, pos2In.z));
 
         entityCountDump.processChunksInArea(world, entityCountDump.counter, pos1, pos2);
         entityCountDump.setUseColumnSeparator(true);
@@ -118,11 +118,11 @@ public class EntityCountDump extends DataDump
 
         if (pos1.equals(pos2))
         {
-            entityCountDump.addHeader(String.format("Chunk: [%d, %d]", pos1.chunkXPos, pos1.chunkZPos));
+            entityCountDump.addHeader(String.format("Chunk: [%d, %d]", pos1.x, pos1.z));
         }
         else
         {
-            entityCountDump.addHeader(String.format("Chunks: [%d, %d] to [%d, %d]", pos1.chunkXPos, pos1.chunkZPos, pos2.chunkXPos, pos2.chunkZPos));
+            entityCountDump.addHeader(String.format("Chunks: [%d, %d] to [%d, %d]", pos1.x, pos1.z, pos2.x, pos2.z));
         }
 
         if (entityCountDump.emptyChunks != 0)
@@ -156,9 +156,9 @@ public class EntityCountDump extends DataDump
     {
         IChunkProvider provider = world.getChunkProvider();
 
-        for (int chunkZ = pos1.chunkZPos; chunkZ <= pos2.chunkZPos; chunkZ++)
+        for (int chunkZ = pos1.z; chunkZ <= pos2.z; chunkZ++)
         {
-            for (int chunkX = pos1.chunkXPos; chunkX <= pos2.chunkXPos; chunkX++)
+            for (int chunkX = pos1.x; chunkX <= pos2.x; chunkX++)
             {
                 Chunk chunk = provider.getLoadedChunk(chunkX, chunkZ);
 
@@ -281,7 +281,7 @@ public class EntityCountDump extends DataDump
 
             for (CountsPerChunkHolder holder : counts)
             {
-                dump.addData(String.format("[%5d, %5d]", holder.pos.chunkXPos, holder.pos.chunkZPos), String.valueOf(holder.count));
+                dump.addData(String.format("[%5d, %5d]", holder.pos.x, holder.pos.z), String.valueOf(holder.count));
             }
 
             dump.addFooter(String.format("In total there were %d loaded entities.", this.totalCount));
@@ -439,7 +439,7 @@ public class EntityCountDump extends DataDump
 
             for (TileEntityCountsPerChunkHolder holder : counts)
             {
-                dump.addData(String.format("[%5d, %5d]", holder.pos.chunkXPos, holder.pos.chunkZPos),
+                dump.addData(String.format("[%5d, %5d]", holder.pos.x, holder.pos.z),
                         String.valueOf(holder.count), String.valueOf(holder.tickingCount));
             }
 
