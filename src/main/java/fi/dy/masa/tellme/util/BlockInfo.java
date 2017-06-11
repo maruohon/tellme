@@ -84,6 +84,7 @@ public class BlockInfo
         return lines;
     }
 
+    @SuppressWarnings("deprecation")
     private static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         List<String> lines = getBasicBlockInfo(player, world, pos);

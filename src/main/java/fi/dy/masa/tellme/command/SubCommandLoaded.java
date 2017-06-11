@@ -146,10 +146,10 @@ public class SubCommandLoaded extends SubCommand
             if (senderEntity != null)
             {
                 Vec3d senderPos = senderEntity.getPositionVector();
-                pos1 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[3], false).getResult()) >> 4,
-                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[4], false).getResult()) >> 4);
-                pos2 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[5], false).getResult()) >> 4,
-                                    ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[6], false).getResult()) >> 4);
+                pos1 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.x, args[3], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.z, args[4], false).getResult()) >> 4);
+                pos2 = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.x, args[5], false).getResult()) >> 4,
+                                    ((int) CommandBase.parseCoordinate(senderPos.z, args[6], false).getResult()) >> 4);
             }
             else
             {
@@ -176,8 +176,8 @@ public class SubCommandLoaded extends SubCommand
             if (senderEntity != null)
             {
                 Vec3d senderPos = senderEntity.getPositionVector();
-                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.xCoord, args[3], false).getResult()) >> 4,
-                                   ((int) CommandBase.parseCoordinate(senderPos.zCoord, args[4], false).getResult()) >> 4);
+                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.x, args[3], false).getResult()) >> 4,
+                                   ((int) CommandBase.parseCoordinate(senderPos.z, args[4], false).getResult()) >> 4);
             }
             else
             {

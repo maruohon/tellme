@@ -58,7 +58,7 @@ public class ClientProxy extends CommonProxy
         {
             NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
             CreativeTabs tab = block.getCreativeTabToDisplayOn();
-            block.getSubBlocks(item, tab, stacks);
+            block.getSubBlocks(tab, stacks);
             boolean subtypes = stacks.size() > 1;
 
             for (ItemStack stack : stacks)
@@ -80,7 +80,7 @@ public class ClientProxy extends CommonProxy
             for (CreativeTabs tab : item.getCreativeTabs())
             {
                 NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-                item.getSubItems(item, tab, stacks);
+                item.getSubItems(tab, stacks);
 
                 for (ItemStack stack : stacks)
                 {
