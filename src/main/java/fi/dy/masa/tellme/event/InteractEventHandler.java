@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.event;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -17,13 +18,7 @@ public class InteractEventHandler
     @SubscribeEvent
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event)
     {
-        this.printBlockInfo(event);
-    }
-
-    @SubscribeEvent
-    public void onRightClickAir(PlayerInteractEvent.RightClickEmpty event)
-    {
-        this.printBlockInfo(event);
+        this.printBlockInfo(event, false);
     }
 
     @SubscribeEvent
@@ -39,13 +34,10 @@ public class InteractEventHandler
             {
                 this.printItemInfo(event.getEntityPlayer());
             }
-            /*
             else if (ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
             {
-              this.printBlockInfo(world, player);
-              event.setCanceled(true);
+                this.printBlockInfo(event, true);
             }
-            */
         }
     }
 
@@ -66,26 +58,40 @@ public class InteractEventHandler
         EntityPlayer player = event.getEntityPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (Configs.enableDebugItemForBlockAndEntities && event.getWorld().isRemote == false && event.getHand() == EnumHand.MAIN_HAND &&
-            player.canUseCommand(4, "tellme") && ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+        if (Configs.enableDebugItemForBlockAndEntities &&
+            event.getHand() == EnumHand.MAIN_HAND &&
+            player.canUseCommand(4, "tellme") &&
+            ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
-            EntityInfo.printEntityInfo(player, entity, player.isSneaking());
+            if (event.getWorld().isRemote == false)
+            {
+                EntityInfo.printEntityInfo(player, entity, player.isSneaking());
+            }
+
             event.setCanceled(true);
+            event.setCancellationResult(EnumActionResult.SUCCESS);
         }
     }
 
-    private void printBlockInfo(PlayerInteractEvent event)
+    private void printBlockInfo(PlayerInteractEvent event, boolean useLiquids)
     {
         EntityPlayer player = event.getEntityPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (Configs.enableDebugItemForBlockAndEntities && event.getWorld().isRemote == false && event.getHand() == EnumHand.MAIN_HAND &&
-            player.canUseCommand(4, "tellme") && ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+        if (Configs.enableDebugItemForBlockAndEntities &&
+            event.getHand() == EnumHand.MAIN_HAND &&
+            player.canUseCommand(4, "tellme") &&
+            ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
-            BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player,
-                    RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, true),
-                    ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand()));
+            if (event.getWorld().isRemote == false)
+            {
+                BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player,
+                        RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids),
+                        ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand()));
+            }
+
             event.setCanceled(true);
+            event.setCancellationResult(EnumActionResult.SUCCESS);
         }
     }
 
