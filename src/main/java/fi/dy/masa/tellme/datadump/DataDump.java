@@ -4,16 +4,24 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.MethodHandleUtils;
+import fi.dy.masa.tellme.util.MethodHandleUtils.UnableToFindMethodHandleException;
 
 public class DataDump
 {
     public static final String EMPTY_STRING = "";
+    private static MethodHandle methodHandle_ForgeRegistry_isDummied;
 
     protected final int columns;
     protected Alignment[] alignment;
@@ -32,6 +40,19 @@ public class DataDump
     protected boolean repeatTitleAtBottom = true;
     private boolean sort = true;
     private Format format = Format.ASCII;
+
+    static
+    {
+        try
+        {
+            methodHandle_ForgeRegistry_isDummied = MethodHandleUtils.getMethodHandleVirtual(
+                    ForgeRegistry.class, new String[] { "isDummied" }, ResourceLocation.class);
+        }
+        catch (UnableToFindMethodHandleException e)
+        {
+            TellMe.logger.error("DataDump: Failed to get MethodHandle for ForgeRegistry#isDummied()", e);
+        }
+    }
 
     protected DataDump(int columns)
     {
@@ -472,6 +493,19 @@ public class DataDump
         for (int i = 0; i < size; i++)
         {
             TellMe.logger.info(lines.get(i));
+        }
+    }
+
+    public static <K extends IForgeRegistryEntry<K>> boolean isDummied(IForgeRegistry<K> registry, ResourceLocation rl)
+    {
+        try
+        {
+            return (boolean) methodHandle_ForgeRegistry_isDummied.invoke(registry, rl);
+        }
+        catch (Throwable t)
+        {
+            TellMe.logger.error("DataDump: Error while trying invoke ForgeRegistry#isDummied()", t);
+            return false;
         }
     }
 

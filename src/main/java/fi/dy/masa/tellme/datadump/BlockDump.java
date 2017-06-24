@@ -12,7 +12,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.common.registry.GameData;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -69,8 +68,7 @@ public class BlockDump extends DataDump
         String itemId = item != Items.AIR ? String.format("%5d", Item.getIdFromItem(item)) : "-";
         String itemMeta = stack.isEmpty() == false ? String.format("%5d", stack.getMetadata()) : "-";
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
-        @SuppressWarnings("deprecation")
-        String exists = GameData.getBlockRegistry().isDummied(rl) ? "false" : "true";
+        String exists = isDummied(ForgeRegistries.BLOCKS, rl) ? "false" : "true";
 
         if (this.dumpNBT)
         {
