@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
