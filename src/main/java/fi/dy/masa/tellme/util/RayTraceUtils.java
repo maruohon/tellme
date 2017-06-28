@@ -40,7 +40,7 @@ public class RayTraceUtils
             result = new RayTraceResult(RayTraceResult.Type.MISS, Vec3d.ZERO, EnumFacing.UP, BlockPos.ORIGIN);
         }
 
-        AxisAlignedBB bb = entityIn.getEntityBoundingBox().addCoord(rangedLookRot.xCoord, rangedLookRot.yCoord, rangedLookRot.zCoord).expand(1d, 1d, 1d);
+        AxisAlignedBB bb = entityIn.getEntityBoundingBox().expand(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expand(1d, 1d, 1d);
         List<Entity> list = worldIn.getEntitiesWithinAABBExcludingEntity(entityIn, bb);
 
         double closest = result.typeOfHit == RayTraceResult.Type.BLOCK ? eyesVec.distanceTo(result.hitVec) : Double.MAX_VALUE;

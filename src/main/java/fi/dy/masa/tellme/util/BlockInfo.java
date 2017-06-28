@@ -89,9 +89,12 @@ public class BlockInfo
         List<String> lines = getBasicBlockInfo(player, world, pos);
         IBlockState state = world.getBlockState(pos).getActualState(world, pos);
 
+        @SuppressWarnings("deprecation")
+        float explosionResistance = state.getBlock().getExplosionResistance(player) * 5f;
+
         lines.add(String.format("Hardness: %.4f, Resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
-                state.getBlock().getExplosionResistance(player) * 5f,
+                explosionResistance,
                 getMaterialName(state.getMaterial())));
         lines.add("IBlockState properties, including getActualState():");
 
