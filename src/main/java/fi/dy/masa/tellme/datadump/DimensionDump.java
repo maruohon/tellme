@@ -53,10 +53,12 @@ public class DimensionDump extends DataDump
         }
 
         dimensionDump.addTitle("ID", "DimensionType ID", "Name", "shouldLoadSpawn", "WorldProvider class", "Currently loaded");
-        dimensionDump.setColumnAlignment(0, Alignment.RIGHT); // dim ID
-        dimensionDump.setColumnAlignment(1, Alignment.RIGHT); // type ID
+
+        dimensionDump.setColumnProperties(0, Alignment.RIGHT, true); // dim ID
+        dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // type ID
         dimensionDump.setColumnAlignment(3, Alignment.RIGHT); // shouldLoadSpawn
         dimensionDump.setColumnAlignment(5, Alignment.RIGHT); // currentlyLoaded
+
         dimensionDump.setUseColumnSeparator(true);
 
         return dimensionDump.getLines();

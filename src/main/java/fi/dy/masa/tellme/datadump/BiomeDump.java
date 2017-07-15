@@ -41,12 +41,14 @@ public class BiomeDump extends DataDump
             biomeDump.addData(id, regName, name, waterColor, temp, tempCat, rain, snow);
         }
 
-        biomeDump.addTitle("ID", "Registry name", "Biome Name",
+        biomeDump.addTitle("ID", "Registry name", "Biome name",
                 "waterColorMultiplier", "temperature", "temp. category", "rainfall", "enableSnow");
-        biomeDump.setColumnAlignment(0, Alignment.RIGHT); // id
-        biomeDump.setColumnAlignment(4, Alignment.RIGHT); // temperature
-        biomeDump.setColumnAlignment(6, Alignment.RIGHT); // rainfall
+
+        biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
+        biomeDump.setColumnProperties(4, Alignment.RIGHT, true); // temperature
+        biomeDump.setColumnProperties(6, Alignment.RIGHT, true); // rainfall
         biomeDump.setColumnAlignment(7, Alignment.RIGHT); // snow
+
         biomeDump.setUseColumnSeparator(true);
 
         return biomeDump.getLines();
@@ -100,7 +102,7 @@ public class BiomeDump extends DataDump
         {
             for (IdToStringHolder holder : data)
             {
-                lines.add(String.valueOf(holder.getId()) + ", " + holder.getString());
+                lines.add(String.valueOf(holder.getId()) + ",\"" + holder.getString() + "\"");
             }
         }
 

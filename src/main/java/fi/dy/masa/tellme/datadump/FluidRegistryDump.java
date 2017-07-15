@@ -35,11 +35,13 @@ public class FluidRegistryDump extends DataDump
         }
 
         fluidRegistryDump.addTitle("Name", "Density", "Temperature", "Viscosity", "Luminosity", "Rarity", "isGaseous", "Block");
-        fluidRegistryDump.setColumnAlignment(1, Alignment.RIGHT); // density
-        fluidRegistryDump.setColumnAlignment(2, Alignment.RIGHT); // temperature
-        fluidRegistryDump.setColumnAlignment(3, Alignment.RIGHT); // viscosity
-        fluidRegistryDump.setColumnAlignment(4, Alignment.RIGHT); // luminosity
+
+        fluidRegistryDump.setColumnProperties(1, Alignment.RIGHT, true); // density
+        fluidRegistryDump.setColumnProperties(2, Alignment.RIGHT, true); // temperature
+        fluidRegistryDump.setColumnProperties(3, Alignment.RIGHT, true); // viscosity
+        fluidRegistryDump.setColumnProperties(4, Alignment.RIGHT, true); // luminosity
         fluidRegistryDump.setColumnAlignment(6, Alignment.RIGHT); // isGaseous
+
         fluidRegistryDump.setUseColumnSeparator(true);
 
         return fluidRegistryDump.getLines();

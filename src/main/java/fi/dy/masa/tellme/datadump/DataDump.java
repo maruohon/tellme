@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ public class DataDump
 
     protected final int columns;
     protected Alignment[] alignment;
+    protected boolean[] columnIsNumeric;
     protected Row title;
     protected List<Row> headers = new ArrayList<Row>();
     protected List<Row> footers = new ArrayList<Row>();
@@ -26,6 +28,8 @@ public class DataDump
     protected String formatStringColumns;
     protected String formatStringSingleCenter;
     protected String formatStringSingleLeft;
+    protected String formatStringTitleCSV;
+    protected String formatStringSingleLeftCSV;
     protected String lineSeparator;
     protected boolean useColumnSeparator = false;
     protected boolean centerTitle = false;
@@ -43,18 +47,40 @@ public class DataDump
         this.columns = columns;
         this.format = format;
         this.alignment = new Alignment[this.columns];
+        this.columnIsNumeric = new boolean[this.columns];
         this.widths = new int[this.columns];
-        for (int i = 0; i < this.columns; i++) { this.alignment[i] = Alignment.LEFT; }
+
+        Arrays.fill(this.alignment, Alignment.LEFT);
+        Arrays.fill(this.columnIsNumeric, false);
+    }
+
+    protected DataDump setColumnProperties(int columnId, Alignment align, boolean isNumeric)
+    {
+        this.setColumnAlignment(columnId, align);
+        this.columnIsNumeric[columnId] = isNumeric;
+
+        return this;
     }
 
     protected DataDump setColumnAlignment(int columnId, Alignment align)
     {
         if (columnId >= this.columns)
         {
-            throw new IllegalArgumentException("Invalid column id '" + columnId + "', max is " + (this.columns - 1));
+            throw new IllegalArgumentException("setColumnAlignment(): Invalid column id '" + columnId + "', max is " + (this.columns - 1));
         }
 
         this.alignment[columnId] = align;
+        return this;
+    }
+
+    protected DataDump setColumnIsNumeric(int columnId, boolean isNumeric)
+    {
+        if (columnId >= this.columns)
+        {
+            throw new IllegalArgumentException("setColumnIsNumeric(): Invalid column id '" + columnId + "', max is " + (this.columns - 1));
+        }
+
+        this.columnIsNumeric[columnId] = isNumeric;
         return this;
     }
 
@@ -218,7 +244,22 @@ public class DataDump
         }
         else if (this.format == Format.CSV)
         {
-            return this.getFormattedLineCSV(row);
+            return this.getFormattedLineCSV(row, this.formatStringColumns);
+        }
+
+        return EMPTY_STRING;
+    }
+
+    private String getFormattedTitle(Row row)
+    {
+        if (this.format == Format.ASCII)
+        {
+            return this.getFormattedLineASCII(row);
+        }
+        else if (this.format == Format.CSV)
+        {
+            // The title row in CSV needs to be quoted on all columns
+            return this.getFormattedLineCSV(row, this.formatStringTitleCSV);
         }
 
         return EMPTY_STRING;
@@ -301,42 +342,64 @@ public class DataDump
 
     protected void generateFormatStringsCSV()
     {
-        StringBuilder sbFmtColumn = new StringBuilder(128);
         StringBuilder sbFmtTitle = new StringBuilder(128);
-        sbFmtTitle.append("%s");
+        StringBuilder sbFmtColumns = new StringBuilder(128);
+        StringBuilder sbFmtSingleLeft = new StringBuilder(128);
+        final String fmtNumeric = "%s";
+        final String fmtString = "\"%s\"";
 
-        for (int i = 0; i < this.columns - 1; i++)
+        sbFmtSingleLeft.append(this.columnIsNumeric[0] ? fmtNumeric : fmtString);
+
+        for (int i = 0; i < this.columns; i++)
         {
-            sbFmtColumn.append("%s, ");
-            sbFmtTitle.append(",");
+            sbFmtTitle.append(fmtString);
+            sbFmtColumns.append(this.columnIsNumeric[i] ? fmtNumeric : fmtString);
+
+            if (i < (this.columns - 1))
+            {
+                sbFmtTitle.append(",");
+                sbFmtColumns.append(",");
+                sbFmtSingleLeft.append(",");
+            }
         }
 
-        sbFmtColumn.append("%s");
-
-        this.formatStringColumns = sbFmtColumn.toString();
+        this.formatStringTitleCSV = sbFmtTitle.toString();
+        this.formatStringColumns = sbFmtColumns.toString();
         this.lineSeparator = EMPTY_STRING;
         this.formatStringSingleCenter = EMPTY_STRING;
-        this.formatStringSingleLeft = sbFmtTitle.toString();
+        this.formatStringSingleLeftCSV = sbFmtSingleLeft.toString();
     }
 
-    private String getFormattedLineCSV(Row row)
+    private String getFormattedLineCSV(Row row, String formatStringColumns)
     {
         String[] valuesStr = row.getValues();
         Object[] valuesObj = new Object[valuesStr.length];
 
         for (int i = 0; i < valuesObj.length; i++)
         {
-            // Fix the values so that they don't break the CSV format or look ugly
-            valuesObj[i] = valuesStr[i].replace(",", ";").trim();
+            // Fix the values so that they don't break the CSV format,
+            // ie. double any quotes (escape quotes with a quote).
+            // Note that all non-numeric columns (ie. strings) are already being surrounded
+            // in double quotes by the format string.
+            valuesStr[i] = valuesStr[i].replace("\"", "\"\"");
+
+            // Numeric columns are not surrounded in double quotes by default, so if there are
+            // any commas in those, then we need to double quote in those cases.
+            if (this.columnIsNumeric[i] && valuesStr[i].contains(","))
+            {
+                valuesStr[i] = "\"" + valuesStr[i] + "\"";
+            }
+
+            valuesObj[i] = valuesStr[i].trim();
         }
 
         if (valuesObj.length == 1 && this.columns > 1)
         {
-            return String.format(this.formatStringSingleLeft, valuesObj[0]);
+            return String.format(this.formatStringSingleLeftCSV, valuesObj[0]);
         }
         else
         {
-            return String.format(this.formatStringColumns, valuesObj);
+            return String.format(formatStringColumns, valuesObj);
         }
     }
 
@@ -347,47 +410,57 @@ public class DataDump
             Collections.sort(this.lines);
         }
 
-        lines.add(this.lineSeparator);
-
-        int len = this.headers.size();
-
-        if (len > 0)
+        if (this.format == Format.ASCII)
         {
-            for (int i = 0; i < len; i++)
-            {
-                lines.add(this.getFormattedLine(this.headers.get(i)));
-            }
+            lines.add(this.lineSeparator);
 
+            int len = this.headers.size();
+
+            if (len > 0)
+            {
+                for (int i = 0; i < len; i++)
+                {
+                    lines.add(this.getFormattedLine(this.headers.get(i)));
+                }
+
+                lines.add(this.lineSeparator);
+            }
+        }
+
+        lines.add(this.getFormattedTitle(this.title));
+
+        if (this.format == Format.ASCII)
+        {
             lines.add(this.lineSeparator);
         }
 
-        lines.add(this.getFormattedLine(this.title));
-        lines.add(this.lineSeparator);
+        int rows = this.lines.size();
 
-        len = this.lines.size();
-
-        for (int i = 0; i < len; i++)
+        for (int i = 0; i < rows; i++)
         {
             lines.add(this.getFormattedLine(this.lines.get(i)));
         }
 
-        lines.add(this.lineSeparator);
-        len = this.footers.size();
-
-        if (len > 0)
+        if (this.format == Format.ASCII)
         {
-            for (int i = 0; i < len; i++)
+            lines.add(this.lineSeparator);
+            int len = this.footers.size();
+
+            if (len > 0)
             {
-                lines.add(this.getFormattedLine(this.footers.get(i)));
+                for (int i = 0; i < len; i++)
+                {
+                    lines.add(this.getFormattedLine(this.footers.get(i)));
+                }
+
+                lines.add(this.lineSeparator);
             }
 
-            lines.add(this.lineSeparator);
-        }
-
-        if (this.repeatTitleAtBottom)
-        {
-            lines.add(this.getFormattedLine(this.title));
-            lines.add(this.lineSeparator);
+            if (this.repeatTitleAtBottom)
+            {
+                lines.add(this.getFormattedLine(this.title));
+                lines.add(this.lineSeparator);
+            }
         }
 
         return lines;
