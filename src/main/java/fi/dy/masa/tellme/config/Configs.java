@@ -52,25 +52,25 @@ public class Configs
     {
         Property prop;
 
-        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForBlocksAndEntities", true).setRequiresMcRestart(false);
+        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForBlocksAndEntities", true);
         prop.setComment("Enables the debug item to right click on blocks or entities");
         enableDebugItemForBlockAndEntities = prop.getBoolean();
 
-        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForItems", true).setRequiresMcRestart(false);
+        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForItems", true);
         prop.setComment("Enables the debug item to right with to dump data from the item next to the right of it on the hotbar");
         enableDebugItemForItems = prop.getBoolean();
 
-        prop = conf.get(CATEGORY_GENERIC, "debugItemNameBlocks", "minecraft:gold_nugget").setRequiresMcRestart(false);
+        prop = conf.get(CATEGORY_GENERIC, "debugItemNameBlocks", "minecraft:gold_nugget");
         prop.setComment("The debug item to use for right clicking on blocks and entities. Examples: minecraft:gold_nugget or minecraft:coal@1 for Charcoal (metadata 1)");
         debugItemNameBlocks = prop.getString();
         debugItemBlocks = getDebugItem(debugItemNameBlocks);
 
-        prop = conf.get(CATEGORY_GENERIC, "debugItemNameItems", "minecraft:blaze_rod").setRequiresMcRestart(false);
+        prop = conf.get(CATEGORY_GENERIC, "debugItemNameItems", "minecraft:blaze_rod");
         prop.setComment("The debug item to use for right clicking with to dump item NBT");
         debugItemNameItems = prop.getString();
         debugItemItems = getDebugItem(debugItemNameItems);
 
-        if (conf.hasChanged() == true)
+        if (conf.hasChanged())
         {
             conf.save();
         }
@@ -83,14 +83,23 @@ public class Configs
 
         try
         {
-            Pattern pattern = Pattern.compile("([a-zA-Z0-9_\\.:-]+)@([0-9]+)");
+            Pattern pattern = Pattern.compile("([a-zA-Z0-9_\\.-]+:[a-zA-Z0-9_\\.-]+)(?:@([0-9]+))?");
             Matcher matcher = pattern.matcher(nameIn);
 
-        if (matcher.matches())
-        {
-            name = matcher.group(1);
-            meta = Integer.parseInt(matcher.group(2));
-        }
+            if (matcher.matches())
+            {
+                name = matcher.group(1);
+                String metaStr = matcher.group(2);
+
+                if (metaStr != null)
+                {
+                    meta = Integer.parseInt(metaStr);
+                }
+            }
+            else
+            {
+                TellMe.logger.warn("Invalid syntax for debug item name '{}'", nameIn);
+            }
         }
         catch (PatternSyntaxException | NumberFormatException e)
         {
