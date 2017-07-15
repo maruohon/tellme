@@ -29,7 +29,9 @@ public class SoundEventDump extends DataDump
         }
 
         soundEventDump.addTitle("Registry name", "ID");
-        soundEventDump.setColumnAlignment(1, Alignment.RIGHT); // id
+
+        soundEventDump.setColumnProperties(1, Alignment.RIGHT, true); // id
+
         soundEventDump.setUseColumnSeparator(true);
 
         return soundEventDump.getLines();

@@ -1,6 +1,8 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,12 +18,12 @@ public class OreDictionaryDump extends DataDump
         super(columns, format);
     }
 
-    public static List<String> getFormattedOreDictionaryDump(Format format, boolean byItemStack)
+    public static List<String> getFormattedOreDictionaryDump(Format format, OreDumpType type)
     {
         OreDictionaryDump oreDictDump;
-        String[] oreNames = OreDictionary.getOreNames();
+        List<String> oreNames = Arrays.asList(OreDictionary.getOreNames());
 
-        if (byItemStack)
+        if (type == OreDumpType.BY_STACK)
         {
             oreDictDump = new OreDictionaryDump(5, format);
             Set<ItemType> allStacks = new HashSet<ItemType>();
@@ -43,27 +45,31 @@ public class OreDictionaryDump extends DataDump
                 ItemStack stack = iter.next().getStack();
                 int meta = stack.getMetadata();
                 String regName = stack.getItem().getRegistryName().toString();
-                String strNBT = stack.hasTagCompound() ? stack.getTagCompound().toString() : "-";
+                String oreDictKeys = ItemDump.getOredictKeysJoined(stack);
+                String strNBT = stack.hasTagCompound() ? stack.getTagCompound().toString() : EMPTY_STRING;
 
                 if (meta == OreDictionary.WILDCARD_VALUE)
                 {
-                    oreDictDump.addData(regName, String.format("(WILDCARD) %5d", stack.getMetadata()),
-                            "-", ItemDump.getOredictKeysJoined(stack), strNBT);
+                    oreDictDump.addData(regName, String.valueOf(meta), "(WILDCARD)", oreDictKeys, strNBT);
                 }
                 else
                 {
-                    oreDictDump.addData(stack.getItem().getRegistryName().toString(), String.format("%5d", stack.getMetadata()),
-                            stack.getDisplayName(), ItemDump.getOredictKeysJoined(stack), strNBT);
+                    oreDictDump.addData(regName, String.valueOf(meta), stack.getDisplayName(), oreDictKeys, strNBT);
                 }
             }
 
             oreDictDump.addTitle("Registry name", "Meta/dmg", "Display name", "Ore Dict Keys", "NBT");
-            oreDictDump.setColumnAlignment(1, Alignment.RIGHT);
+
+            oreDictDump.setColumnProperties(1, Alignment.RIGHT, true);
+
             oreDictDump.setUseColumnSeparator(true);
+
+            return oreDictDump.getLines();
         }
-        else
+        else if (type == OreDumpType.BY_ORE_GROUPED)
         {
             oreDictDump = new OreDictionaryDump(2, format);
+
             for (String name : oreNames)
             {
                 List<ItemStack> stacks = OreDictionary.getOres(name);
@@ -74,13 +80,55 @@ public class OreDictionaryDump extends DataDump
                     stackStrs.add(ItemDump.getStackInfo(stack));
                 }
 
-                oreDictDump.addData(name, String.join(", ", stackStrs));
+                oreDictDump.addData(name, String.join("; ", stackStrs));
             }
 
-            oreDictDump.addTitle("Key", "ItemStacks");
+            oreDictDump.addTitle("OreDict Key", "ItemStacks");
             oreDictDump.setUseColumnSeparator(true);
+
+            return oreDictDump.getLines();
+        }
+        else if (type == OreDumpType.BY_ORE_INDIVIDUAL)
+        {
+            oreDictDump = new OreDictionaryDump(5, format);
+
+            for (String oreName : oreNames)
+            {
+                List<ItemStack> stacks = OreDictionary.getOres(oreName);
+
+                for (ItemStack stack : stacks)
+                {
+                    int meta = stack.getMetadata();
+                    String regName = stack.getItem().getRegistryName().toString();
+                    String strNBT = stack.hasTagCompound() ? stack.getTagCompound().toString() : EMPTY_STRING;
+
+                    if (meta == OreDictionary.WILDCARD_VALUE)
+                    {
+                        oreDictDump.addData(oreName, regName, String.valueOf(meta), "(WILDCARD)", strNBT);
+                    }
+                    else
+                    {
+                        oreDictDump.addData(oreName, regName, String.valueOf(meta), stack.getDisplayName(), strNBT);
+                    }
+                }
+            }
+
+            oreDictDump.addTitle("OreDict Key", "Registry name", "Meta/dmg", "Display name", "NBT");
+
+            oreDictDump.setColumnProperties(2, Alignment.RIGHT, true);
+
+            oreDictDump.setUseColumnSeparator(true);
+
+            return oreDictDump.getLines();
         }
 
-        return oreDictDump.getLines();
+        return Collections.emptyList();
+    }
+
+    public enum OreDumpType
+    {
+        BY_STACK,
+        BY_ORE_GROUPED,
+        BY_ORE_INDIVIDUAL
     }
 }

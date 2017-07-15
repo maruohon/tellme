@@ -62,14 +62,14 @@ public class ItemDump extends DataDump
 
         if (this.dumpNBT)
         {
-            String nbt = stack != null && stack.getTagCompound() != null ? stack.getTagCompound().toString() : "-";
+            String nbt = stack != null && stack.getTagCompound() != null ? stack.getTagCompound().toString() : EMPTY_STRING;
 
-            this.addData(modName, registryName, String.format("%5d", id), String.format("%5d", meta),
+            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack), nbt);
         }
         else
         {
-            this.addData(modName, registryName, String.format("%5d", id), String.format("%5d", meta),
+            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack));
         }
     }
@@ -94,9 +94,10 @@ public class ItemDump extends DataDump
             itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys");
         }
 
-        itemDump.setColumnAlignment(2, Alignment.RIGHT); // ID
-        itemDump.setColumnAlignment(3, Alignment.RIGHT); // meta
+        itemDump.setColumnProperties(2, Alignment.RIGHT, true); // ID
+        itemDump.setColumnProperties(3, Alignment.RIGHT, true); // meta
         itemDump.setColumnAlignment(4, Alignment.RIGHT); // sub-types
+
         itemDump.setUseColumnSeparator(true);
 
         return itemDump.getLines();
@@ -130,7 +131,7 @@ public class ItemDump extends DataDump
 
         Collections.sort(names);
 
-        return String.join(", ", names);
+        return String.join(",", names);
     }
 
     public static String getStackInfo(ItemStack stack)
@@ -145,7 +146,7 @@ public class ItemDump extends DataDump
                     stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
         }
 
-        return "";
+        return EMPTY_STRING;
     }
 
     public static boolean isStackEmpty(ItemStack stack)

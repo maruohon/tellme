@@ -40,7 +40,9 @@ public class PotionTypeDump extends DataDump
         }
 
         potionTypeDump.addTitle("Registry name", "ID", "Effects");
-        potionTypeDump.setColumnAlignment(1, Alignment.RIGHT); // id
+
+        potionTypeDump.setColumnProperties(1, Alignment.RIGHT, true); // id
+
         potionTypeDump.setUseColumnSeparator(true);
 
         return potionTypeDump.getLines();

@@ -39,7 +39,8 @@ public class EntityDump extends DataDump
         }
 
         entityDump.addTitle("Mod ID", "Mod name", "Entity name", "Entity class name", "ID");
-        entityDump.setColumnAlignment(4, Alignment.RIGHT); // id
+        entityDump.setColumnProperties(4, Alignment.RIGHT, true); // id
+
         entityDump.setUseColumnSeparator(true);
 
         return entityDump.getLines();

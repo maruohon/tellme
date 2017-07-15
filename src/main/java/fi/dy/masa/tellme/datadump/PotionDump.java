@@ -42,9 +42,11 @@ public class PotionDump extends DataDump
         }
 
         potionDump.addTitle("Mod name", "Registry name", "Potion Name", "ID", "Liquid color", "Is bad", "Is beneficial");
-        potionDump.setColumnAlignment(3, Alignment.RIGHT); // id
+
+        potionDump.setColumnProperties(3, Alignment.RIGHT, true); // id
         potionDump.setColumnAlignment(5, Alignment.RIGHT); // is bad
         potionDump.setColumnAlignment(6, Alignment.RIGHT); // is beneficial
+
         potionDump.setUseColumnSeparator(true);
 
         return potionDump.getLines();
