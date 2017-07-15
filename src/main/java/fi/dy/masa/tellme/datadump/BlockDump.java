@@ -65,14 +65,14 @@ public class BlockDump extends DataDump
         String registryName = rl.toString();
         String displayName = stack.isEmpty() == false ? stack.getDisplayName() : block.getLocalizedName();
         Item item = Item.getItemFromBlock(block);
-        String itemId = item != Items.AIR ? String.format("%5d", Item.getIdFromItem(item)) : "-";
-        String itemMeta = stack.isEmpty() == false ? String.format("%5d", stack.getMetadata()) : "-";
+        String itemId = item != Items.AIR ? String.valueOf(Item.getIdFromItem(item)) : EMPTY_STRING;
+        String itemMeta = stack.isEmpty() == false ? String.valueOf(stack.getMetadata()) : EMPTY_STRING;
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
         String exists = isDummied(ForgeRegistries.BLOCKS, rl) ? "false" : "true";
 
         if (this.dumpNBT)
         {
-            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : "-";
+            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : EMPTY_STRING;
             this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, exists, ItemDump.getOredictKeysJoined(stack), nbt);
         }
         else
@@ -101,10 +101,11 @@ public class BlockDump extends DataDump
             blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "Exists", "Ore Dict keys");
         }
 
-        blockDump.setColumnAlignment(2, Alignment.RIGHT); // ID
+        blockDump.setColumnProperties(2, Alignment.RIGHT, true); // ID
         blockDump.setColumnAlignment(3, Alignment.RIGHT); // sub-types
-        blockDump.setColumnAlignment(4, Alignment.RIGHT); // item id
-        blockDump.setColumnAlignment(5, Alignment.RIGHT); // item meta
+        blockDump.setColumnProperties(4, Alignment.RIGHT, true); // item id
+        blockDump.setColumnProperties(5, Alignment.RIGHT, true); // item meta
+
         blockDump.setUseColumnSeparator(true);
 
         return blockDump.getLines();
@@ -139,7 +140,7 @@ public class BlockDump extends DataDump
         {
             for (IdToStringHolder holder : data)
             {
-                lines.add(String.valueOf(holder.getId()) + ", " + holder.getString());
+                lines.add(String.valueOf(holder.getId()) + ",\"" + holder.getString() + "\"");
             }
         }
 

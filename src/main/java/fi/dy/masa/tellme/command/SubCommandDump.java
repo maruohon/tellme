@@ -18,6 +18,7 @@ import fi.dy.masa.tellme.datadump.EntityDump;
 import fi.dy.masa.tellme.datadump.FluidRegistryDump;
 import fi.dy.masa.tellme.datadump.ItemDump;
 import fi.dy.masa.tellme.datadump.OreDictionaryDump;
+import fi.dy.masa.tellme.datadump.OreDictionaryDump.OreDumpType;
 import fi.dy.masa.tellme.datadump.PotionDump;
 import fi.dy.masa.tellme.datadump.PotionTypeDump;
 import fi.dy.masa.tellme.datadump.SoundEventDump;
@@ -45,6 +46,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
         this.subSubCommands.add("oredictionary-by-key");
+        this.subSubCommands.add("oredictionary-by-key-individual");
         this.subSubCommands.add("oredictionary-by-item");
         this.subSubCommands.add("potions");
         this.subSubCommands.add("potiontypes");
@@ -77,7 +79,8 @@ public class SubCommandDump extends SubCommand
 
             if (this.getName().startsWith("dump"))
             {
-                File file = DataDump.dumpDataToFile(args[0], data);
+                String fileName = format == Format.CSV ? args[0] + "-csv" : args[0];
+                File file = DataDump.dumpDataToFile(fileName, data);
 
                 if (file != null)
                 {
@@ -148,11 +151,15 @@ public class SubCommandDump extends SubCommand
         }
         else if (type.equals("oredictionary-by-key"))
         {
-            return OreDictionaryDump.getFormattedOreDictionaryDump(format, false);
+            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
+        }
+        else if (type.equals("oredictionary-by-key-individual"))
+        {
+            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
         }
         else if (type.equals("oredictionary-by-item"))
         {
-            return OreDictionaryDump.getFormattedOreDictionaryDump(format, true);
+            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
         }
         else if (type.equals("potions"))
         {
