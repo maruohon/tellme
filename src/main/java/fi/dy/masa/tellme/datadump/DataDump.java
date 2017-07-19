@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -497,7 +498,14 @@ public class DataDump
         return lines;
     }
 
+    @Nullable
     public static File dumpDataToFile(String fileNameBase, List<String> lines)
+    {
+        return dumpDataToFile(fileNameBase, ".txt", lines);
+    }
+
+    @Nullable
+    public static File dumpDataToFile(String fileNameBase, String fileNameExtension, List<String> lines)
     {
         File outFile = null;
         File cfgDir = new File(TellMe.configDirPath);
@@ -517,15 +525,21 @@ public class DataDump
         }
 
         String fileNameBaseWithDate = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis()));
-        String fileName = fileNameBaseWithDate + ".txt";
+        String fileName = fileNameBaseWithDate + fileNameExtension;
         outFile = new File(cfgDir, fileName);
         int postFix = 1;
 
-        while (outFile.exists())
+        while (outFile.exists() && postFix < 100)
         {
-            fileName = fileNameBaseWithDate + "_" + postFix + ".txt";
+            fileName = fileNameBaseWithDate + "_" + postFix + fileNameExtension;
             outFile = new File(cfgDir, fileName);
             postFix++;
+        }
+
+        if (outFile.exists())
+        {
+            TellMe.logger.error("dumpDataToFile(): Failed to create data dump file '{}', one already exists", fileName);
+            return null;
         }
 
         try
@@ -534,7 +548,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            TellMe.logger.error("dumpDataToFile(): Failed to create data dump file '" + fileName + "'", e);
+            TellMe.logger.error("dumpDataToFile(): Failed to create data dump file '{}'", fileName, e);
             return null;
         }
 
@@ -553,7 +567,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            TellMe.logger.error("dumpDataToFile(): Exception while writing data dump to file '" + fileName + "'", e);
+            TellMe.logger.error("dumpDataToFile(): Exception while writing data dump to file '{}'", fileName, e);
         }
 
         return outFile;
