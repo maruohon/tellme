@@ -31,7 +31,7 @@ public class BiomeDump extends DataDump
             Biome biome = iter.next();
             String id = String.valueOf(Biome.getIdForBiome(biome));
             String regName = biome.getRegistryName().toString();
-            String name = biome.getBiomeName();
+            String name = TellMe.proxy.getBiomeName(biome);
             String waterColor = String.format("0x%08X (%10d)", biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier());
             String temp = String.format("%5.2f", biome.getTemperature());
             String tempCat = biome.getTempCategory().toString();
@@ -65,7 +65,7 @@ public class BiomeDump extends DataDump
 
         player.sendMessage(new TextComponentString("------------- Current biome info ------------"));
         player.sendMessage(new TextComponentString(String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s%s%s",
-                pre, biome.getBiomeName(), rst, pre, Biome.getIdForBiome(biome), rst, pre, biome.getRegistryName().toString(), rst)));
+                pre, TellMe.proxy.getBiomeName(biome), rst, pre, Biome.getIdForBiome(biome), rst, pre, biome.getRegistryName().toString(), rst)));
         player.sendMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s%s",
                 pre, biome.canRain(), rst, pre, biome.getRainfall(), rst, pre, biome.getEnableSnow(), rst)));
         player.sendMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
@@ -86,7 +86,7 @@ public class BiomeDump extends DataDump
         while (iter.hasNext())
         {
             Biome biome = iter.next();
-            data.add(new IdToStringHolder(Biome.getIdForBiome(biome), biome.getBiomeName()));
+            data.add(new IdToStringHolder(Biome.getIdForBiome(biome), TellMe.proxy.getBiomeName(biome)));
         }
 
         Collections.sort(data);

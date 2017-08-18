@@ -36,6 +36,12 @@ import fi.dy.masa.tellme.datadump.ItemDump;
 public class ClientProxy extends CommonProxy
 {
     @Override
+    public String getBiomeName(Biome biome)
+    {
+        return biome.getBiomeName();
+    }
+
+    @Override
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb)
     {
         BlockPos pos = player.getPosition();

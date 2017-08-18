@@ -20,6 +20,11 @@ import fi.dy.masa.tellme.datadump.ItemDump;
 
 public class CommonProxy
 {
+    public String getBiomeName(Biome biome)
+    {
+        return "N/A";
+    }
+
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb) {}
 
     public void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
