@@ -94,24 +94,36 @@ public class BlockInfo
                 state.getBlockHardness(world, pos),
                 state.getBlock().getExplosionResistance(player) * 5f,
                 getMaterialName(state.getMaterial())));
-        lines.add("IBlockState properties, including getActualState():");
+        lines.add("Block class: " + state.getBlock().getClass().getName());
 
-        UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = state.getProperties().entrySet().iterator();
-
-        while (iter.hasNext() == true)
+        if (state.getProperties().size() > 0)
         {
-            Entry<IProperty<?>, Comparable<?>> entry = iter.next();
-            lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
+            lines.add("IBlockState properties, including getActualState():");
+
+            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = state.getProperties().entrySet().iterator();
+
+            while (iter.hasNext() == true)
+            {
+                Entry<IProperty<?>, Comparable<?>> entry = iter.next();
+                lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
+            }
+        }
+        else
+        {
+            lines.add("IBlockState properties: <none>");
         }
 
         TellMe.proxy.getExtendedBlockStateInfo(world, state, pos, lines);
 
         TileEntity te = world.getTileEntity(pos);
+
         if (te != null)
         {
             NBTTagCompound nbt = new NBTTagCompound();
             te.writeToNBT(nbt);
+            lines.add("TileEntity class: " + te.getClass().getName());
             lines.add("");
+            lines.add("TileEntity NBT (from TileEntity#writeToNBT()):");
             NBTFormatter.getPrettyFormattedNBT(lines, nbt);
         }
 

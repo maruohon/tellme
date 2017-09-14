@@ -23,8 +23,8 @@ public class EntityInfo
         ResourceLocation rl = EntityList.getKey(target);
         String regName = rl != null ? rl.toString() : "null";
 
-        lines.add(String.format("Entity: %s [regName: %s] (entityId: %d)",
-                target.getClass().getSimpleName(), regName, target.getEntityId()));
+        lines.add(String.format("Entity: %s [registry name: %s] (entityId: %d)",
+                target.getName(), regName, target.getEntityId()));
 
         return lines;
     }
@@ -38,6 +38,9 @@ public class EntityInfo
         {
             target.writeToNBT(nbt);
         }
+
+        lines.add("Entity class: " + target.getClass().getName());
+        lines.add("");
 
         NBTFormatter.getPrettyFormattedNBT(lines, nbt);
 

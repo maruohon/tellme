@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -115,15 +116,22 @@ public class ClientProxy extends CommonProxy
 
         if (state instanceof IExtendedBlockState)
         {
-            lines.add("IExtendedBlockState properties:");
-
             IExtendedBlockState extendedState = (IExtendedBlockState) state;
-            UnmodifiableIterator<Entry<IUnlistedProperty<?>, Optional<?>>> iterExt = extendedState.getUnlistedProperties().entrySet().iterator();
 
-            while (iterExt.hasNext() == true)
+            if (extendedState.getUnlistedProperties().size() > 0)
             {
-                Entry<IUnlistedProperty<?>, Optional<?>> entry = iterExt.next();
-                lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
+                lines.add("IExtendedBlockState properties:");
+
+                UnmodifiableIterator<Entry<IUnlistedProperty<?>, Optional<?>>> iterExt = extendedState.getUnlistedProperties().entrySet().iterator();
+
+                while (iterExt.hasNext())
+                {
+                    Entry<IUnlistedProperty<?>, Optional<?>> entry = iterExt.next();
+                    lines.add(MoreObjects.toStringHelper(entry.getKey())
+                            .add("name", entry.getKey().getName())
+                            .add("clazz", entry.getKey().getType())
+                            .add("value", entry.getValue().toString()).toString());
+                }
             }
         }
     }
