@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 
@@ -47,6 +47,10 @@ minecraft {
 
     replaceIn "reference/Reference.java"
     replace "@MOD_VERSION@", mod_version
+
+    if (project.hasProperty("signJarKeyStore")) {
+        replace "@FINGERPRINT@", signJarFingerprint
+    }
 }
 
 dependencies {
@@ -91,13 +95,7 @@ processResources
     //rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
-// This task creates a jar file containing the source files of this project
-/*task sourcesJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.allSource
-    // This classifier is standard and should not be changed
-    classifier = 'sources'
-}*/
-
+/*
 // This task creates a jar file containing the unobfuscated class files of the project
 task deobfJar(type: Jar) {
     from sourceSets.main.output
@@ -109,4 +107,19 @@ task deobfJar(type: Jar) {
 artifacts {
     //archives sourcesJar
     archives deobfJar
+}
+*/
+
+if (project.hasProperty("signJarKeyStore")) {
+    task signJar(type: SignJar, dependsOn: reobfJar) {
+        inputFile = jar.archivePath
+        outputFile = jar.archivePath
+
+        keyStore = signJarKeyStore
+        alias = signJarAlias
+        storePass = signJarStorePass
+        keyPass = signJarKeyPass
+    }
+
+    build.dependsOn signJar
 }
