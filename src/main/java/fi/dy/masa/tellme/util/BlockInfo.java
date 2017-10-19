@@ -19,6 +19,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
 
 public class BlockInfo
@@ -192,8 +193,8 @@ public class BlockInfo
 
     public static void dumpBlockInfoToFile(EntityPlayer player, World world, BlockPos pos)
     {
-        File f = DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, pos));
-        player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+        File file = DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, pos));
+        SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
     }
 
     public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, RayTraceResult trace, boolean adjacent)
@@ -211,11 +212,11 @@ public class BlockInfo
 
             if (dumpToFile)
             {
-                BlockInfo.dumpBlockInfoToFile(player, world, pos);
+                dumpBlockInfoToFile(player, world, pos);
             }
             else
             {
-                BlockInfo.printBlockInfoToConsole(player, world, pos);
+                printBlockInfoToConsole(player, world, pos);
             }
         }
     }

@@ -199,8 +199,8 @@ public class SubCommandLoaded extends SubCommand
             }
             else if (outputType.equals("dump"))
             {
-                File f = DataDump.dumpDataToFile("loaded_" + cmd, data);
-                this.sendMessage(sender, "tellme.info.output.to.file", f.getName());
+                File file = DataDump.dumpDataToFile("loaded_" + cmd, data);
+                sendClickableLinkMessage(sender, "Output written to file %s", file);
             }
             else
             {

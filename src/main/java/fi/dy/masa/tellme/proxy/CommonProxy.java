@@ -60,6 +60,11 @@ public class CommonProxy
         return Collections.emptyList();
     }
 
+    public boolean isSinglePlayer()
+    {
+        return false;
+    }
+
     public void registerClientCommand() { }
 
     public void registerEventHandlers() { }

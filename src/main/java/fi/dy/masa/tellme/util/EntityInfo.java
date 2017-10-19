@@ -12,6 +12,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
 
 public class EntityInfo
@@ -71,18 +72,18 @@ public class EntityInfo
 
         if (dumpToFile)
         {
-            EntityInfo.dumpFullEntityInfoToFile(player, target);
+            dumpFullEntityInfoToFile(player, target);
         }
         else
         {
-            EntityInfo.printFullEntityInfoToConsole(player, target);
+            printFullEntityInfoToConsole(player, target);
         }
     }
 
     public static void dumpFullEntityInfoToFile(EntityPlayer player, Entity target)
     {
-        File f = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target));
-        player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+        File file = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target));
+        SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
     }
 
     public static String getEntityNameFromClass(Class<? extends Entity> clazz)

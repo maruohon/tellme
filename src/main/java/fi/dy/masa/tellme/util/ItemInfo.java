@@ -9,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentString;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
 
 public class ItemInfo
@@ -81,21 +82,21 @@ public class ItemInfo
 
     public static void dumpItemInfoToFile(EntityPlayer player, @Nonnull ItemStack stack)
     {
-        File f = DataDump.dumpDataToFile("item_data", getFullItemInfo(stack));
-        player.sendMessage(new TextComponentString("Output written to file " + f.getName()));
+        File file = DataDump.dumpDataToFile("item_data", getFullItemInfo(stack));
+        SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
     }
 
     public static void printItemInfo(EntityPlayer player, @Nonnull ItemStack stack, boolean dumpToFile)
     {
-        ItemInfo.printBasicItemInfoToChat(player, stack);
+        printBasicItemInfoToChat(player, stack);
 
         if (dumpToFile)
         {
-            ItemInfo.dumpItemInfoToFile(player, stack);
+            dumpItemInfoToFile(player, stack);
         }
         else
         {
-            ItemInfo.printItemInfoToConsole(stack);
+            printItemInfoToConsole(stack);
         }
     }
 }

@@ -7,24 +7,9 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import fi.dy.masa.tellme.datadump.BiomeDump;
-import fi.dy.masa.tellme.datadump.BlockDump;
-import fi.dy.masa.tellme.datadump.BlockStatesDump;
-import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.*;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.DimensionDump;
-import fi.dy.masa.tellme.datadump.EnchantmentDump;
-import fi.dy.masa.tellme.datadump.EntityDump;
-import fi.dy.masa.tellme.datadump.FluidRegistryDump;
-import fi.dy.masa.tellme.datadump.ItemDump;
-import fi.dy.masa.tellme.datadump.OreDictionaryDump;
 import fi.dy.masa.tellme.datadump.OreDictionaryDump.OreDumpType;
-import fi.dy.masa.tellme.datadump.PotionDump;
-import fi.dy.masa.tellme.datadump.PotionTypeDump;
-import fi.dy.masa.tellme.datadump.SoundEventDump;
-import fi.dy.masa.tellme.datadump.SpawnEggDump;
-import fi.dy.masa.tellme.datadump.TileEntityDump;
-import fi.dy.masa.tellme.datadump.VillagerProfessionDump;
 
 public class SubCommandDump extends SubCommand
 {
@@ -92,7 +77,7 @@ public class SubCommandDump extends SubCommand
 
                 if (file != null)
                 {
-                    this.sendMessage(sender, "tellme.info.output.to.file", file.getName());
+                    sendClickableLinkMessage(sender, "Output written to file %s", file);
                 }
             }
             else if (this.getName().startsWith("list"))

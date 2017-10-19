@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.command;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +12,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.event.ClickEvent;
+import fi.dy.masa.tellme.TellMe;
 
 public abstract class SubCommand implements ISubCommand
 {
@@ -114,5 +117,18 @@ public abstract class SubCommand implements ISubCommand
         String[] arr = new String[input.length - toDrop];
         System.arraycopy(input, toDrop, arr, 0, input.length - toDrop);
         return arr;
+    }
+
+    public static void sendClickableLinkMessage(ICommandSender sender, String messageKey, File file)
+    {
+        ITextComponent name = new TextComponentString(file.getName());
+
+        if (TellMe.proxy.isSinglePlayer())
+        {
+            name.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
+            name.getStyle().setUnderlined(Boolean.valueOf(true));
+        }
+
+        sender.sendMessage(new TextComponentTranslation(messageKey, name));
     }
 }

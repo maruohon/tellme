@@ -131,8 +131,8 @@ public class SubCommandBlockStats extends SubCommand
             }
             else // dump
             {
-                File f = DataDump.dumpDataToFile("block_stats", blockStats.getBlockStatsLines());
-                this.sendMessage(sender, "tellme.info.output.to.file", f.getName());
+                File file = DataDump.dumpDataToFile("block_stats", blockStats.getBlockStatsLines());
+                sendClickableLinkMessage(player, "Output written to file %s", file);
             }
         }
     }

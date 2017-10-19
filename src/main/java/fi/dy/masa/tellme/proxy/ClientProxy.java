@@ -177,6 +177,12 @@ public class ClientProxy extends CommonProxy
     }
 
     @Override
+    public boolean isSinglePlayer()
+    {
+        return Minecraft.getMinecraft().isSingleplayer();
+    }
+
+    @Override
     public void registerClientCommand()
     {
         TellMe.logger.info("Registering the client-side command");
