@@ -76,7 +76,7 @@ public class DataDump
         Arrays.fill(this.columnIsNumeric, false);
     }
 
-    protected DataDump setColumnProperties(int columnId, Alignment align, boolean isNumeric)
+    public DataDump setColumnProperties(int columnId, Alignment align, boolean isNumeric)
     {
         this.setColumnAlignment(columnId, align);
         this.columnIsNumeric[columnId] = isNumeric;
@@ -95,7 +95,7 @@ public class DataDump
         return this;
     }
 
-    protected DataDump setColumnIsNumeric(int columnId, boolean isNumeric)
+    public DataDump setColumnIsNumeric(int columnId, boolean isNumeric)
     {
         if (columnId >= this.columns)
         {
@@ -131,7 +131,7 @@ public class DataDump
         this.repeatTitleAtBottom = repeat;
     }
 
-    protected void setUseColumnSeparator(boolean value)
+    public void setUseColumnSeparator(boolean value)
     {
         this.useColumnSeparator = value;
     }
@@ -488,7 +488,7 @@ public class DataDump
         return lines;
     }
 
-    protected List<String> getLines()
+    public List<String> getLines()
     {
         List<String> lines = new ArrayList<String>();
 
@@ -575,7 +575,7 @@ public class DataDump
 
     public static void printDataToLogger(List<String> lines)
     {
-        int size = lines.size();
+        final int size = lines.size();
 
         for (int i = 0; i < size; i++)
         {

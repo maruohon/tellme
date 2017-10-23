@@ -25,7 +25,8 @@ public class ItemDump extends DataDump
         this.dumpNBT = dumpNBT;
     }
 
-    protected List<String> getLines()
+    @Override
+    public List<String> getLines()
     {
         if (this.getFormat() != Format.ASCII)
         {

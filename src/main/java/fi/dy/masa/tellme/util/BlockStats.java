@@ -1,77 +1,60 @@
 package fi.dy.masa.tellme.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.tuple.Pair;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 
 public class BlockStats
 {
-    private HashMap<String, BlockInfo> blockStats;
-    private List<String> blockStatLines;
-    private BlockPos pos1;
-    private BlockPos pos2;
-    private int longestName = 0;
-    private int longestDisplayName = 0;
+    private final Multimap<String, BlockInfo> blockStats = MultimapBuilder.hashKeys().arrayListValues().build();
 
-    public class BlockInfo implements Comparable<BlockInfo>
+    private boolean checkChunksAreLoaded(World world, BlockPos pos1, BlockPos pos2)
     {
-        public String name;
-        public String displayName;
-        public int id;
-        public int meta;
-        public int count;
-        public int countTE;
-
-        public BlockInfo(String name, String displayName, int id, int meta, int count, int countTE)
-        {
-            this.name = name;
-            this.displayName = displayName;
-            this.id = id;
-            this.meta = meta;
-            this.count = count;
-            this.countTE = countTE;
-        }
-
-        public int compareTo(BlockInfo blockInfo)
-        {
-            if (blockInfo == null)
-            {
-                throw new NullPointerException();
-            }
-
-            if (this.id != blockInfo.id)
-            {
-                return this.id - blockInfo.id;
-            }
-
-            if (this.meta != blockInfo.meta)
-            {
-                return this.meta - blockInfo.meta;
-            }
-
-            return 0;
-        }
+        return world.isAreaLoaded(pos1, pos2, true);
     }
 
-    public BlockStats()
+    private boolean areCoordinatesValid(World world, BlockPos pos1, BlockPos pos2) throws CommandException
     {
-        this.blockStats = new HashMap<String, BlockInfo>();
-        this.blockStatLines = new ArrayList<String>();
+        if (pos1.getY() < 0 || pos2.getY() < 0)
+        {
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y < 0");
+        }
+
+        if (pos1.getY() > 255 || pos2.getY() > 255)
+        {
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y > 255");
+        }
+
+        if (pos1.getX() < -30000000 || pos2.getX() < -30000000 || pos1.getZ() < -30000000 || pos2.getZ() < -30000000)
+        {
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z < -30M");
+        }
+
+        if (pos1.getX() > 30000000 || pos2.getX() > 30000000 || pos1.getZ() > 30000000 || pos2.getZ() > 30000000)
+        {
+            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z > 30M");
+        }
+
+        return true;
     }
 
-    private void setAndFixPositions(BlockPos pos1, BlockPos pos2)
+    private Pair<BlockPos, BlockPos> getCorners(BlockPos pos1, BlockPos pos2)
     {
         int xMin = Math.min(pos1.getX(), pos2.getX());
         int yMin = Math.min(pos1.getY(), pos2.getY());
@@ -83,43 +66,7 @@ public class BlockStats
         yMin = MathHelper.clamp(yMin, 0, 255);
         yMax = MathHelper.clamp(yMax, 0, 255);
 
-        this.pos1 = new BlockPos(xMin, yMin, zMin);
-        this.pos2 = new BlockPos(xMax, yMax, zMax);
-    }
-
-    private boolean checkChunksAreLoaded(World world)
-    {
-        return world.isAreaLoaded(this.pos1, this.pos2, true);
-    }
-
-    private boolean areCoordinatesValid() throws CommandException
-    {
-        if (this.pos1.getY() < 0 || this.pos2.getY() < 0)
-        {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y < 0");
-        }
-
-        if (this.pos1.getY() > 255 || this.pos2.getY() > 255)
-        {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y > 255");
-        }
-
-        if (this.pos1.getX() < -30000000 || this.pos2.getX() < -30000000 || this.pos1.getZ() < -30000000 || this.pos2.getZ() < -30000000)
-        {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z < -30M");
-        }
-
-        if (this.pos1.getX() > 30000000 || this.pos2.getX() > 30000000 || this.pos1.getZ() > 30000000 || this.pos2.getZ() > 30000000)
-        {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z > 30M");
-        }
-
-        if (Math.abs(this.pos1.getX() - this.pos2.getX()) > 512 || Math.abs(this.pos1.getZ() - this.pos2.getZ()) > 512)
-        {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.toolarge");
-        }
-
-        return true;
+        return Pair.of(new BlockPos(xMin, yMin, zMin), new BlockPos(xMax, yMax, zMax));
     }
 
     public void calculateBlockStats(World world, BlockPos playerPos, int rangeX, int rangeY, int rangeZ) throws CommandException
@@ -130,64 +77,57 @@ public class BlockStats
         this.calculateBlockStats(world, pos1, pos2);
     }
 
+    @SuppressWarnings("deprecation")
     public void calculateBlockStats(World world, BlockPos pos1, BlockPos pos2) throws CommandException
     {
-        this.setAndFixPositions(pos1, pos2);
-        this.areCoordinatesValid();
-        this.calculateBlockStats(world);
-    }
+        Pair<BlockPos, BlockPos> pair = this.getCorners(pos1, pos2);
+        pos1 = pair.getLeft();
+        pos2 = pair.getRight();
 
-    private void calculateBlockStats(World world) throws CommandException
-    {
-        //System.out.printf("dim: %d x1: %d, y1: %d, z1: %d x2: %d y2: %d z2: %d\n", dim, x1, y1, z1, x2, y2, z2);
+        if (this.areCoordinatesValid(world, pos1, pos2) == false)
+        {
+            return;
+        }
 
-        if (this.checkChunksAreLoaded(world) == false)
+        if (this.checkChunksAreLoaded(world, pos1, pos2) == false)
         {
             throw new WrongUsageException("tellme.subcommand.blockstats.error.chunksnotloaded");
         }
 
-        int x1 = this.pos1.getX();
-        int y1 = this.pos1.getY();
-        int z1 = this.pos1.getZ();
-        int x2 = this.pos2.getX();
-        int y2 = this.pos2.getY();
-        int z2 = this.pos2.getZ();
-
-        this.blockStats = new HashMap<String, BlockInfo>();
-        this.longestName = 0;
-        this.longestDisplayName = 0;
         int[] counts = new int[65536];
-        int[] countsTE = new int[65536];
-        IBlockState iBlockState;
-        Block block;
-        int count = 0, index = 0;
-
-        // TODO profile this too:
-        // 23:13:48 < diesieben07> there is BlockPos.getAllInBoxMutable
-        // 23:14:06 < diesieben07> which returns an Iterable for all BlockPos' in a box, but re-uses the same instance
-
+        int count = 0;
         long timeBefore = System.currentTimeMillis();
-        MutableBlockPos pos = new MutableBlockPos(0, 0, 0);
 
-        // Calculate the number of each block type identified by: "id << 4 | meta"
-        for (int y = y1; y <= y2; ++y)
+        final int x1 = pos1.getX();
+        final int y1 = pos1.getY();
+        final int z1 = pos1.getZ();
+        final int x2 = pos2.getX();
+        final int y2 = pos2.getY();
+        final int z2 = pos2.getZ();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+
+        // Read the blocks one chunk at a time, to remove the overhead
+        // of getting the chunk for each block position.
+        for (int cz = z1 >> 4; cz <= (z2 >> 4); cz++)
         {
-            for (int x = x1; x <= x2; ++x)
+            for (int cx = x1 >> 4; cx <= (x2 >> 4); cx++)
             {
-                for (int z = z1; z <= z2; ++z)
+                Chunk chunk = world.getChunkFromChunkCoords(cx, cz);
+                final int xMax = Math.min(x2, (cx << 4) + 15);
+                final int zMax = Math.min(z2, (cz << 4) + 15);
+
+                for (int z = Math.max(z1, cz << 4); z <= zMax; ++z)
                 {
-                    pos.setPos(x, y, z);
-                    iBlockState = world.getBlockState(pos);
-                    block = iBlockState.getBlock();
-
-                    index = Block.getIdFromBlock(block) << 4 | (block.getMetaFromState(iBlockState) & 0xF);
-                    count++;
-                    counts[index]++;
-
-                    // Count the TileEntities for each block type
-                    if (world.getTileEntity(pos) != null)
+                    for (int x = Math.max(x1, cx << 4); x <= xMax; ++x)
                     {
-                        countsTE[index]++;
+                        for (int y = y1; y <= y2; ++y)
+                        {
+                            pos.setPos(x, y, z);
+                            IBlockState state = chunk.getBlockState(pos);
+
+                            counts[Block.BLOCK_STATE_IDS.get(state)]++;
+                            count++;
+                        }
                     }
                 }
             }
@@ -196,211 +136,189 @@ public class BlockStats
         long timeAfter = System.currentTimeMillis();
         TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %.3f seconds.", count, (timeAfter - timeBefore) / 1000f));
 
-        String name;
-        String dname;
-        int id = 0, meta = 0;
+        this.blockStats.clear();
 
-        for (int i = 0; i < 65536; ++i)
+        for (int i = 0; i < counts.length; ++i)
         {
             if (counts[i] > 0)
             {
                 try
                 {
-                    id = i >> 4;
-                    meta = i & 0xF;
-                    block = Block.getBlockById(id);
+                    IBlockState state = Block.BLOCK_STATE_IDS.getByValue(i);
+                    Block block = state.getBlock();
+                    String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
+                    int id = Block.getIdFromBlock(block);
+                    int meta = block.getMetaFromState(state);
+                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
+                    String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
 
-                    // We don't want to use getItemDropped(), that would turn Stone into Cobblestone etc.
-                    //ItemStack stack = new ItemStack(block.getItemDropped(meta, worldServer.rand, 0), 1, block.damageDropped(meta));
-
-                    @SuppressWarnings("deprecation")
-                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(block.getStateFromMeta(meta)));
-                    name = Block.REGISTRY.getNameForObject(block).toString();
-
-                    if (stack.isEmpty() == false)
-                    {
-                        dname = stack.getDisplayName();
-                    }
-                    // Blocks that are not obtainable/don't have an ItemBlock
-                    else
-                    {
-                        dname = name;
-                    }
-
-                    this.blockStats.put(name + ":" + meta, new BlockInfo(name, dname, id, meta, counts[i], countsTE[i]));
-
-                    if (name.length() > this.longestName)
-                    {
-                        this.longestName = name.length();
-                    }
-
-                    if (dname.length() > this.longestDisplayName)
-                    {
-                        this.longestDisplayName = dname.length();
-                    }
+                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, counts[i]));
                 }
                 catch (Exception e)
                 {
-                    TellMe.logger.error("Caught an exception while getting block names");
-                    TellMe.logger.error(e.getMessage());
-                    e.printStackTrace();
+                    TellMe.logger.error("Caught an exception while getting block names", e);
                 }
             }
         }
     }
 
-    public void queryAll()
+    private void addFilteredData(BlockStatsDump dump, List<String> filters)
     {
-        this.query(null);
-    }
-
-    public void query(List<String> filters)
-    {
-        int nameLen = this.longestName;
-        int dNameLen = this.longestDisplayName;
-
-        //ArrayList<String> keys = new ArrayList<String>();
-        //keys.addAll(this.blockStats.keySet());
-        //Collections.sort(keys);
-
-        ArrayList<BlockInfo> values = new ArrayList<BlockInfo>();
-        values.addAll(this.blockStats.values());
-        Collections.sort(values);
-
-        // Get the longest name lengths from the filtered list for formatting the output nicely
-        if (filters != null)
+        for (String filter : filters)
         {
-            nameLen = 0;
-            dNameLen = 0;
+            int firstSemi = filter.indexOf(":");
 
-            for (BlockInfo blockInfo : values)
+            if (firstSemi == -1)
             {
-                if (this.filterFound(filters, blockInfo))
-                {
-                    if (blockInfo.name.length() > nameLen)
-                    {
-                        nameLen = blockInfo.name.length();
-                    }
-
-                    if (blockInfo.displayName.length() > dNameLen)
-                    {
-                        dNameLen = blockInfo.displayName.length();
-                    }
-                }
+                filter = "minecraft:" + filter;
             }
 
-            if (nameLen < 10)
-            {
-                nameLen = 10;
-            }
+            int lastSemi = filter.lastIndexOf(":");
 
-            if (dNameLen < 12)
-            {
-                dNameLen = 12;
-            }
-        }
-
-        StringBuilder separator = new StringBuilder(256);
-        int len = nameLen + dNameLen + 35;
-        for (int i = 0; i < len; ++i) { separator.append("-"); }
-
-        this.blockStatLines = new ArrayList<String>();
-        this.blockStatLines.add(separator.toString());
-        this.blockStatLines.add("*** NOTE *** The Block ID is for very specific debugging or fixing purposes only!!!");
-        this.blockStatLines.add("It WILL be different on every world since Minecraft 1.7, since they are dynamically allocated by the game!!!");
-        this.blockStatLines.add(separator.toString());
-
-        String fmt = String.format("%%-%ds | %%-%ds | %%8d | %%4d:%%-2d | %%8d", nameLen, dNameLen);
-        String fmt2 = String.format("%%-%ds | %%-%ds", nameLen, dNameLen);
-
-        this.blockStatLines.add(String.format(fmt2 + " | %8s | %7s | %8s", "Block name", "Display name", "Count", "ID:meta", "Count TE"));
-        this.blockStatLines.add(separator.toString());
-
-        for (BlockInfo blockInfo : values)
-        {
-            if (filters == null || this.filterFound(filters, blockInfo))
-            {
-                this.blockStatLines.add(String.format(fmt, blockInfo.name, blockInfo.displayName, blockInfo.count, blockInfo.id, blockInfo.meta, blockInfo.countTE));
-            }
-        }
-
-        this.blockStatLines.add(separator.toString());
-    }
-
-    private boolean filterMatches(String filter, BlockInfo info)
-    {
-        int first = filter.indexOf(":");
-
-        // At least one ':' found
-        if (first != -1)
-        {
-            int last = filter.lastIndexOf(":");
-
-            // At least two ':' characters found; assume the first separates the modid and block name, and the second separates the block name and meta
-            if (last != first && last < (filter.length() - 1))
+            // At least two ':' characters found; assume the first separates the modid and block name,
+            // and the second separates the block name and meta.
+            if (lastSemi != firstSemi && lastSemi < (filter.length() - 1))
             {
                 try
                 {
-                    int meta = Integer.parseInt(filter.substring(last + 1, filter.length()));
-                    if (filter.substring(0, last).equals(info.name) && meta == info.meta)
+                    int meta = Integer.parseInt(filter.substring(lastSemi + 1, filter.length()));
+
+                    for (BlockInfo info : this.blockStats.get(filter))
                     {
-                        return true;
+                        if (info.meta == meta)
+                        {
+                            dump.addData(info.name, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
+                            break;
+                        }
                     }
                 }
                 catch (NumberFormatException e)
                 {
-                    TellMe.logger.error("Caught an exception while parsing block meta value from user input");
-                    e.printStackTrace();
+                    TellMe.logger.error("Caught an exception while parsing block meta value from user input", e);
                 }
             }
-            // else: Just one ':' character found. We should have matched before calling this method, if it was in the modid:blockname format.
-            // And if it is not, then we don't support it (blockname:meta without modid) anyway.
+            else
+            {
+                for (BlockInfo info : this.blockStats.get(filter))
+                {
+                    dump.addData(info.name, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
+                }
+            }
         }
-        // No ':' characters found, assume simple vanilla block name
+    }
+
+    public List<String> queryAll()
+    {
+        return this.query(null);
+    }
+
+    public List<String> query(@Nullable List<String> filters)
+    {
+        BlockStatsDump dump = new BlockStatsDump();
+
+        if (filters != null)
+        {
+            this.addFilteredData(dump, filters);
+        }
         else
         {
-            if (info.name.equals("minecraft:" + filter))
+            for (BlockInfo info : this.blockStats.values())
             {
-                return true;
+                dump.addData(info.name, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
             }
         }
 
-        return false;
+        dump.addTitle("Registry name", "Block ID", "Meta", "Display name", "Count");
+        dump.addHeader("NOTE: The Block ID is for very specific low-level purposes only!");
+        dump.addHeader("It WILL be different in every world since Minecraft 1.7, because they are dynamically allocated by the game!");
+
+        dump.setColumnProperties(1, Alignment.RIGHT, true); // Block ID
+        dump.setColumnProperties(2, Alignment.RIGHT, true); // meta
+        dump.setColumnProperties(4, Alignment.RIGHT, true); // count
+
+        dump.setUseColumnSeparator(true);
+
+        return dump.getLines();
     }
 
-    private boolean filterFound(List<String> filters, BlockInfo info)
+    public class BlockInfo implements Comparable<BlockInfo>
     {
-        // FIXME It would probably be more efficient to loop the filter list since it's probably shorter,
-        // and pick the requested things from the block info list. Probably won't make much of a difference though in practice.
+        public final String name;
+        public final String displayName;
+        public final int id;
+        public final int meta;
+        public final int count;
 
-        // Simple case, the input name is a fully qualified block name
-        if (filters.contains(info.name))
+        public BlockInfo(String name, String displayName, int id, int meta, int count)
         {
+            this.name = name;
+            this.displayName = displayName;
+            this.id = id;
+            this.meta = meta;
+            this.count = count;
+        }
+
+        public int compareTo(BlockInfo other)
+        {
+            if (other == null)
+            {
+                throw new NullPointerException();
+            }
+
+            if (this.id != other.id)
+            {
+                return this.id - other.id;
+            }
+
+            if (this.meta != other.meta)
+            {
+                return this.meta - other.meta;
+            }
+
+            return 0;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + id;
+            result = prime * result + meta;
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            BlockInfo other = (BlockInfo) obj;
+            if (!getOuterType().equals(other.getOuterType()))
+                return false;
+            if (id != other.id)
+                return false;
+            if (meta != other.meta)
+                return false;
             return true;
         }
 
-        // Try to parse the filter strings and handle possible meta restrictions etc.
-        for (String filter : filters)
+        private BlockStats getOuterType()
         {
-            if (this.filterMatches(filter, info))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void printBlockStatsToLogger()
-    {
-        for (String line : this.blockStatLines)
-        {
-            TellMe.logger.info(line);
+            return BlockStats.this;
         }
     }
 
-    public List<String> getBlockStatsLines()
+    private static class BlockStatsDump extends DataDump
     {
-        return this.blockStatLines;
+        public BlockStatsDump()
+        {
+            super(5, Format.ASCII);
+        }
     }
 }
