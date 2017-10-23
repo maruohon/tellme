@@ -115,12 +115,13 @@ public class BlockStats
                 Chunk chunk = world.getChunkFromChunkCoords(cx, cz);
                 final int xMax = Math.min(x2, (cx << 4) + 15);
                 final int zMax = Math.min(z2, (cz << 4) + 15);
+                final int yMax = Math.min(y2, chunk.getTopFilledSegment() + 15);
 
                 for (int z = Math.max(z1, cz << 4); z <= zMax; ++z)
                 {
                     for (int x = Math.max(x1, cx << 4); x <= xMax; ++x)
                     {
-                        for (int y = y1; y <= y2; ++y)
+                        for (int y = y1; y <= yMax; ++y)
                         {
                             pos.setPos(x, y, z);
                             IBlockState state = chunk.getBlockState(pos);
