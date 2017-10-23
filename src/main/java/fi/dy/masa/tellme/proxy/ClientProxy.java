@@ -157,9 +157,9 @@ public class ClientProxy extends CommonProxy
             IChunkProvider provider = world.getChunkProvider();
             List<Chunk> chunks = new ArrayList<Chunk>();
 
-            for (int z = cZ - radius; z < (cZ + radius); z++)
+            for (int z = cZ - radius; z <= (cZ + radius); z++)
             {
-                for (int x = cX - radius; x < (cX + radius); x++)
+                for (int x = cX - radius; x <= (cX + radius); x++)
                 {
                     Chunk chunk = provider.getLoadedChunk(x, z);
 
