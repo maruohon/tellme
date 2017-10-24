@@ -3,6 +3,9 @@ package fi.dy.masa.tellme.command;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import com.google.common.collect.Sets;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
@@ -17,6 +20,7 @@ public class SubCommandDump extends SubCommand
     {
         super(baseCommand);
 
+        this.subSubCommands.add("all");
         this.subSubCommands.add("biomes");
         this.subSubCommands.add("biomes-id-to-name");
         this.subSubCommands.add("blocks");
@@ -48,47 +52,82 @@ public class SubCommandDump extends SubCommand
     }
 
     @Override
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
+    {
+        if (args.length >= 1)
+        {
+            return CommandBase.getListOfStringsMatchingLastWord(args, this.getSubCommands());
+        }
+
+        return Collections.emptyList();
+    }
+
+    @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         super.execute(server, sender, args);
 
-        if (args.length == 1)
+        if (args.length >= 1)
         {
-            Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
-            List<String> data = this.getData(args[0], format);
+            Set<String> types = Sets.newHashSet(args);
 
-            if (data.isEmpty())
+            // Don't bother outputting anything else a second time, if outputting everything once anyway
+            if (types.contains("all"))
             {
-                throw new WrongUsageException("tellme.command.error.unknown.parameter", args[0]);
-            }
-
-            if (this.getName().startsWith("dump"))
-            {
-                File file;
-
-                if (format == Format.CSV)
+                for (String arg : this.subSubCommands)
                 {
-                    file = DataDump.dumpDataToFile(args[0] + "-csv", ".csv", data);
-                }
-                else
-                {
-                    file = DataDump.dumpDataToFile(args[0], data);
-                }
-
-                if (file != null)
-                {
-                    sendClickableLinkMessage(sender, "Output written to file %s", file);
+                    if (arg.equals("all") == false && arg.equals("help") == false)
+                    {
+                        this.outputData(server, sender, arg);
+                    }
                 }
             }
-            else if (this.getName().startsWith("list"))
+            else
             {
-                DataDump.printDataToLogger(data);
-                this.sendMessage(sender, "tellme.info.output.to.console");
+                for (String arg : types)
+                {
+                    this.outputData(server, sender, arg);
+                }
             }
         }
     }
 
-    protected List<String> getData(String type, Format format)
+    private void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
+    {
+        Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
+        List<String> data = this.getData(arg, format);
+
+        if (data.isEmpty())
+        {
+            throw new WrongUsageException("tellme.command.error.unknown.parameter", arg);
+        }
+
+        if (this.getName().startsWith("dump"))
+        {
+            File file;
+
+            if (format == Format.CSV)
+            {
+                file = DataDump.dumpDataToFile(arg + "-csv", ".csv", data);
+            }
+            else
+            {
+                file = DataDump.dumpDataToFile(arg, data);
+            }
+
+            if (file != null)
+            {
+                sendClickableLinkMessage(sender, "Output written to file %s", file);
+            }
+        }
+        else if (this.getName().startsWith("list"))
+        {
+            DataDump.printDataToLogger(data);
+            this.sendMessage(sender, "tellme.info.output.to.console");
+        }
+    }
+
+    private List<String> getData(String type, Format format)
     {
         if (type.equals("biomes"))
         {
