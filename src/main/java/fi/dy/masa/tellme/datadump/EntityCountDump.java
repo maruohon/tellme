@@ -98,8 +98,7 @@ public class EntityCountDump extends DataDump
 
         if (entityCountDump.emptyChunks != 0)
         {
-            entityCountDump.addFooter(String.format("There were %d loaded chunks", entityCountDump.emptyChunks));
-            entityCountDump.addFooter(entityCountDump.strFooter);
+            entityCountDump.addFooter(String.format("There were %d loaded chunks %s", entityCountDump.emptyChunks, entityCountDump.strFooter));
         }
 
         return entityCountDump.getLines();
@@ -127,8 +126,7 @@ public class EntityCountDump extends DataDump
 
         if (entityCountDump.emptyChunks != 0)
         {
-            entityCountDump.addFooter(String.format("There were %d chunks in the selected area", entityCountDump.emptyChunks));
-            entityCountDump.addFooter(entityCountDump.strFooter);
+            entityCountDump.addFooter(String.format("There were %d chunks in the selected area %s", entityCountDump.emptyChunks, entityCountDump.strFooter));
         }
 
         if (entityCountDump.unloadedChunks != 0)
@@ -384,7 +382,7 @@ public class EntityCountDump extends DataDump
                 dump.addData(holder.clazz.getName(), String.valueOf(holder.count), ticking);
             }
 
-            dump.addFooter(String.format("In total there were %d loaded TEs.", this.totalCount));
+            dump.addFooter(String.format("In total there were %d loaded TileEntities.", this.totalCount));
         }
     }
 

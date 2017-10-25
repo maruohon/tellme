@@ -87,7 +87,7 @@ public class CommandTellme extends CommandBase
         }
         else
         {
-            throw new CommandException("tellme.command.error.unknown", "/" + this.getName() + " " + args[0]);
+            throw new CommandException("Unrecognized command: /" + this.getName() + " " + args[0]);
         }
     }
 

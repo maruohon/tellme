@@ -50,10 +50,11 @@ public class ClientProxy extends CommonProxy
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
         // These are client-side only:
-        player.sendMessage(new TextComponentString(String.format("Grass color: %s0x%08X (%d)%s",
-                pre, bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)), bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos)), rst)));
-        player.sendMessage(new TextComponentString(String.format("Foliage color: %s0x%08X (%d)%s",
-                pre, bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)), bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos)), rst)));
+        int color = bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos));
+        player.sendMessage(new TextComponentString(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+
+        color = bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos));
+        player.sendMessage(new TextComponentString(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
     }
 
     @Override

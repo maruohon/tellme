@@ -27,9 +27,15 @@ public class SubCommandBlockStats extends SubCommand
     public SubCommandBlockStats(CommandTellme baseCommand)
     {
         super(baseCommand);
+
         this.subSubCommands.add("count");
         this.subSubCommands.add("dump");
         this.subSubCommands.add("query");
+
+        this.addSubCommandHelp("_generic", "Calculates the number of each block type in a given area");
+        this.addSubCommandHelp("count", "Counts all the blocks in the given area");
+        this.addSubCommandHelp("dump", "Dumps the stats from a previous 'count' command into a file in config/tellme/");
+        this.addSubCommandHelp("query", "Prints the stats from a previous 'count' command into the console");
     }
 
     @Override
@@ -40,21 +46,21 @@ public class SubCommandBlockStats extends SubCommand
 
     private void printUsageCount(ICommandSender sender)
     {
-        String pre = this.getUsageCommon();
+        String pre = this.getSubCommandUsagePre();
         sender.sendMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
         sender.sendMessage(new TextComponentString(pre + " count <xMin> <yMin> <zMin> <xMax> <yMax> <zMax>"));
     }
 
     private void printUsageDump(ICommandSender sender)
     {
-        String pre = this.getUsageCommon();
+        String pre = this.getSubCommandUsagePre();
         sender.sendMessage(new TextComponentString(pre + " dump"));
         sender.sendMessage(new TextComponentString(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
     }
 
     private void printUsageQuery(ICommandSender sender)
     {
-        String pre = this.getUsageCommon();
+        String pre = this.getSubCommandUsagePre();
         sender.sendMessage(new TextComponentString(pre + " query"));
         sender.sendMessage(new TextComponentString(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
     }
@@ -80,7 +86,7 @@ public class SubCommandBlockStats extends SubCommand
         // "/tellme bockstats"
         if (args.length < 1)
         {
-            this.sendMessage(sender, "tellme.command.info.usage.noparam");
+            this.sendMessage(sender, "Usage:");
             this.printUsageCount(sender);
             this.printUsageDump(sender);
             this.printUsageQuery(sender);
@@ -91,10 +97,10 @@ public class SubCommandBlockStats extends SubCommand
 
         if ((sender instanceof EntityPlayer) == false)
         {
-            throw new WrongUsageException("tellme.subcommand.blockstats.error.notplayer");
+            throw new WrongUsageException("This command can only be run by a player");
         }
 
-        String pre = this.getUsageCommon();
+        String pre = this.getSubCommandUsagePre();
         EntityPlayer player = (EntityPlayer) sender;
         BlockStats blockStats = this.getBlockStatsForPlayer(player);
 
@@ -112,16 +118,16 @@ public class SubCommandBlockStats extends SubCommand
             {
                 try
                 {
-                    this.sendMessage(sender, "tellme.subcommand.blockstats.calculating");
+                    this.sendMessage(sender, "Calculating block statistics...");
                     int rx = Math.abs(CommandBase.parseInt(args[1]));
                     int ry = Math.abs(CommandBase.parseInt(args[2]));
                     int rz = Math.abs(CommandBase.parseInt(args[3]));
                     blockStats.calculateBlockStats(player.getEntityWorld(), player.getPosition(), rx, ry, rz);
-                    this.sendMessage(sender, "tellme.command.info.done");
+                    this.sendMessage(sender, "Done");
                 }
                 catch (NumberInvalidException e)
                 {
-                    throw new WrongUsageException("tellme.command.info.usage", pre + " count <x-distance> <y-distance> <z-distance>");
+                    throw new WrongUsageException("Usage: " + pre + " count <x-distance> <y-distance> <z-distance>");
                 }
             }
             // cuboid corners
@@ -132,21 +138,19 @@ public class SubCommandBlockStats extends SubCommand
                     BlockPos pos1 = CommandBase.parseBlockPos(player, args, 1, false);
                     BlockPos pos2 = CommandBase.parseBlockPos(player, args, 4, false);
 
-                    this.sendMessage(sender, "tellme.subcommand.blockstats.calculating");
+                    this.sendMessage(sender, "Calculating block statistics...");
                     blockStats.calculateBlockStats(player.getEntityWorld(), pos1, pos2);
-                    this.sendMessage(sender, "tellme.command.info.done");
+                    this.sendMessage(sender, "Done");
                 }
                 catch (NumberInvalidException e)
                 {
-                    throw new WrongUsageException("tellme.command.info.usage", pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
+                    throw new WrongUsageException("Usage: " + pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
                 }
             }
             else
             {
                 this.printUsageCount(sender);
-                this.printUsageDump(sender);
-                this.printUsageQuery(sender);
-                throw new CommandException("tellme.command.error.argument.invalid.number");
+                throw new CommandException("Invalid number of arguments!");
             }
         }
         // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
@@ -167,7 +171,7 @@ public class SubCommandBlockStats extends SubCommand
             if (args[0].equals("query"))
             {
                 DataDump.printDataToLogger(lines);
-                this.sendMessage(sender, "tellme.info.output.to.console");
+                this.sendMessage(sender, "Command output printed to console");
             }
             else // dump
             {

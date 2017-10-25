@@ -3,7 +3,10 @@ package fi.dy.masa.tellme.command;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -18,7 +21,9 @@ import fi.dy.masa.tellme.TellMe;
 public abstract class SubCommand implements ISubCommand
 {
     protected final CommandTellme baseCommand;
-    protected final ArrayList<String> subSubCommands = new ArrayList<String>();
+    protected final ArrayList<String> subSubCommands = new ArrayList<>();
+    private final Map<String, String> help = new HashMap<>();
+    private final Map<String, String> usage = new HashMap<>();
 
     public SubCommand(CommandTellme baseCommand)
     {
@@ -51,17 +56,32 @@ public abstract class SubCommand implements ISubCommand
     @Override
     public ITextComponent getHelp()
     {
-        if (this.subSubCommands.size() == 0)
-        {
-            return new TextComponentString("");
-        }
-
-        return new TextComponentTranslation("tellme.subcommand.info.available", String.join(", ", this.subSubCommands));
+        return new TextComponentString("Available sub-commands are: " + String.join(", ", this.subSubCommands));
     }
 
-    protected String getUsageCommon()
+    protected String getSubCommandUsagePre()
     {
         return "/" + this.getBaseCommand().getName() + " " + this.getName();
+    }
+
+    protected void addSubCommandUsage(String subCommand, String usage)
+    {
+        this.usage.put(subCommand, usage);
+    }
+
+    protected String getSubCommandUsage(String subCommand)
+    {
+        return this.usage.get(subCommand);
+    }
+
+    protected void addSubCommandHelp(String subCommand, String help)
+    {
+        this.help.put(subCommand, help);
+    }
+
+    protected String getSubCommandHelp(String subCommand)
+    {
+        return this.help.get(subCommand);
     }
 
     @Override
@@ -81,7 +101,7 @@ public abstract class SubCommand implements ISubCommand
             }
             else if (this.subSubCommands.contains(args[0]) == false)
             {
-                throw new WrongUsageException("tellme.subcommand.info.unknown", args[0]);
+                throw new WrongUsageException("Unknown sub command '" + args[0] + "'");
             }
         }
         // "/tellme sub-command help sub-sub-command"
@@ -89,15 +109,20 @@ public abstract class SubCommand implements ISubCommand
         {
             if (args[1].equals("help"))
             {
-                this.sendMessage(sender, "tellme.subcommand.info.help");
+                this.sendMessage(sender, "Gives information about the sub-commands");
             }
             else if (this.subSubCommands.contains(args[1]))
             {
-                this.sendMessage(sender, "tellme.subcommand." + this.getName() + ".info." + args[1]);
+                String str = this.getSubCommandHelp(args[1]);
+
+                if (StringUtils.isBlank(str) == false)
+                {
+                    this.sendMessage(sender, str);
+                }
             }
             else
             {
-                throw new WrongUsageException("tellme.subcommand.info.unknown", args[1]);
+                throw new WrongUsageException("Unknown sub command '" + args[1] + "'");
             }
         }
     }

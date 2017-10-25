@@ -11,6 +11,8 @@ public class SubCommandBiome extends SubCommand
     public SubCommandBiome(CommandTellme baseCommand)
     {
         super(baseCommand);
+
+        this.addSubCommandHelp("_generic", "Prints information about the current biome to chat");
     }
 
     @Override
@@ -22,14 +24,16 @@ public class SubCommandBiome extends SubCommand
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        super.execute(server, sender, args);
-
         if (args.length == 0)
         {
             if (sender instanceof EntityPlayer)
             {
                 BiomeDump.printCurrentBiomeInfoToChat((EntityPlayer) sender);
             }
+        }
+        else
+        {
+            throw new CommandException("Too many arguments");
         }
     }
 }

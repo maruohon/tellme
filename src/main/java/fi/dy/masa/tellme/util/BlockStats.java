@@ -33,22 +33,22 @@ public class BlockStats
     {
         if (pos1.getY() < 0 || pos2.getY() < 0)
         {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y < 0");
+            throw new WrongUsageException("Argument(s) out of range: y < 0");
         }
 
         if (pos1.getY() > 255 || pos2.getY() > 255)
         {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "y > 255");
+            throw new WrongUsageException("Argument(s) out of range: y > 255");
         }
 
         if (pos1.getX() < -30000000 || pos2.getX() < -30000000 || pos1.getZ() < -30000000 || pos2.getZ() < -30000000)
         {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z < -30M");
+            throw new WrongUsageException("Argument(s) out of range (world limits): x or z < -30M");
         }
 
         if (pos1.getX() > 30000000 || pos2.getX() > 30000000 || pos1.getZ() > 30000000 || pos2.getZ() > 30000000)
         {
-            throw new WrongUsageException("tellme.command.error.argument.outofrange.world", "x or z > 30M");
+            throw new WrongUsageException("Argument(s) out of range (world limits): x or z > 30M");
         }
 
         return true;
@@ -91,7 +91,7 @@ public class BlockStats
 
         if (this.checkChunksAreLoaded(world, pos1, pos2) == false)
         {
-            throw new WrongUsageException("tellme.subcommand.blockstats.error.chunksnotloaded");
+            throw new WrongUsageException("All the chunks for the requested area are not loaded, aborting");
         }
 
         int[] counts = new int[65536];

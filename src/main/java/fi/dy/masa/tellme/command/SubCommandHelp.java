@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.command;
 
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -26,17 +27,28 @@ public class SubCommandHelp extends SubCommand
     {
         if (args.length > 1)
         {
-            throw new CommandException("tellme.command.info.usage", this.getUsageCommon() + " <command>");
+            throw new CommandException("Usage: " + this.getSubCommandUsagePre() + " <sub-command>");
         }
 
         if (args.length == 1)
         {
-            this.sendMessage(sender, "tellme.subcommand." + args[0] + ".info.main");
+            System.out.printf("plop\n");
+            String str = this.getSubCommandHelp("_generic");
+
+            if (StringUtils.isBlank(str) == false)
+            {
+                this.sendMessage(sender, str);
+            }
+            else
+            {
+                this.sendMessage(sender, "No help available");
+            }
+
             return;
         }
 
         // args.length == 0, ie. "/tellme help"
-        this.sendMessage(sender, "tellme.command.info.commands.available");
+        this.sendMessage(sender, "Available commands are:");
         List<String> subCommands = this.getBaseCommand().getSubCommandList();
         Collections.sort(subCommands);
 

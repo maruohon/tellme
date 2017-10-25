@@ -1,9 +1,7 @@
 package fi.dy.masa.tellme.command;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -23,8 +21,6 @@ import fi.dy.masa.tellme.util.WorldUtils;
 
 public class SubCommandLoaded extends SubCommand
 {
-    private final Map<String, String> usage = new HashMap<String, String>();
-
     public SubCommandLoaded(CommandTellme baseCommand)
     {
         super(baseCommand);
@@ -37,13 +33,13 @@ public class SubCommandLoaded extends SubCommand
         this.subSubCommands.add("tileentities-in-area");
         this.subSubCommands.add("tileentities-in-chunk");
 
-        this.usage.put("dimensions",            "dimensions");
-        this.usage.put("entities-all",          "entities-all <all | by-chunk | by-type> <list | dump> [dimension]");
-        this.usage.put("entities-in-area",      "entities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
-        this.usage.put("entities-in-chunk",     "entities-in-chunk <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
-        this.usage.put("tileentities-all",      "tileentities-all <by-chunk | by-type> <list | dump> [dimension]");
-        this.usage.put("tileentities-in-area",  "tileentities-in-area <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
-        this.usage.put("tileentities-in-chunk", "tileentities-in-chunk <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
+        this.addSubCommandUsage("dimensions",               "dimensions");
+        this.addSubCommandUsage("entities-all",             "entities-all <all | by-chunk | by-type> <list | dump> [dimension]");
+        this.addSubCommandUsage("entities-in-area",         "entities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
+        this.addSubCommandUsage("entities-in-chunk",        "entities-in-chunk <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
+        this.addSubCommandUsage("tileentities-all",         "tileentities-all <by-chunk | by-type> <list | dump> [dimension]");
+        this.addSubCommandUsage("tileentities-in-area",     "tileentities-in-area <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
+        this.addSubCommandUsage("tileentities-in-chunk",    "tileentities-in-chunk <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
     }
 
     @Override
@@ -82,12 +78,12 @@ public class SubCommandLoaded extends SubCommand
 
         if (args.length < 1 || this.subSubCommands.contains(args[0]) == false)
         {
-            this.sendMessage(sender, "tellme.command.info.usage.noparam");
+            this.sendMessage(sender, "Usage:");
             //sender.sendMessage(new TextComponentString(pre + " chunks (not implemented yet)"));
 
             for (String cmd : this.subSubCommands)
             {
-                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
+                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
             }
 
             return;
@@ -110,7 +106,7 @@ public class SubCommandLoaded extends SubCommand
                 }
             }
 
-            this.sendMessage(sender, "tellme.info.output.to.console");
+            this.sendMessage(sender, "Command output printed to console");
             return;
         }
 
@@ -120,8 +116,8 @@ public class SubCommandLoaded extends SubCommand
         {
             if (args.length < 3 || args.length > 4)
             {
-                this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
+                this.sendMessage(sender, "Usage:");
+                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
                 return;
             }
 
@@ -133,8 +129,8 @@ public class SubCommandLoaded extends SubCommand
         {
             if (args.length < 7 || args.length > 8)
             {
-                this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
+                this.sendMessage(sender, "Usage:");
+                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
                 return;
             }
 
@@ -164,8 +160,8 @@ public class SubCommandLoaded extends SubCommand
         {
             if (args.length < 5 || args.length > 6)
             {
-                this.sendMessage(sender, "tellme.command.info.usage.noparam");
-                sender.sendMessage(new TextComponentString(pre + this.usage.get(cmd)));
+                this.sendMessage(sender, "Usage:");
+                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
                 return;
             }
 
@@ -195,7 +191,7 @@ public class SubCommandLoaded extends SubCommand
             if (outputType.equals("list"))
             {
                 DataDump.printDataToLogger(data);
-                this.sendMessage(sender, "tellme.info.output.to.console");
+                this.sendMessage(sender, "Command output printed to console");
             }
             else if (outputType.equals("dump"))
             {
@@ -204,7 +200,7 @@ public class SubCommandLoaded extends SubCommand
             }
             else
             {
-                throw new WrongUsageException("tellme.command.error.unknown.parameter", outputType);
+                throw new WrongUsageException("Unrecognized parameter: '" + outputType + "'");
             }
         }
     }
@@ -225,7 +221,7 @@ public class SubCommandLoaded extends SubCommand
 
         if (world == null)
         {
-            throw new WrongUsageException("tellme.command.error.world.not.loaded");
+            throw new WrongUsageException("The requested world is not currently loaded");
         }
 
         return world;

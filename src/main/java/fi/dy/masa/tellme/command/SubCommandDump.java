@@ -99,7 +99,7 @@ public class SubCommandDump extends SubCommand
 
         if (data.isEmpty())
         {
-            throw new WrongUsageException("tellme.command.error.unknown.parameter", arg);
+            throw new WrongUsageException("Unrecognized parameter: '" + arg + "'");
         }
 
         if (this.getName().startsWith("dump"))
@@ -123,7 +123,7 @@ public class SubCommandDump extends SubCommand
         else if (this.getName().startsWith("list"))
         {
             DataDump.printDataToLogger(data);
-            this.sendMessage(sender, "tellme.info.output.to.console");
+            this.sendMessage(sender, "Command output printed to console");
         }
     }
 

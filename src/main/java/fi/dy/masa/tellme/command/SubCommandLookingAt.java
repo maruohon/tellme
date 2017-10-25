@@ -7,7 +7,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextComponentString;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.RayTraceUtils;
@@ -63,7 +63,7 @@ public class SubCommandLookingAt extends SubCommand
         }
         else
         {
-            player.sendMessage(new TextComponentTranslation("tellme.command.error.notlookingatanything"));
+            player.sendMessage(new TextComponentString("Not currently looking at anything within range"));
         }
     }
 }
