@@ -54,8 +54,8 @@ public class TileEntitiesLister extends ChunkProcessor
     @Override
     public EntityCountDump createDump(World world)
     {
-        EntityCountDump dump = new EntityCountDump(4);
-        dump.addTitle("Chunk", "Tile", "Ticking", "Region");
+        EntityCountDump dump = new EntityCountDump(5);
+        dump.addTitle("Region", "Chunk", "Position", "Tile", "Ticking");
         dump.addHeader("Loaded TileEntities by chunk:");
 
         for (ChunkPos chunkPos : this.perChunkTiles.keySet())
@@ -67,10 +67,11 @@ public class TileEntitiesLister extends ChunkProcessor
             for (TileHolder holder : tiles)
             {
                 dump.addData(
+                        String.format("r.%d.%d", chunkPos.x >> 5, chunkPos.z >> 5),
                         String.format("[%5d, %5d]", chunkPos.x, chunkPos.z),
+                        String.format("x: %d, y: %d, z: %d", holder.pos.getX(), holder.pos.getY(), holder.pos.getZ()),
                         String.valueOf(holder.clazz.getName()),
-                        ITickable.class.isAssignableFrom(holder.clazz) ? "yes" : "no",
-                        String.format("r.%d.%d", chunkPos.x >> 5, chunkPos.z >> 5));
+                        ITickable.class.isAssignableFrom(holder.clazz) ? "yes" : "no");
             }
         }
 
