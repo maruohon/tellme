@@ -18,8 +18,7 @@ import fi.dy.masa.tellme.reference.Reference;
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION, certificateFingerprint = Reference.FINGERPRINT,
     guiFactory = "fi.dy.masa.tellme.config.TellMeGuiFactory",
     acceptableRemoteVersions = "*",
-    dependencies = "required-after:forge@[14.21.0.2363,);",
-    acceptedMinecraftVersions = "[1.12,1.12.2]")
+    acceptedMinecraftVersions = "1.12")
 public class TellMe
 {
     @Mod.Instance(Reference.MOD_ID)
