@@ -47,6 +47,7 @@ public class SubCommandBlockStats extends SubCommand
     private void printUsageCount(ICommandSender sender)
     {
         String pre = this.getSubCommandUsagePre();
+        sender.sendMessage(new TextComponentString(pre + " count all-loaded-chunks"));
         sender.sendMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
         sender.sendMessage(new TextComponentString(pre + " count <xMin> <yMin> <zMin> <xMax> <yMax> <zMax>"));
     }
@@ -72,9 +73,16 @@ public class SubCommandBlockStats extends SubCommand
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "count", "dump", "query");
         }
-        else if (args.length == 2 && (args[0].equals("dump") || args[0].equals("query")))
+        else if (args.length == 2)
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
+            if (args[0].equals("dump") || args[0].equals("query"))
+            {
+                return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
+            }
+            else if (args[0].equals("count"))
+            {
+                return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks");
+            }
         }
 
         return Collections.emptyList();
@@ -146,6 +154,12 @@ public class SubCommandBlockStats extends SubCommand
                 {
                     throw new WrongUsageException("Usage: " + pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
                 }
+            }
+            else if (args.length == 2 && args[1].equals("all-loaded-chunks"))
+            {
+                this.sendMessage(sender, "Calculating block statistics...");
+                blockStats.calculateBlockStatsForAllLoadedChunks(player.getEntityWorld());
+                this.sendMessage(sender, "Done");
             }
             else
             {

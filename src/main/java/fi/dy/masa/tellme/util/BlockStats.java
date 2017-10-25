@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.util;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
@@ -77,7 +78,46 @@ public class BlockStats
         this.calculateBlockStats(world, pos1, pos2);
     }
 
-    @SuppressWarnings("deprecation")
+    public void calculateBlockStatsForAllLoadedChunks(World world)
+    {
+        Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
+
+        final int[] counts = new int[65536];
+        int count = 0;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+        final long timeBefore = System.currentTimeMillis();
+
+        for (Chunk chunk : loadedChunks)
+        {
+            final int xMax = (chunk.x << 4) + 15;
+            final int zMax = (chunk.z << 4) + 15;
+            final int yMax = chunk.getTopFilledSegment() + 15;
+
+            for (int z = (chunk.z << 4); z <= zMax; ++z)
+            {
+                for (int x = (chunk.x << 4); x <= xMax; ++x)
+                {
+                    for (int y = 0; y <= yMax; ++y)
+                    {
+                        pos.setPos(x, y, z);
+                        IBlockState state = chunk.getBlockState(pos);
+
+                        @SuppressWarnings("deprecation")
+                        int id = Block.BLOCK_STATE_IDS.get(state);
+                        counts[id]++;
+                        count++;
+                    }
+                }
+            }
+        }
+
+        final long timeAfter = System.currentTimeMillis();
+        TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks %.3f seconds.",
+                count, loadedChunks.size(), (timeAfter - timeBefore) / 1000f));
+
+        this.addParsedData(counts);
+    }
+
     public void calculateBlockStats(World world, BlockPos pos1, BlockPos pos2) throws CommandException
     {
         Pair<BlockPos, BlockPos> pair = this.getCorners(pos1, pos2);
@@ -94,9 +134,9 @@ public class BlockStats
             throw new WrongUsageException("All the chunks for the requested area are not loaded, aborting");
         }
 
-        int[] counts = new int[65536];
+        final int[] counts = new int[65536];
         int count = 0;
-        long timeBefore = System.currentTimeMillis();
+        final long timeBefore = System.currentTimeMillis();
 
         final int x1 = pos1.getX();
         final int y1 = pos1.getY();
@@ -126,7 +166,9 @@ public class BlockStats
                             pos.setPos(x, y, z);
                             IBlockState state = chunk.getBlockState(pos);
 
-                            counts[Block.BLOCK_STATE_IDS.get(state)]++;
+                            @SuppressWarnings("deprecation")
+                            int id = Block.BLOCK_STATE_IDS.get(state);
+                            counts[id]++;
                             count++;
                         }
                     }
@@ -134,9 +176,14 @@ public class BlockStats
             }
         }
 
-        long timeAfter = System.currentTimeMillis();
+        final long timeAfter = System.currentTimeMillis();
         TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %.3f seconds.", count, (timeAfter - timeBefore) / 1000f));
 
+        this.addParsedData(counts);
+    }
+
+    private void addParsedData(final int[] counts)
+    {
         this.blockStats.clear();
 
         for (int i = 0; i < counts.length; ++i)
@@ -145,6 +192,7 @@ public class BlockStats
             {
                 try
                 {
+                    @SuppressWarnings("deprecation")
                     IBlockState state = Block.BLOCK_STATE_IDS.getByValue(i);
                     Block block = state.getBlock();
                     String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
@@ -229,9 +277,10 @@ public class BlockStats
             }
         }
 
-        dump.addTitle("Registry name", "Block ID", "Meta", "Display name", "Count");
+        dump.addTitle("Registry name", "ID", "meta", "Display name", "Count");
         dump.addHeader("NOTE: The Block ID is for very specific low-level purposes only!");
-        dump.addHeader("It WILL be different in every world since Minecraft 1.7, because they are dynamically allocated by the game!");
+        dump.addHeader("It WILL be different in every world since Minecraft 1.7,");
+        dump.addHeader("because they are dynamically allocated by the game!");
 
         dump.setColumnProperties(1, Alignment.RIGHT, true); // Block ID
         dump.setColumnProperties(2, Alignment.RIGHT, true); // meta
