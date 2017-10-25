@@ -37,9 +37,9 @@ public class SubCommandLoaded extends SubCommand
         this.addSubCommandUsage("entities-all",             "entities-all <all | by-chunk | by-type> <list | dump> [dimension]");
         this.addSubCommandUsage("entities-in-area",         "entities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
         this.addSubCommandUsage("entities-in-chunk",        "entities-in-chunk <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
-        this.addSubCommandUsage("tileentities-all",         "tileentities-all <by-chunk | by-type> <list | dump> [dimension]");
-        this.addSubCommandUsage("tileentities-in-area",     "tileentities-in-area <by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
-        this.addSubCommandUsage("tileentities-in-chunk",    "tileentities-in-chunk <by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
+        this.addSubCommandUsage("tileentities-all",         "tileentities-all <all | by-chunk | by-type> <list | dump> [dimension]");
+        this.addSubCommandUsage("tileentities-in-area",     "tileentities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
+        this.addSubCommandUsage("tileentities-in-chunk",    "tileentities-in-chunk <all | by-chunk | by-type> <list | dump> <chunkX> <chunkZ> [dimension]");
     }
 
     @Override
@@ -53,17 +53,16 @@ public class SubCommandLoaded extends SubCommand
     {
         String cmd = args[0];
 
-        if (args.length == 2 && cmd.startsWith("tileentities"))
+        if (cmd.equals("dimensions") == false && this.subSubCommands.contains(cmd))
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "by-chunk", "by-type");
-        }
-        else if (args.length == 2 && cmd.startsWith("entities"))
-        {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "all", "by-chunk", "by-type");
-        }
-        else if (args.length == 3 && cmd.contains("entities"))
-        {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "dump", "list");
+            if (args.length == 2)
+            {
+                return CommandBase.getListOfStringsMatchingLastWord(args, "all", "by-chunk", "by-type");
+            }
+            else if (args.length == 3)
+            {
+                return CommandBase.getListOfStringsMatchingLastWord(args, "dump", "list");
+            }
         }
 
         return super.getTabCompletions(server, sender, args);
@@ -172,8 +171,8 @@ public class SubCommandLoaded extends SubCommand
             if (senderEntity != null)
             {
                 Vec3d senderPos = senderEntity.getPositionVector();
-                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.x, args[3], false).getResult()) >> 4,
-                                   ((int) CommandBase.parseCoordinate(senderPos.z, args[4], false).getResult()) >> 4);
+                pos = new ChunkPos(((int) CommandBase.parseCoordinate(senderPos.x, args[3], false).getResult()),
+                                   ((int) CommandBase.parseCoordinate(senderPos.z, args[4], false).getResult()));
             }
             else
             {
@@ -233,10 +232,14 @@ public class SubCommandLoaded extends SubCommand
         {
             if (arg.equals("by-chunk"))
             {
-                return EntityListType.TILEENTITIES_BY_CHUNK;
+                return EntityListType.TILE_ENTITIES_BY_CHUNK;
+            }
+            else if (arg.equals("by-type"))
+            {
+                return EntityListType.TILE_ENTITIES_BY_TYPE;
             }
 
-            return EntityListType.TILEENTITIES_BY_TYPE;
+            return EntityListType.ALL_TILE_ENTITIES;
         }
         else
         {

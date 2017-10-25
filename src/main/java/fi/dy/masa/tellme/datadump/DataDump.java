@@ -84,7 +84,7 @@ public class DataDump
         return this;
     }
 
-    protected DataDump setColumnAlignment(int columnId, Alignment align)
+    public DataDump setColumnAlignment(int columnId, Alignment align)
     {
         if (columnId >= this.columns)
         {
@@ -106,27 +106,27 @@ public class DataDump
         return this;
     }
 
-    protected Format getFormat()
+    public Format getFormat()
     {
         return this.format;
     }
 
-    protected void setFormat(Format format)
+    public void setFormat(Format format)
     {
         this.format = format;
     }
 
-    protected void setSort(boolean sort)
+    public void setSort(boolean sort)
     {
         this.sort = sort;
     }
 
-    protected void setCenterTitle(boolean center)
+    public void setCenterTitle(boolean center)
     {
         this.centerTitle = center;
     }
 
-    protected void setRepeatTitleAtBottom(boolean repeat)
+    public void setRepeatTitleAtBottom(boolean repeat)
     {
         this.repeatTitleAtBottom = repeat;
     }
@@ -146,6 +146,12 @@ public class DataDump
     {
         this.checkHeaderData(data);
         this.headers.add(new Row(data));
+    }
+
+    public void addHeader(int index, String... data)
+    {
+        this.checkHeaderData(data);
+        this.headers.add(index, new Row(data));
     }
 
     public void addFooter(String... data)

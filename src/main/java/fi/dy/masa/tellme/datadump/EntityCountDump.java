@@ -1,552 +1,123 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.util.EntityInfo;
-import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessor;
+import fi.dy.masa.tellme.util.chunkprocessor.EntitiesLister;
+import fi.dy.masa.tellme.util.chunkprocessor.EntitiesPerChunkCounter;
+import fi.dy.masa.tellme.util.chunkprocessor.EntitiesPerTypeCounter;
+import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesLister;
+import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesPerChunkCounter;
+import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesPerTypeCounter;
 
 public class EntityCountDump extends DataDump
 {
-    protected int emptyChunks;
-    protected int unloadedChunks;
-    private ChunkProcessor counter;
-    private String strFooter;
-
-    private EntityCountDump(int columns)
+    public EntityCountDump(int columns)
     {
         super(columns);
 
         this.setSort(false);
         this.setRepeatTitleAtBottom(false);
+        this.setUseColumnSeparator(true);
     }
 
-    private static EntityCountDump initDump(EntityListType type)
+    private static ChunkProcessor createChunkProcessor(EntityListType type)
     {
-        EntityCountDump entityCountDump = null;
-
-        if (type == EntityListType.ENTITIES_BY_TYPE)
+        switch (type)
         {
-            entityCountDump = new EntityCountDump(2);
-            entityCountDump.counter = new EntitiesPerTypeCounter();
-            entityCountDump.addHeader("Loaded entities by entity type");
-            entityCountDump.addTitle("Entity type", "Count");
-            entityCountDump.strFooter = "with no entities.";
-        }
-        else if (type == EntityListType.ENTITIES_BY_CHUNK)
-        {
-            entityCountDump = new EntityCountDump(2);
-            entityCountDump.counter = new EntitiesPerChunkCounter();
-            entityCountDump.addHeader("Loaded entities by chunk");
-            entityCountDump.addTitle("Chunk", "Count");
-            entityCountDump.strFooter = "with no entities.";
-        }
-        else if (type == EntityListType.ALL_ENTITIES)
-        {
-            entityCountDump = new EntityCountDump(5);
-            entityCountDump.counter = new AllEntitiesLister();
-            entityCountDump.addHeader("All currently loaded entities");
-            entityCountDump.addTitle("Name", "Health", "Location", "Chunk", "Region");
-            entityCountDump.strFooter = "with no entities.";
-            entityCountDump.setColumnAlignment(1, Alignment.RIGHT); // health
-            entityCountDump.setSort(true);
-        }
-        else if (type == EntityListType.TILEENTITIES_BY_TYPE)
-        {
-            entityCountDump = new EntityCountDump(3);
-            entityCountDump.counter = new TileEntitiesPerTypeCounter();
-            entityCountDump.addHeader("Loaded TileEntities by type");
-            entityCountDump.addTitle("TileEntity type", "Count", "Is ticking?");
-            entityCountDump.strFooter = "with no TileEntities.";
-        }
-        else if (type == EntityListType.TILEENTITIES_BY_CHUNK)
-        {
-            entityCountDump = new EntityCountDump(3);
-            entityCountDump.counter = new TileEntitiesPerChunkCounter();
-            entityCountDump.addHeader("Loaded TileEntities by chunk");
-            entityCountDump.addTitle("Chunk", "Total Count", "Ticking");
-            entityCountDump.strFooter = "with no TileEntities.";
+            case ALL_ENTITIES:              return new EntitiesLister();
+            case ENTITIES_BY_TYPE:          return new EntitiesPerTypeCounter();
+            case ENTITIES_BY_CHUNK:         return new EntitiesPerChunkCounter();
+            case ALL_TILE_ENTITIES:         return new TileEntitiesLister();
+            case TILE_ENTITIES_BY_TYPE:     return new TileEntitiesPerTypeCounter();
+            case TILE_ENTITIES_BY_CHUNK:    return new TileEntitiesPerChunkCounter();
         }
 
-        return entityCountDump;
+        return null;
     }
 
     public static List<String> getFormattedEntityCountDumpAll(World world, EntityListType type)
     {
-        EntityCountDump entityCountDump = initDump(type);
+        ChunkProcessor processor = createChunkProcessor(type);
 
-        entityCountDump.processAllLoadedChunks(world, entityCountDump.counter);
-        entityCountDump.setUseColumnSeparator(true);
+        processor.processAllLoadedChunks(world);
 
-        entityCountDump.addHeader(String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), world.provider.getDimension()));
-        entityCountDump.addHeader(String.format("Loaded chunks: %d", WorldUtils.getLoadedChunkCount(world)));
+        EntityCountDump dump = processor.createDump(world);
+        //final int loadedChunks = WorldUtils.getLoadedChunkCount(world);
+        final int loadedChunks = processor.getLoadedChunkCount();
+        final int zeroCount = processor.getChunksWithZeroCount();
 
-        if (entityCountDump.emptyChunks != 0)
+        dump.addHeader(0, String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), world.provider.getDimension()));
+        dump.addHeader(1, String.format("Loaded chunks: %d", loadedChunks));
+
+        if (zeroCount != 0)
         {
-            entityCountDump.addFooter(String.format("There were %d loaded chunks %s", entityCountDump.emptyChunks, entityCountDump.strFooter));
+            dump.addFooter(String.format("Out of %d loaded chunks in total,", loadedChunks));
+            dump.addFooter(String.format("there were %d chunks with no %s.", zeroCount, type.getTypeNamePlural()));
         }
 
-        return entityCountDump.getLines();
+        return dump.getLines();
     }
 
     public static List<String> getFormattedEntityCountDumpArea(World world, EntityListType type, ChunkPos pos1In, ChunkPos pos2In)
     {
-        EntityCountDump entityCountDump = initDump(type);
         ChunkPos pos1 = new ChunkPos(Math.min(pos1In.x, pos2In.x), Math.min(pos1In.z, pos2In.z));
         ChunkPos pos2 = new ChunkPos(Math.max(pos1In.x, pos2In.x), Math.max(pos1In.z, pos2In.z));
+        ChunkProcessor processor = createChunkProcessor(type);
 
-        entityCountDump.processChunksInArea(world, entityCountDump.counter, pos1, pos2);
-        entityCountDump.setUseColumnSeparator(true);
+        processor.processChunksInArea(world,pos1, pos2);
 
-        entityCountDump.addHeader(String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), world.provider.getDimension()));
+        EntityCountDump dump = processor.createDump(world);
+        final int loadedChunks = processor.getLoadedChunkCount();
+        final int unloadedChunks = processor.getUnloadedChunkCount();
+        final int zeroCount = processor.getChunksWithZeroCount();
+
+        dump.addHeader(0, String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), world.provider.getDimension()));
+        dump.addHeader(1, String.format("The selected area contains %d loaded chunks", loadedChunks));
 
         if (pos1.equals(pos2))
         {
-            entityCountDump.addHeader(String.format("Chunk: [%d, %d]", pos1.x, pos1.z));
+            dump.addHeader(2, String.format("Chunk: [%d, %d]", pos1.x, pos1.z));
         }
         else
         {
-            entityCountDump.addHeader(String.format("Chunks: [%d, %d] to [%d, %d]", pos1.x, pos1.z, pos2.x, pos2.z));
+            dump.addHeader(2, String.format("Chunks: [%d, %d] to [%d, %d]", pos1.x, pos1.z, pos2.x, pos2.z));
         }
 
-        if (entityCountDump.emptyChunks != 0)
+        if (zeroCount != 0)
         {
-            entityCountDump.addFooter(String.format("There were %d chunks in the selected area %s", entityCountDump.emptyChunks, entityCountDump.strFooter));
+            dump.addFooter(String.format("Out of %d loaded chunks in total in the selected area,", loadedChunks));
+            dump.addFooter(String.format("there were %d chunks with no %s.", zeroCount, type.getTypeNamePlural()));
         }
 
-        if (entityCountDump.unloadedChunks != 0)
+        if (unloadedChunks != 0)
         {
-            entityCountDump.addFooter(String.format("There were %d unloaded chunks in the selected area.", entityCountDump.unloadedChunks));
+            dump.addFooter(String.format("There were also %d unloaded chunks in the selected area.", unloadedChunks));
         }
 
-        return entityCountDump.getLines();
-    }
-
-    private void processAllLoadedChunks(World world, ChunkProcessor chunkProcessor)
-    {
-        Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
-
-        for (Chunk chunk : loadedChunks)
-        {
-            chunkProcessor.processChunk(chunk);
-        }
-
-        chunkProcessor.getData(this);
-        this.emptyChunks = chunkProcessor.emptyChunks;
-    }
-
-    private void processChunksInArea(World world, ChunkProcessor chunkProcessor, ChunkPos pos1, ChunkPos pos2)
-    {
-        IChunkProvider provider = world.getChunkProvider();
-
-        for (int chunkZ = pos1.z; chunkZ <= pos2.z; chunkZ++)
-        {
-            for (int chunkX = pos1.x; chunkX <= pos2.x; chunkX++)
-            {
-                Chunk chunk = provider.getLoadedChunk(chunkX, chunkZ);
-
-                if (chunk != null)
-                {
-                    chunkProcessor.processChunk(chunk);
-                }
-                else
-                {
-                    this.unloadedChunks++;
-                }
-            }
-        }
-
-        chunkProcessor.getData(this);
-        this.emptyChunks = chunkProcessor.emptyChunks;
-    }
-
-    public static abstract class ChunkProcessor
-    {
-        protected int emptyChunks;
-
-        public abstract void processChunk(Chunk chunk);
-
-        public abstract void getData(EntityCountDump dump);
-    }
-
-    public static class EntitiesPerTypeCounter extends ChunkProcessor
-    {
-        private Map<Class <? extends Entity>, Integer> perTypeCount = new HashMap<Class <? extends Entity>, Integer>();
-        private int totalCount;
-
-        @Override
-        public void processChunk(Chunk chunk)
-        {
-            ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
-            int total = 0;
-
-            for (int i = 0; i < entityLists.length; i++)
-            {
-                Iterator<Entity> iter = entityLists[i].iterator();
-                total += entityLists[i].size();
-
-                while (iter.hasNext())
-                {
-                    Entity entity = iter.next();
-                    Integer countInt = this.perTypeCount.get(entity.getClass());
-                    int count = countInt != null ? countInt + 1 : 1;
-                    this.perTypeCount.put(entity.getClass(), count);
-                }
-            }
-
-            if (total == 0)
-            {
-                this.emptyChunks++;
-            }
-
-            this.totalCount += total;
-        }
-
-        @Override
-        public void getData(EntityCountDump dump)
-        {
-            List<EntitiesPerTypeHolder> counts = new ArrayList<EntitiesPerTypeHolder>();
-
-            for (Class <? extends Entity> clazz : this.perTypeCount.keySet())
-            {
-                counts.add(new EntitiesPerTypeHolder(clazz, this.perTypeCount.get(clazz)));
-            }
-
-            Collections.sort(counts);
-
-            for (EntitiesPerTypeHolder holder : counts)
-            {
-                dump.addData(EntityInfo.getEntityNameFromClass(holder.clazz), String.valueOf(holder.count));
-            }
-
-            dump.addFooter(String.format("In total there were %d loaded entities.", this.totalCount));
-        }
-    }
-
-    public static class EntitiesPerChunkCounter extends ChunkProcessor
-    {
-        private Map<ChunkPos, Integer> perChunkCount = new HashMap<ChunkPos, Integer>();
-        private int totalCount;
-
-        @Override
-        public void processChunk(Chunk chunk)
-        {
-            ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
-            int total = 0;
-
-            for (int i = 0; i < entityLists.length; i++)
-            {
-                total += entityLists[i].size();
-            }
-
-            if (total == 0)
-            {
-                this.emptyChunks++;
-            }
-            else
-            {
-                this.perChunkCount.put(chunk.getPos(), total);
-                this.totalCount += total;
-            }
-        }
-
-        @Override
-        public void getData(EntityCountDump dump)
-        {
-            List<CountsPerChunkHolder> counts = new ArrayList<CountsPerChunkHolder>();
-
-            for (ChunkPos pos : this.perChunkCount.keySet())
-            {
-                counts.add(new CountsPerChunkHolder(pos, this.perChunkCount.get(pos)));
-            }
-
-            Collections.sort(counts);
-
-            for (CountsPerChunkHolder holder : counts)
-            {
-                dump.addData(String.format("[%5d, %5d]", holder.pos.x, holder.pos.z), String.valueOf(holder.count));
-            }
-
-            dump.addFooter(String.format("In total there were %d loaded entities.", this.totalCount));
-        }
-    }
-
-    private static class AllEntitiesLister extends ChunkProcessor
-    {
-        private List<Entity> entities = new ArrayList<Entity>();
-        private int totalCount;
-
-        @Override
-        public void processChunk(Chunk chunk)
-        {
-            ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
-            int total = 0;
-
-            for (int i = 0; i < entityLists.length; i++)
-            {
-                Iterator<Entity> iter = entityLists[i].iterator();
-
-                while (iter.hasNext())
-                {
-                    this.entities.add(iter.next());
-                }
-
-                total += entityLists[i].size();
-            }
-
-            if (total == 0)
-            {
-                this.emptyChunks++;
-            }
-            else
-            {
-                this.totalCount += total;
-            }
-        }
-
-        @Override
-        public void getData(EntityCountDump dump)
-        {
-            for (Entity entity : this.entities)
-            {
-                BlockPos pos = entity.getPosition();
-
-                dump.addData(
-                        entity.getName(),
-                        entity instanceof EntityLivingBase ? String.format("%.2f", ((EntityLivingBase) entity).getHealth()) : "-",
-                        String.format("x = %8.2f, y = %8.2f, z = %8.2f", entity.posX, entity.posY, entity.posZ),
-                        String.format("[%5d, %5d]", pos.getX() >> 4, pos.getZ() >> 4),
-                        String.format("r.%d.%d", pos.getX() >> 9, pos.getZ() >> 9));
-            }
-
-            dump.addFooter(String.format("In total there were %d loaded entities.", this.totalCount));
-        }
-    }
-
-    public static class TileEntitiesPerTypeCounter extends ChunkProcessor
-    {
-        private Map<Class <? extends TileEntity>, Integer> perTypeCount = new HashMap<Class <? extends TileEntity>, Integer>();
-        private int totalCount;
-
-        @Override
-        public void processChunk(Chunk chunk)
-        {
-            Map<BlockPos, TileEntity> map = chunk.getTileEntityMap();
-            int total = map.size();
-
-            for (TileEntity te : map.values())
-            {
-                Integer countInt = this.perTypeCount.get(te.getClass());
-                int count = countInt != null ? countInt + 1 : 1;
-                this.perTypeCount.put(te.getClass(), count);
-            }
-
-            if (total == 0)
-            {
-                this.emptyChunks++;
-            }
-
-            this.totalCount += total;
-        }
-
-        @Override
-        public void getData(EntityCountDump dump)
-        {
-            List<TileEntitiesPerTypeHolder> counts = new ArrayList<TileEntitiesPerTypeHolder>();
-
-            for (Class <? extends TileEntity> clazz : this.perTypeCount.keySet())
-            {
-                counts.add(new TileEntitiesPerTypeHolder(clazz, this.perTypeCount.get(clazz)));
-            }
-
-            Collections.sort(counts);
-
-            for (TileEntitiesPerTypeHolder holder : counts)
-            {
-                String ticking = ITickable.class.isAssignableFrom(holder.clazz) ? "true" : "false";
-                dump.addData(holder.clazz.getName(), String.valueOf(holder.count), ticking);
-            }
-
-            dump.addFooter(String.format("In total there were %d loaded TileEntities.", this.totalCount));
-        }
-    }
-
-    public static class TileEntitiesPerChunkCounter extends ChunkProcessor
-    {
-        private Map<ChunkPos, Integer> perChunkTotalCount = new HashMap<ChunkPos, Integer>();
-        private Map<ChunkPos, Integer> perChunkTickingCount = new HashMap<ChunkPos, Integer>();
-        private int totalCount;
-        private int tickingCount;
-
-        @Override
-        public void processChunk(Chunk chunk)
-        {
-            Map<BlockPos, TileEntity> map = chunk.getTileEntityMap();
-            ChunkPos pos = chunk.getPos();
-            int count = chunk.getTileEntityMap().size();
-
-            if (count == 0)
-            {
-                this.emptyChunks++;
-            }
-            else
-            {
-                int tickingCount = 0;
-
-                for (TileEntity te : map.values())
-                {
-                    if (te instanceof ITickable)
-                    {
-                        tickingCount++;
-                    }
-                }
-
-                this.perChunkTotalCount.put(pos, count);
-                this.perChunkTickingCount.put(pos, tickingCount);
-                this.totalCount += count;
-                this.tickingCount += tickingCount;
-            }
-        }
-
-        @Override
-        public void getData(EntityCountDump dump)
-        {
-            List<TileEntityCountsPerChunkHolder> counts = new ArrayList<TileEntityCountsPerChunkHolder>();
-
-            for (ChunkPos pos : this.perChunkTotalCount.keySet())
-            {
-                counts.add(new TileEntityCountsPerChunkHolder(pos, this.perChunkTotalCount.get(pos), this.perChunkTickingCount.get(pos)));
-            }
-
-            Collections.sort(counts);
-
-            for (TileEntityCountsPerChunkHolder holder : counts)
-            {
-                dump.addData(String.format("[%5d, %5d]", holder.pos.x, holder.pos.z),
-                        String.valueOf(holder.count), String.valueOf(holder.tickingCount));
-            }
-
-            dump.addFooter(String.format("In total there were %d loaded", this.totalCount));
-            dump.addFooter(String.format("TileEntities, of which %d are ticking.", this.tickingCount));
-        }
-    }
-
-    public static class EntitiesPerTypeHolder implements Comparable<EntitiesPerTypeHolder>
-    {
-        public final Class <? extends Entity> clazz;
-        public final int count;
-
-        public EntitiesPerTypeHolder(Class <? extends Entity> clazz, int count)
-        {
-            this.clazz = clazz;
-            this.count = count;
-        }
-
-        @Override
-        public int compareTo(EntitiesPerTypeHolder other)
-        {
-            if (this.count == other.count)
-            {
-                String nameThis = EntityInfo.getEntityNameFromClass(this.clazz);
-                String nameOther = EntityInfo.getEntityNameFromClass(other.clazz);
-
-                if (nameThis == null)
-                {
-                    nameThis = this.clazz.getSimpleName();
-                }
-
-                if (nameOther == null)
-                {
-                    nameOther = other.clazz.getSimpleName();
-                }
-
-                return nameThis.compareTo(nameOther);
-            }
-
-            return this.count > other.count ? -1 : 1;
-        }
-    }
-
-    public static class CountsPerChunkHolder implements Comparable<CountsPerChunkHolder>
-    {
-        public final ChunkPos pos;
-        public final int count;
-
-        public CountsPerChunkHolder(ChunkPos pos, int count)
-        {
-            this.pos = pos;
-            this.count = count;
-        }
-
-        @Override
-        public int compareTo(CountsPerChunkHolder other)
-        {
-            if (this.count == other.count)
-            {
-                return 0;
-            }
-
-            return this.count > other.count ? -1 : 1;
-        }
-    }
-
-    public static class TileEntityCountsPerChunkHolder extends CountsPerChunkHolder
-    {
-        public final int tickingCount;
-
-        public TileEntityCountsPerChunkHolder(ChunkPos pos, int totalCount, int tickingCount)
-        {
-            super(pos, totalCount);
-            this.tickingCount = tickingCount;
-        }
-    }
-
-    public static class TileEntitiesPerTypeHolder implements Comparable<TileEntitiesPerTypeHolder>
-    {
-        public final Class <? extends TileEntity> clazz;
-        public final int count;
-
-        public TileEntitiesPerTypeHolder(Class <? extends TileEntity> clazz, int count)
-        {
-            this.clazz = clazz;
-            this.count = count;
-        }
-
-        @Override
-        public int compareTo(TileEntitiesPerTypeHolder other)
-        {
-            if (this.count == other.count)
-            {
-                String nameThis = this.clazz.getName();
-                String nameOther = other.clazz.getName();
-                return nameThis.compareTo(nameOther);
-            }
-
-            return this.count > other.count ? -1 : 1;
-        }
+        return dump.getLines();
     }
 
     public enum EntityListType
     {
-        ENTITIES_BY_TYPE,
-        ENTITIES_BY_CHUNK,
-        ALL_ENTITIES,
-        TILEENTITIES_BY_TYPE,
-        TILEENTITIES_BY_CHUNK;
+        ALL_ENTITIES            ("entities"),
+        ENTITIES_BY_TYPE        ("entities"),
+        ENTITIES_BY_CHUNK       ("entities"),
+        ALL_TILE_ENTITIES       ("TileEntities"),
+        TILE_ENTITIES_BY_TYPE   ("TileEntities"),
+        TILE_ENTITIES_BY_CHUNK  ("TileEntities");
+
+        private final String typeNamePlural;
+
+        private EntityListType(String typeNamePlural)
+        {
+            this.typeNamePlural = typeNamePlural;
+        }
+
+        public String getTypeNamePlural()
+        {
+            return this.typeNamePlural;
+        }
     }
 }
