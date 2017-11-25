@@ -7,7 +7,11 @@ import javax.annotation.Nonnull;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -24,31 +28,11 @@ public class ItemInfo
         return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
     }
 
-    private static List<String> getBasicItemInfo(@Nonnull ItemStack stack)
-    {
-        List<String> lines = new ArrayList<String>();
-        String name = Item.REGISTRY.getNameForObject(stack.getItem()).toString();
-        String dname = stack.getDisplayName();
-        String nbtInfo;
-
-        if (stack.hasTagCompound())
-        {
-            nbtInfo = "has NBT data";
-        }
-        else
-        {
-            nbtInfo = "no NBT data";
-        }
-
-        String fmt = "%s (%s - %d:%d) %s";
-        lines.add(String.format(fmt, dname, name, Item.getIdFromItem(stack.getItem()), stack.getItemDamage(), nbtInfo));
-
-        return lines;
-    }
-
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)
     {
-        List<String> lines = getBasicItemInfo(stack);
+        List<String> lines = new ArrayList<>();
+        lines.add(ItemData.getFor(stack).toString());
+
         if (stack.hasTagCompound() == false)
         {
             return lines;
@@ -64,10 +48,7 @@ public class ItemInfo
 
     public static void printBasicItemInfoToChat(EntityPlayer player, @Nonnull ItemStack stack)
     {
-        for (String line : getBasicItemInfo(stack))
-        {
-            player.sendMessage(new TextComponentString(line));
-        }
+        player.sendMessage(ItemData.getFor(stack).toChatMessage());
     }
 
     public static void printItemInfoToConsole(@Nonnull ItemStack stack)
@@ -97,6 +78,64 @@ public class ItemInfo
         else
         {
             printItemInfoToConsole(stack);
+        }
+    }
+
+    public static class ItemData
+    {
+        private final String regName;
+        private final int id;
+        private final int meta;
+        private final String displayName;
+        private final String nbtInfo;
+
+        public ItemData(String displayName, String regName, int id, int meta, String nbtInfo)
+        {
+            this.displayName = displayName;
+            this.regName = regName;
+            this.id = id;
+            this.meta = meta;
+            this.nbtInfo = nbtInfo;
+        }
+
+        public static ItemData getFor(ItemStack stack)
+        {
+            String registryName = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+            String nbtInfo;
+
+            if (stack.hasTagCompound())
+            {
+                nbtInfo = "has NBT data";
+            }
+            else
+            {
+                nbtInfo = "no NBT data";
+            }
+
+            return new ItemData(stack.getDisplayName(), registryName, Item.getIdFromItem(stack.getItem()), stack.getMetadata(), nbtInfo);
+        }
+
+        public ITextComponent toChatMessage()
+        {
+            String copyStr = this.meta != 0 ? this.regName + ":" + this.meta : this.regName;
+
+            TextComponentString copy = new TextComponentString(this.regName);
+            copy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyStr));
+            copy.getStyle().setUnderlined(Boolean.valueOf(true));
+
+            TextComponentString hoverText = new TextComponentString(String.format("Copy the string '%s' to clipboard", copyStr));
+            copy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+
+            TextComponentString full = new TextComponentString(String.format("%s (", this.displayName));
+            full.appendSibling(copy).appendText(String.format(" - %d:%d) %s", this.id, this.meta, this.nbtInfo));
+
+            return full;
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format("%s (%s - %d:%d) %s", this.displayName, this.regName, this.id, this.meta, this.nbtInfo);
         }
     }
 }

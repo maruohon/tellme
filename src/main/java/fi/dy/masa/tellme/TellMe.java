@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import fi.dy.masa.tellme.command.CommandTellme;
 import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.event.InteractEventHandler;
+import fi.dy.masa.tellme.network.PacketHandler;
 import fi.dy.masa.tellme.proxy.CommonProxy;
 import fi.dy.masa.tellme.reference.Reference;
 
@@ -39,6 +40,8 @@ public class TellMe
         MinecraftForge.EVENT_BUS.register(new InteractEventHandler());
         proxy.registerClientCommand();
         proxy.registerEventHandlers();
+
+        PacketHandler.init();
     }
 
     @Mod.EventHandler

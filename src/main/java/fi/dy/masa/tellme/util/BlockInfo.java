@@ -15,7 +15,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
@@ -24,73 +27,35 @@ import fi.dy.masa.tellme.datadump.DataDump;
 
 public class BlockInfo
 {
-    private static List<String> getBasicBlockInfo(EntityPlayer player, World world, BlockPos pos)
+    private static String getTileInfo(World world, BlockPos pos)
     {
-        List<String> lines = new ArrayList<String>();
-
-        if (world == null)
-        {
-            return lines;
-        }
-
-        IBlockState iBlockState = world.getBlockState(pos);
-        iBlockState = iBlockState.getActualState(world, pos);
-        Block block = iBlockState.getBlock();
-
-        int id = Block.getIdFromBlock(block);
-        int meta = block.getMetaFromState(iBlockState);
-        ItemStack stack = new ItemStack(block, 1, block.damageDropped(iBlockState));
-        //ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
-        String name = ForgeRegistries.BLOCKS.getKey(block).toString();
-        String dname;
-
-        if (stack.isEmpty() == false)
-        {
-            dname = stack.getDisplayName();
-        }
-        // Blocks that are not obtainable/don't have an ItemBlock
-        else
-        {
-            dname = name;
-        }
-
+        String teInfo = "";
+        IBlockState state = world.getBlockState(pos).getActualState(world, pos);
         boolean teInWorld = world.getTileEntity(pos) != null;
-        boolean shouldHaveTE = block.hasTileEntity(iBlockState);
+        boolean shouldHaveTE = state.getBlock().hasTileEntity(state);
 
         if (teInWorld == shouldHaveTE)
         {
-            if (teInWorld)
-            {
-                lines.add(String.format("%s (%s - %d:%d) has a TileEntity", dname, name, id, meta));
-            }
-            else
-            {
-                lines.add(String.format("%s (%s - %d:%d) no TileEntity", dname, name, id, meta));
-            }
+            teInfo = teInWorld ? "has a TileEntity" : "no TileEntity";
         }
         else
         {
-            if (teInWorld)
-            {
-                lines.add(String.format("%s (%s - %d:%d) !! is not supposed to have a TileEntity, but there is one in the world !!",
-                        dname, name, id, meta));
-            }
-            else
-            {
-                lines.add(String.format("%s (%s - %d:%d) !! is supposed to have a TileEntity, but there isn't one in the world !!",
-                        dname, name, id, meta));
-            }
+            teInfo = teInWorld ? "!! is not supposed to have a TileEntity, but there is one in the world !!" :
+                                 "!! is supposed to have a TileEntity, but there isn't one in the world !!";
         }
 
-        return lines;
+        return teInfo;
     }
 
     @SuppressWarnings("deprecation")
     private static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
-        List<String> lines = getBasicBlockInfo(player, world, pos);
+        List<String> lines = new ArrayList<>();
+        lines.add(BlockData.getFor(world, pos, player).toString() + " " + getTileInfo(world, pos));
+
         IBlockState state = world.getBlockState(pos).getActualState(world, pos);
 
+        lines.add(String.format("Full block state: %s", state.toString()));
         lines.add(String.format("Hardness: %.4f, Resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
                 state.getBlock().getExplosionResistance(player) * 5f,
@@ -175,10 +140,7 @@ public class BlockInfo
 
     public static void printBasicBlockInfoToChat(EntityPlayer player, World world, BlockPos pos)
     {
-        for (String line : getBasicBlockInfo(player, world, pos))
-        {
-            player.sendMessage(new TextComponentString(line));
-        }
+        player.sendMessage(BlockData.getFor(world, pos, player).toChatMessage());
     }
 
     public static void printBlockInfoToConsole(EntityPlayer player, World world, BlockPos pos)
@@ -218,6 +180,73 @@ public class BlockInfo
             {
                 printBlockInfoToConsole(player, world, pos);
             }
+        }
+    }
+
+    public static class BlockData
+    {
+        private final String regName;
+        private final int id;
+        private final int meta;
+        private final String displayName;
+        private final String teInfo;
+
+        public BlockData(String displayName, String regName, int id, int meta, String teInfo)
+        {
+            this.displayName = displayName;
+            this.regName = regName;
+            this.id = id;
+            this.meta = meta;
+            this.teInfo = teInfo;
+        }
+
+        public static BlockData getFor(World world, BlockPos pos, EntityPlayer player)
+        {
+            IBlockState state = world.getBlockState(pos).getActualState(world, pos);
+            Block block = state.getBlock();
+
+            int id = Block.getIdFromBlock(block);
+            int meta = block.getMetaFromState(state);
+            ItemStack stack = block.getPickBlock(state, RayTraceUtils.getRayTraceFromEntity(world, player, true), world, pos, player);
+            //ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
+            //ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
+            String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
+            String displayName;
+
+            if (stack.isEmpty() == false)
+            {
+                displayName = stack.getDisplayName();
+            }
+            // Blocks that are not obtainable/don't have an ItemBlock
+            else
+            {
+                displayName = registryName;
+            }
+
+            return new BlockData(displayName, registryName, id, meta, getTileInfo(world, pos));
+        }
+
+        public ITextComponent toChatMessage()
+        {
+            String copyStr = this.meta != 0 ? this.regName + ":" + this.meta : this.regName;
+
+            TextComponentString copy = new TextComponentString(this.regName);
+            copy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyStr));
+            copy.getStyle().setUnderlined(Boolean.valueOf(true));
+
+            TextComponentString hoverText = new TextComponentString(String.format("Copy the string '%s' to clipboard", copyStr));
+            copy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+
+            TextComponentString full = new TextComponentString(String.format("%s (", this.displayName));
+            full.appendSibling(copy).appendText(String.format(" - %d:%d) %s", this.id, this.meta, this.teInfo));
+
+            return full;
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format("%s (%s - %d:%d) %s", this.displayName, this.regName, this.id, this.meta, this.teInfo);
         }
     }
 }

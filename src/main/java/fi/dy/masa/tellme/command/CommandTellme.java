@@ -19,6 +19,7 @@ public class CommandTellme extends CommandBase
     {
         this.registerSubCommand(new SubCommandBiome(this));
         this.registerSubCommand(new SubCommandBlockStats(this));
+        this.registerSubCommand(new SubCommandCopyToClipboard(this));
         this.registerSubCommand(new SubCommandDump(this));
         this.registerSubCommand(new SubCommandDumpCsv(this));
         this.registerSubCommand(new SubCommandHelp(this));

@@ -9,6 +9,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
@@ -17,22 +19,19 @@ import fi.dy.masa.tellme.datadump.DataDump;
 
 public class EntityInfo
 {
-    private static List<String> getBasicEntityInfo(Entity target)
+    private static String getBasicEntityInfo(Entity target)
     {
-        List<String> lines = new ArrayList<String>();
-
         ResourceLocation rl = EntityList.getKey(target);
         String regName = rl != null ? rl.toString() : "null";
 
-        lines.add(String.format("Entity: %s [registry name: %s] (entityId: %d)",
-                target.getName(), regName, target.getEntityId()));
-
-        return lines;
+        return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName(), regName, target.getEntityId());
     }
 
     private static List<String> getFullEntityInfo(Entity target)
     {
-        List<String> lines = getBasicEntityInfo(target);
+        List<String> lines = new ArrayList<>();
+        lines.add(getBasicEntityInfo(target));
+
         NBTTagCompound nbt = new NBTTagCompound();
 
         if (target.writeToNBTOptional(nbt) == false)
@@ -50,10 +49,20 @@ public class EntityInfo
 
     public static void printBasicEntityInfoToChat(EntityPlayer player, Entity target)
     {
-        for (String line : getBasicEntityInfo(target))
-        {
-            player.sendMessage(new TextComponentString(line));
-        }
+        ResourceLocation rl = EntityList.getKey(target);
+        String regName = rl != null ? rl.toString() : "null";
+
+        TextComponentString copy = new TextComponentString(regName);
+        copy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + regName));
+        copy.getStyle().setUnderlined(Boolean.valueOf(true));
+
+        TextComponentString hoverText = new TextComponentString(String.format("Copy the string '%s' to clipboard", regName));
+        copy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+
+        TextComponentString full = new TextComponentString(String.format("Entity: %s [registry name: ", target.getName()));
+        full.appendSibling(copy).appendText(String.format("] (entityId: %d)", target.getEntityId()));
+
+        player.sendMessage(full);
     }
 
     public static void printFullEntityInfoToConsole(EntityPlayer player, Entity target)

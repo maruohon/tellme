@@ -33,7 +33,7 @@ public class RayTraceUtils
         Vec3d rangedLookRot = entityIn.getLook(1f).scale(range);
         Vec3d lookVec = eyesVec.add(rangedLookRot);
 
-        RayTraceResult result = worldIn.rayTraceBlocks(eyesVec, lookVec, useLiquids, !useLiquids, false);
+        RayTraceResult result = worldIn.rayTraceBlocks(eyesVec, lookVec, useLiquids, false, false);
 
         if (result == null)
         {
