@@ -33,7 +33,7 @@ public class BiomeDump extends DataDump
             String regName = biome.getRegistryName().toString();
             String name = TellMe.proxy.getBiomeName(biome);
             String waterColor = String.format("0x%08X (%10d)", biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier());
-            String temp = String.format("%5.2f", biome.getTemperature());
+            String temp = String.format("%5.2f", biome.getDefaultTemperature());
             String tempCat = biome.getTempCategory().toString();
             String rain = String.format("%.2f", biome.getRainfall());
             String snow = String.valueOf(biome.getEnableSnow());
@@ -71,7 +71,7 @@ public class BiomeDump extends DataDump
         player.sendMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
                 pre, biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier(), rst)));
         player.sendMessage(new TextComponentString(String.format("temperature: %s%f%s, temp. category: %s%s%s",
-                pre, biome.getFloatTemperature(pos), rst, pre, biome.getTempCategory(), rst)));
+                pre, biome.getTemperature(pos), rst, pre, biome.getTempCategory(), rst)));
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.proxy.getCurrentBiomeInfoClientSide(player, biome);

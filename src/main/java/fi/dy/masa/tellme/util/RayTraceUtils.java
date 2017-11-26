@@ -3,7 +3,7 @@ package fi.dy.masa.tellme.util;
 import java.util.List;
 import javax.annotation.Nonnull;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -18,9 +18,9 @@ public class RayTraceUtils
     {
         double reach = 5.0d;
 
-        if (entityIn instanceof EntityPlayerMP)
+        if (entityIn instanceof EntityPlayer)
         {
-            reach = ((EntityPlayerMP) entityIn).interactionManager.getBlockReachDistance();
+            reach = ((EntityPlayer) entityIn).getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue();
         }
 
         return getRayTraceFromEntity(worldIn, entityIn, useLiquids, reach);
