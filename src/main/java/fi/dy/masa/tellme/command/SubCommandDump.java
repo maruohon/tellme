@@ -43,6 +43,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("spawneggs");
         this.subSubCommands.add("tileentities");
         this.subSubCommands.add("villagerprofessions");
+        this.subSubCommands.add("worldtypes");
     }
 
     @Override
@@ -216,6 +217,10 @@ public class SubCommandDump extends SubCommand
         else if (type.equals("villagerprofessions"))
         {
             return VillagerProfessionDump.getFormattedVillagerProfessionDump(format);
+        }
+        else if (type.equals("worldtypes"))
+        {
+            return WorldTypeDump.getFormattedWorldTypeDump(format);
         }
 
         return Collections.emptyList();
