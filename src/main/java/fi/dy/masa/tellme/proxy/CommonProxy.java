@@ -3,6 +3,8 @@ package fi.dy.masa.tellme.proxy;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,6 +25,12 @@ public class CommonProxy
     public String getBiomeName(Biome biome)
     {
         return "N/A";
+    }
+
+    @Nullable
+    public Pair<Integer, Integer> getBiomeGrassAndFoliageColors(Biome biome)
+    {
+        return null;
     }
 
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb) {}
@@ -58,6 +66,11 @@ public class CommonProxy
         }
 
         return Collections.emptyList();
+    }
+
+    public boolean isClient()
+    {
+        return false;
     }
 
     public boolean isSinglePlayer()

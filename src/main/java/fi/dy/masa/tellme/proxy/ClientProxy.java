@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
@@ -18,8 +19,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.ColorizerFoliage;
+import net.minecraft.world.ColorizerGrass;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -43,18 +47,38 @@ public class ClientProxy extends CommonProxy
     }
 
     @Override
-    public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb)
+    public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome biome)
     {
         BlockPos pos = player.getPosition();
         String pre = TextFormatting.GREEN.toString();
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
         // These are client-side only:
-        int color = bgb.getModdedBiomeGrassColor(bgb.getGrassColorAtPos(pos));
+        int color = biome.getGrassColorAtPos(pos);
         player.sendMessage(new TextComponentString(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
 
-        color = bgb.getModdedBiomeFoliageColor(bgb.getFoliageColorAtPos(pos));
+        color = biome.getFoliageColorAtPos(pos);
         player.sendMessage(new TextComponentString(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+    }
+
+    @Override
+    public Pair<Integer, Integer> getBiomeGrassAndFoliageColors(Biome biome)
+    {
+        return Pair.of(this.getGrassColor(biome), this.getFoliageColor(biome));
+    }
+
+    private int getGrassColor(Biome biome)
+    {
+        double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
+        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        return biome.getModdedBiomeGrassColor(ColorizerGrass.getGrassColor(temperature, humidity));
+    }
+
+    private int getFoliageColor(Biome biome)
+    {
+        double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
+        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        return biome.getModdedBiomeFoliageColor(ColorizerFoliage.getFoliageColor(temperature, humidity));
     }
 
     @Override
@@ -175,6 +199,12 @@ public class ClientProxy extends CommonProxy
         }
 
         return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isClient()
+    {
+        return true;
     }
 
     @Override

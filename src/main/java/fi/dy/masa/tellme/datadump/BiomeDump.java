@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
@@ -14,16 +15,17 @@ import fi.dy.masa.tellme.TellMe;
 
 public class BiomeDump extends DataDump
 {
-    private BiomeDump(Format format)
+    private BiomeDump(Format format, boolean isClient)
     {
-        super(8, format);
+        super(isClient ? 10 : 8, format);
 
         this.setSort(false);
     }
 
     public static List<String> getFormattedBiomeDump(Format format)
     {
-        BiomeDump biomeDump = new BiomeDump(format);
+        final boolean isClient = TellMe.proxy.isClient();
+        BiomeDump biomeDump = new BiomeDump(format, isClient);
         Iterator<Biome> iter = Biome.REGISTRY.iterator();
 
         while (iter.hasNext())
@@ -38,16 +40,36 @@ public class BiomeDump extends DataDump
             String rain = String.format("%.2f", biome.getRainfall());
             String snow = String.valueOf(biome.getEnableSnow());
 
-            biomeDump.addData(id, regName, name, waterColor, temp, tempCat, rain, snow);
+            if (isClient)
+            {
+                Pair<Integer, Integer> pair = TellMe.proxy.getBiomeGrassAndFoliageColors(biome);
+                String grassColor = String.format("0x%08X (%10d)", pair.getLeft(), pair.getLeft());
+                String foliageColor = String.format("0x%08X (%10d)", pair.getRight(), pair.getRight());
+                biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, waterColor, grassColor, foliageColor);
+            }
+            else
+            {
+                biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, waterColor);
+            }
         }
 
-        biomeDump.addTitle("ID", "Registry name", "Biome name",
-                "waterColorMultiplier", "temperature", "temp. category", "rainfall", "enableSnow");
+        if (isClient)
+        {
+            biomeDump.addTitle("ID", "Registry name", "Biome name",
+                    "temperature", "temp. category", "rainfall", "enableSnow",
+                    "waterColorMultiplier", "grassColorMultiplier", "foliageColorMultiplier");
+        }
+        else
+        {
+            biomeDump.addTitle("ID", "Registry name", "Biome name",
+                    "temperature", "temp. category", "rainfall", "enableSnow",
+                    "waterColorMultiplier");
+        }
 
         biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
-        biomeDump.setColumnProperties(4, Alignment.RIGHT, true); // temperature
-        biomeDump.setColumnProperties(6, Alignment.RIGHT, true); // rainfall
-        biomeDump.setColumnAlignment(7, Alignment.RIGHT); // snow
+        biomeDump.setColumnProperties(3, Alignment.RIGHT, true); // temperature
+        biomeDump.setColumnProperties(5, Alignment.RIGHT, true); // rainfall
+        biomeDump.setColumnAlignment(6, Alignment.RIGHT); // snow
 
         biomeDump.setUseColumnSeparator(true);
 
