@@ -11,7 +11,7 @@ public class EnchantmentDump extends DataDump
 {
     private EnchantmentDump(Format format)
     {
-        super(4, format);
+        super(5, format);
     }
 
     public static List<String> getFormattedEnchantmentDump(Format format)
@@ -27,11 +27,13 @@ public class EnchantmentDump extends DataDump
             String name = ench.getName();
             String type = ench.type.toString();
             String rarity = ench.getRarity().toString();
+            int id = Enchantment.getEnchantmentID(ench);
 
-            enchantmentDump.addData(regName, name, type, rarity);
+            enchantmentDump.addData(regName, name, type, rarity, String.valueOf(id));
         }
 
-        enchantmentDump.addTitle("Registry name", "Name", "Type", "Rarity");
+        enchantmentDump.addTitle("Registry name", "Name", "Type", "Rarity", "ID");
+        enchantmentDump.setColumnProperties(4, Alignment.RIGHT, true);
         enchantmentDump.setUseColumnSeparator(true);
 
         return enchantmentDump.getLines();
