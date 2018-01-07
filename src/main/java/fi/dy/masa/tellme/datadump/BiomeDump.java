@@ -12,6 +12,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.ChatUtils;
 
 public class BiomeDump extends DataDump
 {
@@ -85,9 +86,12 @@ public class BiomeDump extends DataDump
         String pre = TextFormatting.GREEN.toString();
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
+        String regName = biome.getRegistryName().toString();
+        String textPre = String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s",
+                pre, TellMe.proxy.getBiomeName(biome), rst, pre, Biome.getIdForBiome(biome), rst, pre);
+
         player.sendMessage(new TextComponentString("------------- Current biome info ------------"));
-        player.sendMessage(new TextComponentString(String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s%s%s",
-                pre, TellMe.proxy.getBiomeName(biome), rst, pre, Biome.getIdForBiome(biome), rst, pre, biome.getRegistryName().toString(), rst)));
+        player.sendMessage(ChatUtils.getClipboardCopiableMessage(textPre, regName, rst));
         player.sendMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s%s",
                 pre, biome.canRain(), rst, pre, biome.getRainfall(), rst, pre, biome.getEnableSnow(), rst)));
         player.sendMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",

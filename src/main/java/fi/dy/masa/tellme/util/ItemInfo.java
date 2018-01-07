@@ -8,9 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.SubCommand;
@@ -118,18 +115,10 @@ public class ItemInfo
         public ITextComponent toChatMessage()
         {
             String copyStr = this.meta != 0 ? this.regName + ":" + this.meta : this.regName;
+            String textPre = String.format("%s (", this.displayName);
+            String textPost = String.format(" - %d:%d) %s", this.id, this.meta, this.nbtInfo);
 
-            TextComponentString copy = new TextComponentString(this.regName);
-            copy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyStr));
-            copy.getStyle().setUnderlined(Boolean.valueOf(true));
-
-            TextComponentString hoverText = new TextComponentString(String.format("Copy the string '%s' to clipboard", copyStr));
-            copy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
-
-            TextComponentString full = new TextComponentString(String.format("%s (", this.displayName));
-            full.appendSibling(copy).appendText(String.format(" - %d:%d) %s", this.id, this.meta, this.nbtInfo));
-
-            return full;
+            return ChatUtils.getClipboardCopiableMessage(textPre, copyStr, textPost);
         }
 
         @Override

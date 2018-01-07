@@ -8,9 +8,6 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
@@ -51,18 +48,10 @@ public class EntityInfo
     {
         ResourceLocation rl = EntityList.getKey(target);
         String regName = rl != null ? rl.toString() : "null";
+        String textPre = String.format("Entity: %s [registry name: ", target.getName());
+        String textPost = String.format("] (entityId: %d)", target.getEntityId());
 
-        TextComponentString copy = new TextComponentString(regName);
-        copy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + regName));
-        copy.getStyle().setUnderlined(Boolean.valueOf(true));
-
-        TextComponentString hoverText = new TextComponentString(String.format("Copy the string '%s' to clipboard", regName));
-        copy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
-
-        TextComponentString full = new TextComponentString(String.format("Entity: %s [registry name: ", target.getName()));
-        full.appendSibling(copy).appendText(String.format("] (entityId: %d)", target.getEntityId()));
-
-        player.sendMessage(full);
+        player.sendMessage(ChatUtils.getClipboardCopiableMessage(textPre, regName, textPost));
     }
 
     public static void printFullEntityInfoToConsole(EntityPlayer player, Entity target)
