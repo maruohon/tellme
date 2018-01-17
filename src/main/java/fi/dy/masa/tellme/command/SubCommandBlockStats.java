@@ -1,6 +1,7 @@
 package fi.dy.masa.tellme.command;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +16,9 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BlockStats;
@@ -48,6 +51,7 @@ public class SubCommandBlockStats extends SubCommand
     {
         String pre = this.getSubCommandUsagePre();
         sender.sendMessage(new TextComponentString(pre + " count all-loaded-chunks"));
+        sender.sendMessage(new TextComponentString(pre + " count chunk-radius <radius>"));
         sender.sendMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
         sender.sendMessage(new TextComponentString(pre + " count <xMin> <yMin> <zMin> <xMax> <yMax> <zMax>"));
     }
@@ -81,7 +85,7 @@ public class SubCommandBlockStats extends SubCommand
             }
             else if (args[0].equals("count"))
             {
-                return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks");
+                return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "chunk-radius");
             }
         }
 
@@ -160,6 +164,33 @@ public class SubCommandBlockStats extends SubCommand
                 this.sendMessage(sender, "Calculating block statistics...");
                 blockStats.calculateBlockStatsForAllLoadedChunks(player.getEntityWorld());
                 this.sendMessage(sender, "Done");
+            }
+            else if (args.length == 3 && args[1].equals("chunk-radius"))
+            {
+                try
+                {
+                    int r = Integer.parseInt(args[2]);
+                    int count = (r * 2 + 1) * (r * 2 + 1);
+                    this.sendMessage(sender, "Loading all the " + count + " chunks in the given radius of " + r + " chunks ...");
+                    ChunkPos center = new ChunkPos(player.getPosition().getX() >> 4, player.getPosition().getZ() >> 4);
+                    List<Chunk> chunks = new ArrayList<>();
+
+                    for (int cZ = center.z - r; cZ <= center.z + r; cZ++)
+                    {
+                        for (int cX = center.x - r; cX <= center.x + r; cX++)
+                        {
+                            chunks.add(player.getEntityWorld().getChunkFromChunkCoords(cX, cZ));
+                        }
+                    }
+
+                    this.sendMessage(sender, "Calculating block statistics for the selected " + chunks.size() + " chunks...");
+                    blockStats.calculateBlockStatsForChunks(chunks);
+                    this.sendMessage(sender, "Done");
+                }
+                catch (NumberFormatException e)
+                {
+                    throw new WrongUsageException("Usage: " + pre + " count chunk-radius <radius>");
+                }
             }
             else
             {

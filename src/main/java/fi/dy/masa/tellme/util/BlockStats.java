@@ -81,7 +81,11 @@ public class BlockStats
     public void calculateBlockStatsForAllLoadedChunks(World world)
     {
         Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
+        this.calculateBlockStatsForChunks(loadedChunks);
+    }
 
+    public void calculateBlockStatsForChunks(Collection<Chunk> chunks)
+    {
         @SuppressWarnings("deprecation")
         final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
         final int[] counts = new int[size];
@@ -89,7 +93,7 @@ public class BlockStats
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
         final long timeBefore = System.currentTimeMillis();
 
-        for (Chunk chunk : loadedChunks)
+        for (Chunk chunk : chunks)
         {
             final int xMax = (chunk.x << 4) + 15;
             final int zMax = (chunk.z << 4) + 15;
@@ -115,7 +119,7 @@ public class BlockStats
 
         final long timeAfter = System.currentTimeMillis();
         TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks %.3f seconds.",
-                count, loadedChunks.size(), (timeAfter - timeBefore) / 1000f));
+                count, chunks.size(), (timeAfter - timeBefore) / 1000f));
 
         this.addParsedData(counts);
     }
