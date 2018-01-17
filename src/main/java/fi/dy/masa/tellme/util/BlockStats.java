@@ -82,7 +82,9 @@ public class BlockStats
     {
         Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
 
-        final int[] counts = new int[65536];
+        @SuppressWarnings("deprecation")
+        final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
+        final int[] counts = new int[size];
         int count = 0;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
         final long timeBefore = System.currentTimeMillis();
@@ -134,7 +136,9 @@ public class BlockStats
             throw new WrongUsageException("All the chunks for the requested area are not loaded, aborting");
         }
 
-        final int[] counts = new int[65536];
+        @SuppressWarnings("deprecation")
+        final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
+        final int[] counts = new int[size];
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
