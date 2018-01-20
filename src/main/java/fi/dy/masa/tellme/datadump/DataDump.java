@@ -138,47 +138,62 @@ public class DataDump
 
     public void addTitle(String... data)
     {
-        this.checkHeaderData(data);
-        this.title = new Row(data);
+        if (this.checkHeaderData(data))
+        {
+            this.title = new Row(data);
+        }
     }
 
     public void addHeader(String... data)
     {
-        this.checkHeaderData(data);
-        this.headers.add(new Row(data));
+        if (this.checkHeaderData(data))
+        {
+            this.headers.add(new Row(data));
+        }
     }
 
     public void addHeader(int index, String... data)
     {
-        this.checkHeaderData(data);
-        this.headers.add(index, new Row(data));
+        if (this.checkHeaderData(data))
+        {
+            this.headers.add(index, new Row(data));
+        }
     }
 
     public void addFooter(String... data)
     {
-        this.checkHeaderData(data);
-        this.footers.add(new Row(data));
+        if (this.checkHeaderData(data))
+        {
+            this.footers.add(new Row(data));
+        }
     }
 
     public void addData(String... data)
     {
-        this.checkData(data);
-        this.lines.add(new Row(data));
+        if (this.checkData(data))
+        {
+            this.lines.add(new Row(data));
+        }
     }
 
-    private void checkHeaderData(String... data)
+    private boolean checkHeaderData(String... data)
     {
         if (data.length != 1 || this.columns == 1)
         {
-            this.checkData(data);
+            return this.checkData(data);
         }
+
+        return false;
     }
 
     private void checkAllHeaders()
     {
         if (this.format == Format.ASCII && this.columns != 1)
         {
-            this.checkHeaderLength(this.title);
+            if (this.title != null)
+            {
+                this.checkHeaderLength(this.title);
+            }
 
             int size = this.headers.size();
             for (int i = 0; i < size; i++)
@@ -220,7 +235,7 @@ public class DataDump
         }
     }
 
-    private void checkData(String... data)
+    private boolean checkData(String... data)
     {
         if (data.length != this.columns)
         {
@@ -228,34 +243,37 @@ public class DataDump
                     this.columns + " columns for this type of DataDump");
         }
 
-        if (this.format != Format.ASCII)
-        {
-            return;
-        }
-
         int total = 0;
+        boolean valid = true;
 
         for (int i = 0; i < data.length; i++)
         {
             if (data[i] == null)
             {
                 TellMe.logger.warn("null value at column index {} on row '{}'", i, this.rowDataToString(data));
-                continue;
+                valid = false;
             }
-
-            int len = data[i].length();
-
-            int width = this.widths[i];
-
-            if (len > width)
+            else if (this.format == Format.ASCII)
             {
-                this.widths[i] = len;
-            }
+                int len = data[i].length();
 
-            total += this.widths[i];
+                int width = this.widths[i];
+
+                if (len > width)
+                {
+                    this.widths[i] = len;
+                }
+
+                total += this.widths[i];
+            }
         }
 
-        this.totalWidth = total;
+        if (this.format == Format.ASCII)
+        {
+            this.totalWidth = total;
+        }
+
+        return valid;
     }
 
     private String rowDataToString(String... data)
@@ -466,11 +484,14 @@ public class DataDump
             }
         }
 
-        lines.add(this.getFormattedTitle(this.title));
-
-        if (this.format == Format.ASCII)
+        if (this.title != null)
         {
-            lines.add(this.lineSeparator);
+            lines.add(this.getFormattedTitle(this.title));
+
+            if (this.format == Format.ASCII)
+            {
+                lines.add(this.lineSeparator);
+            }
         }
 
         int rows = this.lines.size();
@@ -495,7 +516,7 @@ public class DataDump
                 lines.add(this.lineSeparator);
             }
 
-            if (this.repeatTitleAtBottom)
+            if (this.repeatTitleAtBottom && this.title != null)
             {
                 lines.add(this.getFormattedLine(this.title));
                 lines.add(this.lineSeparator);
