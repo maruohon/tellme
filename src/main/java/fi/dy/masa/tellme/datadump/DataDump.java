@@ -237,6 +237,12 @@ public class DataDump
 
         for (int i = 0; i < data.length; i++)
         {
+            if (data[i] == null)
+            {
+                TellMe.logger.warn("null value at column index {} on row '{}'", i, this.rowDataToString(data));
+                continue;
+            }
+
             int len = data[i].length();
 
             int width = this.widths[i];
@@ -250,6 +256,11 @@ public class DataDump
         }
 
         this.totalWidth = total;
+    }
+
+    private String rowDataToString(String... data)
+    {
+        return String.join(", ", data);
     }
 
     protected void generateFormatStrings()
