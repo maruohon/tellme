@@ -10,8 +10,10 @@ import org.apache.commons.lang3.StringUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -155,5 +157,13 @@ public abstract class SubCommand implements ISubCommand
         }
 
         sender.sendMessage(new TextComponentTranslation(messageKey, name));
+    }
+
+    public static BlockPos parseBlockPos(BlockPos base, String[] args, int startIndex, boolean centerBlock) throws NumberInvalidException
+    {
+        double x = CommandBase.parseDouble(base.getX(), args[startIndex    ], -30000000, 30000000, centerBlock);
+        double y = CommandBase.parseDouble(base.getY(), args[startIndex + 1], 0, 256, false);
+        double z = CommandBase.parseDouble(base.getZ(), args[startIndex + 2], -30000000, 30000000, centerBlock);
+        return new BlockPos(x, y, z);
     }
 }

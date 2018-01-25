@@ -1,7 +1,6 @@
 package fi.dy.masa.tellme.command;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -16,16 +15,20 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.BlockStats;
+import fi.dy.masa.tellme.util.WorldUtils;
 
 public class SubCommandBlockStats extends SubCommand
 {
     private final Map<UUID, BlockStats> blockStats = Maps.newHashMap();
+    private final BlockStats blockStatsConsole = new BlockStats();
 
     public SubCommandBlockStats(CommandTellme baseCommand)
     {
@@ -33,11 +36,13 @@ public class SubCommandBlockStats extends SubCommand
 
         this.subSubCommands.add("count");
         this.subSubCommands.add("dump");
+        this.subSubCommands.add("dump-csv");
         this.subSubCommands.add("query");
 
         this.addSubCommandHelp("_generic", "Calculates the number of each block type in a given area");
         this.addSubCommandHelp("count", "Counts all the blocks in the given area");
         this.addSubCommandHelp("dump", "Dumps the stats from a previous 'count' command into a file in config/tellme/");
+        this.addSubCommandHelp("dump-csv", "Dumps the stats from a previous 'count' command into a CSV file in config/tellme/");
         this.addSubCommandHelp("query", "Prints the stats from a previous 'count' command into the console");
     }
 
@@ -50,23 +55,21 @@ public class SubCommandBlockStats extends SubCommand
     private void printUsageCount(ICommandSender sender)
     {
         String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " count all-loaded-chunks"));
-        sender.sendMessage(new TextComponentString(pre + " count chunk-radius <radius>"));
-        sender.sendMessage(new TextComponentString(pre + " count <x-distance> <y-distance> <z-distance>"));
-        sender.sendMessage(new TextComponentString(pre + " count <xMin> <yMin> <zMin> <xMax> <yMax> <zMax>"));
+        sender.sendMessage(new TextComponentString(pre + " count all-loaded-chunks [dimension]"));
+        sender.sendMessage(new TextComponentString(pre + " count chunk-radius <radius> [dimension] [x y z (of the center)]"));
+        sender.sendMessage(new TextComponentString(pre + " count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]"));
+        sender.sendMessage(new TextComponentString(pre + " count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]"));
     }
 
     private void printUsageDump(ICommandSender sender)
     {
         String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " dump"));
         sender.sendMessage(new TextComponentString(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
     }
 
     private void printUsageQuery(ICommandSender sender)
     {
         String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " query"));
         sender.sendMessage(new TextComponentString(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
     }
 
@@ -75,17 +78,17 @@ public class SubCommandBlockStats extends SubCommand
     {
         if (args.length == 1)
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "count", "dump", "query");
+            return CommandBase.getListOfStringsMatchingLastWord(args, "count", "dump", "dump-csv", "query");
         }
         else if (args.length == 2)
         {
-            if (args[0].equals("dump") || args[0].equals("query"))
+            if (args[0].equals("dump") || args[0].equals("dump-csv") || args[0].equals("query"))
             {
                 return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
             }
             else if (args[0].equals("count"))
             {
-                return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "chunk-radius");
+                return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "box", "chunk-radius", "range");
             }
         }
 
@@ -107,110 +110,134 @@ public class SubCommandBlockStats extends SubCommand
 
         super.execute(server, sender, args);
 
-        if ((sender instanceof EntityPlayer) == false)
-        {
-            throw new WrongUsageException("This command can only be run by a player");
-        }
-
-        String pre = this.getSubCommandUsagePre();
-        EntityPlayer player = (EntityPlayer) sender;
-        BlockStats blockStats = this.getBlockStatsForPlayer(player);
-
-        // Possible command formats are:
-        // /tellme blockstats count <x-distance> <y-distance> <z-distance>
-        // /tellme blockstats count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>
-        // /tellme blockstats query
-        // /tellme blockstats query [blockname blockname ...]
+        BlockStats blockStats = sender instanceof EntityPlayer ? this.getBlockStatsForPlayer((EntityPlayer) sender) : this.blockStatsConsole;
 
         // "/tellme blockstats count ..."
-        if (args[0].equals("count"))
+        if (args[0].equals("count") && args.length >= 2)
         {
-            // range
-            if (args.length == 4)
-            {
-                try
-                {
-                    this.sendMessage(sender, "Calculating block statistics...");
-                    int rx = Math.abs(CommandBase.parseInt(args[1]));
-                    int ry = Math.abs(CommandBase.parseInt(args[2]));
-                    int rz = Math.abs(CommandBase.parseInt(args[3]));
-                    blockStats.calculateBlockStats(player.getEntityWorld(), player.getPosition(), rx, ry, rz);
-                    this.sendMessage(sender, "Done");
-                }
-                catch (NumberInvalidException e)
-                {
-                    throw new WrongUsageException("Usage: " + pre + " count <x-distance> <y-distance> <z-distance>");
-                }
-            }
-            // cuboid corners
-            else if (args.length == 7)
-            {
-                try
-                {
-                    BlockPos pos1 = CommandBase.parseBlockPos(player, args, 1, false);
-                    BlockPos pos2 = CommandBase.parseBlockPos(player, args, 4, false);
+            // Possible command formats are:
+            // count all-loaded-chunks [dimension]
+            // count chunk-radius <radius> [dimension] [x y z (of the center)]
+            // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]
+            // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
+            String cmd = args[1];
+            args = dropFirstStrings(args, 2);
 
-                    this.sendMessage(sender, "Calculating block statistics...");
-                    blockStats.calculateBlockStats(player.getEntityWorld(), pos1, pos2);
-                    this.sendMessage(sender, "Done");
-                }
-                catch (NumberInvalidException e)
-                {
-                    throw new WrongUsageException("Usage: " + pre + " count <x-min> <y-min> <z-min> <x-max> <y-max> <z-max>");
-                }
-            }
-            else if (args.length == 2 && args[1].equals("all-loaded-chunks"))
-            {
-                this.sendMessage(sender, "Calculating block statistics...");
-                blockStats.calculateBlockStatsForAllLoadedChunks(player.getEntityWorld());
-                this.sendMessage(sender, "Done");
-            }
-            else if (args.length == 3 && args[1].equals("chunk-radius"))
+            // Get the world - either the player's current world, or the one based on the provided dimension ID
+            World world = this.getWorld(cmd, args, sender, server);
+            BlockPos pos = sender instanceof EntityPlayer ? sender.getPosition() : WorldUtils.getSpawnPoint(world);
+            String pre = this.getSubCommandUsagePre();
+
+            // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]
+            if (cmd.equals("range") && (args.length == 3 || args.length == 4 || args.length == 7))
             {
                 try
                 {
-                    int r = Integer.parseInt(args[2]);
-                    int count = (r * 2 + 1) * (r * 2 + 1);
-                    this.sendMessage(sender, "Loading all the " + count + " chunks in the given radius of " + r + " chunks ...");
-                    ChunkPos center = new ChunkPos(player.getPosition().getX() >> 4, player.getPosition().getZ() >> 4);
-                    List<Chunk> chunks = new ArrayList<>();
-
-                    for (int cZ = center.z - r; cZ <= center.z + r; cZ++)
+                    if (args.length == 7)
                     {
-                        for (int cX = center.x - r; cX <= center.x + r; cX++)
-                        {
-                            chunks.add(player.getEntityWorld().getChunkFromChunkCoords(cX, cZ));
-                        }
+                        int x = CommandBase.parseInt(args[4]);
+                        int y = CommandBase.parseInt(args[5]);
+                        int z = CommandBase.parseInt(args[6]);
+                        pos = new BlockPos(x, y, z);
                     }
 
-                    this.sendMessage(sender, "Calculating block statistics for the selected " + chunks.size() + " chunks...");
-                    blockStats.calculateBlockStatsForChunks(chunks);
+                    int rx = Math.abs(CommandBase.parseInt(args[0]));
+                    int ry = Math.abs(CommandBase.parseInt(args[1]));
+                    int rz = Math.abs(CommandBase.parseInt(args[2]));
+
+                    this.sendMessage(sender, "Counting blocks...");
+
+                    blockStats.calculateBlockStats(world, pos, rx, ry, rz);
+
                     this.sendMessage(sender, "Done");
+                }
+                catch (NumberInvalidException e)
+                {
+                    throw new WrongUsageException(pre + " count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]");
+                }
+            }
+            // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
+            else if (cmd.equals("box") && (args.length == 6 || args.length == 7))
+            {
+                try
+                {
+                    BlockPos pos1 = parseBlockPos(pos, args, 0, false);
+                    BlockPos pos2 = parseBlockPos(pos, args, 3, false);
+
+                    this.sendMessage(sender, "Counting blocks...");
+
+                    blockStats.calculateBlockStats(world, pos1, pos2);
+
+                    this.sendMessage(sender, "Done");
+                }
+                catch (NumberInvalidException e)
+                {
+                    throw new WrongUsageException("Usage: " + pre + " count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]");
+                }
+            }
+            // count all-loaded-chunks [dimension]
+            else if (cmd.equals("all-loaded-chunks") && (args.length == 0 || args.length == 1))
+            {
+                this.sendMessage(sender, "Counting blocks...");
+
+                blockStats.calculateBlockStatsForChunks(TellMe.proxy.getLoadedChunks(world));
+
+                this.sendMessage(sender, "Done");
+            }
+            // count chunk-radius <radius> [dimension] [x y z (of the center)]
+            else if (cmd.equals("chunk-radius") && (args.length == 1 || args.length == 2 || args.length == 5))
+            {
+                if (args.length == 5)
+                {
+                    int x = CommandBase.parseInt(args[2]);
+                    int y = CommandBase.parseInt(args[3]);
+                    int z = CommandBase.parseInt(args[4]);
+                    pos = new BlockPos(x, y, z);
+                }
+
+                int radius = 0;
+
+                try
+                {
+                    radius = Integer.parseInt(args[0]);
                 }
                 catch (NumberFormatException e)
                 {
-                    throw new WrongUsageException("Usage: " + pre + " count chunk-radius <radius>");
+                    throw new WrongUsageException(pre + " count chunk-radius <radius> [dimension] [x y z (of the center)]");
                 }
+
+                int chunkCount = (radius * 2 + 1) * (radius * 2 + 1);
+
+                this.sendMessage(sender, "Loading all the " + chunkCount + " chunks in the given radius of " + radius + " chunks ...");
+
+                List<Chunk> chunks = WorldUtils.loadAndGetChunks(world, pos, radius);
+
+                this.sendMessage(sender, "Counting blocks in the selected " + chunks.size() + " chunks...");
+
+                blockStats.calculateBlockStatsForChunks(chunks);
+
+                this.sendMessage(sender, "Done");
             }
             else
             {
                 this.printUsageCount(sender);
-                throw new CommandException("Invalid number of arguments!");
+                throw new CommandException("Invalid (number of?) arguments!");
             }
         }
         // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
-        else if (args[0].equals("query") || args[0].equals("dump"))
+        else if (args[0].equals("query") || args[0].equals("dump") || args[0].equals("dump-csv"))
         {
             List<String> lines;
+            Format format = args[0].equals("dump-csv") ? Format.CSV : Format.ASCII;
 
             // We have some filters specified
             if (args.length > 1)
             {
-                lines = blockStats.query(Arrays.asList(dropFirstStrings(args, 1)));
+                lines = blockStats.query(format, Arrays.asList(dropFirstStrings(args, 1)));
             }
             else
             {
-                lines = blockStats.queryAll();
+                lines = blockStats.queryAll(format);
             }
 
             if (args[0].equals("query"))
@@ -218,12 +245,55 @@ public class SubCommandBlockStats extends SubCommand
                 DataDump.printDataToLogger(lines);
                 this.sendMessage(sender, "Command output printed to console");
             }
-            else // dump
+            else
             {
                 File file = DataDump.dumpDataToFile("block_stats", lines);
-                sendClickableLinkMessage(player, "Output written to file %s", file);
+                sendClickableLinkMessage(sender, "Output written to file %s", file);
             }
         }
+        else
+        {
+            this.sendMessage(sender, "Usage:");
+            this.printUsageCount(sender);
+            this.printUsageDump(sender);
+            this.printUsageQuery(sender);
+        }
+    }
+
+    private World getWorld(String countSubCommand, String[] args, ICommandSender sender, MinecraftServer server) throws CommandException
+    {
+        int index = -1;
+        World world = sender.getEntityWorld();
+
+        switch (countSubCommand)
+        {
+            case "all-loaded-chunks":   index = 0; break;
+            case "chunk-radius":        index = 1; break;
+            case "range":               index = 3; break;
+            case "box":                 index = 6; break;
+        }
+
+        if (index >= 0 && args.length > index)
+        {
+            String dimStr = args[index];
+
+            try
+            {
+                int dimension = Integer.parseInt(dimStr);
+                world = server.getWorld(dimension);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new NumberInvalidException("Invalid dimension '%s'", dimStr);
+            }
+
+            if (world == null)
+            {
+                throw new NumberInvalidException("Could not load dimension '%s'", dimStr);
+            }
+        }
+
+        return world;
     }
 
     private BlockStats getBlockStatsForPlayer(EntityPlayer player)

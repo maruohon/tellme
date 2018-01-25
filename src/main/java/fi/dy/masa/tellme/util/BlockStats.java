@@ -11,8 +11,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -20,17 +22,13 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 
 public class BlockStats
 {
     private final Multimap<String, BlockInfo> blockStats = MultimapBuilder.hashKeys().arrayListValues().build();
 
-    private boolean checkChunksAreLoaded(World world, BlockPos pos1, BlockPos pos2)
-    {
-        return world.isAreaLoaded(pos1, pos2, true);
-    }
-
-    private boolean areCoordinatesValid(World world, BlockPos pos1, BlockPos pos2) throws CommandException
+    private boolean areCoordinatesValid(BlockPos pos1, BlockPos pos2) throws CommandException
     {
         if (pos1.getY() < 0 || pos2.getY() < 0)
         {
@@ -78,13 +76,31 @@ public class BlockStats
         this.calculateBlockStats(world, pos1, pos2);
     }
 
-    public void calculateBlockStatsForAllLoadedChunks(World world)
+    public void calculateBlockStats(World world, BlockPos pos1, BlockPos pos2) throws CommandException
     {
-        Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
-        this.calculateBlockStatsForChunks(loadedChunks);
+        Pair<BlockPos, BlockPos> pair = this.getCorners(pos1, pos2);
+        BlockPos posMin = pair.getLeft();
+        BlockPos posMax = pair.getRight();
+
+        if (this.areCoordinatesValid(posMin, posMax) == false)
+        {
+            throw new WrongUsageException("Invalid coordinate(s) in the range, aborting");
+        }
+
+        ChunkPos chunkPosMin = new ChunkPos(posMin.getX() >> 4, posMin.getZ() >> 4);
+        ChunkPos chunkPosMax = new ChunkPos(posMax.getX() >> 4, posMax.getZ() >> 4);
+
+        List<Chunk> chunks = WorldUtils.loadAndGetChunks(world, chunkPosMin, chunkPosMax);
+
+        this.calculateBlockStatsForBlockRange(chunks, posMin, posMax);
     }
 
     public void calculateBlockStatsForChunks(Collection<Chunk> chunks)
+    {
+        this.calculateBlockStatsForBlockRange(chunks, new BlockPos(-30000000, 0, -30000000), new BlockPos(30000000, 255, 30000000));
+    }
+
+    public void calculateBlockStatsForBlockRange(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         @SuppressWarnings("deprecation")
         final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
@@ -95,15 +111,19 @@ public class BlockStats
 
         for (Chunk chunk : chunks)
         {
-            final int xMax = (chunk.x << 4) + 15;
-            final int zMax = (chunk.z << 4) + 15;
-            final int yMax = chunk.getTopFilledSegment() + 15;
+            final int topY = chunk.getTopFilledSegment() + 15;
+            final int xMin = Math.max(chunk.x << 4, posMin.getX());
+            final int yMin = Math.max(0, posMin.getY());
+            final int zMin = Math.max(chunk.z << 4, posMin.getZ());
+            final int xMax = Math.min((chunk.x << 4) + 15, posMax.getX());
+            final int yMax = Math.min(topY, posMax.getY());
+            final int zMax = Math.min((chunk.z << 4) + 15, posMax.getZ());
 
-            for (int z = (chunk.z << 4); z <= zMax; ++z)
+            for (int z = zMin; z <= zMax; ++z)
             {
-                for (int x = (chunk.x << 4); x <= xMax; ++x)
+                for (int x = xMin; x <= xMax; ++x)
                 {
-                    for (int y = 0; y <= yMax; ++y)
+                    for (int y = yMin; y <= yMax; ++y)
                     {
                         pos.setPos(x, y, z);
                         IBlockState state = chunk.getBlockState(pos);
@@ -115,77 +135,19 @@ public class BlockStats
                     }
                 }
             }
+
+            // Add the amount of air that would be in non-existing chunk sections within the given volume
+            if (topY < posMax.getY())
+            {
+                @SuppressWarnings("deprecation")
+                int id = Block.BLOCK_STATE_IDS.get(Blocks.AIR.getDefaultState());
+                counts[id] += (posMax.getY() - topY) * 256;
+            }
         }
 
         final long timeAfter = System.currentTimeMillis();
         TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
-
-        this.addParsedData(counts);
-    }
-
-    public void calculateBlockStats(World world, BlockPos pos1, BlockPos pos2) throws CommandException
-    {
-        Pair<BlockPos, BlockPos> pair = this.getCorners(pos1, pos2);
-        pos1 = pair.getLeft();
-        pos2 = pair.getRight();
-
-        if (this.areCoordinatesValid(world, pos1, pos2) == false)
-        {
-            return;
-        }
-
-        if (this.checkChunksAreLoaded(world, pos1, pos2) == false)
-        {
-            throw new WrongUsageException("All the chunks for the requested area are not loaded, aborting");
-        }
-
-        @SuppressWarnings("deprecation")
-        final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
-        final int[] counts = new int[size];
-        int count = 0;
-        final long timeBefore = System.currentTimeMillis();
-
-        final int x1 = pos1.getX();
-        final int y1 = pos1.getY();
-        final int z1 = pos1.getZ();
-        final int x2 = pos2.getX();
-        final int y2 = pos2.getY();
-        final int z2 = pos2.getZ();
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
-
-        // Read the blocks one chunk at a time, to remove the overhead
-        // of getting the chunk for each block position.
-        for (int cz = z1 >> 4; cz <= (z2 >> 4); cz++)
-        {
-            for (int cx = x1 >> 4; cx <= (x2 >> 4); cx++)
-            {
-                Chunk chunk = world.getChunkFromChunkCoords(cx, cz);
-                final int xMax = Math.min(x2, (cx << 4) + 15);
-                final int zMax = Math.min(z2, (cz << 4) + 15);
-                final int yMax = Math.min(y2, chunk.getTopFilledSegment() + 15);
-
-                for (int z = Math.max(z1, cz << 4); z <= zMax; ++z)
-                {
-                    for (int x = Math.max(x1, cx << 4); x <= xMax; ++x)
-                    {
-                        for (int y = y1; y <= yMax; ++y)
-                        {
-                            pos.setPos(x, y, z);
-                            IBlockState state = chunk.getBlockState(pos);
-
-                            @SuppressWarnings("deprecation")
-                            int id = Block.BLOCK_STATE_IDS.get(state);
-                            counts[id]++;
-                            count++;
-                        }
-                    }
-                }
-            }
-        }
-
-        final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %.3f seconds.", count, (timeAfter - timeBefore) / 1000f));
 
         this.addParsedData(counts);
     }
@@ -264,14 +226,14 @@ public class BlockStats
         }
     }
 
-    public List<String> queryAll()
+    public List<String> queryAll(Format format)
     {
-        return this.query(null);
+        return this.query(format, null);
     }
 
-    public List<String> query(@Nullable List<String> filters)
+    public List<String> query(Format format, @Nullable List<String> filters)
     {
-        BlockStatsDump dump = new BlockStatsDump();
+        BlockStatsDump dump = new BlockStatsDump(format);
 
         if (filters != null)
         {
@@ -299,7 +261,7 @@ public class BlockStats
         return dump.getLines();
     }
 
-    public class BlockInfo implements Comparable<BlockInfo>
+    private static class BlockInfo implements Comparable<BlockInfo>
     {
         public final String name;
         public final String displayName;
@@ -341,7 +303,6 @@ public class BlockStats
         {
             final int prime = 31;
             int result = 1;
-            result = prime * result + getOuterType().hashCode();
             result = prime * result + id;
             result = prime * result + meta;
             return result;
@@ -357,26 +318,19 @@ public class BlockStats
             if (getClass() != obj.getClass())
                 return false;
             BlockInfo other = (BlockInfo) obj;
-            if (!getOuterType().equals(other.getOuterType()))
-                return false;
             if (id != other.id)
                 return false;
             if (meta != other.meta)
                 return false;
             return true;
         }
-
-        private BlockStats getOuterType()
-        {
-            return BlockStats.this;
-        }
     }
 
     private static class BlockStatsDump extends DataDump
     {
-        public BlockStatsDump()
+        public BlockStatsDump(Format format)
         {
-            super(5, Format.ASCII);
+            super(5, format);
         }
     }
 }
