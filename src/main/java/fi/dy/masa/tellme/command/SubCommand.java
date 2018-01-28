@@ -166,4 +166,46 @@ public abstract class SubCommand implements ISubCommand
         double z = CommandBase.parseDouble(base.getZ(), args[startIndex + 2], -30000000, 30000000, centerBlock);
         return new BlockPos(x, y, z);
     }
+
+    public static boolean isInteger(String arg)
+    {
+        try
+        {
+            Integer.parseInt(arg);
+            return true;
+        }
+        catch (NumberFormatException e)
+        {
+            return false;
+        }
+    }
+
+    public static int getNumberOfTrailingIntegers(String[] args)
+    {
+        return getNumberOfTrailingIntegers(args, args.length - 1);
+    }
+
+    /**
+     * Returns the number of consecutive strings in the given array that are integer numbers,
+     * starting from the index <b>lastIndex</b> and checking backwards.
+     * @param args
+     * @param lastIndex
+     * @return the number of consecutive trailing integers
+     */
+    public static int getNumberOfTrailingIntegers(String[] args, int lastIndex)
+    {
+        int count = 0;
+
+        try
+        {
+            for (int i = lastIndex; i >= 0; i--)
+            {
+                Integer.parseInt(args[i]);
+                count++;
+            }
+        }
+        catch (NumberFormatException e) {}
+
+        return count;
+    }
 }

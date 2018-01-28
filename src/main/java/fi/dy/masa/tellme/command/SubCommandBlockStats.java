@@ -147,7 +147,7 @@ public class SubCommandBlockStats extends SubCommand
 
                     this.sendMessage(sender, "Counting blocks...");
 
-                    blockStats.calculateBlockStats(world, pos, rx, ry, rz);
+                    blockStats.processChunks(world, pos, rx, ry, rz);
 
                     this.sendMessage(sender, "Done");
                 }
@@ -166,7 +166,7 @@ public class SubCommandBlockStats extends SubCommand
 
                     this.sendMessage(sender, "Counting blocks...");
 
-                    blockStats.calculateBlockStats(world, pos1, pos2);
+                    blockStats.processChunks(world, pos1, pos2);
 
                     this.sendMessage(sender, "Done");
                 }
@@ -180,7 +180,7 @@ public class SubCommandBlockStats extends SubCommand
             {
                 this.sendMessage(sender, "Counting blocks...");
 
-                blockStats.calculateBlockStatsForChunks(TellMe.proxy.getLoadedChunks(world));
+                blockStats.processChunks(TellMe.proxy.getLoadedChunks(world));
 
                 this.sendMessage(sender, "Done");
             }
@@ -214,7 +214,7 @@ public class SubCommandBlockStats extends SubCommand
 
                 this.sendMessage(sender, "Counting blocks in the selected " + chunks.size() + " chunks...");
 
-                blockStats.calculateBlockStatsForChunks(chunks);
+                blockStats.processChunks(chunks);
 
                 this.sendMessage(sender, "Done");
             }

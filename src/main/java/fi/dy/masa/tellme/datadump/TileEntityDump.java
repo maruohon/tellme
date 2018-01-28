@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
@@ -22,10 +23,10 @@ public class TileEntityDump extends DataDump
     public static List<String> getFormattedTileEntityDump(Format format)
     {
         TileEntityDump tileEntityDump = new TileEntityDump(format);
+
         try
         {
-            @SuppressWarnings("unchecked")
-            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = (RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>>) field_REGISTRY.get(null);
+            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = getTileEntityRegistry();
             Set<ResourceLocation> keys = registry.getKeys();
 
             for (ResourceLocation key : keys)
@@ -44,5 +45,22 @@ public class TileEntityDump extends DataDump
         }
 
         return tileEntityDump.getLines();
+    }
+
+    @Nullable
+    public static RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> getTileEntityRegistry()
+    {
+        try
+        {
+            @SuppressWarnings("unchecked")
+            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = (RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>>) field_REGISTRY.get(null);
+            return registry;
+        }
+        catch (IllegalAccessException e)
+        {
+            TellMe.logger.warn("Failed to get the TileEntity registry", e);
+        }
+
+        return null;
     }
 }

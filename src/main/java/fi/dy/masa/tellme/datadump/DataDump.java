@@ -59,12 +59,12 @@ public class DataDump
         }
     }
 
-    protected DataDump(int columns)
+    public DataDump(int columns)
     {
         this(columns, Format.ASCII);
     }
 
-    protected DataDump(int columns, Format format)
+    public DataDump(int columns, Format format)
     {
         this.columns = columns;
         this.format = format;
