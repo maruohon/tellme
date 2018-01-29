@@ -12,7 +12,7 @@ import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.EntityCountDump;
 
-public class EntitiesLister extends ChunkProcessor
+public class EntitiesLister extends ChunkProcessorLoadedChunks
 {
     private List<Entity> entities = new ArrayList<Entity>();
     private int totalCount;

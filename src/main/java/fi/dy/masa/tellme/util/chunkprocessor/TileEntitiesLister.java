@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.datadump.EntityCountDump;
 
-public class TileEntitiesLister extends ChunkProcessor
+public class TileEntitiesLister extends ChunkProcessorLoadedChunks
 {
     private Multimap<ChunkPos, TileHolder> perChunkTiles = MultimapBuilder.hashKeys().arrayListValues().build();
     private int totalCount;

@@ -1,4 +1,4 @@
-package fi.dy.masa.tellme.util;
+package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +18,7 @@ import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 
-public class BlockStats extends ChunkProcessor
+public class BlockStats extends ChunkProcessorAllChunks
 {
     private final Multimap<String, BlockInfo> blockStats = MultimapBuilder.hashKeys().arrayListValues().build();
 

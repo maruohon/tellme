@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.datadump.EntityCountDump;
 
-public class EntitiesPerChunkCounter extends ChunkProcessor
+public class EntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
 {
     private Map<ChunkPos, Integer> perChunkCount = new HashMap<ChunkPos, Integer>();
     private int totalCount;

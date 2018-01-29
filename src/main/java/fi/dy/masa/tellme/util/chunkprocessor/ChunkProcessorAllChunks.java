@@ -1,4 +1,4 @@
-package fi.dy.masa.tellme.util;
+package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,8 +10,9 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import fi.dy.masa.tellme.util.WorldUtils;
 
-public abstract class ChunkProcessor
+public abstract class ChunkProcessorAllChunks
 {
     private boolean areCoordinatesValid(BlockPos pos1, BlockPos pos2) throws CommandException
     {

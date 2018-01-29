@@ -22,8 +22,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.BlockStats;
 import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.chunkprocessor.BlockStats;
 
 public class SubCommandBlockStats extends SubCommand
 {

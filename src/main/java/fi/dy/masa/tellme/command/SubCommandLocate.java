@@ -20,10 +20,10 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.TileEntityDump;
-import fi.dy.masa.tellme.util.Locate;
-import fi.dy.masa.tellme.util.Locate.LocateType;
-import fi.dy.masa.tellme.util.Locate.OutputType;
 import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.chunkprocessor.Locate;
+import fi.dy.masa.tellme.util.chunkprocessor.Locate.LocateType;
+import fi.dy.masa.tellme.util.chunkprocessor.Locate.OutputType;
 
 public class SubCommandLocate extends SubCommand
 {

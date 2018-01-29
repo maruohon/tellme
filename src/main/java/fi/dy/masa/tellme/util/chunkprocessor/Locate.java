@@ -1,4 +1,4 @@
-package fi.dy.masa.tellme.util;
+package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,9 +26,10 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.datadump.TileEntityDump;
 
-public class Locate extends ChunkProcessor
+public class Locate extends ChunkProcessorAllChunks
 {
     private final LocateType locateType;
     private final OutputType outputType;

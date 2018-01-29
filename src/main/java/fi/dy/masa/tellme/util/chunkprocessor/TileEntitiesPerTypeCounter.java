@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.datadump.EntityCountDump;
 
-public class TileEntitiesPerTypeCounter extends ChunkProcessor
+public class TileEntitiesPerTypeCounter extends ChunkProcessorLoadedChunks
 {
     private Map<Class <? extends TileEntity>, Integer> perTypeCount = new HashMap<Class <? extends TileEntity>, Integer>();
     private int totalCount;

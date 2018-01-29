@@ -11,7 +11,7 @@ import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.EntityCountDump;
 import fi.dy.masa.tellme.util.EntityInfo;
 
-public abstract class ChunkProcessor
+public abstract class ChunkProcessorLoadedChunks
 {
     protected int chunksWithZeroCount;
     private int loadedChunks;

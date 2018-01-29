@@ -3,7 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessor;
+import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorLoadedChunks;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesLister;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesPerChunkCounter;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesPerTypeCounter;
@@ -22,7 +22,7 @@ public class EntityCountDump extends DataDump
         this.setUseColumnSeparator(true);
     }
 
-    private static ChunkProcessor createChunkProcessor(EntityListType type)
+    private static ChunkProcessorLoadedChunks createChunkProcessor(EntityListType type)
     {
         switch (type)
         {
@@ -39,7 +39,7 @@ public class EntityCountDump extends DataDump
 
     public static List<String> getFormattedEntityCountDumpAll(World world, EntityListType type)
     {
-        ChunkProcessor processor = createChunkProcessor(type);
+        ChunkProcessorLoadedChunks processor = createChunkProcessor(type);
 
         processor.processAllLoadedChunks(world);
 
@@ -64,7 +64,7 @@ public class EntityCountDump extends DataDump
     {
         ChunkPos pos1 = new ChunkPos(Math.min(pos1In.x, pos2In.x), Math.min(pos1In.z, pos2In.z));
         ChunkPos pos2 = new ChunkPos(Math.max(pos1In.x, pos2In.x), Math.max(pos1In.z, pos2In.z));
-        ChunkProcessor processor = createChunkProcessor(type);
+        ChunkProcessorLoadedChunks processor = createChunkProcessor(type);
 
         processor.processChunksInArea(world,pos1, pos2);
 
