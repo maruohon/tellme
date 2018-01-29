@@ -14,7 +14,9 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.ChunkDump;
 import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.datadump.EntityCountDump;
 import fi.dy.masa.tellme.datadump.EntityCountDump.EntityListType;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -25,6 +27,7 @@ public class SubCommandLoaded extends SubCommand
     {
         super(baseCommand);
 
+        this.subSubCommands.add("chunks");
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("entities-all");
         this.subSubCommands.add("entities-in-area");
@@ -33,6 +36,7 @@ public class SubCommandLoaded extends SubCommand
         this.subSubCommands.add("tileentities-in-area");
         this.subSubCommands.add("tileentities-in-chunk");
 
+        this.addSubCommandUsage("chunks",                   "chunks <list | dump> [dimension]");
         this.addSubCommandUsage("dimensions",               "dimensions");
         this.addSubCommandUsage("entities-all",             "entities-all <all | by-chunk | by-type> <list | dump> [dimension]");
         this.addSubCommandUsage("entities-in-area",         "entities-in-area <all | by-chunk | by-type> <list | dump> <x-min> <z-min> <x-max> <z-max> [dimension]");
@@ -55,13 +59,13 @@ public class SubCommandLoaded extends SubCommand
 
         if (cmd.equals("dimensions") == false && this.subSubCommands.contains(cmd))
         {
-            if (args.length == 2)
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, "all", "by-chunk", "by-type");
-            }
-            else if (args.length == 3)
+            if ((args.length == 3 && cmd.equals("chunks") == false) || (args.length == 2 && cmd.equals("chunks")))
             {
                 return CommandBase.getListOfStringsMatchingLastWord(args, "dump", "list");
+            }
+            else if (args.length == 2)
+            {
+                return CommandBase.getListOfStringsMatchingLastWord(args, "all", "by-chunk", "by-type");
             }
         }
 
@@ -71,24 +75,25 @@ public class SubCommandLoaded extends SubCommand
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        super.execute(server, sender, args);
-
         String pre = "/" + this.getBaseCommand().getName() + " " + this.getName() + " ";
 
-        if (args.length < 1 || this.subSubCommands.contains(args[0]) == false)
+        if (args.length < 1 || this.subSubCommands.contains(args[0]) == false || args[0].equals("help"))
         {
             this.sendMessage(sender, "Usage:");
-            //sender.sendMessage(new TextComponentString(pre + " chunks (not implemented yet)"));
 
             for (String cmd : this.subSubCommands)
             {
-                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
+                if (cmd.equals("help") == false)
+                {
+                    sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
+                }
             }
 
             return;
         }
 
         String cmd = args[0];
+        int outputTypeArgIndex = 2;
 
         if (cmd.equals("dimensions") && args.length == 1)
         {
@@ -100,8 +105,9 @@ public class SubCommandLoaded extends SubCommand
 
                 if (world != null)
                 {
-                    TellMe.logger.info(String.format("DIM %4d: %-16s [%4d loaded chunks, %4d loaded entities]",
-                            id, world.provider.getDimensionType().getName(), WorldUtils.getLoadedChunkCount(world), world.loadedEntityList.size()));
+                    TellMe.logger.info(String.format("DIM %4d: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
+                            id, world.provider.getDimensionType().getName(), WorldUtils.getLoadedChunkCount(world),
+                            world.loadedEntityList.size(), world.playerEntities.size()));
                 }
             }
 
@@ -111,28 +117,20 @@ public class SubCommandLoaded extends SubCommand
 
         List<String> data = null;
 
-        if (cmd.equals("entities-all") || cmd.equals("tileentities-all"))
+        if (cmd.equals("chunks") && (args.length == 2 || args.length == 3))
         {
-            if (args.length < 3 || args.length > 4)
-            {
-                this.sendMessage(sender, "Usage:");
-                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
-                return;
-            }
-
+            outputTypeArgIndex = 1;
+            Integer dim = args.length == 3 ? CommandBase.parseInt(args[2]) : null;
+            data = ChunkDump.getFormattedChunkDump(Format.ASCII, dim);
+        }
+        else if ((cmd.equals("entities-all") || cmd.equals("tileentities-all")) && (args.length == 3 || args.length == 4))
+        {
             EntityListType type = this.getListType(cmd, args[1]);
             World world = this.checkAndGetWorld(sender, args, 3);
             data = EntityCountDump.getFormattedEntityCountDumpAll(world, type);
         }
-        else if (cmd.equals("entities-in-area") || cmd.equals("tileentities-in-area"))
+        else if ((cmd.equals("entities-in-area") || cmd.equals("tileentities-in-area")) && (args.length == 7 || args.length == 8))
         {
-            if (args.length < 7 || args.length > 8)
-            {
-                this.sendMessage(sender, "Usage:");
-                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
-                return;
-            }
-
             EntityListType type = this.getListType(cmd, args[2]);
             Entity senderEntity = sender.getCommandSenderEntity();
             ChunkPos pos1;
@@ -155,15 +153,8 @@ public class SubCommandLoaded extends SubCommand
             World world = this.checkAndGetWorld(sender, args, 7);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos1, pos2);
         }
-        else if (cmd.equals("entities-in-chunk") || cmd.equals("tileentities-in-chunk"))
+        else if ((cmd.equals("entities-in-chunk") || cmd.equals("tileentities-in-chunk")) && (args.length == 5 || args.length == 6))
         {
-            if (args.length < 5 || args.length > 6)
-            {
-                this.sendMessage(sender, "Usage:");
-                sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
-                return;
-            }
-
             EntityListType type = this.getListType(cmd, args[1]);
             Entity senderEntity = sender.getCommandSenderEntity();
             ChunkPos pos;
@@ -185,7 +176,7 @@ public class SubCommandLoaded extends SubCommand
 
         if (data != null)
         {
-            String outputType = args[2];
+            String outputType = args[outputTypeArgIndex];
 
             if (outputType.equals("list"))
             {
@@ -201,6 +192,11 @@ public class SubCommandLoaded extends SubCommand
             {
                 throw new WrongUsageException("Unrecognized parameter: '" + outputType + "'");
             }
+        }
+        else
+        {
+            this.sendMessage(sender, "Usage:");
+            sender.sendMessage(new TextComponentString(pre + this.getSubCommandUsage(cmd)));
         }
     }
 
