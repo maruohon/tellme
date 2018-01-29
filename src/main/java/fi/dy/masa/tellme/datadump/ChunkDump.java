@@ -39,8 +39,6 @@ public class ChunkDump
 
                 for (Chunk chunk : chunks)
                 {
-                    String cx = String.valueOf(chunk.x);
-                    String cz = String.valueOf(chunk.z);
                     int count = 0;
 
                     for (int l = 0; l < chunk.getEntityLists().length; l++)
@@ -50,16 +48,19 @@ public class ChunkDump
 
                     String entityCount = String.valueOf(count);
 
-                    chunkDump.addData(dimId, cx, cz, entityCount);
+                    chunkDump.addData(  dimId,
+                                        String.format("%4d, %4d", chunk.x, chunk.z),
+                                        String.format("%5d, %5d", chunk.x << 4, chunk.z << 4),
+                                        entityCount);
                 }
             }
         }
 
-        chunkDump.addTitle("Dim ID", "CX", "CZ", "Entities");
+        chunkDump.addTitle("Dim ID", "Chunk", "Block pos", "Entities");
 
         chunkDump.setColumnProperties(0, Alignment.RIGHT, true); // dim ID
-        chunkDump.setColumnProperties(1, Alignment.RIGHT, true); // Chunk X
-        chunkDump.setColumnProperties(2, Alignment.RIGHT, true); // Chunk Z
+        //chunkDump.setColumnProperties(1, Alignment.RIGHT, false); // Chunk
+        //chunkDump.setColumnProperties(2, Alignment.RIGHT, false); // Block pos
         chunkDump.setColumnProperties(3, Alignment.RIGHT, true); // entity count
 
         chunkDump.setUseColumnSeparator(true);
