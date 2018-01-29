@@ -6,23 +6,19 @@ import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 
-public class DimensionDump extends DataDump
+public class DimensionDump
 {
     private static final Field field_worldProvider = ReflectionHelper.findField(DimensionType.class, "field_186077_g", "clazz");
-
-    private DimensionDump(Format format)
-    {
-        super(6, format);
-
-        this.setSort(false);
-    }
 
     @SuppressWarnings("unchecked")
     public static List<String> getFormattedDimensionDump(Format format)
     {
-        DimensionDump dimensionDump = new DimensionDump(format);
         Integer[] ids = DimensionManager.getStaticDimensionIDs();
+        DataDump dimensionDump = new DataDump(6, format);
+        dimensionDump.setSort(false);
 
         for (int i = 0; i < ids.length; i++)
         {
@@ -42,22 +38,22 @@ public class DimensionDump extends DataDump
 
             try
             {
-                worldProviderClass = ((Class<? extends WorldProvider>) field_worldProvider.get(type)).getSimpleName();
+                worldProviderClass = ((Class<? extends WorldProvider>) field_worldProvider.get(type)).getName();
             }
             catch (Exception e)
             {
                 worldProviderClass = "ERROR";
             }
 
-            dimensionDump.addData(dimId, typeId, name, shouldLoadSpawn, worldProviderClass, currentlyLoaded);
+            dimensionDump.addData(dimId, typeId, name, shouldLoadSpawn, currentlyLoaded, worldProviderClass);
         }
 
-        dimensionDump.addTitle("ID", "DimensionType ID", "Name", "shouldLoadSpawn", "WorldProvider class", "Currently loaded");
+        dimensionDump.addTitle("ID", "DimensionType ID", "Name", "shouldLoadSpawn", "Currently loaded", "WorldProvider class");
 
         dimensionDump.setColumnProperties(0, Alignment.RIGHT, true); // dim ID
         dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // type ID
         dimensionDump.setColumnAlignment(3, Alignment.RIGHT); // shouldLoadSpawn
-        dimensionDump.setColumnAlignment(5, Alignment.RIGHT); // currentlyLoaded
+        dimensionDump.setColumnAlignment(4, Alignment.RIGHT); // currentlyLoaded
 
         dimensionDump.setUseColumnSeparator(true);
 
