@@ -17,6 +17,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.ItemDump;
 
@@ -24,6 +25,17 @@ public class CommonProxy
 {
     public String getBiomeName(Biome biome)
     {
+        try
+        {
+            String name = ReflectionHelper.getPrivateValue(Biome.class, biome, "field_76791_y", "biomeName");
+
+            if (name != null)
+            {
+                return name;
+            }
+        }
+        catch (Exception e) {}
+
         return "N/A";
     }
 

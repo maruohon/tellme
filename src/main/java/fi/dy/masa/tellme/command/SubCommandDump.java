@@ -22,6 +22,7 @@ public class SubCommandDump extends SubCommand
 
         this.subSubCommands.add("all");
         this.subSubCommands.add("biomes");
+        this.subSubCommands.add("biomes-with-colors");
         this.subSubCommands.add("biomes-id-to-name");
         this.subSubCommands.add("blocks");
         this.subSubCommands.add("blocks-id-to-registryname");
@@ -130,97 +131,33 @@ public class SubCommandDump extends SubCommand
 
     private List<String> getData(String type, Format format)
     {
-        if (type.equals("biomes"))
+        switch (type)
         {
-            return BiomeDump.getFormattedBiomeDump(format);
-        }
-        else if (type.equals("biomes-id-to-name"))
-        {
-            return BiomeDump.getBiomeDumpIdToName(format);
-        }
-        else if (type.equals("blocks"))
-        {
-            return BlockDump.getFormattedBlockDump(format, false);
-        }
-        else if (type.equals("blocks-id-to-registryname"))
-        {
-            return BlockDump.getBlockDumpIdToRegistryName(format);
-        }
-        else if (type.equals("blocks-with-nbt"))
-        {
-            return BlockDump.getFormattedBlockDump(format, true);
-        }
-        else if (type.equals("blockstates-by-block"))
-        {
-            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
-        }
-        else if (type.equals("blockstates-by-state"))
-        {
-            return BlockStatesDump.getFormattedBlockStatesDumpByState(format);
-        }
-        else if (type.equals("dimensions"))
-        {
-            return DimensionDump.getFormattedDimensionDump(format);
-        }
-        else if (type.equals("enchantments"))
-        {
-            return EnchantmentDump.getFormattedEnchantmentDump(format);
-        }
-        else if (type.equals("entities"))
-        {
-            return EntityDump.getFormattedEntityDump(format);
-        }
-        else if (type.equals("fluids"))
-        {
-            return FluidRegistryDump.getFormattedFluidRegistryDump(format);
-        }
-        else if (type.equals("items"))
-        {
-            return ItemDump.getFormattedItemDump(format, false);
-        }
-        else if (type.equals("items-with-nbt"))
-        {
-            return ItemDump.getFormattedItemDump(format, true);
-        }
-        else if (type.equals("oredictionary-by-key"))
-        {
-            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
-        }
-        else if (type.equals("oredictionary-by-key-individual"))
-        {
-            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
-        }
-        else if (type.equals("oredictionary-by-item"))
-        {
-            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
-        }
-        else if (type.equals("potions"))
-        {
-            return PotionDump.getFormattedPotionDump(format);
-        }
-        else if (type.equals("potiontypes"))
-        {
-            return PotionTypeDump.getFormattedPotionTypeDump(format);
-        }
-        else if (type.equals("soundevents"))
-        {
-            return SoundEventDump.getFormattedSoundEventDump(format);
-        }
-        else if (type.equals("spawneggs"))
-        {
-            return SpawnEggDump.getFormattedSpawnEggDump(format);
-        }
-        else if (type.equals("tileentities"))
-        {
-            return TileEntityDump.getFormattedTileEntityDump(format);
-        }
-        else if (type.equals("villagerprofessions"))
-        {
-            return VillagerProfessionDump.getFormattedVillagerProfessionDump(format);
-        }
-        else if (type.equals("worldtypes"))
-        {
-            return WorldTypeDump.getFormattedWorldTypeDump(format);
+            case "biomes":                          return BiomeDump.getFormattedBiomeDump(format, false);
+            case "biomes-with-colors":              return BiomeDump.getFormattedBiomeDump(format, true);
+            case "biomes-id-to-name":               return BiomeDump.getBiomeDumpIdToName(format);
+            case "blocks":                          return BlockDump.getFormattedBlockDump(format, false);
+            case "blocks-id-to-registryname":       return BlockDump.getBlockDumpIdToRegistryName(format);
+            case "blocks-with-nbt":                 return BlockDump.getFormattedBlockDump(format, true);
+            case "blockstates-by-block":            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
+            case "blockstates-by-state":            return BlockStatesDump.getFormattedBlockStatesDumpByState(format);
+            case "dimensions":                      return DimensionDump.getFormattedDimensionDump(format);
+            case "enchantments":                    return EnchantmentDump.getFormattedEnchantmentDump(format);
+            case "entities":                        return EntityDump.getFormattedEntityDump(format);
+            case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
+            case "items":                           return ItemDump.getFormattedItemDump(format, false);
+            case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, true);
+            case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
+            case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
+            case "oredictionary-by-item":           return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
+            case "potions":                         return PotionDump.getFormattedPotionDump(format);
+            case "potiontypes":                     return PotionTypeDump.getFormattedPotionTypeDump(format);
+            case "soundevents":                     return SoundEventDump.getFormattedSoundEventDump(format);
+            case "spawneggs":                       return SpawnEggDump.getFormattedSpawnEggDump(format);
+            case "tileentities":                    return TileEntityDump.getFormattedTileEntityDump(format);
+            case "villagerprofessions":             return VillagerProfessionDump.getFormattedVillagerProfessionDump(format);
+            case "worldtypes":                      return WorldTypeDump.getFormattedWorldTypeDump(format);
+            default:
         }
 
         return Collections.emptyList();

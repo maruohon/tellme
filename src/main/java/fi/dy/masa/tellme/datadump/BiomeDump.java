@@ -2,31 +2,44 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.gen.structure.MapGenVillage;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeManager;
+import net.minecraftforge.common.BiomeManager.BiomeEntry;
+import net.minecraftforge.common.BiomeManager.BiomeType;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ChatUtils;
 
-public class BiomeDump extends DataDump
+public class BiomeDump
 {
-    private BiomeDump(Format format, boolean isClient)
-    {
-        super(isClient ? 10 : 8, format);
-
-        this.setSort(false);
-    }
-
-    public static List<String> getFormattedBiomeDump(Format format)
+    public static List<String> getFormattedBiomeDump(Format format, boolean outputColors)
     {
         final boolean isClient = TellMe.proxy.isClient();
-        BiomeDump biomeDump = new BiomeDump(format, isClient);
+        int columns = isClient ? 11 : 9;
+
+        if (outputColors)
+        {
+            columns += 3;
+        }
+
+        DataDump biomeDump = new DataDump(columns, format);
+        biomeDump.setSort(false);
         Iterator<Biome> iter = Biome.REGISTRY.iterator();
 
         while (iter.hasNext())
@@ -35,36 +48,61 @@ public class BiomeDump extends DataDump
             String id = String.valueOf(Biome.getIdForBiome(biome));
             String regName = biome.getRegistryName().toString();
             String name = TellMe.proxy.getBiomeName(biome);
-            String waterColor = String.format("0x%08X (%10d)", biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier());
+            String biomeTypes = getBiomeTypesForBiome(biome);
+            String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
+            String validFor = getValidForString(biome);
             String temp = String.format("%5.2f", biome.getDefaultTemperature());
             String tempCat = biome.getTempCategory().toString();
             String rain = String.format("%.2f", biome.getRainfall());
             String snow = String.valueOf(biome.getEnableSnow());
+            String oceanic = String.valueOf(BiomeManager.oceanBiomes.contains(biome));
 
             if (isClient)
             {
-                Pair<Integer, Integer> pair = TellMe.proxy.getBiomeGrassAndFoliageColors(biome);
-                String grassColor = String.format("0x%08X (%10d)", pair.getLeft(), pair.getLeft());
-                String foliageColor = String.format("0x%08X (%10d)", pair.getRight(), pair.getRight());
-                biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, waterColor, grassColor, foliageColor);
+                if (outputColors)
+                {
+                    Pair<Integer, Integer> pair = TellMe.proxy.getBiomeGrassAndFoliageColors(biome);
+                    String waterColor = String.format("0x%08X (%10d)", biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier());
+                    String grassColor = String.format("0x%08X (%10d)", pair.getLeft(), pair.getLeft());
+                    String foliageColor = String.format("0x%08X (%10d)", pair.getRight(), pair.getRight());
+
+                    biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, oceanic, biomeTypes, biomeDictionaryTypes, validFor,
+                                        waterColor, grassColor, foliageColor);
+                }
+                else
+                {
+                    biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, oceanic, biomeTypes, biomeDictionaryTypes, validFor);
+                }
             }
             else
             {
-                biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, waterColor);
+                if (outputColors)
+                {
+                    String waterColor = String.format("0x%08X (%10d)", biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier());
+                    biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, oceanic, biomeTypes, biomeDictionaryTypes, validFor, waterColor);
+                }
+                else
+                {
+                    biomeDump.addData(id, regName, name, temp, tempCat, rain, snow, oceanic, biomeTypes, biomeDictionaryTypes, validFor);
+                }
             }
         }
 
-        if (isClient)
+        if (isClient && outputColors)
         {
-            biomeDump.addTitle("ID", "Registry name", "Biome name",
-                    "temperature", "temp. category", "rainfall", "enableSnow",
-                    "waterColorMultiplier", "grassColorMultiplier", "foliageColorMultiplier");
+            biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
+                                "rain", "snow", "oceanic", "BiomeType", "BiomeDictionary.Type", "Valid for",
+                                "waterColorMultiplier", "grassColorMultiplier", "foliageColorMultiplier");
+        }
+        else if (outputColors)
+        {
+            biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
+                                "rain", "snow", "oceanic", "BiomeType", "BiomeDictionary.Type", "Valid for", "waterColorMultiplier");
         }
         else
         {
-            biomeDump.addTitle("ID", "Registry name", "Biome name",
-                    "temperature", "temp. category", "rainfall", "enableSnow",
-                    "waterColorMultiplier");
+            biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
+                                "rain", "snow", "oceanic", "BiomeType", "BiomeDictionary.Type", "Valid for");
         }
 
         biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
@@ -84,16 +122,29 @@ public class BiomeDump extends DataDump
         Biome biome = world.getBiome(pos);
 
         String pre = TextFormatting.GREEN.toString();
+        String preAqua = TextFormatting.AQUA.toString();
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
         String regName = biome.getRegistryName().toString();
+        String biomeTypes = getBiomeTypesForBiome(biome);
+        String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
+        String validFor = getValidForString(biome);
+        String enableSnow = biome.getEnableSnow() ? pre + "true" : TextFormatting.RED.toString() + "false";
         String textPre = String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s",
                 pre, TellMe.proxy.getBiomeName(biome), rst, pre, Biome.getIdForBiome(biome), rst, pre);
 
         player.sendMessage(new TextComponentString("------------- Current biome info ------------"));
         player.sendMessage(ChatUtils.getClipboardCopiableMessage(textPre, regName, rst));
-        player.sendMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s%s",
-                pre, biome.canRain(), rst, pre, biome.getRainfall(), rst, pre, biome.getEnableSnow(), rst)));
+        player.sendMessage(new TextComponentString(String.format("canRain: %s%s%s, rainfall: %s%f%s - enableSnow: %s%s",
+                pre, biome.canRain(), rst, pre, biome.getRainfall(), rst, enableSnow, rst)));
+        player.sendMessage(new TextComponentString(String.format("BiomeType: %s%s%s", preAqua, biomeTypes, rst)));
+        player.sendMessage(new TextComponentString(String.format("BiomeDictionary.Type: %s%s%s", preAqua, biomeDictionaryTypes, rst)));
+
+        if (StringUtils.isBlank(validFor) == false)
+        {
+            player.sendMessage(new TextComponentString(String.format("Valid for: %s%s%s", preAqua, validFor, rst)));
+        }
+
         player.sendMessage(new TextComponentString(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
                 pre, biome.getWaterColorMultiplier(), biome.getWaterColorMultiplier(), rst)));
         player.sendMessage(new TextComponentString(String.format("temperature: %s%f%s, temp. category: %s%s%s",
@@ -133,6 +184,76 @@ public class BiomeDump extends DataDump
         }
 
         return lines;
+    }
+
+    private static String getBiomeTypesForBiome(Biome biome)
+    {
+        Set<String> typeNames = new HashSet<>();
+
+        for (BiomeType type : BiomeType.values())
+        {
+            ImmutableList<BiomeEntry> entries = BiomeManager.getBiomes(type);
+
+            for (BiomeEntry entry : entries)
+            {
+                if (entry.biome == biome)
+                {
+                    typeNames.add(type.toString().toUpperCase());
+                    break;
+                }
+            }
+        }
+
+        if (typeNames.isEmpty() == false)
+        {
+            List<String> typeList = new ArrayList<>(typeNames);
+            Collections.sort(typeList);
+            return String.join(", ", typeList);
+        }
+
+        return "";
+    }
+
+    private static String getBiomeDictionaryTypesForBiome(Biome biome)
+    {
+        List<String> typeStrings = new ArrayList<>();
+        Set<BiomeDictionary.Type> types = BiomeDictionary.getTypes(biome);
+
+        for (BiomeDictionary.Type type : types)
+        {
+            typeStrings.add(type.getName().toUpperCase());
+        }
+
+        if (typeStrings.isEmpty() == false)
+        {
+            Collections.sort(typeStrings);
+            return String.join(", ", typeStrings);
+        }
+
+        return "";
+    }
+
+    private static String getValidForString(Biome biome)
+    {
+        List<String> strings = new ArrayList<>();
+
+        if (BiomeProvider.allowedBiomes.contains(biome))
+        {
+            strings.add("spawn");
+        }
+
+        if ((biome.getBaseHeight() > 0.0F && BiomeManager.strongHoldBiomesBlackList.contains(biome) == false) ||
+             BiomeManager.strongHoldBiomes.contains(biome))
+        {
+            strings.add("stronghold");
+        }
+
+        if (MapGenVillage.VILLAGE_SPAWN_BIOMES.contains(biome))
+        {
+            strings.add("village");
+        }
+
+        return String.join(", ", strings);
     }
 
     public static class IdToStringHolder implements Comparable<IdToStringHolder>
