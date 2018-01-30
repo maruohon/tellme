@@ -26,8 +26,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.datadump.TileEntityDump;
+import fi.dy.masa.tellme.util.BlockInfo;
 
 public class Locate extends ChunkProcessorAllChunks
 {
@@ -35,7 +35,8 @@ public class Locate extends ChunkProcessorAllChunks
     private final OutputType outputType;
     private final Format format;
     private final Set<String> filters;
-    private List<Pair<String, Vec3d>> data = new ArrayList<>();
+    private boolean printDimension;
+    private List<LocationData> data = new ArrayList<>();
 
     private Locate(LocateType locateType, OutputType outputType, Set<String> filters)
     {
@@ -48,6 +49,12 @@ public class Locate extends ChunkProcessorAllChunks
     public static Locate create(LocateType locateType, OutputType outputType, Set<String> filters)
     {
         return new Locate(locateType, outputType, filters);
+    }
+
+    public Locate setPrintDimension(boolean printDimension)
+    {
+        this.printDimension = printDimension;
+        return this;
     }
 
     public OutputType getOutputType()
@@ -178,6 +185,7 @@ public class Locate extends ChunkProcessorAllChunks
                 break;
             }
 
+            final int dim = chunk.getWorld().provider.getDimension();
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
@@ -198,7 +206,7 @@ public class Locate extends ChunkProcessorAllChunks
                         if (filters.containsKey(state))
                         {
                             //ResourceLocation name = state.getBlock().getRegistryName();
-                            this.data.add(Pair.of(state.toString(), new Vec3d(x, y, z)));
+                            this.data.add(LocationData.of(state.toString(), dim, new Vec3d(x, y, z)));
                             count++;
                         }
                     }
@@ -218,6 +226,7 @@ public class Locate extends ChunkProcessorAllChunks
 
         for (Chunk chunk : chunks)
         {
+            final int dim = chunk.getWorld().provider.getDimension();
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunk.z << 4, posMin.getZ());
@@ -235,7 +244,7 @@ public class Locate extends ChunkProcessorAllChunks
                     if (filters.contains(entity.getClass()) && entity.getEntityBoundingBox().intersects(bb))
                     {
                         ResourceLocation name = EntityList.getKey(entity);
-                        this.data.add(Pair.of(name.toString(), entity.getPositionVector()));
+                        this.data.add(LocationData.of(name.toString(), dim, entity.getPositionVector()));
                         count++;
                     }
                 }
@@ -261,6 +270,7 @@ public class Locate extends ChunkProcessorAllChunks
                 break;
             }
 
+            final int dim = chunk.getWorld().provider.getDimension();
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
@@ -281,7 +291,7 @@ public class Locate extends ChunkProcessorAllChunks
 
                     if (name != null)
                     {
-                        this.data.add(Pair.of(name.toString(), new Vec3d(pos)));
+                        this.data.add(LocationData.of(name.toString(), dim, new Vec3d(pos)));
                         count++;
                     }
                 }
@@ -295,34 +305,64 @@ public class Locate extends ChunkProcessorAllChunks
 
     public List<String> getLines()
     {
-        DataDump dump = new DataDump(4, this.format);
+        DataDump dump = new DataDump(this.printDimension ? 5 : 4, this.format);
+        String fmtChunk = this.outputType == OutputType.DUMP_CSV ? "%d,%d" : "%4d,%4d";
+        String fmtPos = this.outputType == OutputType.DUMP_CSV ? "x = %.2f, y = %.2f, z = %.2f" : "x = %8.2f, y = %5.2f, z = %8.2f";
 
-        for (int i = 0; i < this.data.size(); i++)
+        if (this.printDimension)
         {
-            Pair<String, Vec3d> entry = this.data.get(i);
-            Vec3d pos = entry.getRight();
+            for (int i = 0; i < this.data.size(); i++)
+            {
+                LocationData entry = this.data.get(i);
+                Vec3d pos = entry.pos;
 
-            if (this.outputType == OutputType.DUMP_CSV)
-            {
-                dump.addData(entry.getLeft(),
-                        String.format("r.%d.%d", ((int) pos.x) >> 9, ((int) pos.z) >> 9),
-                        String.format("%d,%d", ((int) pos.x) >> 4, ((int) pos.z) >> 4),
-                        String.format("x = %.2f, y = %.2f, z = %.2f", pos.x, pos.y, pos.z));
+                dump.addData(   entry.name,
+                                String.valueOf(entry.dim),
+                                String.format("r.%d.%d", ((int) pos.x) >> 9, ((int) pos.z) >> 9),
+                                String.format(fmtChunk, ((int) pos.x) >> 4, ((int) pos.z) >> 4),
+                                String.format(fmtPos, pos.x, pos.y, pos.z));
             }
-            else
-            {
-                dump.addData(entry.getLeft(),
-                        String.format("r.%d.%d", ((int) pos.x) >> 9, ((int) pos.z) >> 9),
-                        String.format("%4d,%4d", ((int) pos.x) >> 4, ((int) pos.z) >> 4),
-                        String.format("x = %8.2f, y = %5.2f, z = %8.2f", pos.x, pos.y, pos.z));
-            }
+
+            dump.addTitle("ID", "Dim", "Region", "Chunk", "Location");
         }
+        else
+        {
+            for (int i = 0; i < this.data.size(); i++)
+            {
+                LocationData entry = this.data.get(i);
+                Vec3d pos = entry.pos;
 
-        dump.addTitle("ID", "Region", "Chunk", "Location");
+                dump.addData(   entry.name,
+                                String.format("r.%d.%d", ((int) pos.x) >> 9, ((int) pos.z) >> 9),
+                                String.format(fmtChunk, ((int) pos.x) >> 4, ((int) pos.z) >> 4),
+                                String.format(fmtPos, pos.x, pos.y, pos.z));
+            }
+
+            dump.addTitle("ID", "Region", "Chunk", "Location");
+        }
 
         dump.setUseColumnSeparator(true);
 
         return dump.getLines();
+    }
+
+    private static class LocationData
+    {
+        private final String name;
+        private final int dim;
+        private final Vec3d pos;
+
+        private LocationData(String name, int dim, Vec3d pos)
+        {
+            this.name = name;
+            this.dim = dim;
+            this.pos = pos;
+        }
+
+        private static LocationData of(String name, int dim, Vec3d pos)
+        {
+            return new LocationData(name, dim, pos);
+        }
     }
 
     public enum LocateType

@@ -16,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -47,7 +48,7 @@ public class SubCommandLocate extends SubCommand
     private void printUsageLocate(ICommandSender sender)
     {
         String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " <block | entity | te> <print | dump[-csv]> all-loaded-chunks [dimension] <name1 name2 ...>"));
+        sender.sendMessage(new TextComponentString(pre + " <block | entity | te> <print | dump[-csv]> all-loaded-chunks [all-dims | dimensionId] <name1 name2 ...>"));
         sender.sendMessage(new TextComponentString(pre + " <block | entity | te> <print | dump[-csv]> chunk-radius <radius> [dimension] [x y z (of the center)] <name1 name2 ...>"));
         sender.sendMessage(new TextComponentString(pre + " <block | entity | te> <print | dump[-csv]> range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)] <name1 name2 ...>"));
         sender.sendMessage(new TextComponentString(pre + " <block | entity | te> <print | dump[-csv]> box <x1> <y1> <z1> <x2> <y2> <z2> [dimension] <name1 name2 ...>"));
@@ -169,7 +170,13 @@ public class SubCommandLocate extends SubCommand
         OutputType outputType = OutputType.fromArg(args[1]);
         String areaType = args[2];
         final int dimArgIndex = this.getDimensionArgIndex(areaType);
-        int namesStart = args.length > dimArgIndex && isInteger(args[dimArgIndex]) ? dimArgIndex + 1 : dimArgIndex;
+        int namesStart = dimArgIndex;
+
+        if (args.length > dimArgIndex &&
+            (isInteger(args[dimArgIndex]) || (areaType.equals("all-loaded-chunks") && args[dimArgIndex].equals("all-dims"))))
+        {
+            namesStart += 1;
+        }
 
         // Get the world - either the player's current world, or the one based on the provided dimension ID
         World world = this.getWorld(areaType, args, sender, server);
@@ -280,7 +287,26 @@ public class SubCommandLocate extends SubCommand
         {
             this.sendMessage(sender, "Searching...");
 
-            locate.processChunks(TellMe.proxy.getLoadedChunks(world));
+            if (args[3].equals("all-dims"))
+            {
+                locate.setPrintDimension(true);
+                Integer[] ids = DimensionManager.getIDs();
+
+                for (int dim : ids)
+                {
+                    World worldTmp = DimensionManager.getWorld(dim);
+
+                    if (worldTmp != null)
+                    {
+                        locate.processChunks(TellMe.proxy.getLoadedChunks(worldTmp));
+                    }
+                }
+            }
+            else
+            {
+                locate.processChunks(TellMe.proxy.getLoadedChunks(world));
+            }
+
             this.outputData(locate, sender);
         }
         // ... chunk-radius <radius> [dimension] [x y z (of the center)] <name1 name2 ...>
