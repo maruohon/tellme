@@ -146,26 +146,20 @@ public class DataDump
 
     public void addHeader(String... data)
     {
-        if (this.checkHeaderData(data))
-        {
-            this.headers.add(new Row(data));
-        }
+        //this.checkData(data);
+        this.headers.add(new Row(data));
     }
 
     public void addHeader(int index, String... data)
     {
-        if (this.checkHeaderData(data))
-        {
-            this.headers.add(index, new Row(data));
-        }
+        //this.checkData(data);
+        this.headers.add(index, new Row(data));
     }
 
     public void addFooter(String... data)
     {
-        if (this.checkHeaderData(data))
-        {
-            this.footers.add(new Row(data));
-        }
+        //this.checkData(data);
+        this.footers.add(new Row(data));
     }
 
     public void addData(String... data)
@@ -237,7 +231,7 @@ public class DataDump
 
     private boolean checkData(String... data)
     {
-        if (data.length != this.columns)
+        if (data.length != this.columns && data.length != 1)
         {
             throw new IllegalArgumentException("Invalid number of columns, you must add exactly " +
                     this.columns + " columns for this type of DataDump");
@@ -268,7 +262,7 @@ public class DataDump
             }
         }
 
-        if (this.format == Format.ASCII)
+        if (this.format == Format.ASCII && total > this.totalWidth)
         {
             this.totalWidth = total;
         }
@@ -503,8 +497,14 @@ public class DataDump
 
         if (this.format == Format.ASCII)
         {
+            if (this.repeatTitleAtBottom && this.title != null)
+            {
+                lines.add(this.lineSeparator);
+                lines.add(this.getFormattedLine(this.title));
+            }
+
             lines.add(this.lineSeparator);
-            int len = this.footers.size();
+            final int len = this.footers.size();
 
             if (len > 0)
             {
@@ -513,12 +513,6 @@ public class DataDump
                     lines.add(this.getFormattedLine(this.footers.get(i)));
                 }
 
-                lines.add(this.lineSeparator);
-            }
-
-            if (this.repeatTitleAtBottom && this.title != null)
-            {
-                lines.add(this.getFormattedLine(this.title));
                 lines.add(this.lineSeparator);
             }
         }
