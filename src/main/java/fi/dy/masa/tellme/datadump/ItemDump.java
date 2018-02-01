@@ -2,16 +2,16 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class ItemDump extends DataDump
@@ -78,12 +78,10 @@ public class ItemDump extends DataDump
     public static List<String> getFormattedItemDump(Format format, boolean dumpNBT)
     {
         ItemDump itemDump = new ItemDump(format, dumpNBT);
-        Iterator<Map.Entry<ResourceLocation, Item>> iter = ForgeRegistries.ITEMS.getEntries().iterator();
 
-        while (iter.hasNext())
+        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            Map.Entry<ResourceLocation, Item> entry = iter.next();
-            TellMe.proxy.getDataForItemSubtypes(entry.getValue(), entry.getKey(), itemDump);
+            getDataForItemSubtypes(entry.getValue(), entry.getKey(), itemDump);
         }
 
         if (dumpNBT)
@@ -102,6 +100,28 @@ public class ItemDump extends DataDump
         itemDump.setUseColumnSeparator(true);
 
         return itemDump.getLines();
+    }
+
+    public static void getDataForItemSubtypes(Item item, ResourceLocation rl, ItemDump itemDump)
+    {
+        if (item.getHasSubtypes())
+        {
+            for (CreativeTabs tab : item.getCreativeTabs())
+            {
+                NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+                item.getSubItems(tab, stacks);
+
+                for (ItemStack stack : stacks)
+                {
+                    // FIXME: Ignore identical duplicate entries from different tabs...
+                    itemDump.addData(item, rl, true, stack);
+                }
+            }
+        }
+        else
+        {
+            itemDump.addData(item, rl, false, new ItemStack(item, 1, 0));
+        }
     }
 
     public static String getOredictKeysJoined(@Nonnull ItemStack stack)

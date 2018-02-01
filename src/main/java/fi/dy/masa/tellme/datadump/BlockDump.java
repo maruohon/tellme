@@ -6,13 +6,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
@@ -85,12 +93,10 @@ public class BlockDump extends DataDump
     public static List<String> getFormattedBlockDump(Format format, boolean dumpNBT)
     {
         BlockDump blockDump = new BlockDump(format, dumpNBT);
-        Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
 
-        while (iter.hasNext())
+        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
-            Map.Entry<ResourceLocation, Block> entry = iter.next();
-            TellMe.proxy.getDataForBlockSubtypes(entry.getValue(), entry.getKey(), blockDump);
+            getDataForBlockSubtypes(entry.getValue(), entry.getKey(), blockDump);
         }
 
         if (dumpNBT)
@@ -146,5 +152,141 @@ public class BlockDump extends DataDump
         }
 
         return lines;
+    }
+
+    public static void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
+    {
+        NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+        CreativeTabs tab = block.getCreativeTabToDisplayOn();
+        block.getSubBlocks(tab, stacks);
+
+        if (stacks.size() > 0)
+        {
+            boolean hasSubTypes = stacks.size() > 1;
+
+            for (ItemStack stack : stacks)
+            {
+                blockDump.addData(block, rl, true, hasSubTypes, stack);
+            }
+        }
+        else
+        {
+            blockDump.addData(block, rl, false, false, ItemStack.EMPTY);
+        }
+    }
+
+    public static String getJsonBlockDump()
+    {
+        HashMultimap<String, ResourceLocation> map = HashMultimap.create(400, 512);
+
+        // Get a mapping of modName => collection-of-block-names
+        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        {
+            ResourceLocation key = entry.getKey();
+            map.put(key.getResourceDomain(), key);
+        }
+
+        // First sort by mod name
+        List<String> mods = Lists.newArrayList(map.keySet());
+        Collections.sort(mods);
+        JsonObject root = new JsonObject();
+        BlockDumpJsonDummy dump = new BlockDumpJsonDummy();
+
+        for (String mod : mods)
+        {
+            // For each mod, sort the blocks by their registry name
+            List<ResourceLocation> blocks = Lists.newArrayList(map.get(mod));
+            Collections.sort(blocks);
+            JsonObject objectMod = new JsonObject();
+
+            for (ResourceLocation key : blocks)
+            {
+                JsonObject objBlock = new JsonObject();
+                dump.setCurrentBlockObject(objBlock);
+                getDataForBlockSubtypes(ForgeRegistries.BLOCKS.getValue(key), key, dump);
+                objectMod.add(key.toString(), objBlock);
+            }
+
+            root.add(ModNameUtils.getModName(blocks.get(0)), objectMod);
+        }
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        return gson.toJson(root);
+    }
+
+    // Dummy/fake BlockDump child, just to be able to use the same getDataForBlockSubtypes() method
+    private static class BlockDumpJsonDummy extends BlockDump
+    {
+        private JsonObject obj;
+        private boolean firstEntry;
+
+        public BlockDumpJsonDummy()
+        {
+            super(Format.CSV, false);
+        }
+
+        public void setCurrentBlockObject(JsonObject obj)
+        {
+            this.obj = obj;
+            this.firstEntry = true;
+        }
+
+        @Override
+        public void addData(Block block, ResourceLocation rl, boolean subTypesKnown, boolean hasSubTypes, @Nonnull ItemStack stack)
+        {
+            if (this.firstEntry)
+            {
+                int blockId = Block.getIdFromBlock(block);
+                String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
+                String exists = isDummied(ForgeRegistries.BLOCKS, rl) ? "false" : "true";
+                String oreDictKeys = ItemDump.getOredictKeysJoined(stack);
+
+                this.obj.add("BlockID", new JsonPrimitive(blockId));
+                this.obj.add("SubTypes", new JsonPrimitive(subTypes));
+                this.obj.add("Exists", new JsonPrimitive(exists));
+                this.obj.add("OreDict", new JsonPrimitive(oreDictKeys));
+            }
+
+            Item item = stack.getItem();
+
+            if (item != Items.AIR)
+            {
+                String itemName = item.getRegistryName().toString();
+                int itemId = Item.getIdFromItem(item);
+                int itemMeta = stack.getMetadata();
+                String displayName = stack.isEmpty() == false ? stack.getDisplayName() : block.getLocalizedName();
+
+                JsonObject objItem = new JsonObject();
+                objItem.add("RegistryName", new JsonPrimitive(itemName));
+                objItem.add("ItemID", new JsonPrimitive(itemId));
+                objItem.add("ItemMeta", new JsonPrimitive(itemMeta));
+                objItem.add("DisplayName", new JsonPrimitive(displayName));
+
+                if (hasSubTypes)
+                {
+                    JsonArray arr;
+
+                    if (this.firstEntry)
+                    {
+                        arr = new JsonArray();
+                        this.obj.add("Item", arr);
+                    }
+                    // Second or later ItemStack entry - hasSubTypes will be true here, and the array will already exist
+                    else
+                    {
+                        arr = this.obj.get("Item").getAsJsonArray();
+                    }
+
+                    arr.add(objItem);
+                }
+                else
+                {
+                    this.obj.add("Item", objItem);
+                }
+            }
+
+            this.firstEntry = false;
+        }
     }
 }

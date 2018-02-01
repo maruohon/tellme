@@ -9,15 +9,9 @@ import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.UnmodifiableIterator;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
@@ -35,8 +29,6 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.config.Configs;
-import fi.dy.masa.tellme.datadump.BlockDump;
-import fi.dy.masa.tellme.datadump.ItemDump;
 
 public class ClientProxy extends CommonProxy
 {
@@ -79,52 +71,6 @@ public class ClientProxy extends CommonProxy
         double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
         double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
         return biome.getModdedBiomeFoliageColor(ColorizerFoliage.getFoliageColor(temperature, humidity));
-    }
-
-    @Override
-    public void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
-    {
-        Item item = Item.getItemFromBlock(block);
-
-        if (item != null)
-        {
-            NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-            CreativeTabs tab = block.getCreativeTabToDisplayOn();
-            block.getSubBlocks(tab, stacks);
-            boolean subtypes = stacks.size() > 1;
-
-            for (ItemStack stack : stacks)
-            {
-                blockDump.addData(block, rl, true, subtypes, stack);
-            }
-        }
-        else
-        {
-            blockDump.addData(block, rl, false, false, ItemStack.EMPTY);
-        }
-    }
-
-    @Override
-    public void getDataForItemSubtypes(Item item, ResourceLocation rl, ItemDump itemDump)
-    {
-        if (item.getHasSubtypes())
-        {
-            for (CreativeTabs tab : item.getCreativeTabs())
-            {
-                NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-                item.getSubItems(tab, stacks);
-
-                for (ItemStack stack : stacks)
-                {
-                    // FIXME: Ignore identical duplicate entries from different tabs...
-                    itemDump.addData(item, rl, true, stack);
-                }
-            }
-        }
-        else
-        {
-            itemDump.addData(item, rl, false, new ItemStack(item, 1, 0));
-        }
     }
 
     @Override

@@ -20,6 +20,17 @@ public class SubCommandDump extends SubCommand
     {
         super(baseCommand);
 
+        this.addSubSubCommands();
+    }
+
+    @Override
+    public String getName()
+    {
+        return "dump";
+    }
+
+    protected void addSubSubCommands()
+    {
         this.subSubCommands.add("all");
         this.subSubCommands.add("biomes");
         this.subSubCommands.add("biomes-with-colors");
@@ -45,12 +56,6 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("tileentities");
         this.subSubCommands.add("villagerprofessions");
         this.subSubCommands.add("worldtypes");
-    }
-
-    @Override
-    public String getName()
-    {
-        return "dump";
     }
 
     @Override
@@ -94,7 +99,7 @@ public class SubCommandDump extends SubCommand
         }
     }
 
-    private void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
+    protected void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
     {
         Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
         List<String> data = this.getData(arg, format);

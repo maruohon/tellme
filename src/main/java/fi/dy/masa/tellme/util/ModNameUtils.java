@@ -25,6 +25,11 @@ public class ModNameUtils
             {
                 ModContainer mc = getModContainer(domain);
                 modName = mc != null ? mc.getName() : "Unknown";
+
+                if (modName == null)
+                {
+                    modName = "Unknown";
+                }
             }
 
             MOD_NAMES.put(domain, modName);
