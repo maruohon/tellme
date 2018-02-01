@@ -28,6 +28,7 @@ public class SubCommandDumpJson extends SubCommandDump
         return "dump-json";
     }
 
+    @Override
     protected void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
     {
         String data = this.getData(arg);
