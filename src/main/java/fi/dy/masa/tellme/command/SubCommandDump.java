@@ -35,6 +35,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("biomes");
         this.subSubCommands.add("biomes-with-colors");
         this.subSubCommands.add("biomes-id-to-name");
+        this.subSubCommands.add("block-props");
         this.subSubCommands.add("blocks");
         this.subSubCommands.add("blocks-id-to-registryname");
         this.subSubCommands.add("blocks-with-nbt");
@@ -141,6 +142,7 @@ public class SubCommandDump extends SubCommand
             case "biomes":                          return BiomeDump.getFormattedBiomeDump(format, false);
             case "biomes-with-colors":              return BiomeDump.getFormattedBiomeDump(format, true);
             case "biomes-id-to-name":               return BiomeDump.getBiomeDumpIdToName(format);
+            case "block-props":                     return BlockDump.getFormattedBlockPropertiesDump(format);
             case "blocks":                          return BlockDump.getFormattedBlockDump(format, false);
             case "blocks-id-to-registryname":       return BlockDump.getBlockDumpIdToRegistryName(format);
             case "blocks-with-nbt":                 return BlockDump.getFormattedBlockDump(format, true);
