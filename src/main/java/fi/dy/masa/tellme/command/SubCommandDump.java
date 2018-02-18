@@ -47,6 +47,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("fluids");
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
+        this.subSubCommands.add("musictypes");
         this.subSubCommands.add("oredictionary-by-key");
         this.subSubCommands.add("oredictionary-by-key-individual");
         this.subSubCommands.add("oredictionary-by-item");
@@ -154,6 +155,7 @@ public class SubCommandDump extends SubCommand
             case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
             case "items":                           return ItemDump.getFormattedItemDump(format, false);
             case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, true);
+            case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);
             case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
             case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
             case "oredictionary-by-item":           return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);

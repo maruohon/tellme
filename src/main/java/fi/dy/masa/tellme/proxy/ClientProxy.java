@@ -11,7 +11,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.MusicTicker.MusicType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
@@ -29,6 +32,7 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.config.Configs;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class ClientProxy extends CommonProxy
 {
@@ -71,6 +75,20 @@ public class ClientProxy extends CommonProxy
         double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
         double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
         return biome.getModdedBiomeFoliageColor(ColorizerFoliage.getFoliageColor(temperature, humidity));
+    }
+
+    @Override
+    public void addMusicTypeData(DataDump dump)
+    {
+        for (MusicType music : MusicType.values())
+        {
+            SoundEvent sound = music.getMusicLocation();
+            String minDelay = String.valueOf(music.getMinDelay());
+            String maxDelay = String.valueOf(music.getMaxDelay());
+            ResourceLocation regName = SoundEvent.REGISTRY.getNameForObject(sound);
+
+            dump.addData(music.name().toLowerCase(), regName != null ? regName.toString() : "<null>", minDelay, maxDelay);
+        }
     }
 
     @Override

@@ -14,6 +14,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class CommonProxy
 {
@@ -38,6 +39,8 @@ public class CommonProxy
     {
         return null;
     }
+
+    public void addMusicTypeData(DataDump dump) {}
 
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb) {}
 
