@@ -1,42 +1,28 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.lang.reflect.Field;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.ModNameUtils;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.util.ModNameUtils;
 
-public class PotionDump extends DataDump
+public class PotionDump
 {
-    private static final Field field_isBeneficial = ReflectionHelper.findField(Potion.class, "field_188415_h", "beneficial");
-
-    private PotionDump(Format format)
-    {
-        super(7, format);
-    }
-
     public static List<String> getFormattedPotionDump(Format format)
     {
-        PotionDump potionDump = new PotionDump(format);
-        Iterator<Map.Entry<ResourceLocation, Potion>> iter = ForgeRegistries.POTIONS.getEntries().iterator();
+        DataDump potionDump = new DataDump(7, format);
 
-        while (iter.hasNext())
+        for (ResourceLocation key : Potion.REGISTRY.getKeys())
         {
-            Map.Entry<ResourceLocation, Potion> entry = iter.next();
-            Potion potion = entry.getValue();
-            ResourceLocation rl = entry.getKey();
-            String modName = ModNameUtils.getModName(rl);
-            String regName = rl.toString();
+            Potion potion = Potion.REGISTRY.getObject(key);
+            String modName = ModNameUtils.getModName(key);
+            String regName = key.toString();
             String id = String.valueOf(Potion.getIdFromPotion(potion));
             String name = potion.getName();
             String color = String.format("0x%08X (%10d)", potion.getLiquidColor(), potion.getLiquidColor());
             String isBad = String.valueOf(potion.isBadEffect());
-            String isBeneficial = getIsBeneficial(potion);
+            String isBeneficial = String.valueOf(potion.isBeneficial());
 
             potionDump.addData(modName, regName, name, id, color, isBad, isBeneficial);
         }
@@ -50,18 +36,5 @@ public class PotionDump extends DataDump
         potionDump.setUseColumnSeparator(true);
 
         return potionDump.getLines();
-    }
-
-    public static String getIsBeneficial(Potion potion)
-    {
-        try
-        {
-            return String.valueOf(field_isBeneficial.get(potion));
-        }
-        catch (Exception e)
-        {
-            TellMe.logger.warn("Failed to reflect Potion#beneficial", e);
-            return "";
-        }
     }
 }

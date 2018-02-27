@@ -1,13 +1,11 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import net.minecraft.client.audio.MusicTicker.MusicType;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 
 public class SoundEventDump
 {
@@ -15,10 +13,11 @@ public class SoundEventDump
     {
         DataDump soundEventDump = new DataDump(2, format);
 
-        for (Map.Entry<ResourceLocation, SoundEvent> entry : ForgeRegistries.SOUND_EVENTS.getEntries())
+        for (ResourceLocation key : SoundEvent.REGISTRY.getKeys())
         {
-            String regName = entry.getKey().toString();
-            String id = String.valueOf(SoundEvent.REGISTRY.getIDForObject(entry.getValue()));
+            SoundEvent sound = SoundEvent.REGISTRY.getObject(key);
+            String regName = key.toString();
+            String id = String.valueOf(SoundEvent.REGISTRY.getIDForObject(sound));
 
             soundEventDump.addData(regName, id);
         }
@@ -36,7 +35,7 @@ public class SoundEventDump
     {
         DataDump musicTypeDump = new DataDump(4, format);
 
-        TellMe.proxy.addMusicTypeData(musicTypeDump);
+        addMusicTypeData(musicTypeDump);
 
         musicTypeDump.addTitle("Name", "SoundEvent", "MinDelay", "MaxDelay");
 
@@ -46,5 +45,18 @@ public class SoundEventDump
         musicTypeDump.setUseColumnSeparator(true);
 
         return musicTypeDump.getLines();
+    }
+
+    private static void addMusicTypeData(DataDump dump)
+    {
+        for (MusicType music : MusicType.values())
+        {
+            SoundEvent sound = music.getMusicLocation();
+            String minDelay = String.valueOf(music.getMinDelay());
+            String maxDelay = String.valueOf(music.getMaxDelay());
+            ResourceLocation regName = SoundEvent.REGISTRY.getNameForObject(sound);
+
+            dump.addData(music.name().toLowerCase(), regName != null ? regName.toString() : "<null>", minDelay, maxDelay);
+        }
     }
 }

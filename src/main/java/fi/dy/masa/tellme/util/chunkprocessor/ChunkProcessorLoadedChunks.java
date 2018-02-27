@@ -1,15 +1,15 @@
 package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.Collection;
+import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.WorldUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
-import fi.dy.masa.tellme.util.EntityInfo;
 
 public abstract class ChunkProcessorLoadedChunks
 {
@@ -38,7 +38,7 @@ public abstract class ChunkProcessorLoadedChunks
 
     public void processAllLoadedChunks(World world)
     {
-        Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
+        Collection<Chunk> loadedChunks = WorldUtils.getLoadedChunks(world);
 
         for (Chunk chunk : loadedChunks)
         {

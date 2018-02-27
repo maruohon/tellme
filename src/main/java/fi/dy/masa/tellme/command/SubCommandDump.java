@@ -5,14 +5,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import com.google.common.collect.Sets;
+import fi.dy.masa.tellme.datadump.BiomeDump;
+import fi.dy.masa.tellme.datadump.BlockDump;
+import fi.dy.masa.tellme.datadump.BlockStatesDump;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.datadump.DimensionDump;
+import fi.dy.masa.tellme.datadump.EnchantmentDump;
+import fi.dy.masa.tellme.datadump.EntityDump;
+import fi.dy.masa.tellme.datadump.ItemDump;
+import fi.dy.masa.tellme.datadump.PotionDump;
+import fi.dy.masa.tellme.datadump.PotionTypeDump;
+import fi.dy.masa.tellme.datadump.SoundEventDump;
+import fi.dy.masa.tellme.datadump.SpawnEggDump;
+import fi.dy.masa.tellme.datadump.TileEntityDump;
+import fi.dy.masa.tellme.datadump.WorldTypeDump;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import fi.dy.masa.tellme.datadump.*;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.OreDictionaryDump.OreDumpType;
 
 public class SubCommandDump extends SubCommand
 {
@@ -44,19 +56,14 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
-        this.subSubCommands.add("fluids");
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
         this.subSubCommands.add("musictypes");
-        this.subSubCommands.add("oredictionary-by-key");
-        this.subSubCommands.add("oredictionary-by-key-individual");
-        this.subSubCommands.add("oredictionary-by-item");
         this.subSubCommands.add("potions");
         this.subSubCommands.add("potiontypes");
         this.subSubCommands.add("soundevents");
         this.subSubCommands.add("spawneggs");
         this.subSubCommands.add("tileentities");
-        this.subSubCommands.add("villagerprofessions");
         this.subSubCommands.add("worldtypes");
     }
 
@@ -104,7 +111,7 @@ public class SubCommandDump extends SubCommand
     protected void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
     {
         Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
-        List<String> data = this.getData(arg, format);
+        List<String> data = this.getData(arg, format, server);
 
         if (data.isEmpty())
         {
@@ -136,7 +143,7 @@ public class SubCommandDump extends SubCommand
         }
     }
 
-    private List<String> getData(String type, Format format)
+    private List<String> getData(String type, Format format, MinecraftServer server)
     {
         switch (type)
         {
@@ -149,22 +156,17 @@ public class SubCommandDump extends SubCommand
             case "blocks-with-nbt":                 return BlockDump.getFormattedBlockDump(format, true);
             case "blockstates-by-block":            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
             case "blockstates-by-state":            return BlockStatesDump.getFormattedBlockStatesDumpByState(format);
-            case "dimensions":                      return DimensionDump.getFormattedDimensionDump(format);
+            case "dimensions":                      return DimensionDump.getFormattedDimensionDump(format, server);
             case "enchantments":                    return EnchantmentDump.getFormattedEnchantmentDump(format);
             case "entities":                        return EntityDump.getFormattedEntityDump(format);
-            case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
             case "items":                           return ItemDump.getFormattedItemDump(format, false);
             case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, true);
             case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);
-            case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
-            case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
-            case "oredictionary-by-item":           return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
             case "potions":                         return PotionDump.getFormattedPotionDump(format);
             case "potiontypes":                     return PotionTypeDump.getFormattedPotionTypeDump(format);
             case "soundevents":                     return SoundEventDump.getFormattedSoundEventDump(format);
             case "spawneggs":                       return SpawnEggDump.getFormattedSpawnEggDump(format);
             case "tileentities":                    return TileEntityDump.getFormattedTileEntityDump(format);
-            case "villagerprofessions":             return VillagerProfessionDump.getFormattedVillagerProfessionDump(format);
             case "worldtypes":                      return WorldTypeDump.getFormattedWorldTypeDump(format);
             default:
         }

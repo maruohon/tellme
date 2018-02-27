@@ -1,29 +1,21 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public class EnchantmentDump extends DataDump
+public class EnchantmentDump
 {
-    private EnchantmentDump(Format format)
-    {
-        super(5, format);
-    }
-
     public static List<String> getFormattedEnchantmentDump(Format format)
     {
-        EnchantmentDump enchantmentDump = new EnchantmentDump(format);
-        Iterator<Map.Entry<ResourceLocation, Enchantment>> iter = ForgeRegistries.ENCHANTMENTS.getEntries().iterator();
+        DataDump enchantmentDump = new DataDump(5, format);
 
-        while (iter.hasNext())
+        for (ResourceLocation key : Enchantment.REGISTRY.getKeys())
         {
-            Map.Entry<ResourceLocation, Enchantment> entry = iter.next();
-            Enchantment ench = entry.getValue();
-            String regName = entry.getKey().toString();
+            Enchantment ench = Enchantment.REGISTRY.getObject(key);
+            String regName = key.toString();
             String name = ench.getName();
             String type = ench.type.toString();
             String rarity = ench.getRarity().toString();

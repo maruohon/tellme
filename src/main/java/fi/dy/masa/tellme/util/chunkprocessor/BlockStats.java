@@ -6,17 +6,16 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
 
 public class BlockStats extends ChunkProcessorAllChunks
 {
@@ -25,7 +24,6 @@ public class BlockStats extends ChunkProcessorAllChunks
     @Override
     public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
     {
-        @SuppressWarnings("deprecation")
         final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
         final int[] counts = new int[size];
         int count = 0;
@@ -50,8 +48,6 @@ public class BlockStats extends ChunkProcessorAllChunks
                     {
                         pos.setPos(x, y, z);
                         IBlockState state = chunk.getBlockState(pos);
-
-                        @SuppressWarnings("deprecation")
                         int id = Block.BLOCK_STATE_IDS.get(state);
                         counts[id]++;
                         count++;
@@ -62,14 +58,13 @@ public class BlockStats extends ChunkProcessorAllChunks
             // Add the amount of air that would be in non-existing chunk sections within the given volume
             if (topY < posMax.getY())
             {
-                @SuppressWarnings("deprecation")
                 int id = Block.BLOCK_STATE_IDS.get(Blocks.AIR.getDefaultState());
                 counts[id] += (posMax.getY() - topY) * 256;
             }
         }
 
         final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks in %.3f seconds.",
+        LiteModTellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks in %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
 
         this.addParsedData(counts);
@@ -85,10 +80,9 @@ public class BlockStats extends ChunkProcessorAllChunks
             {
                 try
                 {
-                    @SuppressWarnings("deprecation")
                     IBlockState state = Block.BLOCK_STATE_IDS.getByValue(i);
                     Block block = state.getBlock();
-                    String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
+                    String registryName = Block.REGISTRY.getNameForObject(block).toString();
                     int id = Block.getIdFromBlock(block);
                     int meta = block.getMetaFromState(state);
                     ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
@@ -98,7 +92,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 }
                 catch (Exception e)
                 {
-                    TellMe.logger.error("Caught an exception while getting block names", e);
+                    LiteModTellMe.logger.error("Caught an exception while getting block names", e);
                 }
             }
         }
@@ -136,7 +130,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 }
                 catch (NumberFormatException e)
                 {
-                    TellMe.logger.error("Caught an exception while parsing block meta value from user input", e);
+                    LiteModTellMe.logger.error("Caught an exception while parsing block meta value from user input", e);
                 }
             }
             else

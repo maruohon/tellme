@@ -11,6 +11,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.command.SubCommand;
+import fi.dy.masa.tellme.datadump.DataDump;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -23,10 +26,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.SubCommand;
-import fi.dy.masa.tellme.datadump.DataDump;
 
 public class BlockInfo
 {
@@ -89,7 +88,7 @@ public class BlockInfo
                 }
                 else
                 {
-                    TellMe.logger.warn("Invalid block property '{}'", propParts[i]);
+                    LiteModTellMe.logger.warn("Invalid block property '{}'", propParts[i]);
                 }
             }
 
@@ -106,7 +105,7 @@ public class BlockInfo
         String teInfo = "";
         IBlockState state = world.getBlockState(pos).getActualState(world, pos);
         boolean teInWorld = world.getTileEntity(pos) != null;
-        boolean shouldHaveTE = state.getBlock().hasTileEntity(state);
+        boolean shouldHaveTE = state.getBlock().hasTileEntity();
 
         if (teInWorld == shouldHaveTE)
         {
@@ -121,7 +120,6 @@ public class BlockInfo
         return teInfo;
     }
 
-    @SuppressWarnings("deprecation")
     private static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         List<String> lines = new ArrayList<>();
@@ -152,8 +150,6 @@ public class BlockInfo
         {
             lines.add("IBlockState properties: <none>");
         }
-
-        TellMe.proxy.getExtendedBlockStateInfo(world, state, pos, lines);
 
         TileEntity te = world.getTileEntity(pos);
 
@@ -223,7 +219,7 @@ public class BlockInfo
 
         for (String line : lines)
         {
-            TellMe.logger.info(line);
+            LiteModTellMe.logger.info(line);
         }
     }
 
@@ -281,10 +277,11 @@ public class BlockInfo
 
             int id = Block.getIdFromBlock(block);
             int meta = block.getMetaFromState(state);
-            ItemStack stack = block.getPickBlock(state, RayTraceUtils.getRayTraceFromEntity(world, player, true), world, pos, player);
+            //ItemStack stack = block.getPickBlock(state, RayTraceUtils.getRayTraceFromEntity(world, player, true), world, pos, player);
             //ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
             //ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
-            String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
+            ItemStack stack = new ItemStack(block, 1, block.getMetaFromState(state));
+            String registryName = Block.REGISTRY.getNameForObject(block).toString();
             String displayName;
 
             if (stack.isEmpty() == false)

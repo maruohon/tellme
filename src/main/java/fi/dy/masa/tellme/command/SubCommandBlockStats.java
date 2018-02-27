@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import com.google.common.collect.Maps;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.chunkprocessor.BlockStats;
+import net.minecraft.block.Block;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -18,12 +23,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.WorldUtils;
-import fi.dy.masa.tellme.util.chunkprocessor.BlockStats;
 
 public class SubCommandBlockStats extends SubCommand
 {
@@ -84,7 +83,7 @@ public class SubCommandBlockStats extends SubCommand
         {
             if (args[0].equals("dump") || args[0].equals("dump-csv") || args[0].equals("query"))
             {
-                return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
+                return CommandBase.getListOfStringsMatchingLastWord(args, Block.REGISTRY.getKeys());
             }
             else if (args[0].equals("count"))
             {
@@ -180,7 +179,7 @@ public class SubCommandBlockStats extends SubCommand
             {
                 this.sendMessage(sender, "Counting blocks...");
 
-                blockStats.processChunks(TellMe.proxy.getLoadedChunks(world));
+                blockStats.processChunks(WorldUtils.getLoadedChunks(world));
 
                 this.sendMessage(sender, "Done");
             }

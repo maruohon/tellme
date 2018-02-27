@@ -1,11 +1,8 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -14,6 +11,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
+import fi.dy.masa.tellme.mixin.IMixinBlock;
+import fi.dy.masa.tellme.util.ModNameUtils;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -21,11 +21,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
-import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class BlockDump extends DataDump
 {
@@ -33,7 +28,7 @@ public class BlockDump extends DataDump
 
     private BlockDump(Format format, boolean dumpNBT)
     {
-        super(dumpNBT ? 10 : 9, format);
+        super(dumpNBT ? 8 : 7, format);
 
         this.dumpNBT = dumpNBT;
     }
@@ -80,16 +75,15 @@ public class BlockDump extends DataDump
         String itemId = item != Items.AIR ? String.valueOf(Item.getIdFromItem(item)) : EMPTY_STRING;
         String itemMeta = stack.isEmpty() == false ? String.valueOf(stack.getMetadata()) : EMPTY_STRING;
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
-        String exists = isDummied(ForgeRegistries.BLOCKS, rl) ? "false" : "true";
 
         if (this.dumpNBT)
         {
             String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : EMPTY_STRING;
-            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, exists, ItemDump.getOredictKeysJoined(stack), nbt);
+            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, nbt);
         }
         else
         {
-            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, exists, ItemDump.getOredictKeysJoined(stack));
+            this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName);
         }
     }
 
@@ -97,18 +91,19 @@ public class BlockDump extends DataDump
     {
         BlockDump blockDump = new BlockDump(format, dumpNBT);
 
-        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (ResourceLocation key : Block.REGISTRY.getKeys())
         {
-            getDataForBlockSubtypes(entry.getValue(), entry.getKey(), blockDump);
+            Block block = Block.REGISTRY.getObject(key);
+            getDataForBlockSubtypes(block, key, blockDump);
         }
 
         if (dumpNBT)
         {
-            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "Exists", "Ore Dict keys", "NBT");
+            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "NBT");
         }
         else
         {
-            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name", "Exists", "Ore Dict keys");
+            blockDump.addTitle("Mod name", "Registry name", "BlockID", "Subtypes", "Item ID", "Item meta", "Display name");
         }
 
         blockDump.setColumnProperties(2, Alignment.RIGHT, true); // ID
@@ -125,41 +120,30 @@ public class BlockDump extends DataDump
     {
         DataDump blockDump = new DataDump(4, format);
 
-        try
+        for (ResourceLocation key : Block.REGISTRY.getKeys())
         {
-            Field fieldHardness = ReflectionHelper.findField(Block.class, "field_149782_v", "blockHardness");
-            Field fieldResistance = ReflectionHelper.findField(Block.class, "field_149781_w", "blockResistance");
-
-            for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
-            {
-                ResourceLocation rl = entry.getKey();
-                String modName = ModNameUtils.getModName(rl);
-                String registryName = rl.toString();
-                Block block = entry.getValue();
-                String hardness = String.format("%.2f", fieldHardness.get(block));
-                String resistance = String.format("%.2f", fieldResistance.get(block));
-                blockDump.addData(modName, registryName, hardness, resistance);
-            }
-
-            blockDump.addTitle("Mod name", "Registry name", "Hardness", "Resistance");
-
-            blockDump.setColumnProperties(2, Alignment.RIGHT, true); // Hardness
-            blockDump.setColumnProperties(3, Alignment.RIGHT, true); // Resistance
-
-            blockDump.addHeader("NOTE: The Hardness and Resistance values are the raw base values in the fields");
-            blockDump.addHeader("of the Block class in question. The actual final values may be different");
-            blockDump.addHeader("for different states of the block, or they may depend on a TileEntity etc.");
-
-            blockDump.addFooter("NOTE: The Hardness and Resistance values are the raw base values in the fields");
-            blockDump.addFooter("of the Block class in question. The actual final values may be different");
-            blockDump.addFooter("for different states of the block, or they may depend on a TileEntity etc.");
-
-            blockDump.setUseColumnSeparator(true);
+            String modName = ModNameUtils.getModName(key);
+            String registryName = key.toString();
+            Block block = Block.REGISTRY.getObject(key);
+            String hardness = String.format("%.2f", ((IMixinBlock) block).getBlockHardness());
+            String resistance = String.format("%.2f", ((IMixinBlock) block).getBlockResistance());
+            blockDump.addData(modName, registryName, hardness, resistance);
         }
-        catch (Exception e)
-        {
-            TellMe.logger.warn("Exception while trying to get block-props dump", e);
-        }
+
+        blockDump.addTitle("Mod name", "Registry name", "Hardness", "Resistance");
+
+        blockDump.setColumnProperties(2, Alignment.RIGHT, true); // Hardness
+        blockDump.setColumnProperties(3, Alignment.RIGHT, true); // Resistance
+
+        blockDump.addHeader("NOTE: The Hardness and Resistance values are the raw base values in the fields");
+        blockDump.addHeader("of the Block class in question. The actual final values may be different");
+        blockDump.addHeader("for different states of the block, or they may depend on a TileEntity etc.");
+
+        blockDump.addFooter("NOTE: The Hardness and Resistance values are the raw base values in the fields");
+        blockDump.addFooter("of the Block class in question. The actual final values may be different");
+        blockDump.addFooter("for different states of the block, or they may depend on a TileEntity etc.");
+
+        blockDump.setUseColumnSeparator(true);
 
         return blockDump.getLines();
     }
@@ -168,16 +152,11 @@ public class BlockDump extends DataDump
     {
         List<IdToStringHolder> data = new ArrayList<IdToStringHolder>();
         List<String> lines = new ArrayList<String>();
-        Iterator<Block> iter = Block.REGISTRY.iterator();
 
-        while (iter.hasNext())
+        for (ResourceLocation key : Block.REGISTRY.getKeys())
         {
-            Block block = iter.next();
-
-            if (block != null && block.getRegistryName() != null)
-            {
-                data.add(new IdToStringHolder(Block.getIdFromBlock(block), block.getRegistryName().toString()));
-            }
+            Block block = Block.REGISTRY.getObject(key);
+            data.add(new IdToStringHolder(Block.getIdFromBlock(block), key.toString()));
         }
 
         Collections.sort(data);
@@ -223,12 +202,11 @@ public class BlockDump extends DataDump
 
     public static String getJsonBlockDump()
     {
-        HashMultimap<String, ResourceLocation> map = HashMultimap.create(400, 512);
+        HashMultimap<String, ResourceLocation> map = HashMultimap.create();
 
         // Get a mapping of modName => collection-of-block-names
-        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (ResourceLocation key : Block.REGISTRY.getKeys())
         {
-            ResourceLocation key = entry.getKey();
             map.put(key.getResourceDomain(), key);
         }
 
@@ -249,7 +227,7 @@ public class BlockDump extends DataDump
             {
                 JsonObject objBlock = new JsonObject();
                 dump.setCurrentBlockObject(objBlock);
-                getDataForBlockSubtypes(ForgeRegistries.BLOCKS.getValue(key), key, dump);
+                getDataForBlockSubtypes(Block.REGISTRY.getObject(key), key, dump);
                 objectMod.add(key.toString(), objBlock);
             }
 
@@ -285,20 +263,16 @@ public class BlockDump extends DataDump
             {
                 int blockId = Block.getIdFromBlock(block);
                 String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
-                String exists = isDummied(ForgeRegistries.BLOCKS, rl) ? "false" : "true";
-                String oreDictKeys = ItemDump.getOredictKeysJoined(stack);
 
                 this.obj.add("BlockID", new JsonPrimitive(blockId));
                 this.obj.add("SubTypes", new JsonPrimitive(subTypes));
-                this.obj.add("Exists", new JsonPrimitive(exists));
-                this.obj.add("OreDict", new JsonPrimitive(oreDictKeys));
             }
 
             Item item = stack.getItem();
 
             if (item != Items.AIR)
             {
-                String itemName = item.getRegistryName().toString();
+                String itemName = Item.REGISTRY.getNameForObject(item).toString();
                 int itemId = Item.getIdFromItem(item);
                 int itemMeta = stack.getMetadata();
                 String displayName = stack.isEmpty() == false ? stack.getDisplayName() : block.getLocalizedName();

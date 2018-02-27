@@ -1,11 +1,14 @@
 package fi.dy.masa.tellme.command;
 
+import java.awt.Desktop;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import fi.dy.masa.tellme.network.MessageCopyToClipboard;
-import fi.dy.masa.tellme.network.PacketHandler;
+import net.minecraft.util.text.TextComponentString;
 
 public class SubCommandCopyToClipboard extends SubCommand
 {
@@ -23,13 +26,21 @@ public class SubCommandCopyToClipboard extends SubCommand
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        if (sender instanceof EntityPlayerMP)
+        if (Desktop.isDesktopSupported())
         {
-            PacketHandler.INSTANCE.sendTo(new MessageCopyToClipboard(String.join(" ", args)), (EntityPlayerMP) sender);
-        }
-        else
-        {
-            this.sendMessage(sender, this.getName() + " can only be run by a player");
+            String str = String.join(" ", args);
+            StringSelection stringSelection = new StringSelection(str);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, null);
+
+            if (sender instanceof EntityPlayer)
+            {
+                ((EntityPlayer) sender).sendStatusMessage(new TextComponentString("Copied " + str), true);
+            }
+            else
+            {
+                sender.sendMessage(new TextComponentString("Copied " + str));
+            }
         }
     }
 }

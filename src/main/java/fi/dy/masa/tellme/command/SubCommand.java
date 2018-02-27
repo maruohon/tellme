@@ -18,7 +18,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.event.ClickEvent;
-import fi.dy.masa.tellme.TellMe;
 
 public abstract class SubCommand implements ISubCommand
 {
@@ -150,7 +149,7 @@ public abstract class SubCommand implements ISubCommand
     {
         ITextComponent name = new TextComponentString(file.getName());
 
-        if (TellMe.proxy.isSinglePlayer())
+        //if (TellMe.proxy.isSinglePlayer())
         {
             name.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
             name.getStyle().setUnderlined(Boolean.valueOf(true));

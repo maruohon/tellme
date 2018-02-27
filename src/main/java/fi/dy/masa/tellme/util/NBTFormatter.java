@@ -3,12 +3,20 @@ package fi.dy.masa.tellme.util;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Set;
-
-import net.minecraft.nbt.*;
-
-import net.minecraftforge.common.util.Constants;
-
-import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.reference.Constants;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
+import net.minecraft.nbt.NBTTagByteArray;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagIntArray;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagLong;
+import net.minecraft.nbt.NBTTagShort;
+import net.minecraft.nbt.NBTTagString;
 
 public class NBTFormatter
 {
@@ -45,7 +53,7 @@ public class NBTFormatter
         }
         catch(IllegalFormatException e)
         {
-            TellMe.logger.warn("Error while printing NBT data");
+            LiteModTellMe.logger.warn("Error while printing NBT data");
         }
 
         switch(nbt.getId())

@@ -2,9 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
@@ -12,7 +10,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class BlockStatesDump extends DataDump
 {
@@ -24,12 +21,10 @@ public class BlockStatesDump extends DataDump
     public static List<String> getFormattedBlockStatesDumpByBlock()
     {
         List<String> outputLines = new ArrayList<String>();
-        Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
 
-        while (iter.hasNext())
+        for (ResourceLocation key : Block.REGISTRY.getKeys())
         {
-            Map.Entry<ResourceLocation, Block> entry = iter.next();
-            Block block = entry.getValue();
+            Block block = Block.REGISTRY.getObject(key);
 
             List<String> lines = new ArrayList<String>();
             UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = block.getDefaultState().getProperties().entrySet().iterator();
@@ -39,7 +34,7 @@ public class BlockStatesDump extends DataDump
                 lines.add(propIter.next().getKey().toString());
             }
 
-            outputLines.add(entry.getKey().toString() + ": " + String.join(", ", lines));
+            outputLines.add(key.toString() + ": " + String.join(", ", lines));
         }
 
         Collections.sort(outputLines);
@@ -53,13 +48,11 @@ public class BlockStatesDump extends DataDump
     public static List<String> getFormattedBlockStatesDumpByState(Format format)
     {
         BlockStatesDump blockStatesDump = new BlockStatesDump(2, format);
-        Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
 
-        while (iter.hasNext())
+        for (ResourceLocation key : Block.REGISTRY.getKeys())
         {
-            Map.Entry<ResourceLocation, Block> entry = iter.next();
-            Block block = entry.getValue();
-            String regName = entry.getKey().toString();
+            Block block = Block.REGISTRY.getObject(key);
+            String regName = key.toString();
 
             ImmutableList<IBlockState> validStates = block.getBlockState().getValidStates();
 

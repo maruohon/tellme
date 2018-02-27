@@ -5,26 +5,25 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.TileEntityDump;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.Locate;
 import fi.dy.masa.tellme.util.chunkprocessor.Locate.LocateType;
 import fi.dy.masa.tellme.util.chunkprocessor.Locate.OutputType;
+import net.minecraft.block.Block;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 public class SubCommandLocate extends SubCommand
 {
@@ -78,11 +77,11 @@ public class SubCommandLocate extends SubCommand
         {
             if (args[0].equals("block"))
             {
-                return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
+                return CommandBase.getListOfStringsMatchingLastWord(args, Block.REGISTRY.getKeys());
             }
             else if (args[0].equals("entity"))
             {
-                return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.ENTITIES.getKeys());
+                return CommandBase.getListOfStringsMatchingLastWord(args, EntityList.REGISTRY.getKeys());
             }
             else if (args[0].equals("te"))
             {
@@ -290,21 +289,18 @@ public class SubCommandLocate extends SubCommand
             if (args[3].equals("all-dims"))
             {
                 locate.setPrintDimension(true);
-                Integer[] ids = DimensionManager.getIDs();
 
-                for (int dim : ids)
+                for (World worldTmp : server.worlds)
                 {
-                    World worldTmp = DimensionManager.getWorld(dim);
-
                     if (worldTmp != null)
                     {
-                        locate.processChunks(TellMe.proxy.getLoadedChunks(worldTmp));
+                        locate.processChunks(WorldUtils.getLoadedChunks(worldTmp));
                     }
                 }
             }
             else
             {
-                locate.processChunks(TellMe.proxy.getLoadedChunks(world));
+                locate.processChunks(WorldUtils.getLoadedChunks(world));
             }
 
             this.outputData(locate, sender);

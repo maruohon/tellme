@@ -1,28 +1,22 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.mixin.IMixinTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistryNamespaced;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import fi.dy.masa.tellme.TellMe;
 
-public class TileEntityDump extends DataDump
+public class TileEntityDump
 {
-    private static final Field field_REGISTRY = ReflectionHelper.findField(TileEntity.class, "field_190562_f", "REGISTRY");
-
-    private TileEntityDump(Format format)
-    {
-        super(3, format);
-    }
-
     public static List<String> getFormattedTileEntityDump(Format format)
     {
-        TileEntityDump tileEntityDump = new TileEntityDump(format);
+        DataDump tileEntityDump = new DataDump(3, format);
 
         try
         {
@@ -41,7 +35,7 @@ public class TileEntityDump extends DataDump
         }
         catch (Exception e)
         {
-            TellMe.logger.warn("Failed to dump the TileEntity map");
+            LiteModTellMe.logger.warn("Failed to dump the TileEntity map");
         }
 
         return tileEntityDump.getLines();
@@ -50,17 +44,6 @@ public class TileEntityDump extends DataDump
     @Nullable
     public static RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> getTileEntityRegistry()
     {
-        try
-        {
-            @SuppressWarnings("unchecked")
-            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = (RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>>) field_REGISTRY.get(null);
-            return registry;
-        }
-        catch (IllegalAccessException e)
-        {
-            TellMe.logger.warn("Failed to get the TileEntity registry", e);
-        }
-
-        return null;
+        return IMixinTileEntity.getRegistry();
     }
 }

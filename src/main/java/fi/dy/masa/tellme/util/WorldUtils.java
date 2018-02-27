@@ -1,17 +1,61 @@
 package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
 
 public class WorldUtils
 {
+    public static Collection<Chunk> getLoadedChunks(World world)
+    {
+        IChunkProvider provider = world.getChunkProvider();
+
+        if (provider instanceof ChunkProviderServer)
+        {
+            return ((ChunkProviderServer) provider).getLoadedChunks();
+        }
+
+        EntityPlayer player = Minecraft.getMinecraft().player;
+
+        if (player != null)
+        {
+            BlockPos pos = player.getPosition();
+            int cX = pos.getX() >> 4;
+            int cZ = pos.getZ() >> 4;
+            int radius = Minecraft.getMinecraft().gameSettings.renderDistanceChunks + 1;
+            List<Chunk> chunks = new ArrayList<Chunk>();
+
+            for (int z = cZ - radius; z <= (cZ + radius); z++)
+            {
+                for (int x = cX - radius; x <= (cX + radius); x++)
+                {
+                    Chunk chunk = provider.getLoadedChunk(x, z);
+
+                    if (chunk != null)
+                    {
+                        chunks.add(chunk);
+                    }
+                }
+            }
+
+            return chunks;
+        }
+
+        return Collections.emptyList();
+
+    }
+
     public static int getLoadedChunkCount(World world)
     {
         return world != null && world.getChunkProvider() instanceof ChunkProviderServer ?

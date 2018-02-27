@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.datadump.TileEntityDump;
+import fi.dy.masa.tellme.util.BlockInfo;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -22,12 +27,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.TileEntityDump;
-import fi.dy.masa.tellme.util.BlockInfo;
 
 public class Locate extends ChunkProcessorAllChunks
 {
@@ -78,7 +77,7 @@ public class Locate extends ChunkProcessorAllChunks
             int index = str.indexOf('[');
             String name = index > 0 ? str.substring(0, index) : str;
             ResourceLocation key = new ResourceLocation(name);
-            Block block = ForgeRegistries.BLOCKS.getValue(key);
+            Block block = Block.REGISTRY.getObject(key);
 
             if (block != null && (block != Blocks.AIR || key.equals(air)))
             {
@@ -103,7 +102,7 @@ public class Locate extends ChunkProcessorAllChunks
             }
             else
             {
-                TellMe.logger.warn("Invalid block name '{}'", str);
+                LiteModTellMe.logger.warn("Invalid block name '{}'", str);
             }
         }
 
@@ -116,7 +115,7 @@ public class Locate extends ChunkProcessorAllChunks
 
         for (String name : this.filters)
         {
-            Class<? extends Entity> clazz = EntityList.getClass(new ResourceLocation(name));
+            Class<? extends Entity> clazz = EntityList.func_192839_a(name);
 
             if (clazz != null)
             {
@@ -124,7 +123,7 @@ public class Locate extends ChunkProcessorAllChunks
             }
             else
             {
-                TellMe.logger.warn("Invalid entity name '{}'", name);
+                LiteModTellMe.logger.warn("Invalid entity name '{}'", name);
             }
         }
 
@@ -146,7 +145,7 @@ public class Locate extends ChunkProcessorAllChunks
             }
             else
             {
-                TellMe.logger.warn("Invalid TileEntity name '{}'", name);
+                LiteModTellMe.logger.warn("Invalid TileEntity name '{}'", name);
             }
         }
 
@@ -181,11 +180,11 @@ public class Locate extends ChunkProcessorAllChunks
         {
             if (this.data.size() >= 100000)
             {
-                TellMe.logger.warn("Over 100 000 blocks found already, aborting...");
+                LiteModTellMe.logger.warn("Over 100 000 blocks found already, aborting...");
                 break;
             }
 
-            final int dim = chunk.getWorld().provider.getDimension();
+            final int dim = chunk.getWorld().provider.getDimensionType().getId();
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
@@ -215,7 +214,7 @@ public class Locate extends ChunkProcessorAllChunks
         }
 
         final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Located %d blocks in %d chunks in %.3f seconds.",
+        LiteModTellMe.logger.info(String.format(Locale.US, "Located %d blocks in %d chunks in %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
@@ -226,7 +225,7 @@ public class Locate extends ChunkProcessorAllChunks
 
         for (Chunk chunk : chunks)
         {
-            final int dim = chunk.getWorld().provider.getDimension();
+            final int dim = chunk.getWorld().provider.getDimensionType().getId();
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunk.z << 4, posMin.getZ());
@@ -252,7 +251,7 @@ public class Locate extends ChunkProcessorAllChunks
         }
 
         final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Located %d Entities in %d chunks in %.3f seconds.",
+        LiteModTellMe.logger.info(String.format(Locale.US, "Located %d Entities in %d chunks in %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
@@ -266,11 +265,11 @@ public class Locate extends ChunkProcessorAllChunks
         {
             if (this.data.size() >= 100000)
             {
-                TellMe.logger.warn("Over 100 000 TileEntities found already, aborting...");
+                LiteModTellMe.logger.warn("Over 100 000 TileEntities found already, aborting...");
                 break;
             }
 
-            final int dim = chunk.getWorld().provider.getDimension();
+            final int dim = chunk.getWorld().provider.getDimensionType().getId();
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
@@ -299,7 +298,7 @@ public class Locate extends ChunkProcessorAllChunks
         }
 
         final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Located %d TileEntities in %d chunks in %.3f seconds.",
+        LiteModTellMe.logger.info(String.format(Locale.US, "Located %d TileEntities in %d chunks in %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 

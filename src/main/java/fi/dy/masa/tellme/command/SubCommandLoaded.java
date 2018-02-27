@@ -2,6 +2,13 @@ package fi.dy.masa.tellme.command;
 
 import java.io.File;
 import java.util.List;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.datadump.ChunkDump;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.datadump.EntityCountDump.EntityListType;
+import fi.dy.masa.tellme.util.WorldUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -12,14 +19,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.ChunkDump;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
-import fi.dy.masa.tellme.datadump.EntityCountDump.EntityListType;
-import fi.dy.masa.tellme.util.WorldUtils;
 
 public class SubCommandLoaded extends SubCommand
 {
@@ -97,16 +96,13 @@ public class SubCommandLoaded extends SubCommand
 
         if (cmd.equals("dimensions") && args.length == 1)
         {
-            Integer[] dims = DimensionManager.getIDs();
-
-            for (int id : dims)
+            for (World world : server.worlds)
             {
-                World world = DimensionManager.getWorld(id);
-
                 if (world != null)
                 {
-                    TellMe.logger.info(String.format("DIM %4d: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
-                            id, world.provider.getDimensionType().getName(), WorldUtils.getLoadedChunkCount(world),
+                    LiteModTellMe.logger.info(String.format("DIM %4d: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
+                            world.provider.getDimensionType().getId(), world.provider.getDimensionType().getName(),
+                            WorldUtils.getLoadedChunkCount(world),
                             world.loadedEntityList.size(), world.playerEntities.size()));
                 }
             }
@@ -121,12 +117,12 @@ public class SubCommandLoaded extends SubCommand
         {
             outputTypeArgIndex = 1;
             Integer dim = args.length == 3 ? CommandBase.parseInt(args[2]) : null;
-            data = ChunkDump.getFormattedChunkDump(Format.ASCII, dim);
+            data = ChunkDump.getFormattedChunkDump(Format.ASCII, dim, server);
         }
         else if ((cmd.equals("entities-all") || cmd.equals("tileentities-all")) && (args.length == 3 || args.length == 4))
         {
             EntityListType type = this.getListType(cmd, args[1]);
-            World world = this.checkAndGetWorld(sender, args, 3);
+            World world = this.checkAndGetWorld(server, sender, args, 3);
             data = EntityCountDump.getFormattedEntityCountDumpAll(world, type);
         }
         else if ((cmd.equals("entities-in-area") || cmd.equals("tileentities-in-area")) && (args.length == 7 || args.length == 8))
@@ -150,7 +146,7 @@ public class SubCommandLoaded extends SubCommand
                 pos2 = new ChunkPos(CommandBase.parseInt(args[5]) >> 4, CommandBase.parseInt(args[6]) >> 4);
             }
 
-            World world = this.checkAndGetWorld(sender, args, 7);
+            World world = this.checkAndGetWorld(server, sender, args, 7);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos1, pos2);
         }
         else if ((cmd.equals("entities-in-chunk") || cmd.equals("tileentities-in-chunk")) && (args.length == 5 || args.length == 6))
@@ -170,7 +166,7 @@ public class SubCommandLoaded extends SubCommand
                 pos = new ChunkPos(CommandBase.parseInt(args[3]), CommandBase.parseInt(args[4]));
             }
 
-            World world = this.checkAndGetWorld(sender, args, 5);
+            World world = this.checkAndGetWorld(server, sender, args, 5);
             data = EntityCountDump.getFormattedEntityCountDumpArea(world, type, pos, pos);
         }
 
@@ -200,18 +196,14 @@ public class SubCommandLoaded extends SubCommand
         }
     }
 
-    private World checkAndGetWorld(ICommandSender sender, String[] args, int index) throws CommandException
+    private World checkAndGetWorld(MinecraftServer server, ICommandSender sender, String[] args, int index) throws CommandException
     {
-        World world;
+        World world = sender.getEntityWorld();
 
         if (args.length >= (index + 1))
         {
             int dimension = CommandBase.parseInt(args[index]);
-            world = DimensionManager.getWorld(dimension);
-        }
-        else
-        {
-            world = sender.getEntityWorld();
+            world = server.getWorld(dimension);
         }
 
         if (world == null)

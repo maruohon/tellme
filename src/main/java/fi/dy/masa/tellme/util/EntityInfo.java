@@ -3,16 +3,14 @@ package fi.dy.masa.tellme.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.command.SubCommand;
+import fi.dy.masa.tellme.datadump.DataDump;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.SubCommand;
-import fi.dy.masa.tellme.datadump.DataDump;
 
 public class EntityInfo
 {
@@ -60,7 +58,7 @@ public class EntityInfo
 
         for (String line : lines)
         {
-            TellMe.logger.info(line);
+            LiteModTellMe.logger.info(line);
         }
     }
 
@@ -91,12 +89,7 @@ public class EntityInfo
 
         if (rl != null)
         {
-            EntityEntry entry = ForgeRegistries.ENTITIES.getValue(rl);
-
-            if (entry != null)
-            {
-                name = entry.getName();
-            }
+            name = rl.toString();
         }
 
         if (name == null)

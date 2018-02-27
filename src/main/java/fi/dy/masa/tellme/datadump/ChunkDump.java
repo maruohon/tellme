@@ -3,39 +3,25 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.DimensionManager;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.WorldUtils;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 public class ChunkDump
 {
-    public static List<String> getFormattedChunkDump(Format format, @Nullable Integer dimension)
+    public static List<String> getFormattedChunkDump(Format format, @Nullable Integer dimension, MinecraftServer server)
     {
-        Integer[] ids;
-
-        if (dimension != null)
-        {
-            ids = new Integer[] { dimension };
-        }
-        else
-        {
-            ids = DimensionManager.getIDs(); // only loaded dimensions
-        }
-
         DataDump chunkDump = new DataDump(4, format);
 
-        for (int i = 0; i < ids.length; i++)
+        for (World world : server.worlds)
         {
-            Integer id = ids[i];
-            World world = DimensionManager.getWorld(id);
-
             if (world != null)
             {
-                String dimId = ids[i].toString();
-                Collection<Chunk> chunks = TellMe.proxy.getLoadedChunks(world);
+                String dimId = String.valueOf(world.provider.getDimensionType().getId());
+                Collection<Chunk> chunks = WorldUtils.getLoadedChunks(world);
 
                 for (Chunk chunk : chunks)
                 {

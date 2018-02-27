@@ -3,19 +3,15 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
 
-public class SpawnEggDump extends DataDump
+public class SpawnEggDump
 {
-    protected SpawnEggDump(Format format)
-    {
-        super(4, format);
-    }
-
     public static List<String> getFormattedSpawnEggDump(Format format)
     {
-        SpawnEggDump spawnEggDump = new SpawnEggDump(format);
+        DataDump spawnEggDump = new DataDump(4, format);
         Iterator<Map.Entry<ResourceLocation, EntityList.EntityEggInfo>> iter = EntityList.ENTITY_EGGS.entrySet().iterator();
 
         while (iter.hasNext())

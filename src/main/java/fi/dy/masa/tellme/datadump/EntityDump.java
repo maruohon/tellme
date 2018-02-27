@@ -1,49 +1,29 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public class EntityDump extends DataDump
+public class EntityDump
 {
-    private EntityDump(Format format)
-    {
-        super(4, format);
-    }
-
     public static List<String> getFormattedEntityDump(Format format)
     {
-        EntityDump entityDump = new EntityDump(format);
-        Iterator<Map.Entry<ResourceLocation, EntityEntry>> iter = ForgeRegistries.ENTITIES.getEntries().iterator();
+        DataDump entityDump = new DataDump(5, format);
 
-        while(iter.hasNext())
+        for (ResourceLocation key : EntityList.REGISTRY.getKeys())
         {
-            Map.Entry<ResourceLocation, EntityEntry> entry = iter.next();
-            Class<? extends Entity> clazz = entry.getValue().getEntityClass();
+            Class<? extends Entity> clazz = EntityList.REGISTRY.getObject(key);
             String className = clazz.getSimpleName();
-            EntityRegistration er = EntityRegistry.instance().lookupModSpawn(clazz, true);
+            String oldName = EntityList.getTranslationName(key);
 
-            if (er != null)
-            {
-                entityDump.addData(er.getContainer().getName(), er.getRegistryName().toString(), className, String.valueOf(er.getModEntityId()));
-            }
-            else
-            {
-                entityDump.addData("Minecraft", entry.getKey().toString(), className, String.valueOf(EntityList.getID(clazz)));
-            }
+            entityDump.addData("Minecraft", key.toString(), oldName, className, String.valueOf(EntityList.REGISTRY.getIDForObject(clazz)));
         }
 
-        entityDump.addTitle("Mod name", "Registry name", "Entity class name", "ID");
-
-        entityDump.setColumnProperties(3, Alignment.RIGHT, true); // id
-
+        entityDump.addTitle("Mod name", "Registry name", "Old name", "Entity class name", "ID");
+        entityDump.setColumnProperties(4, Alignment.RIGHT, true); // id
         entityDump.setUseColumnSeparator(true);
 
         return entityDump.getLines();
