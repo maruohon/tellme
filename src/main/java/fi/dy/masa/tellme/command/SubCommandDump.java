@@ -45,6 +45,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
         this.subSubCommands.add("fluids");
+        this.subSubCommands.add("food-items");
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
         this.subSubCommands.add("musictypes");
@@ -153,6 +154,7 @@ public class SubCommandDump extends SubCommand
             case "enchantments":                    return EnchantmentDump.getFormattedEnchantmentDump(format);
             case "entities":                        return EntityDump.getFormattedEntityDump(format);
             case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
+            case "food-items":                      return FoodItemDump.getFormattedFoodItemDump(format);
             case "items":                           return ItemDump.getFormattedItemDump(format, false);
             case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, true);
             case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);

@@ -12,76 +12,42 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
-public class ItemDump extends DataDump
+public class ItemDump
 {
-    private boolean dumpNBT;
-
-    private ItemDump(Format format, boolean dumpNBT)
-    {
-        super(dumpNBT ? 8 : 7, format);
-
-        this.dumpNBT = dumpNBT;
-    }
-
-    @Override
-    public List<String> getLines()
-    {
-        if (this.getFormat() != Format.ASCII)
-        {
-            return super.getLines();
-        }
-
-        List<String> lines = new ArrayList<String>();
-
-        this.generateFormatStrings();
-
-        lines.add(this.lineSeparator);
-        lines.add("*** WARNING ***");
-        lines.add("The block and item IDs are dynamic and will be different on each world!");
-        lines.add("DO NOT use them for anything \"proper\"!! (other than manual editing/fixing of raw world data or something)");
-        lines.add("*** ALSO ***");
-        lines.add("The server doesn't have a list of sub block and sub items");
-        lines.add("(= items with different damage value or blocks with different metadata).");
-        lines.add("That is why the block and item list dumps only contain one entry per block/item class (separate ID) when run on a server.");
-
-        // Get the actual data
-        this.getFormattedData(lines);
-
-        return lines;
-    }
-
-    public void addData(Item item, ResourceLocation rl, boolean hasSubTypes, @Nonnull ItemStack stack)
+    private static void addData(DataDump dump, Item item, ResourceLocation rl, boolean hasSubTypes, boolean dumpNBT, @Nonnull ItemStack stack)
     {
         int id = Item.getIdFromItem(item);
         int meta = stack.isEmpty() == false ? stack.getMetadata() : 0;
 
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : EMPTY_STRING;
+        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
 
-        if (this.dumpNBT)
+        if (dumpNBT)
         {
-            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : EMPTY_STRING;
+            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
 
-            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+            dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack), nbt);
         }
         else
         {
-            this.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+            dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
                     String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack));
         }
     }
 
     public static List<String> getFormattedItemDump(Format format, boolean dumpNBT)
     {
-        ItemDump itemDump = new ItemDump(format, dumpNBT);
+        DataDump itemDump = new DataDump(dumpNBT ? 8 : 7, format);
 
         for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            getDataForItemSubtypes(entry.getValue(), entry.getKey(), itemDump);
+            getDataForItemSubtypes(itemDump, entry.getValue(), entry.getKey(), dumpNBT);
         }
 
         if (dumpNBT)
@@ -99,10 +65,18 @@ public class ItemDump extends DataDump
 
         itemDump.setUseColumnSeparator(true);
 
+        itemDump.addHeader("*** WARNING ***");
+        itemDump.addHeader("The block and item IDs are dynamic and will be different on each world!");
+        itemDump.addHeader("DO NOT use them for anything \"proper\"!! (other than manual editing/fixing of raw world data or something)");
+        itemDump.addHeader("*** ALSO ***");
+        itemDump.addHeader("The server doesn't have a list of sub block and sub items");
+        itemDump.addHeader("(= items with different damage value or blocks with different metadata).");
+        itemDump.addHeader("That is why the block and item list dumps only contain one entry per block/item class (separate ID) when run on a server.");
+
         return itemDump.getLines();
     }
 
-    public static void getDataForItemSubtypes(Item item, ResourceLocation rl, ItemDump itemDump)
+    public static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, boolean dumpNBT)
     {
         if (item.getHasSubtypes())
         {
@@ -114,13 +88,13 @@ public class ItemDump extends DataDump
                 for (ItemStack stack : stacks)
                 {
                     // FIXME: Ignore identical duplicate entries from different tabs...
-                    itemDump.addData(item, rl, true, stack);
+                    addData(itemDump, item, rl, true, dumpNBT, stack);
                 }
             }
         }
         else
         {
-            itemDump.addData(item, rl, false, new ItemStack(item, 1, 0));
+            addData(itemDump, item, rl, false, dumpNBT, new ItemStack(item, 1, 0));
         }
     }
 
@@ -128,14 +102,14 @@ public class ItemDump extends DataDump
     {
         if (stack.isEmpty())
         {
-            return EMPTY_STRING;
+            return DataDump.EMPTY_STRING;
         }
 
         int[] ids = OreDictionary.getOreIDs(stack);
 
         if (ids.length == 0)
         {
-            return EMPTY_STRING;
+            return DataDump.EMPTY_STRING;
         }
 
         List<String> names = new ArrayList<String>();
@@ -167,6 +141,6 @@ public class ItemDump extends DataDump
                     stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
         }
 
-        return EMPTY_STRING;
+        return DataDump.EMPTY_STRING;
     }
 }
