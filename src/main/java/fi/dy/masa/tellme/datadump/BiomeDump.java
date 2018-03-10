@@ -45,7 +45,7 @@ public class BiomeDump
                 String regName = key.toString();
                 String name = biome.getBiomeName();
                 String validFor = getValidForString(world, biome);
-                String temp = String.format("%5.2f", biome.getTemperature());
+                String temp = String.format("%5.2f", biome.getDefaultTemperature());
                 String tempCat = biome.getTempCategory().toString();
                 String rain = String.format("%.2f", biome.getRainfall());
                 String snow = String.valueOf(biome.getEnableSnow());
@@ -90,14 +90,14 @@ public class BiomeDump
 
     private static int getGrassColor(Biome biome)
     {
-        double temperature = MathHelper.clamp(biome.getTemperature(), 0.0F, 1.0F);
+        double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
         double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
         return ColorizerGrass.getGrassColor(temperature, humidity);
     }
 
     private static int getFoliageColor(Biome biome)
     {
-        double temperature = MathHelper.clamp(biome.getTemperature(), 0.0F, 1.0F);
+        double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
         double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
         return ColorizerFoliage.getFoliageColor(temperature, humidity);
     }
@@ -131,7 +131,7 @@ public class BiomeDump
         player.sendMessage(new TextComponentString(String.format("waterColor: %s0x%08X (%d)%s",
                 pre, biome.getWaterColor(), biome.getWaterColor(), rst)));
         player.sendMessage(new TextComponentString(String.format("temperature: %s%f%s, temp. category: %s%s%s",
-                pre, biome.getFloatTemperature(pos), rst, pre, biome.getTempCategory(), rst)));
+                pre, biome.getTemperature(pos), rst, pre, biome.getTempCategory(), rst)));
 
         int color = biome.getGrassColorAtPos(pos);
         player.sendMessage(new TextComponentString(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));

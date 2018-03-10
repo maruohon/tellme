@@ -115,7 +115,7 @@ public class Locate extends ChunkProcessorAllChunks
 
         for (String name : this.filters)
         {
-            Class<? extends Entity> clazz = EntityList.func_192839_a(name);
+            Class<? extends Entity> clazz = EntityList.getClassFromName(name);
 
             if (clazz != null)
             {
