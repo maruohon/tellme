@@ -7,7 +7,9 @@
         "IMixinBlock",
         "IMixinDimensionType",
         "IMixinPotionEffect",
-        "IMixinTileEntity"
+        "IMixinTileEntity",
+        "MixinGuiScreen",
+        "MixinTabCompleter"
     ],
     "injectors": {
         "defaultRequire": 1
