@@ -33,6 +33,7 @@ public class CommandTellme extends CommandBase
         this.registerSubCommand(new SubCommandLoaded(this));
         this.registerSubCommand(new SubCommandLocate(this));
         this.registerSubCommand(new SubCommandLookingAt(this));
+        this.registerSubCommand(new SubCommandTrack(this));
     }
 
     @Override
