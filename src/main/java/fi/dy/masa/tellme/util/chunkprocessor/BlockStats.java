@@ -19,7 +19,7 @@ import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 
 public class BlockStats extends ChunkProcessorAllChunks
 {
@@ -36,8 +36,8 @@ public class BlockStats extends ChunkProcessorAllChunks
     {
         //@SuppressWarnings("deprecation")
         //final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
-        //final int[] counts = new int[size];
-        Object2IntOpenHashMap<IBlockState> counts = new Object2IntOpenHashMap<IBlockState>();
+        //final long[] counts = new long[size];
+        Object2LongOpenHashMap<IBlockState> counts = new Object2LongOpenHashMap<IBlockState>();
         int count = 0;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
         final long timeBefore = System.currentTimeMillis();
@@ -87,7 +87,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         this.addParsedData(counts);
     }
 
-    private void addParsedData(final int[] counts)
+    private void addParsedData(final long[] counts)
     {
         this.blockStats.clear();
 
@@ -145,14 +145,14 @@ public class BlockStats extends ChunkProcessorAllChunks
         }
     }
 
-    private void addParsedData(Object2IntOpenHashMap<IBlockState> counts)
+    private void addParsedData(Object2LongOpenHashMap<IBlockState> counts)
     {
         if (this.append == false)
         {
             this.blockStats.clear();
         }
 
-        for (Map.Entry<IBlockState, Integer> entry : counts.entrySet())
+        for (Map.Entry<IBlockState, Long> entry : counts.entrySet())
         {
             try
             {
@@ -288,9 +288,9 @@ public class BlockStats extends ChunkProcessorAllChunks
         public final String displayName;
         public final int id;
         public final int meta;
-        public int count;
+        public long count;
 
-        public BlockInfo(String name, String displayName, int id, int meta, int count)
+        public BlockInfo(String name, String displayName, int id, int meta, long count)
         {
             this.name = name;
             this.displayName = displayName;
@@ -299,7 +299,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             this.count = count;
         }
 
-        public void addToCount(int amount)
+        public void addToCount(long amount)
         {
             this.count += amount;
         }
