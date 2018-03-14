@@ -2,12 +2,14 @@ package fi.dy.masa.tellme.command;
 
 import java.io.File;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
@@ -53,7 +55,7 @@ public class SubCommandLoaded extends SubCommand
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         String cmd = args[0];
 
@@ -69,7 +71,7 @@ public class SubCommandLoaded extends SubCommand
             }
         }
 
-        return super.getTabCompletions(server, sender, args);
+        return super.getTabCompletions(server, sender, args, targetPos);
     }
 
     @Override

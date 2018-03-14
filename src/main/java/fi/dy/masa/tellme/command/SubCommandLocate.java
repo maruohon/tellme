@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -55,7 +56,7 @@ public class SubCommandLocate extends SubCommand
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (args.length < 1)
         {
@@ -72,6 +73,11 @@ public class SubCommandLocate extends SubCommand
         else if (args.length == 3)
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "box", "chunk-radius", "range");
+        }
+        else if (args.length >= 4 && args.length <= 9 && args[2].equals("box"))
+        {
+            int index = args.length >= 4 && args.length <= 6 ? 3 : 6;
+            return CommandBase.getTabCompletionCoordinate(args, index, targetPos);
         }
         // args.length >= 4
         else if (args.length > this.getDimensionArgIndex(args[2]))
