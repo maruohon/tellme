@@ -36,6 +36,7 @@ public class SubCommandBlockStats extends SubCommand
         super(baseCommand);
 
         this.subSubCommands.add("count");
+        this.subSubCommands.add("count-append");
         this.subSubCommands.add("dump");
         this.subSubCommands.add("dump-csv");
         this.subSubCommands.add("query");
@@ -79,7 +80,7 @@ public class SubCommandBlockStats extends SubCommand
     {
         if (args.length == 1)
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "count", "dump", "dump-csv", "query");
+            return CommandBase.getListOfStringsMatchingLastWord(args, "count", "count-append", "dump", "dump-csv", "query");
         }
         else if (args.length == 2)
         {
@@ -120,7 +121,7 @@ public class SubCommandBlockStats extends SubCommand
         BlockStats blockStats = sender instanceof EntityPlayer ? this.getBlockStatsForPlayer((EntityPlayer) sender) : this.blockStatsConsole;
 
         // "/tellme blockstats count ..."
-        if (cmd.equals("count") && args.length >= 2)
+        if ((cmd.equals("count") || cmd.equals("count-append")) && args.length >= 2)
         {
             // Possible command formats are:
             // count all-loaded-chunks [dimension]
@@ -129,6 +130,7 @@ public class SubCommandBlockStats extends SubCommand
             // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
             String type = args[1];
             args = dropFirstStrings(args, 2);
+            blockStats.setAppend(cmd.equals("count-append"));
 
             // Get the world - either the player's current world, or the one based on the provided dimension ID
             World world = this.getWorld(type, args, sender, server);

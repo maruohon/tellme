@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.annotation.Nullable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -17,17 +18,25 @@ import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class BlockStats extends ChunkProcessorAllChunks
 {
+    private boolean append;
     private final Multimap<String, BlockInfo> blockStats = MultimapBuilder.hashKeys().arrayListValues().build();
+
+    public void setAppend(boolean append)
+    {
+        this.append = append;
+    }
 
     @Override
     public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
     {
-        @SuppressWarnings("deprecation")
-        final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
-        final int[] counts = new int[size];
+        //@SuppressWarnings("deprecation")
+        //final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
+        //final int[] counts = new int[size];
+        Object2IntOpenHashMap<IBlockState> counts = new Object2IntOpenHashMap<IBlockState>();
         int count = 0;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
         final long timeBefore = System.currentTimeMillis();
@@ -51,9 +60,10 @@ public class BlockStats extends ChunkProcessorAllChunks
                         pos.setPos(x, y, z);
                         IBlockState state = chunk.getBlockState(pos);
 
-                        @SuppressWarnings("deprecation")
-                        int id = Block.BLOCK_STATE_IDS.get(state);
-                        counts[id]++;
+                        //@SuppressWarnings("deprecation")
+                        //int id = Block.BLOCK_STATE_IDS.get(state);
+                        //counts[id]++;
+                        counts.addTo(state, 1);
                         count++;
                     }
                 }
@@ -62,9 +72,10 @@ public class BlockStats extends ChunkProcessorAllChunks
             // Add the amount of air that would be in non-existing chunk sections within the given volume
             if (topY < posMax.getY())
             {
-                @SuppressWarnings("deprecation")
-                int id = Block.BLOCK_STATE_IDS.get(Blocks.AIR.getDefaultState());
-                counts[id] += (posMax.getY() - topY) * 256;
+                //@SuppressWarnings("deprecation")
+                //int id = Block.BLOCK_STATE_IDS.get(Blocks.AIR.getDefaultState());
+                //counts[id] += (posMax.getY() - topY) * 256;
+                counts.addTo(Blocks.AIR.getDefaultState(), (posMax.getY() - topY) * 256);
             }
         }
 
@@ -100,6 +111,56 @@ public class BlockStats extends ChunkProcessorAllChunks
                 {
                     TellMe.logger.error("Caught an exception while getting block names", e);
                 }
+            }
+        }
+    }
+
+    private void addParsedData(Object2IntOpenHashMap<IBlockState> counts)
+    {
+        if (this.append == false)
+        {
+            this.blockStats.clear();
+        }
+
+        for (Map.Entry<IBlockState, Integer> entry : counts.entrySet())
+        {
+            try
+            {
+                IBlockState state = entry.getKey();
+                Block block = state.getBlock();
+                String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
+                int id = Block.getIdFromBlock(block);
+                int meta = block.getMetaFromState(state);
+                ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
+                String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
+
+                if (this.append)
+                {
+                    boolean appended = false;
+
+                    for (BlockInfo old : this.blockStats.get(registryName))
+                    {
+                        if (old.id == id && old.meta == meta)
+                        {
+                            old.addToCount(entry.getValue());
+                            appended = true;
+                            break;
+                        }
+                    }
+
+                    if (appended == false)
+                    {
+                        this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, entry.getValue()));
+                    }
+                }
+                else
+                {
+                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, entry.getValue()));
+                }
+            }
+            catch (Exception e)
+            {
+                TellMe.logger.error("Caught an exception while getting block names", e);
             }
         }
     }
@@ -190,7 +251,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         public final String displayName;
         public final int id;
         public final int meta;
-        public final int count;
+        public int count;
 
         public BlockInfo(String name, String displayName, int id, int meta, int count)
         {
@@ -199,6 +260,11 @@ public class BlockStats extends ChunkProcessorAllChunks
             this.id = id;
             this.meta = meta;
             this.count = count;
+        }
+
+        public void addToCount(int amount)
+        {
+            this.count += amount;
         }
 
         public int compareTo(BlockInfo other)
