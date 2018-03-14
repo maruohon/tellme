@@ -11,6 +11,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -99,13 +100,42 @@ public class BlockStats extends ChunkProcessorAllChunks
                     @SuppressWarnings("deprecation")
                     IBlockState state = Block.BLOCK_STATE_IDS.getByValue(i);
                     Block block = state.getBlock();
-                    String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
+                    ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
+                    String registryName = key != null ? key.toString() : "null";
                     int id = Block.getIdFromBlock(block);
                     int meta = block.getMetaFromState(state);
                     ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
                     String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
 
-                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, counts[i]));
+                    if (key == null)
+                    {
+                        TellMe.logger.warn("Non-registered block: class = {}, id = {}, meta = {}, state 0 {}",
+                                block.getClass().getName(), id, meta, state);
+                    }
+
+                    if (this.append)
+                    {
+                        boolean appended = false;
+
+                        for (BlockInfo old : this.blockStats.get(registryName))
+                        {
+                            if (old.id == id && old.meta == meta)
+                            {
+                                old.addToCount(counts[i]);
+                                appended = true;
+                                break;
+                            }
+                        }
+
+                        if (appended == false)
+                        {
+                            this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, counts[i]));
+                        }
+                    }
+                    else
+                    {
+                        this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, counts[i]));
+                    }
                 }
                 catch (Exception e)
                 {
@@ -128,11 +158,18 @@ public class BlockStats extends ChunkProcessorAllChunks
             {
                 IBlockState state = entry.getKey();
                 Block block = state.getBlock();
-                String registryName = ForgeRegistries.BLOCKS.getKey(block).toString();
+                ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
+                String registryName = key != null ? key.toString() : "null";
                 int id = Block.getIdFromBlock(block);
                 int meta = block.getMetaFromState(state);
                 ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
                 String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
+
+                if (key == null)
+                {
+                    TellMe.logger.warn("Non-registered block: class = {}, id = {}, meta = {}, state 0 {}",
+                            block.getClass().getName(), id, meta, state);
+                }
 
                 if (this.append)
                 {
