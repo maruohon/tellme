@@ -202,7 +202,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         }
     }
 
-    private void addFilteredData(BlockStatsDump dump, List<String> filters)
+    private void addFilteredData(DataDump dump, List<String> filters)
     {
         for (String filter : filters)
         {
@@ -254,7 +254,7 @@ public class BlockStats extends ChunkProcessorAllChunks
 
     public List<String> query(Format format, @Nullable List<String> filters)
     {
-        BlockStatsDump dump = new BlockStatsDump(format);
+        DataDump dump = new DataDump(5, format);
 
         if (filters != null)
         {
@@ -349,14 +349,6 @@ public class BlockStats extends ChunkProcessorAllChunks
             if (meta != other.meta)
                 return false;
             return true;
-        }
-    }
-
-    private static class BlockStatsDump extends DataDump
-    {
-        public BlockStatsDump(Format format)
-        {
-            super(5, format);
         }
     }
 }
