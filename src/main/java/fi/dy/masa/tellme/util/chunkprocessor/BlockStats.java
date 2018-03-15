@@ -34,13 +34,10 @@ public class BlockStats extends ChunkProcessorAllChunks
     @Override
     public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
     {
-        //@SuppressWarnings("deprecation")
-        //final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
-        //final long[] counts = new long[size];
         Object2LongOpenHashMap<IBlockState> counts = new Object2LongOpenHashMap<IBlockState>();
-        int count = 0;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
         final long timeBefore = System.currentTimeMillis();
+        int count = 0;
 
         for (Chunk chunk : chunks)
         {
@@ -61,9 +58,6 @@ public class BlockStats extends ChunkProcessorAllChunks
                         pos.setPos(x, y, z);
                         IBlockState state = chunk.getBlockState(pos);
 
-                        //@SuppressWarnings("deprecation")
-                        //int id = Block.BLOCK_STATE_IDS.get(state);
-                        //counts[id]++;
                         counts.addTo(state, 1);
                         count++;
                     }
@@ -73,9 +67,6 @@ public class BlockStats extends ChunkProcessorAllChunks
             // Add the amount of air that would be in non-existing chunk sections within the given volume
             if (topY < posMax.getY())
             {
-                //@SuppressWarnings("deprecation")
-                //int id = Block.BLOCK_STATE_IDS.get(Blocks.AIR.getDefaultState());
-                //counts[id] += (posMax.getY() - topY) * 256;
                 counts.addTo(Blocks.AIR.getDefaultState(), (posMax.getY() - topY) * 256);
             }
         }
@@ -85,64 +76,6 @@ public class BlockStats extends ChunkProcessorAllChunks
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
 
         this.addParsedData(counts);
-    }
-
-    private void addParsedData(final long[] counts)
-    {
-        this.blockStats.clear();
-
-        for (int i = 0; i < counts.length; ++i)
-        {
-            if (counts[i] > 0)
-            {
-                try
-                {
-                    @SuppressWarnings("deprecation")
-                    IBlockState state = Block.BLOCK_STATE_IDS.getByValue(i);
-                    Block block = state.getBlock();
-                    ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
-                    String registryName = key != null ? key.toString() : "null";
-                    int id = Block.getIdFromBlock(block);
-                    int meta = block.getMetaFromState(state);
-                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
-                    String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
-
-                    if (key == null)
-                    {
-                        TellMe.logger.warn("Non-registered block: class = {}, id = {}, meta = {}, state 0 {}",
-                                block.getClass().getName(), id, meta, state);
-                    }
-
-                    if (this.append)
-                    {
-                        boolean appended = false;
-
-                        for (BlockInfo old : this.blockStats.get(registryName))
-                        {
-                            if (old.id == id && old.meta == meta)
-                            {
-                                old.addToCount(counts[i]);
-                                appended = true;
-                                break;
-                            }
-                        }
-
-                        if (appended == false)
-                        {
-                            this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, counts[i]));
-                        }
-                    }
-                    else
-                    {
-                        this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, counts[i]));
-                    }
-                }
-                catch (Exception e)
-                {
-                    TellMe.logger.error("Caught an exception while getting block names", e);
-                }
-            }
-        }
     }
 
     private void addParsedData(Object2LongOpenHashMap<IBlockState> counts)

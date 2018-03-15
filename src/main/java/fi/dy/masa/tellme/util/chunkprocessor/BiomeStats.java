@@ -1,0 +1,171 @@
+package fi.dy.masa.tellme.util.chunkprocessor;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import javax.annotation.Nullable;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeProvider;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+
+public class BiomeStats
+{
+    private final Object2LongOpenHashMap<Biome> biomeCounts = new Object2LongOpenHashMap<Biome>();
+    private boolean append;
+
+    public void setAppend(boolean append)
+    {
+        this.append = append;
+    }
+
+    public void processChunks(BiomeProvider biomeProvider, BlockPos posMin, BlockPos posMax)
+    {
+        Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<Biome>();
+        final long timeBefore = System.currentTimeMillis();
+        int count = 0;
+        final int chunkMinX = posMin.getX() >> 4;
+        final int chunkMinZ = posMin.getZ() >> 4;
+        final int chunkMaxX = posMax.getX() >> 4;
+        final int chunkMaxZ = posMax.getZ() >> 4;
+        Biome[] biomes = new Biome[16 * 16];
+
+        for (int chunkZ = chunkMinZ; chunkZ <= chunkMaxZ; chunkZ++)
+        {
+            for (int chunkX = chunkMinX; chunkX <= chunkMaxX; chunkX++)
+            {
+                final int xMin = Math.max(chunkX << 4, posMin.getX());
+                final int zMin = Math.max(chunkZ << 4, posMin.getZ());
+                final int xMax = Math.min((chunkX << 4) + 15, posMax.getX());
+                final int zMax = Math.min((chunkZ << 4) + 15, posMax.getZ());
+
+                biomeProvider.getBiomes(biomes, xMin, zMin, xMax - xMin + 1, zMax - zMin + 1, false);
+
+                for (int x = xMin & 0xF; x <= (xMax & 0xF); x++)
+                {
+                    for (int z = zMin & 0xF; z <= (zMax & 0xF); z++)
+                    {
+                        counts.addTo(biomes[x * 16 + z], 1);
+                    }
+                }
+
+                count += (xMax - xMin + 1) * (zMax - zMin + 1);
+            }
+        }
+
+        final long timeAfter = System.currentTimeMillis();
+        TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
+                count, (timeAfter - timeBefore) / 1000f));
+
+        this.addData(counts);
+    }
+
+    private void addData(Object2LongOpenHashMap<Biome> counts)
+    {
+        if (this.append == false)
+        {
+            this.biomeCounts.clear();
+        }
+
+        for (Map.Entry<Biome, Long> entry : counts.entrySet())
+        {
+            if (this.append)
+            {
+                this.biomeCounts.addTo(entry.getKey(), entry.getValue());
+            }
+            else
+            {
+                this.biomeCounts.put(entry.getKey(), (long) entry.getValue());
+            }
+        }
+    }
+
+    private void addFilteredData(DataDump dump, List<String> filters)
+    {
+        for (String filter : filters)
+        {
+            int firstSemi = filter.indexOf(":");
+
+            if (firstSemi == -1)
+            {
+                filter = "minecraft:" + filter;
+            }
+
+            ResourceLocation key = new ResourceLocation(filter);
+            Biome biome = ForgeRegistries.BIOMES.getValue(key);
+
+            if (biome == null)
+            {
+                TellMe.logger.warn("Invalid biome name '{}'", filter);
+                continue;
+            }
+
+            for (Map.Entry<Biome, Long> entry : this.biomeCounts.entrySet())
+            {
+                if (entry.getKey() == biome)
+                {
+                    int id = Biome.getIdForBiome(biome);
+
+                    dump.addData(
+                            key.toString(),
+                            TellMe.proxy.getBiomeName(biome),
+                            String.valueOf(id),
+                            String.valueOf(entry.getValue()));
+                    break;
+                }
+            }
+        }
+    }
+
+    public List<String> queryAll(Format format)
+    {
+        return this.query(format, null);
+    }
+
+    public List<String> query(Format format, @Nullable List<String> filters)
+    {
+        DataDump dump = new DataDump(4, format);
+
+        if (filters != null)
+        {
+            this.addFilteredData(dump, filters);
+        }
+        else
+        {
+            for (Map.Entry<Biome, Long> entry : this.biomeCounts.entrySet())
+            {
+                Biome biome = entry.getKey();
+
+                if (biome == null)
+                {
+                    TellMe.logger.warn("Null biome '{}' with count {} ?!", biome, entry.getValue());
+                    continue;
+                }
+
+                ResourceLocation key = ForgeRegistries.BIOMES.getKey(biome);
+                int id = Biome.getIdForBiome(biome);
+
+                dump.addData(
+                        key != null ? key.toString() : "<null>",
+                        TellMe.proxy.getBiomeName(biome),
+                        String.valueOf(id),
+                        String.valueOf(entry.getValue()));
+            }
+        }
+
+        dump.addTitle("Registry name", "Name", "ID", "Count");
+
+        dump.setColumnProperties(2, Alignment.RIGHT, true); // Biome ID
+        dump.setColumnProperties(3, Alignment.RIGHT, true); // count
+
+        dump.setUseColumnSeparator(true);
+
+        return dump.getLines();
+    }
+}
