@@ -31,11 +31,11 @@ public class BiomeDump
     public static List<String> getFormattedBiomeDump(Format format, boolean outputColors)
     {
         final boolean isClient = TellMe.proxy.isClient();
-        int columns = isClient ? 11 : 9;
+        int columns = 11;
 
         if (outputColors)
         {
-            columns += 3;
+            columns += (isClient ? 3 : 1);
         }
 
         DataDump biomeDump = new DataDump(columns, format);
