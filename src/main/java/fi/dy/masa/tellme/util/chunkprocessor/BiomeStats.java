@@ -44,18 +44,20 @@ public class BiomeStats
                 final int zMin = Math.max(chunkZ << 4, posMin.getZ());
                 final int xMax = Math.min((chunkX << 4) + 15, posMax.getX());
                 final int zMax = Math.min((chunkZ << 4) + 15, posMax.getZ());
+                final int width = xMax - xMin + 1;
+                final int length = zMax - zMin + 1;
 
-                biomeProvider.getBiomes(biomes, xMin, zMin, xMax - xMin + 1, zMax - zMin + 1, false);
+                biomeProvider.getBiomes(biomes, xMin, zMin, width, length, false);
 
-                for (int x = xMin & 0xF; x <= (xMax & 0xF); x++)
+                for (int x = 0; x < width; x++)
                 {
-                    for (int z = zMin & 0xF; z <= (zMax & 0xF); z++)
+                    for (int z = 0; z < length; z++)
                     {
-                        counts.addTo(biomes[x * 16 + z], 1);
+                        counts.addTo(biomes[x * length + z], 1);
                     }
                 }
 
-                count += (xMax - xMin + 1) * (zMax - zMin + 1);
+                count += width * length;
             }
         }
 

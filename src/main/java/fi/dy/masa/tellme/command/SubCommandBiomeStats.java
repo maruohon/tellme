@@ -140,7 +140,7 @@ public class SubCommandBiomeStats extends SubCommand
             BiomeProvider biomeProvider = world.getBiomeProvider();
 
             // count range <x-distance> <z-distance> [x z (of the center)] [dimension]
-            if (type.equals("range") && (args.length >= 3 && args.length <= 5))
+            if (type.equals("range") && (args.length >= 2 && args.length <= 5))
             {
                 try
                 {
@@ -174,8 +174,8 @@ public class SubCommandBiomeStats extends SubCommand
                     double z1 = CommandBase.parseDouble(pos.getZ(), args[1], -30000000, 30000000, false);
                     double x2 = CommandBase.parseDouble(pos.getX(), args[2], -30000000, 30000000, false);
                     double z2 = CommandBase.parseDouble(pos.getZ(), args[3], -30000000, 30000000, false);
-                    BlockPos pos1 = new BlockPos(x1, 0, z1);
-                    BlockPos pos2 = new BlockPos(x2, 0, z2);
+                    BlockPos pos1 = new BlockPos(Math.min(x1, x2), 0, Math.min(z1, z2));
+                    BlockPos pos2 = new BlockPos(Math.max(x1, x2), 0, Math.max(z1, z2));
 
                     this.sendMessage(sender, "Counting biomes...");
 
