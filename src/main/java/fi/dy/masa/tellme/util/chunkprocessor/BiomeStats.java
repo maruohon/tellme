@@ -18,6 +18,7 @@ import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 public class BiomeStats
 {
     private final Object2LongOpenHashMap<Biome> biomeCounts = new Object2LongOpenHashMap<Biome>();
+    private int totalCount;
     private boolean append;
 
     public void setAppend(boolean append)
@@ -29,7 +30,7 @@ public class BiomeStats
     {
         Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<Biome>();
         final long timeBefore = System.currentTimeMillis();
-        int count = 0;
+        long count = 0;
         final int chunkMinX = posMin.getX() >> 4;
         final int chunkMinZ = posMin.getZ() >> 4;
         final int chunkMaxX = posMax.getX() >> 4;
@@ -65,14 +66,14 @@ public class BiomeStats
         TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
                 count, (timeAfter - timeBefore) / 1000f));
 
-        this.addData(counts);
+        this.addData(counts, count);
     }
 
     public void getSampledBiomeDistribution(BiomeProvider biomeProvider, int centerX, int centerZ, int sampleInterval, int sampleRadius)
     {
         Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<Biome>();
         final long timeBefore = System.currentTimeMillis();
-        int count = 0;
+        long count = 0;
         final int endX = centerX + sampleRadius * sampleInterval;
         final int endZ = centerZ + sampleRadius * sampleInterval;
         Biome[] biomes = new Biome[1];
@@ -91,14 +92,15 @@ public class BiomeStats
         TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
                 count, (timeAfter - timeBefore) / 1000f));
 
-        this.addData(counts);
+        this.addData(counts, count);
     }
 
-    private void addData(Object2LongOpenHashMap<Biome> counts)
+    private void addData(Object2LongOpenHashMap<Biome> counts, long count)
     {
         if (this.append == false)
         {
             this.biomeCounts.clear();
+            this.totalCount = 0;
         }
 
         for (Map.Entry<Biome, Long> entry : counts.entrySet())
@@ -112,6 +114,8 @@ public class BiomeStats
                 this.biomeCounts.put(entry.getKey(), (long) entry.getValue());
             }
         }
+
+        this.totalCount += count;
     }
 
     private void addFilteredData(DataDump dump, List<String> filters)
@@ -139,12 +143,14 @@ public class BiomeStats
                 if (entry.getKey() == biome)
                 {
                     int id = Biome.getIdForBiome(biome);
+                    long count = entry.getValue();
 
                     dump.addData(
                             key.toString(),
                             TellMe.proxy.getBiomeName(biome),
                             String.valueOf(id),
-                            String.valueOf(entry.getValue()));
+                            String.valueOf(count),
+                            String.format("%.2f %%", (double) count * 100 / (double) this.totalCount));
                     break;
                 }
             }
@@ -158,7 +164,7 @@ public class BiomeStats
 
     public List<String> query(Format format, @Nullable List<String> filters)
     {
-        DataDump dump = new DataDump(4, format);
+        DataDump dump = new DataDump(5, format);
 
         if (filters != null)
         {
@@ -178,19 +184,22 @@ public class BiomeStats
 
                 ResourceLocation key = ForgeRegistries.BIOMES.getKey(biome);
                 int id = Biome.getIdForBiome(biome);
+                long count = entry.getValue();
 
                 dump.addData(
                         key != null ? key.toString() : "<null>",
                         TellMe.proxy.getBiomeName(biome),
                         String.valueOf(id),
-                        String.valueOf(entry.getValue()));
+                        String.valueOf(count),
+                        String.format("%.2f", (double) count * 100 / (double) this.totalCount));
             }
         }
 
-        dump.addTitle("Registry name", "Name", "ID", "Count");
+        dump.addTitle("Registry name", "Name", "ID", "Count", "%");
 
         dump.setColumnProperties(2, Alignment.RIGHT, true); // Biome ID
         dump.setColumnProperties(3, Alignment.RIGHT, true); // count
+        dump.setColumnProperties(4, Alignment.RIGHT, false); // count %
 
         dump.setUseColumnSeparator(true);
 
