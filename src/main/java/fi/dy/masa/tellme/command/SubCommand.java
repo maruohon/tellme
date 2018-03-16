@@ -168,6 +168,23 @@ public abstract class SubCommand implements ISubCommand
         return new BlockPos(x, y, z);
     }
 
+    public static BlockPos parseBlockPosXZ(BlockPos base, String[] args, int startIndex, boolean centerBlock) throws NumberInvalidException
+    {
+        double x = CommandBase.parseDouble(base.getX(), args[startIndex    ], -30000000, 30000000, centerBlock);
+        double z = CommandBase.parseDouble(base.getZ(), args[startIndex + 1], -30000000, 30000000, centerBlock);
+        return new BlockPos(x, 0, z);
+    }
+
+    public static int parseInt(String arg, int base) throws NumberInvalidException
+    {
+        return parseInt(arg, base, -30000000, 30000000);
+    }
+
+    public static int parseInt(String arg, int base, int min, int max) throws NumberInvalidException
+    {
+        return (int) CommandBase.parseDouble(base, arg, min, max, false);
+    }
+
     public static boolean isInteger(String arg)
     {
         try

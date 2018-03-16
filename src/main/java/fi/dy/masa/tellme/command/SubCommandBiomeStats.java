@@ -59,6 +59,7 @@ public class SubCommandBiomeStats extends SubCommand
         sender.sendMessage(new TextComponentString(pre + " count[-append] area <x1> <z1> <x2> <z2> [dimension]"));
         sender.sendMessage(new TextComponentString(pre + " count[-append] chunk-radius <radius> [x z (of the center)] [dimension]"));
         sender.sendMessage(new TextComponentString(pre + " count[-append] range <x-distance> <z-distance> [x z (of the center)] [dimension]"));
+        sender.sendMessage(new TextComponentString(pre + " count[-append] sampled <sampleInterval> <sampleRadius> [centerX centerZ] [dimension]"));
     }
 
     private void printUsageQuery(ICommandSender sender)
@@ -82,7 +83,7 @@ public class SubCommandBiomeStats extends SubCommand
             }
             else if (args[0].equals("count"))
             {
-                return CommandBase.getListOfStringsMatchingLastWord(args, "area", "chunk-radius", "range");
+                return CommandBase.getListOfStringsMatchingLastWord(args, "area", "chunk-radius", "range", "sampled");
             }
         }
         else if (args.length >= 3 && args[0].equals("count"))
@@ -100,6 +101,10 @@ public class SubCommandBiomeStats extends SubCommand
             {
                 return CommandBase.getTabCompletionCoordinateXZ(args, 4, targetPos);
             }
+            else if (args.length >= 5 && args.length <= 6 && args[1].equals("sampled"))
+            {
+                return CommandBase.getTabCompletionCoordinateXZ(args, 4, targetPos);
+            }
         }
 
         return Collections.emptyList();
@@ -108,7 +113,6 @@ public class SubCommandBiomeStats extends SubCommand
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        // "/tellme bockstats"
         if (args.length < 1)
         {
             this.sendMessage(sender, "Usage:");
@@ -144,11 +148,9 @@ public class SubCommandBiomeStats extends SubCommand
             {
                 try
                 {
-                    if (args.length == 5)
+                    if (args.length >= 4)
                     {
-                        int x = CommandBase.parseInt(args[2]);
-                        int z = CommandBase.parseInt(args[3]);
-                        pos = new BlockPos(x, 0, z);
+                        pos = parseBlockPosXZ(pos, args, 2, false);
                     }
 
                     int rx = Math.abs(CommandBase.parseInt(args[0]));
@@ -156,7 +158,7 @@ public class SubCommandBiomeStats extends SubCommand
 
                     this.sendMessage(sender, "Counting biomes...");
 
-                    biomeStats.processChunks(biomeProvider, pos.add(-rx, 0, -rz), pos.add(rx, 0, rz));
+                    biomeStats.getFullBiomeDistribution(biomeProvider, pos.add(-rx, 0, -rz), pos.add(rx, 0, rz));
 
                     this.sendMessage(sender, "Done");
                 }
@@ -179,7 +181,7 @@ public class SubCommandBiomeStats extends SubCommand
 
                     this.sendMessage(sender, "Counting biomes...");
 
-                    biomeStats.processChunks(biomeProvider, pos1, pos2);
+                    biomeStats.getFullBiomeDistribution(biomeProvider, pos1, pos2);
 
                     this.sendMessage(sender, "Done");
                 }
@@ -193,9 +195,7 @@ public class SubCommandBiomeStats extends SubCommand
             {
                 if (args.length == 4)
                 {
-                    int x = CommandBase.parseInt(args[1]);
-                    int z = CommandBase.parseInt(args[2]);
-                    pos = new BlockPos(x, 0, z);
+                    pos = parseBlockPosXZ(pos, args, 1, false);
                 }
 
                 int radius = 0;
@@ -212,9 +212,43 @@ public class SubCommandBiomeStats extends SubCommand
                 int chunkCount = (radius * 2 + 1) * (radius * 2 + 1);
                 this.sendMessage(sender, "Counting biomes in the selected " + chunkCount + " chunks...");
 
-                biomeStats.processChunks(biomeProvider, pos.add(-radius * 16, 0, -radius * 16), pos.add(radius * 16, 0, radius * 16));
+                biomeStats.getFullBiomeDistribution(biomeProvider, pos.add(-radius * 16, 0, -radius * 16), pos.add(radius * 16, 0, radius * 16));
 
                 this.sendMessage(sender, "Done");
+            }
+            // count sampled <sampleInterval> <sampleRadius> [centerX centerZ] [dimension]
+            else if (type.equals("sampled") && (args.length >= 2 && args.length <= 5))
+            {
+                try
+                {
+                    if (args.length >= 4)
+                    {
+                        pos = parseBlockPosXZ(pos, args, 2, false);
+                    }
+
+                    int interval = CommandBase.parseInt(args[0]);
+                    int radius = CommandBase.parseInt(args[1]);
+
+                    if (interval <= 0)
+                    {
+                        new NumberInvalidException("Interval must be a positive integer number");
+                    }
+
+                    if (radius < 0)
+                    {
+                        new NumberInvalidException("Radius must be a positive integer number or 0");
+                    }
+
+                    this.sendMessage(sender, "Counting biomes...");
+
+                    biomeStats.getSampledBiomeDistribution(biomeProvider, pos.getX(), pos.getZ(), interval, radius);
+
+                    this.sendMessage(sender, "Done");
+                }
+                catch (NumberInvalidException e)
+                {
+                    throw new WrongUsageException(pre + " count sampled <sampleInterval> <sampleRadius> [centerX centerZ] [dimension]");
+                }
             }
             else
             {
@@ -222,7 +256,6 @@ public class SubCommandBiomeStats extends SubCommand
                 throw new CommandException("Invalid (number of?) arguments!");
             }
         }
-        // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
         else if (cmd.equals("query") || cmd.equals("dump") || cmd.equals("dump-csv"))
         {
             List<String> lines;
@@ -274,6 +307,7 @@ public class SubCommandBiomeStats extends SubCommand
                     index = 1;
                 break;
             case "range":
+            case "sampled":
                 if (args.length == 5)
                     index = 4;
                 else if (args.length == 3)

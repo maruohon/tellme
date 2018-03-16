@@ -25,7 +25,7 @@ public class BiomeStats
         this.append = append;
     }
 
-    public void processChunks(BiomeProvider biomeProvider, BlockPos posMin, BlockPos posMax)
+    public void getFullBiomeDistribution(BiomeProvider biomeProvider, BlockPos posMin, BlockPos posMax)
     {
         Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<Biome>();
         final long timeBefore = System.currentTimeMillis();
@@ -58,6 +58,32 @@ public class BiomeStats
                 }
 
                 count += width * length;
+            }
+        }
+
+        final long timeAfter = System.currentTimeMillis();
+        TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
+                count, (timeAfter - timeBefore) / 1000f));
+
+        this.addData(counts);
+    }
+
+    public void getSampledBiomeDistribution(BiomeProvider biomeProvider, int centerX, int centerZ, int sampleInterval, int sampleRadius)
+    {
+        Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<Biome>();
+        final long timeBefore = System.currentTimeMillis();
+        int count = 0;
+        final int endX = centerX + sampleRadius * sampleInterval;
+        final int endZ = centerZ + sampleRadius * sampleInterval;
+        Biome[] biomes = new Biome[1];
+
+        for (int z = centerZ - sampleRadius * sampleInterval; z <= endZ; z += sampleInterval)
+        {
+            for (int x = centerX - sampleRadius * sampleInterval; x <= endX; x += sampleInterval)
+            {
+                biomeProvider.getBiomes(biomes, x, z, 1, 1, false);
+                counts.addTo(biomes[0], 1);
+                count++;
             }
         }
 
