@@ -31,9 +31,9 @@ public class MixinTabCompleter
         }
     }
 
-    @Redirect(method = "setCompletions", at = @At(
+    @Redirect(method = "setCompletions([Ljava/lang/String;)V", at = @At(
                 value = "INVOKE",
-                target = "Lorg/apache/commons/lang3/StringUtils;getCommonPrefix([Ljava/lang/String;)V"
+                target = "Lorg/apache/commons/lang3/StringUtils;getCommonPrefix([Ljava/lang/String;)Ljava/lang/String;"
         ))
     public String addCompletionsAndRemoveFormattingCodes(String... newCompl)
     {
@@ -58,7 +58,7 @@ public class MixinTabCompleter
         return net.minecraft.util.text.TextFormatting.getTextWithoutFormattingCodes(prefix);
     }
 
-    @ModifyArg(method = "complete", at = @At(
+    @ModifyArg(method = "complete()V", at = @At(
                 value = "INVOKE",
                 target = "Lnet/minecraft/client/gui/GuiTextField;writeText(Ljava/lang/String;)V"
             ))
