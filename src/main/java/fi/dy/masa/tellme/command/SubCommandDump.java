@@ -116,16 +116,7 @@ public class SubCommandDump extends SubCommand
 
         if (this.getName().startsWith("dump"))
         {
-            File file;
-
-            if (format == Format.CSV)
-            {
-                file = DataDump.dumpDataToFile(arg + "-csv", ".csv", data);
-            }
-            else
-            {
-                file = DataDump.dumpDataToFile(arg, data);
-            }
+            File file = DataDump.dumpDataToFile(arg, data, format);
 
             if (file != null)
             {

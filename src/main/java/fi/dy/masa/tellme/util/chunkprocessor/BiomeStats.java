@@ -199,7 +199,7 @@ public class BiomeStats
 
         dump.setColumnProperties(2, Alignment.RIGHT, true); // Biome ID
         dump.setColumnProperties(3, Alignment.RIGHT, true); // count
-        dump.setColumnProperties(4, Alignment.RIGHT, false); // count %
+        dump.setColumnProperties(4, Alignment.RIGHT, true); // count %
 
         dump.setUseColumnSeparator(true);
 

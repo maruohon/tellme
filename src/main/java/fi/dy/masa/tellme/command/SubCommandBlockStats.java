@@ -256,8 +256,12 @@ public class SubCommandBlockStats extends SubCommand
             }
             else
             {
-                File file = DataDump.dumpDataToFile("block_stats", lines);
-                sendClickableLinkMessage(sender, "Output written to file %s", file);
+                File file = DataDump.dumpDataToFile("block_stats", lines, format);
+
+                if (file != null)
+                {
+                    sendClickableLinkMessage(sender, "Output written to file %s", file);
+                }
             }
         }
         else

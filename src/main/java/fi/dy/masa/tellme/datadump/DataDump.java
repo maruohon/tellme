@@ -531,6 +531,19 @@ public class DataDump
     }
 
     @Nullable
+    public static File dumpDataToFile(String fileNameBase, List<String> lines, Format format)
+    {
+        if (format == Format.CSV)
+        {
+            return dumpDataToFile(fileNameBase + "-csv", ".csv", lines);
+        }
+        else
+        {
+            return dumpDataToFile(fileNameBase, ".txt", lines);
+        }
+    }
+
+    @Nullable
     public static File dumpDataToFile(String fileNameBase, List<String> lines)
     {
         return dumpDataToFile(fileNameBase, ".txt", lines);
@@ -553,7 +566,6 @@ public class DataDump
                 TellMe.logger.error("dumpDataToFile(): Failed to create the configuration directory", e);
                 return null;
             }
-
         }
 
         String fileNameBaseWithDate = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis()));

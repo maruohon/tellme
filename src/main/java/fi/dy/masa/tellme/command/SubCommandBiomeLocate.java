@@ -179,8 +179,12 @@ public class SubCommandBiomeLocate extends SubCommand
             }
             else
             {
-                File file = DataDump.dumpDataToFile("biome_locations", lines);
-                sendClickableLinkMessage(sender, "Output written to file %s", file);
+                File file = DataDump.dumpDataToFile("biome_locations", lines, format);
+
+                if (file != null)
+                {
+                    sendClickableLinkMessage(sender, "Output written to file %s", file);
+                }
             }
         }
         else
