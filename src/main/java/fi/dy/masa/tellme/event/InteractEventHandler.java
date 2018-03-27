@@ -87,7 +87,7 @@ public class InteractEventHandler
             {
                 BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player,
                         RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids),
-                        ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand()));
+                        ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand()), player.isSneaking());
             }
 
             event.setCanceled(true);
