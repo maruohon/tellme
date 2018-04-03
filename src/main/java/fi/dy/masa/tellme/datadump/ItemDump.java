@@ -129,13 +129,29 @@ public class ItemDump
         return String.join(",", names);
     }
 
+    public static String getStackInfoBasic(ItemStack stack)
+    {
+        if (stack.isEmpty() == false)
+        {
+            // old: [%s @ %d - display: %s - NBT: %s]
+            int meta = stack.getMetadata();
+            ResourceLocation rl = stack.getItem().getRegistryName();
+            String regName = rl != null ? rl.toString() : "<null>";
+
+            return String.format("[%s@%d - '%s']", regName, meta, meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName());
+        }
+
+        return DataDump.EMPTY_STRING;
+    }
+
     public static String getStackInfo(ItemStack stack)
     {
         if (stack.isEmpty() == false)
         {
             // old: [%s @ %d - display: %s - NBT: %s]
             int meta = stack.getMetadata();
-            String regName = stack.getItem().getRegistryName().toString();
+            ResourceLocation rl = stack.getItem().getRegistryName();
+            String regName = rl != null ? rl.toString() : "<null>";
 
             return String.format("[%s@%d - '%s' - %s]", regName, meta, meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName(),
                     stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");

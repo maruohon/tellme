@@ -43,6 +43,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("blocks-with-nbt");
         this.subSubCommands.add("blockstates-by-block");
         this.subSubCommands.add("blockstates-by-state");
+        this.subSubCommands.add("creativetabs");
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
@@ -143,6 +144,7 @@ public class SubCommandDump extends SubCommand
             case "blocks-with-nbt":                 return BlockDump.getFormattedBlockDump(format, true);
             case "blockstates-by-block":            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
             case "blockstates-by-state":            return BlockStatesDump.getFormattedBlockStatesDumpByState(format);
+            case "creativetabs":                    return CreativetabDump.getFormattedCreativetabDump(format);
             case "dimensions":                      return DimensionDump.getFormattedDimensionDump(format);
             case "enchantments":                    return EnchantmentDump.getFormattedEnchantmentDump(format);
             case "entities":                        return EntityDump.getFormattedEntityDump(format);

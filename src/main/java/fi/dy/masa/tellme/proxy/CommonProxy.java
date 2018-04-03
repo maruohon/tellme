@@ -40,6 +40,8 @@ public class CommonProxy
         return null;
     }
 
+    public void addCreativeTabData(DataDump dump) {}
+
     public void addMusicTypeData(DataDump dump) {}
 
     public void getCurrentBiomeInfoClientSide(EntityPlayer player, Biome bgb) {}

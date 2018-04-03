@@ -12,6 +12,8 @@ import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker.MusicType;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -33,6 +35,7 @@ import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.ItemDump;
 
 public class ClientProxy extends CommonProxy
 {
@@ -75,6 +78,25 @@ public class ClientProxy extends CommonProxy
         double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
         double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
         return biome.getModdedBiomeFoliageColor(ColorizerFoliage.getFoliageColor(temperature, humidity));
+    }
+
+    @Override
+    public void addCreativeTabData(DataDump dump)
+    {
+        for (int i = 0; i < CreativeTabs.CREATIVE_TAB_ARRAY.length; i++)
+        {
+            CreativeTabs tab = CreativeTabs.CREATIVE_TAB_ARRAY[i];
+
+            if (tab != null)
+            {
+                String index = String.valueOf(i);
+                String name = tab.getTabLabel();
+                String translatedName = I18n.format(tab.getTranslatedTabLabel());
+                String iconItem = ItemDump.getStackInfoBasic(tab.getIconItemStack());
+
+                dump.addData(index, name, translatedName, iconItem);
+            }
+        }
     }
 
     @Override
