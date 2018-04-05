@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -44,7 +45,7 @@ public abstract class SubCommand implements ISubCommand
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (args.length == 1 || (args.length == 2 && args[0].equals("help")))
         {
@@ -164,6 +165,23 @@ public abstract class SubCommand implements ISubCommand
         double y = CommandBase.parseDouble(base.getY(), args[startIndex + 1], 0, 256, false);
         double z = CommandBase.parseDouble(base.getZ(), args[startIndex + 2], -30000000, 30000000, centerBlock);
         return new BlockPos(x, y, z);
+    }
+
+    public static BlockPos parseBlockPosXZ(BlockPos base, String[] args, int startIndex, boolean centerBlock) throws NumberInvalidException
+    {
+        double x = CommandBase.parseDouble(base.getX(), args[startIndex    ], -30000000, 30000000, centerBlock);
+        double z = CommandBase.parseDouble(base.getZ(), args[startIndex + 1], -30000000, 30000000, centerBlock);
+        return new BlockPos(x, 0, z);
+    }
+
+    public static int parseInt(String arg, int base) throws NumberInvalidException
+    {
+        return parseInt(arg, base, -30000000, 30000000);
+    }
+
+    public static int parseInt(String arg, int base, int min, int max) throws NumberInvalidException
+    {
+        return (int) CommandBase.parseDouble(base, arg, min, max, false);
     }
 
     public static boolean isInteger(String arg)

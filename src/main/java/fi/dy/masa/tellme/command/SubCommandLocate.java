@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.TileEntityDump;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -54,7 +55,7 @@ public class SubCommandLocate extends SubCommand
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (args.length < 1)
         {
@@ -71,6 +72,11 @@ public class SubCommandLocate extends SubCommand
         else if (args.length == 3)
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "box", "chunk-radius", "range");
+        }
+        else if (args.length >= 4 && args.length <= 9 && args[2].equals("box"))
+        {
+            int index = args.length >= 4 && args.length <= 6 ? 3 : 6;
+            return CommandBase.getTabCompletionCoordinate(args, index, targetPos);
         }
         // args.length >= 4
         else if (args.length > this.getDimensionArgIndex(args[2]))
@@ -165,8 +171,10 @@ public class SubCommandLocate extends SubCommand
             return;
         }
 
-        LocateType locateType = LocateType.fromArg(args[0]);
-        OutputType outputType = OutputType.fromArg(args[1]);
+        String typeStr = args[0];
+        String outStr = args[1];
+        LocateType locateType = LocateType.fromArg(typeStr);
+        OutputType outputType = OutputType.fromArg(outStr);
         String areaType = args[2];
         final int dimArgIndex = this.getDimensionArgIndex(areaType);
         int namesStart = dimArgIndex;
@@ -260,7 +268,7 @@ public class SubCommandLocate extends SubCommand
             }
             catch (NumberInvalidException e)
             {
-                throw new WrongUsageException("/tellme locate range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)] <name1 name2 ...>");
+                throw new WrongUsageException("/tellme locate " + typeStr + " " + outStr + " range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)] <name1 name2 ...>");
             }
         }
         // ... box <x1> <y1> <z1> <x2> <y2> <z2> [dimension] <name1 name2 ...>
@@ -278,7 +286,7 @@ public class SubCommandLocate extends SubCommand
             }
             catch (NumberInvalidException e)
             {
-                throw new WrongUsageException("/tellme locate box <x1> <y1> <z1> <x2> <y2> <z2> [dimension] <name1 name2 ...>");
+                throw new WrongUsageException("/tellme locate " + typeStr + " " + outStr + " box <x1> <y1> <z1> <x2> <y2> <z2> [dimension] <name1 name2 ...>");
             }
         }
         // ... all-loaded-chunks [dimension] <name1 name2 ...>
@@ -316,7 +324,7 @@ public class SubCommandLocate extends SubCommand
             }
             catch (NumberFormatException e)
             {
-                throw new WrongUsageException("/tellme locate chunk-radius <radius> [dimension] [x y z (of the center)] <name1 name2 ...>");
+                throw new WrongUsageException("/tellme locate " + typeStr + " " + outStr + " chunk-radius <radius> [dimension] [x y z (of the center)] <name1 name2 ...>");
             }
 
             int chunkCount = (radius * 2 + 1) * (radius * 2 + 1);

@@ -510,6 +510,19 @@ public class DataDump
     }
 
     @Nullable
+    public static File dumpDataToFile(String fileNameBase, List<String> lines, Format format)
+    {
+        if (format == Format.CSV)
+        {
+            return dumpDataToFile(fileNameBase + "-csv", ".csv", lines);
+        }
+        else
+        {
+            return dumpDataToFile(fileNameBase, ".txt", lines);
+        }
+    }
+
+    @Nullable
     public static File dumpDataToFile(String fileNameBase, List<String> lines)
     {
         return dumpDataToFile(fileNameBase, ".txt", lines);
@@ -532,7 +545,6 @@ public class DataDump
                 LiteModTellMe.logger.error("dumpDataToFile(): Failed to create the configuration directory", e);
                 return null;
             }
-
         }
 
         String fileNameBaseWithDate = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis()));
@@ -596,11 +608,22 @@ public class DataDump
 
     public static class Row implements Comparable<Row>
     {
-        private String[] strings;
+        private final String[] strings;
+        private final Double[] numbers;
 
         public Row(String[] strings)
         {
             this.strings = strings;
+            this.numbers = new Double[strings.length];
+
+            for (int i = 0; i < strings.length; i++)
+            {
+                try
+                {
+                    this.numbers[i] = Double.parseDouble(strings[i]);
+                }
+                catch (NumberFormatException e) {}
+            }
         }
 
         public String[] getValues()
@@ -613,11 +636,28 @@ public class DataDump
         {
             for (int i = 0; i < this.strings.length; i++)
             {
-                int res = this.strings[i].compareTo(other.strings[i]);
-
-                if (res != 0)
+                if (this.numbers[i] != null && other.numbers[i] != null)
                 {
-                    return res;
+                    double d1 = this.numbers[i];
+                    double d2 = other.numbers[i];
+
+                    if (d1 < d2)
+                    {
+                        return -1;
+                    }
+                    else if (d1 > d2)
+                    {
+                        return 1;
+                    }
+                }
+                else
+                {
+                    int res = this.strings[i].compareTo(other.strings[i]);
+
+                    if (res != 0)
+                    {
+                        return res;
+                    }
                 }
             }
 

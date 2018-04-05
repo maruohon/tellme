@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import com.google.common.collect.Maps;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -34,6 +35,7 @@ public class SubCommandBlockStats extends SubCommand
         super(baseCommand);
 
         this.subSubCommands.add("count");
+        this.subSubCommands.add("count-append");
         this.subSubCommands.add("dump");
         this.subSubCommands.add("dump-csv");
         this.subSubCommands.add("query");
@@ -73,11 +75,11 @@ public class SubCommandBlockStats extends SubCommand
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (args.length == 1)
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "count", "dump", "dump-csv", "query");
+            return CommandBase.getListOfStringsMatchingLastWord(args, "count", "count-append", "dump", "dump-csv", "query");
         }
         else if (args.length == 2)
         {
@@ -89,6 +91,11 @@ public class SubCommandBlockStats extends SubCommand
             {
                 return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "box", "chunk-radius", "range");
             }
+        }
+        else if (args.length >= 3 && args.length <= 8 && args[0].equals("count") && args[1].equals("box"))
+        {
+            int index = args.length >= 3 && args.length <= 5 ? 2 : 5;
+            return CommandBase.getTabCompletionCoordinate(args, index, targetPos);
         }
 
         return Collections.emptyList();
@@ -109,26 +116,28 @@ public class SubCommandBlockStats extends SubCommand
 
         super.execute(server, sender, args);
 
+        String cmd = args[0];
         BlockStats blockStats = sender instanceof EntityPlayer ? this.getBlockStatsForPlayer((EntityPlayer) sender) : this.blockStatsConsole;
 
         // "/tellme blockstats count ..."
-        if (args[0].equals("count") && args.length >= 2)
+        if ((cmd.equals("count") || cmd.equals("count-append")) && args.length >= 2)
         {
             // Possible command formats are:
             // count all-loaded-chunks [dimension]
             // count chunk-radius <radius> [dimension] [x y z (of the center)]
             // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]
             // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
-            String cmd = args[1];
+            String type = args[1];
             args = dropFirstStrings(args, 2);
+            blockStats.setAppend(cmd.equals("count-append"));
 
             // Get the world - either the player's current world, or the one based on the provided dimension ID
-            World world = this.getWorld(cmd, args, sender, server);
+            World world = this.getWorld(type, args, sender, server);
             BlockPos pos = sender instanceof EntityPlayer ? sender.getPosition() : WorldUtils.getSpawnPoint(world);
             String pre = this.getSubCommandUsagePre();
 
             // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]
-            if (cmd.equals("range") && (args.length == 3 || args.length == 4 || args.length == 7))
+            if (type.equals("range") && (args.length == 3 || args.length == 4 || args.length == 7))
             {
                 try
                 {
@@ -156,7 +165,7 @@ public class SubCommandBlockStats extends SubCommand
                 }
             }
             // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
-            else if (cmd.equals("box") && (args.length == 6 || args.length == 7))
+            else if (type.equals("box") && (args.length == 6 || args.length == 7))
             {
                 try
                 {
@@ -175,7 +184,7 @@ public class SubCommandBlockStats extends SubCommand
                 }
             }
             // count all-loaded-chunks [dimension]
-            else if (cmd.equals("all-loaded-chunks") && (args.length == 0 || args.length == 1))
+            else if (type.equals("all-loaded-chunks") && (args.length == 0 || args.length == 1))
             {
                 this.sendMessage(sender, "Counting blocks...");
 
@@ -184,7 +193,7 @@ public class SubCommandBlockStats extends SubCommand
                 this.sendMessage(sender, "Done");
             }
             // count chunk-radius <radius> [dimension] [x y z (of the center)]
-            else if (cmd.equals("chunk-radius") && (args.length == 1 || args.length == 2 || args.length == 5))
+            else if (type.equals("chunk-radius") && (args.length == 1 || args.length == 2 || args.length == 5))
             {
                 if (args.length == 5)
                 {
@@ -224,10 +233,10 @@ public class SubCommandBlockStats extends SubCommand
             }
         }
         // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
-        else if (args[0].equals("query") || args[0].equals("dump") || args[0].equals("dump-csv"))
+        else if (cmd.equals("query") || cmd.equals("dump") || cmd.equals("dump-csv"))
         {
             List<String> lines;
-            Format format = args[0].equals("dump-csv") ? Format.CSV : Format.ASCII;
+            Format format = cmd.equals("dump-csv") ? Format.CSV : Format.ASCII;
 
             // We have some filters specified
             if (args.length > 1)
@@ -239,15 +248,19 @@ public class SubCommandBlockStats extends SubCommand
                 lines = blockStats.queryAll(format);
             }
 
-            if (args[0].equals("query"))
+            if (cmd.equals("query"))
             {
                 DataDump.printDataToLogger(lines);
                 this.sendMessage(sender, "Command output printed to console");
             }
             else
             {
-                File file = DataDump.dumpDataToFile("block_stats", lines);
-                sendClickableLinkMessage(sender, "Output written to file %s", file);
+                File file = DataDump.dumpDataToFile("block_stats", lines, format);
+
+                if (file != null)
+                {
+                    sendClickableLinkMessage(sender, "Output written to file %s", file);
+                }
             }
         }
         else

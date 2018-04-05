@@ -4,15 +4,18 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import com.google.common.collect.Sets;
 import fi.dy.masa.tellme.datadump.BiomeDump;
 import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.BlockStatesDump;
+import fi.dy.masa.tellme.datadump.CreativetabDump;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.datadump.DimensionDump;
 import fi.dy.masa.tellme.datadump.EnchantmentDump;
 import fi.dy.masa.tellme.datadump.EntityDump;
+import fi.dy.masa.tellme.datadump.FoodItemDump;
 import fi.dy.masa.tellme.datadump.ItemDump;
 import fi.dy.masa.tellme.datadump.PotionDump;
 import fi.dy.masa.tellme.datadump.PotionTypeDump;
@@ -25,6 +28,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 
 public class SubCommandDump extends SubCommand
 {
@@ -53,9 +57,11 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("blocks-with-nbt");
         this.subSubCommands.add("blockstates-by-block");
         this.subSubCommands.add("blockstates-by-state");
+        this.subSubCommands.add("creativetabs");
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
+        this.subSubCommands.add("food-items");
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
         this.subSubCommands.add("musictypes");
@@ -68,7 +74,7 @@ public class SubCommandDump extends SubCommand
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (args.length >= 1)
         {
@@ -120,16 +126,7 @@ public class SubCommandDump extends SubCommand
 
         if (this.getName().startsWith("dump"))
         {
-            File file;
-
-            if (format == Format.CSV)
-            {
-                file = DataDump.dumpDataToFile(arg + "-csv", ".csv", data);
-            }
-            else
-            {
-                file = DataDump.dumpDataToFile(arg, data);
-            }
+            File file = DataDump.dumpDataToFile(arg, data, format);
 
             if (file != null)
             {
@@ -156,9 +153,11 @@ public class SubCommandDump extends SubCommand
             case "blocks-with-nbt":                 return BlockDump.getFormattedBlockDump(format, true);
             case "blockstates-by-block":            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
             case "blockstates-by-state":            return BlockStatesDump.getFormattedBlockStatesDumpByState(format);
+            case "creativetabs":                    return CreativetabDump.getFormattedCreativetabDump(format);
             case "dimensions":                      return DimensionDump.getFormattedDimensionDump(format, server);
             case "enchantments":                    return EnchantmentDump.getFormattedEnchantmentDump(format);
             case "entities":                        return EntityDump.getFormattedEntityDump(format);
+            case "food-items":                      return FoodItemDump.getFormattedFoodItemDump(format);
             case "items":                           return ItemDump.getFormattedItemDump(format, false);
             case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, true);
             case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);

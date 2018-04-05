@@ -25,12 +25,7 @@ public class BiomeDump
 {
     public static List<String> getFormattedBiomeDump(Format format, boolean outputColors)
     {
-        int columns = 8;
-
-        if (outputColors)
-        {
-            columns += 3;
-        }
+        int columns = outputColors ? 11 : 8;
 
         DataDump biomeDump = new DataDump(columns, format);
         biomeDump.setSort(false);

@@ -22,6 +22,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
@@ -123,11 +124,12 @@ public class BlockInfo
     private static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         List<String> lines = new ArrayList<>();
-        lines.add(BlockData.getFor(world, pos, player).toString() + " " + getTileInfo(world, pos));
+        BlockData data = BlockData.getFor(world, pos, player);
+        lines.add(data.toString());
 
-        IBlockState state = world.getBlockState(pos).getActualState(world, pos);
+        IBlockState state = data.actualState;
 
-        lines.add(String.format("Full block state: %s", state.toString()));
+        lines.add(String.format("Full block state: %s", state));
         lines.add(String.format("Hardness: %.4f, Resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
                 state.getBlock().getExplosionResistance(player) * 5f,
@@ -229,11 +231,6 @@ public class BlockInfo
         SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
     }
 
-    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, RayTraceResult trace, boolean adjacent)
-    {
-        getBlockInfoFromRayTracedTarget(world, player, trace, adjacent, player.isSneaking());
-    }
-
     public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, RayTraceResult trace, boolean adjacent, boolean dumpToFile)
     {
         // Ray traced to a block
@@ -255,14 +252,16 @@ public class BlockInfo
 
     public static class BlockData
     {
+        private final IBlockState actualState;
         private final String regName;
         private final int id;
         private final int meta;
         private final String displayName;
         private final String teInfo;
 
-        public BlockData(String displayName, String regName, int id, int meta, String teInfo)
+        public BlockData(IBlockState actualState, String displayName, String regName, int id, int meta, String teInfo)
         {
+            this.actualState = actualState;
             this.displayName = displayName;
             this.regName = regName;
             this.id = id;
@@ -272,16 +271,17 @@ public class BlockInfo
 
         public static BlockData getFor(World world, BlockPos pos, EntityPlayer player)
         {
-            IBlockState state = world.getBlockState(pos).getActualState(world, pos);
-            Block block = state.getBlock();
+            IBlockState actualState = world.getBlockState(pos).getActualState(world, pos);
+            Block block = actualState.getBlock();
 
             int id = Block.getIdFromBlock(block);
-            int meta = block.getMetaFromState(state);
+            int meta = block.getMetaFromState(actualState);
             //ItemStack stack = block.getPickBlock(state, RayTraceUtils.getRayTraceFromEntity(world, player, true), world, pos, player);
             //ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
             //ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
-            ItemStack stack = new ItemStack(block, 1, block.getMetaFromState(state));
-            String registryName = Block.REGISTRY.getNameForObject(block).toString();
+            ResourceLocation rl = Block.REGISTRY.getNameForObject(block);
+            ItemStack stack = new ItemStack(block, 1, block.getMetaFromState(actualState));
+            String registryName = rl != null ? rl.toString() : "<null>";
             String displayName;
 
             if (stack.isEmpty() == false)
@@ -294,7 +294,7 @@ public class BlockInfo
                 displayName = registryName;
             }
 
-            return new BlockData(displayName, registryName, id, meta, getTileInfo(world, pos));
+            return new BlockData(actualState, displayName, registryName, id, meta, getTileInfo(world, pos));
         }
 
         public ITextComponent toChatMessage()

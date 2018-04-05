@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.annotation.Nullable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -10,25 +11,33 @@ import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
+
 public class BlockStats extends ChunkProcessorAllChunks
 {
+    private boolean append;
     private final Multimap<String, BlockInfo> blockStats = MultimapBuilder.hashKeys().arrayListValues().build();
+
+    public void setAppend(boolean append)
+    {
+        this.append = append;
+    }
 
     @Override
     public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
     {
-        final int size = Math.max(Block.BLOCK_STATE_IDS.size(), 65536);
-        final int[] counts = new int[size];
-        int count = 0;
+        Object2LongOpenHashMap<IBlockState> counts = new Object2LongOpenHashMap<IBlockState>();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
         final long timeBefore = System.currentTimeMillis();
+        int count = 0;
 
         for (Chunk chunk : chunks)
         {
@@ -48,8 +57,8 @@ public class BlockStats extends ChunkProcessorAllChunks
                     {
                         pos.setPos(x, y, z);
                         IBlockState state = chunk.getBlockState(pos);
-                        int id = Block.BLOCK_STATE_IDS.get(state);
-                        counts[id]++;
+
+                        counts.addTo(state, 1);
                         count++;
                     }
                 }
@@ -58,8 +67,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             // Add the amount of air that would be in non-existing chunk sections within the given volume
             if (topY < posMax.getY())
             {
-                int id = Block.BLOCK_STATE_IDS.get(Blocks.AIR.getDefaultState());
-                counts[id] += (posMax.getY() - topY) * 256;
+                counts.addTo(Blocks.AIR.getDefaultState(), (posMax.getY() - topY) * 256);
             }
         }
 
@@ -70,35 +78,64 @@ public class BlockStats extends ChunkProcessorAllChunks
         this.addParsedData(counts);
     }
 
-    private void addParsedData(final int[] counts)
+    private void addParsedData(Object2LongOpenHashMap<IBlockState> counts)
     {
-        this.blockStats.clear();
-
-        for (int i = 0; i < counts.length; ++i)
+        if (this.append == false)
         {
-            if (counts[i] > 0)
-            {
-                try
-                {
-                    IBlockState state = Block.BLOCK_STATE_IDS.getByValue(i);
-                    Block block = state.getBlock();
-                    String registryName = Block.REGISTRY.getNameForObject(block).toString();
-                    int id = Block.getIdFromBlock(block);
-                    int meta = block.getMetaFromState(state);
-                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
-                    String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
+            this.blockStats.clear();
+        }
 
-                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, counts[i]));
-                }
-                catch (Exception e)
+        for (Map.Entry<IBlockState, Long> entry : counts.entrySet())
+        {
+            try
+            {
+                IBlockState state = entry.getKey();
+                Block block = state.getBlock();
+                ResourceLocation key = Block.REGISTRY.getNameForObject(block);
+                String registryName = key != null ? key.toString() : "null";
+                int id = Block.getIdFromBlock(block);
+                int meta = block.getMetaFromState(state);
+                ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
+                String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
+
+                if (key == null)
                 {
-                    LiteModTellMe.logger.error("Caught an exception while getting block names", e);
+                    LiteModTellMe.logger.warn("Non-registered block: class = {}, id = {}, meta = {}, state 0 {}",
+                            block.getClass().getName(), id, meta, state);
                 }
+
+                if (this.append)
+                {
+                    boolean appended = false;
+
+                    for (BlockInfo old : this.blockStats.get(registryName))
+                    {
+                        if (old.id == id && old.meta == meta)
+                        {
+                            old.addToCount(entry.getValue());
+                            appended = true;
+                            break;
+                        }
+                    }
+
+                    if (appended == false)
+                    {
+                        this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, entry.getValue()));
+                    }
+                }
+                else
+                {
+                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, entry.getValue()));
+                }
+            }
+            catch (Exception e)
+            {
+                LiteModTellMe.logger.error("Caught an exception while getting block names", e);
             }
         }
     }
 
-    private void addFilteredData(BlockStatsDump dump, List<String> filters)
+    private void addFilteredData(DataDump dump, List<String> filters)
     {
         for (String filter : filters)
         {
@@ -150,7 +187,7 @@ public class BlockStats extends ChunkProcessorAllChunks
 
     public List<String> query(Format format, @Nullable List<String> filters)
     {
-        BlockStatsDump dump = new BlockStatsDump(format);
+        DataDump dump = new DataDump(5, format);
 
         if (filters != null)
         {
@@ -184,15 +221,20 @@ public class BlockStats extends ChunkProcessorAllChunks
         public final String displayName;
         public final int id;
         public final int meta;
-        public final int count;
+        public long count;
 
-        public BlockInfo(String name, String displayName, int id, int meta, int count)
+        public BlockInfo(String name, String displayName, int id, int meta, long count)
         {
             this.name = name;
             this.displayName = displayName;
             this.id = id;
             this.meta = meta;
             this.count = count;
+        }
+
+        public void addToCount(long amount)
+        {
+            this.count += amount;
         }
 
         public int compareTo(BlockInfo other)
@@ -240,14 +282,6 @@ public class BlockStats extends ChunkProcessorAllChunks
             if (meta != other.meta)
                 return false;
             return true;
-        }
-    }
-
-    private static class BlockStatsDump extends DataDump
-    {
-        public BlockStatsDump(Format format)
-        {
-            super(5, format);
         }
     }
 }

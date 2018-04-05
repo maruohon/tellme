@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -18,6 +19,8 @@ public class CommandTellme extends CommandBase
     public CommandTellme()
     {
         this.registerSubCommand(new SubCommandBiome(this));
+        this.registerSubCommand(new SubCommandBiomeLocate(this));
+        this.registerSubCommand(new SubCommandBiomeStats(this));
         this.registerSubCommand(new SubCommandBlockStats(this));
         this.registerSubCommand(new SubCommandCopyToClipboard(this));
         this.registerSubCommand(new SubCommandDump(this));
@@ -51,7 +54,7 @@ public class CommandTellme extends CommandBase
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (args.length == 1)
         {
@@ -63,7 +66,7 @@ public class CommandTellme extends CommandBase
 
             if (sc != null)
             {
-                return sc.getTabCompletions(server, sender, SubCommand.dropFirstStrings(args, 1));
+                return sc.getTabCompletions(server, sender, SubCommand.dropFirstStrings(args, 1), targetPos);
             }
         }
 
