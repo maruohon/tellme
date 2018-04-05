@@ -1,29 +1,22 @@
 package fi.dy.masa.tellme.mixin;
 
-import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import fi.dy.masa.tellme.command.ClientCommandHandler;
 import net.minecraft.util.TabCompleter;
 
 @Mixin(TabCompleter.class)
-public class MixinTabCompleter
+public abstract class MixinTabCompleter
 {
-    @Shadow
-    protected List<String> completions;
-
-    @Shadow
-    public void complete() {}
-
     @Inject(method = "requestCompletions(Ljava/lang/String;)V", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/client/network/NetHandlerPlayClient;sendPacket(Lnet/minecraft/network/Packet;)V"))
-    protected void onRequestCompletions(String prefix, CallbackInfo ci)
+    private void onRequestCompletions(String prefix, CallbackInfo ci)
     {
         if (prefix.length() >= 1)
         {
@@ -31,38 +24,44 @@ public class MixinTabCompleter
         }
     }
 
-    @Redirect(method = "setCompletions([Ljava/lang/String;)V", at = @At(
+    @ModifyVariable(method = "setCompletions([Ljava/lang/String;)V",
+            argsOnly = true,
+            at = @At(
                 value = "INVOKE",
-                target = "Lorg/apache/commons/lang3/StringUtils;getCommonPrefix([Ljava/lang/String;)Ljava/lang/String;"
-        ))
-    public String addCompletionsAndRemoveFormattingCodes(String... newCompl)
+                shift = Shift.AFTER,
+                remap = false,
+                target = "Ljava/util/List;clear()V"))
+    private String[] addCompletionsAndRemoveFormattingCodes2(String[] newCompl)
     {
         String[] complete = ClientCommandHandler.INSTANCE.latestAutoComplete;
 
-        // Add our command completions
         if (complete != null)
         {
-            for (String s : complete)
+            String[] result = new String[newCompl.length + complete.length];
+
+            int i = 0;
+
+            for (String str : complete)
             {
-                if (s.isEmpty() == false)
-                {
-                    this.completions.add(s);
-                }
+                result[i++] = net.minecraft.util.text.TextFormatting.getTextWithoutFormattingCodes(str);
             }
 
-            newCompl = com.google.common.collect.ObjectArrays.concat(complete, newCompl, String.class);
+            for (String str : newCompl)
+            {
+                result[i++] = net.minecraft.util.text.TextFormatting.getTextWithoutFormattingCodes(str);
+            }
+
+            return result;
         }
 
-        String prefix = org.apache.commons.lang3.StringUtils.getCommonPrefix(newCompl);
-
-        return net.minecraft.util.text.TextFormatting.getTextWithoutFormattingCodes(prefix);
+        return newCompl;
     }
 
     @ModifyArg(method = "complete()V", at = @At(
                 value = "INVOKE",
                 target = "Lnet/minecraft/client/gui/GuiTextField;writeText(Ljava/lang/String;)V"
             ))
-    public String removeFormattingCodes2(String text)
+    private String removeFormattingCodes2(String text)
     {
         return net.minecraft.util.text.TextFormatting.getTextWithoutFormattingCodes(text);
     }
