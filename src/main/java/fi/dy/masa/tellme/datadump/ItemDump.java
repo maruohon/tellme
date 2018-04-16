@@ -82,13 +82,16 @@ public class ItemDump
         {
             for (CreativeTabs tab : item.getCreativeTabs())
             {
-                NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-                item.getSubItems(tab, stacks);
-
-                for (ItemStack stack : stacks)
+                if (tab != null)
                 {
-                    // FIXME: Ignore identical duplicate entries from different tabs...
-                    addData(itemDump, item, rl, true, dumpNBT, stack);
+                    NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+                    item.getSubItems(tab, stacks);
+
+                    for (ItemStack stack : stacks)
+                    {
+                        // FIXME: Ignore identical duplicate entries from different tabs...
+                        addData(itemDump, item, rl, true, dumpNBT, stack);
+                    }
                 }
             }
         }
