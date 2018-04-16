@@ -9,6 +9,7 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -24,6 +25,7 @@ public class FoodItemDump
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
+        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
         String hunger = stack.isEmpty() == false ? String.valueOf(item.getHealAmount(stack)) : "?";
         String saturation = stack.isEmpty() == false ? String.valueOf(item.getSaturationModifier(stack)) : "?";
 

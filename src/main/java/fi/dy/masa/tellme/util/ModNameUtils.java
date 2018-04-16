@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.util;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 
@@ -32,6 +33,7 @@ public class ModNameUtils
                 }
             }
 
+            modName = TextFormatting.getTextWithoutFormattingCodes(modName);
             MOD_NAMES.put(domain, modName);
         }
 

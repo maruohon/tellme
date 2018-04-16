@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
@@ -26,6 +27,7 @@ public class ItemDump
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
+        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
         if (dumpNBT)
         {
@@ -140,8 +142,10 @@ public class ItemDump
             int meta = stack.getMetadata();
             ResourceLocation rl = stack.getItem().getRegistryName();
             String regName = rl != null ? rl.toString() : "<null>";
+            String displayName = meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName();
+            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
-            return String.format("[%s@%d - '%s']", regName, meta, meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName());
+            return String.format("[%s@%d - '%s']", regName, meta, displayName);
         }
 
         return DataDump.EMPTY_STRING;
@@ -155,8 +159,10 @@ public class ItemDump
             int meta = stack.getMetadata();
             ResourceLocation rl = stack.getItem().getRegistryName();
             String regName = rl != null ? rl.toString() : "<null>";
+            String displayName = meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName();
+            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
-            return String.format("[%s@%d - '%s' - %s]", regName, meta, meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName(),
+            return String.format("[%s@%d - '%s' - %s]", regName, meta, displayName,
                     stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
         }
 
