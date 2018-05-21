@@ -1,131 +1,142 @@
 package fi.dy.masa.tellme.event.datalogging;
 
-import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryBase;
-import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEvent;
-import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryEntityEvent;
+import fi.dy.masa.tellme.event.datalogging.LoggerWrapperBase.OutputType;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class DataLogger
 {
-    private static final DataLogger INSTANCE = new DataLogger();
-    private final EnumMap<DataType, Boolean> enabledTypesLog = new EnumMap<DataType, Boolean>(DataType.class);
-    private final EnumMap<DataType, Boolean> enabledTypesPrint = new EnumMap<DataType, Boolean>(DataType.class);
+    private static final Int2ObjectOpenHashMap<DataLogger> INSTANCES = new Int2ObjectOpenHashMap<>();
 
-    private final EnumMap<DataType, List<DataEntryBase<?>>> loggedData = new EnumMap<DataType, List<DataEntryBase<?>>>(DataType.class);
+    private final EnumMap<DataType, LoggerWrapper> loggers = new EnumMap<>(DataType.class);
+    private final LoggerWrapperBase dummyWrapper = new LoggerWrapperBase(DataType.CHUNK_LOAD);
+    private final int dimension;
 
-    private DataLogger()
+    private DataLogger(int dimension)
     {
-        for (DataType type : DataType.values())
+        this.dimension = dimension;
+    }
+
+    public static DataLogger instance(int dimension)
+    {
+        DataLogger logger = INSTANCES.get(dimension);
+
+        if (logger == null)
         {
-            this.loggedData.put(type, new ArrayList<>());
+            logger = new DataLogger(dimension);
+            INSTANCES.put(dimension, logger);
         }
+
+        return logger;
     }
 
-    public static DataLogger instance()
+    public boolean setLoggingEnabled(DataType type, boolean enabled)
     {
-        return INSTANCE;
+        return this.setEnabled(OutputType.PRINT, type, enabled);
     }
 
-    public void setLoggingEnabled(DataType type, boolean enabled)
+    public boolean setPrintingEnabled(DataType type, boolean enabled)
     {
+        return this.setEnabled(OutputType.PRINT, type, enabled);
+    }
+
+    private boolean setEnabled(OutputType outputType, DataType dataType, boolean enabled)
+    {
+        LoggerWrapperBase wrapper;
+        boolean changed = false;
+
         if (enabled)
         {
-            this.enabledTypesLog.put(type, Boolean.TRUE);
+            wrapper = this.getOrCreateLoggerWrapper(dataType);
         }
         else
         {
-            this.enabledTypesLog.remove(type);
+            wrapper = this.getLoggerWrapper(dataType);
         }
+
+        changed = wrapper.isEnabled(outputType) != enabled;
+        wrapper.setEnabled(outputType, enabled);
+
+        this.updateEventHandlers(dataType, enabled);
+
+        return changed;
     }
 
-    public void setPrintingEnabled(DataType type, boolean enabled)
+    private void updateEventHandlers(DataType type, boolean enabled)
     {
         if (enabled)
         {
-            this.enabledTypesPrint.put(type, Boolean.TRUE);
+            EventManager.registerHandler(type);
         }
         else
         {
-            this.enabledTypesPrint.remove(type);
+            for (DataLogger logger : INSTANCES.values())
+            {
+                LoggerWrapper wrapper = logger.loggers.get(type);
+
+                if (wrapper != null && (wrapper.enableLog || wrapper.enablePrint))
+                {
+                    return;
+                }
+            }
+
+            EventManager.unregisterHandler(type);
+        }
+    }
+
+    public void printLoggers(DataDump dump)
+    {
+        for (LoggerWrapper wrapper : this.loggers.values())
+        {
+            dump.addData(   String.valueOf(this.dimension),
+                            wrapper.type.getOutputName(),
+                            String.valueOf(wrapper.enablePrint),
+                            String.valueOf(wrapper.enableLog));
         }
     }
 
     public void clearData(DataType type)
     {
-        this.loggedData.get(type).clear();
+        this.getLoggerWrapper(type).clearData();
     }
 
     public void dumpData(DataType type, DataDump.Format format)
     {
-        List<DataEntryBase<?>> data = this.loggedData.get(type);
-
-        if (this.enabledTypesLog.get(type) != null && data.size() > 0)
-        {
-            DataDump dump = data.get(0).createDataDump(format);
-
-            for (DataEntryBase<?> entry : data)
-            {
-                entry.addDataToDump(dump);
-            }
-
-            DataDump.dumpDataToFile("logged_data_" + type, dump.getLines()); // FIXME file name
-        }
+        this.getLoggerWrapper(type).dumpData(format);
     }
 
     public void onChunkEvent(DataType type, Chunk chunk)
     {
-        DataEntryChunkEvent data = this.getChunkDataEntry(type, chunk);
-        this.handleData(type, data);
+        this.getLoggerWrapper(type).onChunkEvent(type, chunk);
     }
 
     public void onEntityEvent(DataType type, Entity entity)
     {
-        DataEntryEntityEvent data = this.getEntityDataEntry(type, entity);
-        this.handleData(type, data);
-    }
-
-    private void handleData(DataType type, DataEntryBase<?> data)
-    {
-        if (data != null)
-        {
-            if (this.enabledTypesPrint.get(type) != null)
-            {
-                TellMe.logger.info(data.getPrintLine());
-            }
-
-            if (this.enabledTypesLog.get(type) != null)
-            {
-                this.loggedData.get(type).add(data);
-            }
-        }
+        this.getLoggerWrapper(type).onEntityEvent(type, entity);
     }
 
     @Nullable
-    private DataEntryChunkEvent getChunkDataEntry(DataType type, Chunk chunk)
+    private LoggerWrapperBase getLoggerWrapper(DataType type)
     {
-        switch (type)
-        {
-            case CHUNK_LOAD:        return new DataEntryChunkEvent(type, chunk);
-            case CHUNK_UNLOAD:      return new DataEntryChunkEvent(type, chunk);
-            default:                return null;
-        }
+        LoggerWrapperBase wrapper = this.loggers.get(type);
+        return wrapper != null ? wrapper : this.dummyWrapper;
     }
 
-    @Nullable
-    private DataEntryEntityEvent getEntityDataEntry(DataType type, Entity entity)
+    private LoggerWrapper getOrCreateLoggerWrapper(DataType type)
     {
-        switch (type)
+        LoggerWrapper wrapper = this.loggers.get(type);
+
+        if (wrapper == null)
         {
-            case ENTITY_JOIN_WORLD: return new DataEntryEntityEvent(type, entity);
-            default:                return null;
+            wrapper = new LoggerWrapper(type);
+            this.loggers.put(type, wrapper);
         }
+
+        return wrapper;
     }
 
     public enum DataType
@@ -141,6 +152,11 @@ public class DataLogger
         {
             this.argName = argName;
             this.outputName = outputName;
+        }
+
+        public String getArgName()
+        {
+            return this.argName;
         }
 
         public String getOutputName()

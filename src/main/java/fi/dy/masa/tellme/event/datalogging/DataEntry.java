@@ -12,15 +12,13 @@ public class DataEntry
 {
     public static abstract class DataEntryBase<P>
     {
-        private final DataType type;
         private final int dimension;
         private final long worldTick;
         private final long systemTime;
         private final P position;
 
-        private DataEntryBase(DataType type, World world, P position)
+        private DataEntryBase(World world, P position)
         {
-            this.type = type;
             this.dimension = world.provider.getDimension();
             this.worldTick = world.getTotalWorldTime();
             this.systemTime = System.currentTimeMillis();
@@ -47,10 +45,7 @@ public class DataEntry
             return this.position;
         }
 
-        public DataType getType()
-        {
-            return this.type;
-        }
+        protected abstract String getDisplayName();
 
         public abstract String getPrintLine();
 
@@ -59,11 +54,11 @@ public class DataEntry
         public abstract void addDataToDump(DataDump dump);
     }
 
-    public static class DataEntryChunkEvent extends DataEntryBase<ChunkPos>
+    public static abstract class DataEntryChunkEventBase extends DataEntryBase<ChunkPos>
     {
-        public DataEntryChunkEvent(DataType type, Chunk chunk)
+        public DataEntryChunkEventBase(Chunk chunk)
         {
-            super(type, chunk.getWorld(), chunk.getPos());
+            super(chunk.getWorld(), chunk.getPos());
         }
 
         @Override
@@ -72,7 +67,7 @@ public class DataEntry
             ChunkPos pos = this.getPosition();
 
             return String.format("%s ; DIM: %3d, Tick: %d, Time: %d, ChunkPos: [%5d, %5d]",
-                    this.getType().getOutputName(), this.getDimension(), this.getWorldTick(), this.getSystemTime(), pos.x, pos.z);
+                    this.getDisplayName(), this.getDimension(), this.getWorldTick(), this.getSystemTime(), pos.x, pos.z);
         }
 
         @Override
@@ -103,15 +98,49 @@ public class DataEntry
         }
     }
 
+    public static class DataEntryChunkEventLoad extends DataEntryChunkEventBase
+    {
+        public DataEntryChunkEventLoad(Chunk chunk)
+        {
+            super(chunk);
+        }
+
+        @Override
+        protected String getDisplayName()
+        {
+            return "Chunk Load";
+        }
+    }
+
+    public static class DataEntryChunkEventUnload extends DataEntryChunkEventBase
+    {
+        public DataEntryChunkEventUnload(Chunk chunk)
+        {
+            super(chunk);
+        }
+
+        @Override
+        protected String getDisplayName()
+        {
+            return "Chunk Unload";
+        }
+    }
+
     public static class DataEntryEntityEvent extends DataEntryBase<Vec3d>
     {
         private final String entityName;
 
         public DataEntryEntityEvent(DataType type, Entity entity)
         {
-            super(type, entity.getEntityWorld(), entity.getPositionVector());
+            super(entity.getEntityWorld(), entity.getPositionVector());
 
             this.entityName = entity.getName();
+        }
+
+        @Override
+        protected String getDisplayName()
+        {
+            return "Entity Join World";
         }
 
         @Override
@@ -120,7 +149,7 @@ public class DataEntry
             Vec3d pos = this.getPosition();
 
             return String.format("%s ; DIM: %3d, Tick: %d, Time: %d, Pos: [%.2f, %.2f, %.2f]",
-                    this.getType().getOutputName(), this.getDimension(), this.getWorldTick(), this.getSystemTime(), pos.x, pos.y, pos.z);
+                    this.getDisplayName(), this.getDimension(), this.getWorldTick(), this.getSystemTime(), pos.x, pos.y, pos.z);
         }
 
         @Override

@@ -10,10 +10,10 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.DataLogger;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
-import fi.dy.masa.tellme.event.datalogging.EventManager;
 
 public class SubCommandTrack extends SubCommand
 {
@@ -32,9 +32,12 @@ public class SubCommandTrack extends SubCommand
         this.subSubCommands.add("print");
         this.subSubCommands.add("remove-log");
         this.subSubCommands.add("remove-print");
+        this.subSubCommands.add("show-loggers");
 
+        this.dataTypes.add("all");
         this.dataTypes.add("chunk-load");
         this.dataTypes.add("chunk-unload");
+        this.dataTypes.add("entity-join-world");
 
         this.addSubCommandHelp("_generic", "Can track various events, such as chunk loads/unloads, entities joining the world, etc.");
     }
@@ -51,6 +54,7 @@ public class SubCommandTrack extends SubCommand
         sender.sendMessage(new TextComponentString(pre + " <enable | disable> <all-dims | dimId> [all | type ... ]"));
         sender.sendMessage(new TextComponentString(pre + " <add-log | remove-log> <all-dims | dimId> [all | type ... ]"));
         sender.sendMessage(new TextComponentString(pre + " <add-print | remove-print> <all-dims | dimId> [all | type ... ]"));
+        sender.sendMessage(new TextComponentString(pre + " show-loggers <all-dims | dimId>"));
         sender.sendMessage(new TextComponentString(pre + " clear-data <all-dims | dimId> [all | type ... ]"));
         sender.sendMessage(new TextComponentString(pre + " <dump | print> <all-dims | dimId> [all | type ... ]"));
     }
@@ -72,9 +76,7 @@ public class SubCommandTrack extends SubCommand
         }
         else if (args.length >= 3)
         {
-            List<String> strs = new ArrayList<>(this.dataTypes);
-            strs.add("all");
-            return CommandBase.getListOfStringsMatchingLastWord(args, strs);
+            return CommandBase.getListOfStringsMatchingLastWord(args, this.dataTypes);
         }
 
         return Collections.emptyList();
@@ -90,51 +92,112 @@ public class SubCommandTrack extends SubCommand
         }
 
         String cmd = args[0];
+        int[] dims;
 
-        for (int i = 2; i < args.length; i++)
+        if (args[1].equals("all-dims"))
         {
-            DataType type = DataType.fromArgument(args[i]);
+            Integer[] d = DimensionManager.getStaticDimensionIDs();
+            dims = new int[d.length];
 
-            if (type == null)
+            for (int i = 0; i < dims.length; i++)
             {
+                dims[i] = d[i];
+            }
+        }
+        else
+        {
+            dims = new int[] { CommandBase.parseInt(args[1]) };
+        }
+
+        DataDump dumpLoggers = new DataDump(4, DataDump.Format.ASCII);
+
+        for (int dimension : dims)
+        {
+            if (cmd.equals("show-loggers"))
+            {
+                DataLogger.instance(dimension).printLoggers(dumpLoggers);
                 continue;
             }
 
-            if (cmd.equals("add-log"))
+            DataType[] types;
+
+            if (args[2].equals("all"))
             {
-                EventManager.registerHandler(type);
-                DataLogger.instance().setLoggingEnabled(type, true);
-                this.sendMessage(sender, "Enabled logging mode for %s", type.getOutputName());
+                types = DataType.values();
             }
-            else if (cmd.equals("remove-log"))
+            else
             {
-                DataLogger.instance().setLoggingEnabled(type, false);
+                types = new DataType[args.length - 2];
+
+                for (int i = 2, j = 0; i < args.length; i++, j++)
+                {
+                    types[j] = DataType.fromArgument(args[i]);
+                }
             }
-            else if (cmd.equals("add-print"))
+
+            for (DataType type : types)
             {
-                EventManager.registerHandler(type);
-                DataLogger.instance().setPrintingEnabled(type, true);
-                this.sendMessage(sender, "Enabled immediate-print mode for %s", type.getOutputName());
+                if (type == null)
+                {
+                    continue;
+                }
+
+                if (cmd.equals("add-log"))
+                {
+                    if (DataLogger.instance(dimension).setLoggingEnabled(type, true))
+                    {
+                        this.sendMessage(sender, "Enabled logging mode for %s", type.getOutputName());
+                    }
+                }
+                else if (cmd.equals("add-print"))
+                {
+                    if (DataLogger.instance(dimension).setPrintingEnabled(type, true))
+                    {
+                        this.sendMessage(sender, "Enabled immediate-print mode for %s", type.getOutputName());
+                    }
+                }
+                else if (cmd.equals("remove-log"))
+                {
+                    if (DataLogger.instance(dimension).setLoggingEnabled(type, false))
+                    {
+                        this.sendMessage(sender, "Disabled logging mode for %s", type.getOutputName());
+                    }
+                }
+                else if (cmd.equals("remove-print"))
+                {
+                    if (DataLogger.instance(dimension).setPrintingEnabled(type, false))
+                    {
+                        this.sendMessage(sender, "Disabled immediate-print mode for %s", type.getOutputName());
+                    }
+                }
+                else if (cmd.equals("clear-data"))
+                {
+                    DataLogger.instance(dimension).clearData(type);
+                }
+                else if (cmd.equals("dump"))
+                {
+                    DataLogger.instance(dimension).dumpData(type, DataDump.Format.ASCII);
+                }
             }
-            else if (cmd.equals("remove-print"))
-            {
-                // TODO unregister handler if no active prints/dumps left
-                DataLogger.instance().setPrintingEnabled(type, false);
-            }
-            else if (cmd.equals("clear-data"))
-            {
-                DataLogger.instance().clearData(type);
-            }
-            else if (cmd.equals("dump"))
-            {
-                DataLogger.instance().dumpData(type, DataDump.Format.ASCII);
-            }
+        }
+
+        if (cmd.equals("show-loggers"))
+        {
+            dumpLoggers.addFooter("Currently enabled loggers/printers");
+            dumpLoggers.addTitle("Dim", "Type", "Print", "Log");
+
+            dumpLoggers.setColumnProperties(0, DataDump.Alignment.RIGHT, true);
+            dumpLoggers.setColumnAlignment(2, DataDump.Alignment.RIGHT);
+            dumpLoggers.setColumnAlignment(3, DataDump.Alignment.RIGHT);
+            dumpLoggers.setUseColumnSeparator(true);
+
+            DataDump.printDataToLogger(dumpLoggers.getLines());
         }
     }
 
     private boolean isValidCommand(String[] args, ICommandSender sender)
     {
-        if (args.length < 3)
+        if (args.length < 2 || (args.length < 3 && args[0].equals("show-loggers") == false))
         {
             this.sendMessage(sender, "Too few arguments");
             return false;
@@ -159,12 +222,15 @@ public class SubCommandTrack extends SubCommand
             }
         }
 
-        for (int i = 2; i < args.length; i++)
+        if (args.length >= 3)
         {
-            if (this.dataTypes.contains(args[i]) == false)
+            for (int i = 2; i < args.length; i++)
             {
-                this.sendMessage(sender, "Invalid data type '%s'", args[i]);
-                return false;
+                if (this.dataTypes.contains(args[i]) == false)
+                {
+                    this.sendMessage(sender, "Invalid data type '%s'", args[i]);
+                    return false;
+                }
             }
         }
 
