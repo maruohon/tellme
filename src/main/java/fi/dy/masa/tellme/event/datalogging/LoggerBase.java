@@ -6,19 +6,21 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.chunk.Chunk;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryBase;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
 
-public class LoggerWrapperBase
+public class LoggerBase
 {
     protected final DataType type;
     protected final List<DataEntryBase<?>> loggedData = new ArrayList<>();
     protected boolean enablePrint;
     protected boolean enableLog;
     protected boolean enabled;
+    protected boolean useFilter;
 
-    public LoggerWrapperBase(DataType type)
+    public LoggerBase(DataType type)
     {
         this.type = type;
         this.enabled = true;
@@ -32,6 +34,24 @@ public class LoggerWrapperBase
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+    }
+
+    public void setFilterEnabled(boolean useFilters)
+    {
+        this.useFilter = useFilters;
+    }
+
+    public boolean isFilterEnabled()
+    {
+        return this.useFilter;
+    }
+
+    public void addFilters(String[] filters)
+    {
+    }
+
+    public void removeFilters(String[] filters)
+    {
     }
 
     public boolean isOutputTypeEnabled(OutputType type)
@@ -81,6 +101,22 @@ public class LoggerWrapperBase
         }
 
         return null;
+    }
+
+    protected void handleData(DataEntryBase<?> data)
+    {
+        if (data != null)
+        {
+            if (this.enablePrint)
+            {
+                TellMe.logger.info(data.getPrintLine());
+            }
+
+            if (this.enableLog)
+            {
+                this.loggedData.add(data);
+            }
+        }
     }
 
     public void onChunkEvent(Chunk chunk)

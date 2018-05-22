@@ -24,13 +24,17 @@ public class SubCommandTrack extends SubCommand
     {
         super(baseCommand);
 
+        this.subSubCommands.add("add-filter");
         this.subSubCommands.add("add-log");
         this.subSubCommands.add("add-print");
         this.subSubCommands.add("clear-data");
         this.subSubCommands.add("enable");
+        this.subSubCommands.add("enable-filters");
         this.subSubCommands.add("disable");
+        this.subSubCommands.add("disable-filters");
         this.subSubCommands.add("dump");
         this.subSubCommands.add("print");
+        this.subSubCommands.add("remove-filter");
         this.subSubCommands.add("remove-log");
         this.subSubCommands.add("remove-print");
         this.subSubCommands.add("show-loggers");
@@ -55,6 +59,8 @@ public class SubCommandTrack extends SubCommand
         sender.sendMessage(new TextComponentString(pre + " <enable | disable> <all-dims | dimId> [all | type ... ]"));
         sender.sendMessage(new TextComponentString(pre + " <add-log | remove-log> <all-dims | dimId> [all | type ... ]"));
         sender.sendMessage(new TextComponentString(pre + " <add-print | remove-print> <all-dims | dimId> [all | type ... ]"));
+        sender.sendMessage(new TextComponentString(pre + " <enable-filters | disable-filters> <all-dims | dimId> [all | type ... ]"));
+        sender.sendMessage(new TextComponentString(pre + " <add-filter | remove-filter> <all-dims | dimId> <type> filters ..."));
         sender.sendMessage(new TextComponentString(pre + " show-loggers <all-dims | dimId>"));
         sender.sendMessage(new TextComponentString(pre + " clear-data <all-dims | dimId> [all | type ... ]"));
         sender.sendMessage(new TextComponentString(pre + " <dump | print> <all-dims | dimId> [all | type ... ]"));
@@ -143,46 +149,51 @@ public class SubCommandTrack extends SubCommand
                     continue;
                 }
 
-                if (cmd.equals("add-log"))
+                if (cmd.equals("add-log") || cmd.equals("remove-log"))
                 {
-                    if (DataLogger.instance(dimension).setLoggingEnabled(type, true))
+                    boolean enable = cmd.equals("add-log");
+                    String msg = enable ? "Enabled" : "Disabled";
+
+                    if (DataLogger.instance(dimension).setLoggingEnabled(type, enable))
                     {
-                        this.sendMessage(sender, "Enabled logging mode for '%s' in dimension %s", type.getOutputName(), dimension);
+                        this.sendMessage(sender, msg + " logging mode for '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
-                else if (cmd.equals("add-print"))
+                else if (cmd.equals("add-print") || cmd.equals("remove-print"))
                 {
-                    if (DataLogger.instance(dimension).setPrintingEnabled(type, true))
+                    boolean enable = cmd.equals("add-print");
+                    String msg = enable ? "Enabled" : "Disabled";
+
+                    if (DataLogger.instance(dimension).setPrintingEnabled(type, enable))
                     {
-                        this.sendMessage(sender, "Enabled immediate-print mode for '%s' in dimension %s", type.getOutputName(), dimension);
+                        this.sendMessage(sender, msg + " immediate-print mode for '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
-                else if (cmd.equals("remove-log"))
+                else if (cmd.equals("enable") || cmd.equals("disable"))
                 {
-                    if (DataLogger.instance(dimension).setLoggingEnabled(type, false))
+                    boolean enable = cmd.equals("enable");
+                    String msg = enable ? "Enabled" : "Disabled";
+
+                    if (DataLogger.instance(dimension).setEnabled(type, enable))
                     {
-                        this.sendMessage(sender, "Disabled logging mode for '%s' in dimension %s", type.getOutputName(), dimension);
+                        this.sendMessage(sender, msg + " tracking of '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
-                else if (cmd.equals("remove-print"))
+                else if (args.length >= 4 && (cmd.equals("add-filter") || cmd.equals("remove-filter")))
                 {
-                    if (DataLogger.instance(dimension).setPrintingEnabled(type, false))
-                    {
-                        this.sendMessage(sender, "Disabled immediate-print mode for '%s' in dimension %s", type.getOutputName(), dimension);
-                    }
+                    boolean add = cmd.equals("add-filter");
+                    String msg = add ? "Added" : "Removed";
+                    DataLogger.instance(dimension).modifyFilters(type, add, dropFirstStrings(args, 3));
+                    this.sendMessage(sender, msg + " filters for '%s' in dimension %s", type.getOutputName(), dimension);
                 }
-                else if (cmd.equals("enable"))
+                else if (cmd.equals("enable-filters") || cmd.equals("disable-filters"))
                 {
-                    if (DataLogger.instance(dimension).setEnabled(type, true))
+                    boolean enable = cmd.equals("enable-filters");
+                    String msg = enable ? "Enabled" : "Disabled";
+
+                    if (DataLogger.instance(dimension).setFilterEnabled(type, enable))
                     {
-                        this.sendMessage(sender, "Enabled tracking of '%s' in dimension %s", type.getOutputName(), dimension);
-                    }
-                }
-                else if (cmd.equals("disable"))
-                {
-                    if (DataLogger.instance(dimension).setEnabled(type, false))
-                    {
-                        this.sendMessage(sender, "Disabled tracking of '%s' in dimension %s", type.getOutputName(), dimension);
+                        this.sendMessage(sender, msg + " filters for '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
                 else if (cmd.equals("clear-data"))
@@ -248,6 +259,18 @@ public class SubCommandTrack extends SubCommand
 
         if (args.length >= 3)
         {
+            if (args[0].equals("add-filter") || args[0].equals("remove-filter"))
+            {
+                if (args.length < 4)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
             for (int i = 2; i < args.length; i++)
             {
                 if (this.dataTypes.contains(args[i]) == false)

@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.event.datalogging.LoggerWrapperBase.OutputType;
+import fi.dy.masa.tellme.event.datalogging.LoggerBase.OutputType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class DataLogger
@@ -14,7 +14,7 @@ public class DataLogger
     private static final Int2ObjectOpenHashMap<DataLogger> INSTANCES = new Int2ObjectOpenHashMap<>();
 
     private final EnumMap<DataType, LoggerWrapper> loggers = new EnumMap<>(DataType.class);
-    private final LoggerWrapperBase dummyWrapper = new LoggerWrapperBase(DataType.CHUNK_LOAD);
+    private final LoggerBase dummyWrapper = new LoggerBase(DataType.CHUNK_LOAD);
     private final int dimension;
 
     private DataLogger(int dimension)
@@ -47,7 +47,7 @@ public class DataLogger
 
     private boolean setOutputTypeEnabled(OutputType outputType, DataType dataType, boolean enabled)
     {
-        LoggerWrapperBase wrapper;
+        LoggerBase wrapper;
         boolean changed = false;
 
         if (enabled)
@@ -69,7 +69,7 @@ public class DataLogger
 
     public boolean setEnabled(DataType type, boolean enabled)
     {
-        LoggerWrapperBase wrapper = this.getLoggerWrapper(type);
+        LoggerBase wrapper = this.getLoggerWrapper(type);
 
         if (wrapper != null)
         {
@@ -83,6 +83,39 @@ public class DataLogger
         }
 
         return false;
+    }
+
+    public boolean setFilterEnabled(DataType type, boolean enabled)
+    {
+        LoggerBase wrapper = this.getLoggerWrapper(type);
+
+        if (wrapper != null)
+        {
+            boolean changed = false;
+            changed = wrapper.isFilterEnabled() != enabled;
+            wrapper.setFilterEnabled(enabled);
+
+            return changed;
+        }
+
+        return false;
+    }
+
+    public void modifyFilters(DataType type, boolean add, String[] filters)
+    {
+        LoggerBase wrapper = this.getLoggerWrapper(type);
+
+        if (wrapper != null)
+        {
+            if (add)
+            {
+                wrapper.addFilters(filters);
+            }
+            else
+            {
+                wrapper.removeFilters(filters);
+            }
+        }
     }
 
     private void updateEventHandlers(DataType type)
@@ -135,9 +168,9 @@ public class DataLogger
     }
 
     @Nullable
-    private LoggerWrapperBase getLoggerWrapper(DataType type)
+    private LoggerBase getLoggerWrapper(DataType type)
     {
-        LoggerWrapperBase wrapper = this.loggers.get(type);
+        LoggerBase wrapper = this.loggers.get(type);
         return wrapper != null ? wrapper : this.dummyWrapper;
     }
 
