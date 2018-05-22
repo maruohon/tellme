@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 
 public class ItemDump
 {
@@ -21,6 +22,7 @@ public class ItemDump
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
+        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
         if (dumpNBT)
         {
@@ -77,11 +79,15 @@ public class ItemDump
         {
             NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
             CreativeTabs tab = item.getCreativeTab();
-            item.getSubItems(tab, stacks);
 
-            for (ItemStack stack : stacks)
+            if (tab != null)
             {
-                addData(itemDump, item, rl, true, dumpNBT, stack);
+                item.getSubItems(tab, stacks);
+
+                for (ItemStack stack : stacks)
+                {
+                    addData(itemDump, item, rl, true, dumpNBT, stack);
+                }
             }
         }
         else
@@ -98,8 +104,10 @@ public class ItemDump
             int meta = stack.getMetadata();
             ResourceLocation rl = Item.REGISTRY.getNameForObject(stack.getItem());
             String regName = rl != null ? rl.toString() : "<null>";
+            String displayName = meta == 32767 ? "(WILDCARD)" : stack.getDisplayName();
+            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
-            return String.format("[%s@%d - '%s']", regName, meta, meta == 32767 ? "(WILDCARD)" : stack.getDisplayName());
+            return String.format("[%s@%d - '%s']", regName, meta, displayName);
         }
 
         return DataDump.EMPTY_STRING;
@@ -111,9 +119,13 @@ public class ItemDump
         {
             // old: [%s @ %d - display: %s - NBT: %s]
             int meta = stack.getMetadata();
-            String regName = Item.REGISTRY.getNameForObject(stack.getItem()).toString();
 
-            return String.format("[%s@%d - '%s' - %s]", regName, meta, meta == 32767 ? "(WILDCARD)" : stack.getDisplayName(),
+            ResourceLocation rl = Item.REGISTRY.getNameForObject(stack.getItem());
+            String regName = rl != null ? rl.toString() : "<null>";
+            String displayName = meta == 32767 ? "(WILDCARD)" : stack.getDisplayName();
+            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+
+            return String.format("[%s@%d - '%s' - %s]", regName, meta, displayName,
                     stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
         }
 

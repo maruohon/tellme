@@ -10,6 +10,7 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 
 public class FoodItemDump
 {
@@ -21,6 +22,7 @@ public class FoodItemDump
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
+        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
         String hunger = stack.isEmpty() == false ? String.valueOf(item.getHealAmount(stack)) : "?";
         String saturation = stack.isEmpty() == false ? String.valueOf(item.getSaturationModifier(stack)) : "?";
 
@@ -67,12 +69,15 @@ public class FoodItemDump
     {
         if (item.getHasSubtypes())
         {
-            NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-            item.getSubItems(item.getCreativeTab(), stacks);
-
-            for (ItemStack stack : stacks)
+            if (item.getCreativeTab() != null)
             {
-                addData(itemDump, item, rl, true, stack);
+                NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+                item.getSubItems(item.getCreativeTab(), stacks);
+
+                for (ItemStack stack : stacks)
+                {
+                    addData(itemDump, item, rl, true, stack);
+                }
             }
         }
         else

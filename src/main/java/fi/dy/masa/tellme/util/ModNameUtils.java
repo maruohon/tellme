@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.util;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 
 public class ModNameUtils
 {
@@ -24,6 +25,7 @@ public class ModNameUtils
                 modName = domain;
             }
 
+            modName = TextFormatting.getTextWithoutFormattingCodes(modName);
             MOD_NAMES.put(domain, modName);
         }
 

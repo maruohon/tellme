@@ -21,6 +21,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 
 public class BlockDump extends DataDump
 {
@@ -71,6 +72,7 @@ public class BlockDump extends DataDump
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = stack.isEmpty() == false ? stack.getDisplayName() : block.getLocalizedName();
+        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
         Item item = Item.getItemFromBlock(block);
         String itemId = item != Items.AIR ? String.valueOf(Item.getIdFromItem(item)) : EMPTY_STRING;
         String itemMeta = stack.isEmpty() == false ? String.valueOf(stack.getMetadata()) : EMPTY_STRING;
@@ -276,6 +278,7 @@ public class BlockDump extends DataDump
                 int itemId = Item.getIdFromItem(item);
                 int itemMeta = stack.getMetadata();
                 String displayName = stack.isEmpty() == false ? stack.getDisplayName() : block.getLocalizedName();
+                displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
                 JsonObject objItem = new JsonObject();
                 objItem.add("RegistryName", new JsonPrimitive(itemName));
