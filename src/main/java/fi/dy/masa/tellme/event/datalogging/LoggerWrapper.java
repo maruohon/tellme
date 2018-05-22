@@ -19,18 +19,24 @@ public class LoggerWrapper extends LoggerWrapperBase
     }
 
     @Override
-    public void onChunkEvent(DataType type, Chunk chunk)
+    public void onChunkEvent(Chunk chunk)
     {
-        this.handleData(type, this.getChunkDataEntry(type, chunk));
+        if (this.enabled && (this.enablePrint || this.enableLog))
+        {
+            this.handleData(this.getChunkDataEntry(chunk));
+        }
     }
 
     @Override
-    public void onEntityEvent(DataType type, Entity entity)
+    public void onEntityEvent(Entity entity)
     {
-        this.handleData(type, this.getEntityDataEntry(type, entity));
+        if (this.enabled && (this.enablePrint || this.enableLog))
+        {
+            this.handleData(this.getEntityDataEntry(entity));
+        }
     }
 
-    private void handleData(DataType type, DataEntryBase<?> data)
+    private void handleData(DataEntryBase<?> data)
     {
         if (data != null)
         {
@@ -47,9 +53,9 @@ public class LoggerWrapper extends LoggerWrapperBase
     }
 
     @Nullable
-    private DataEntryChunkEventBase getChunkDataEntry(DataType type, Chunk chunk)
+    private DataEntryChunkEventBase getChunkDataEntry(Chunk chunk)
     {
-        switch (type)
+        switch (this.type)
         {
             case CHUNK_LOAD:        return new DataEntryChunkEventLoad(chunk);
             case CHUNK_UNLOAD:      return new DataEntryChunkEventUnload(chunk);
@@ -58,11 +64,11 @@ public class LoggerWrapper extends LoggerWrapperBase
     }
 
     @Nullable
-    private DataEntryEntityEvent getEntityDataEntry(DataType type, Entity entity)
+    private DataEntryEntityEvent getEntityDataEntry(Entity entity)
     {
-        switch (type)
+        switch (this.type)
         {
-            case ENTITY_JOIN_WORLD: return new DataEntryEntityEvent(type, entity);
+            case ENTITY_JOIN_WORLD: return new DataEntryEntityEvent(entity);
             default:                return null;
         }
     }

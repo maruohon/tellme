@@ -6,7 +6,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
 
 public class DataEntry
 {
@@ -66,19 +65,18 @@ public class DataEntry
         {
             ChunkPos pos = this.getPosition();
 
-            return String.format("%s ; DIM: %3d, Tick: %d, Time: %d, ChunkPos: [%5d, %5d]",
+            return String.format("%13s ; DIM: %5d, Tick: %9d, Time: %11d, ChunkPos: [%5d, %5d]",
                     this.getDisplayName(), this.getDimension(), this.getWorldTick(), this.getSystemTime(), pos.x, pos.z);
         }
 
         @Override
         public DataDump createDataDump(DataDump.Format format)
         {
-            DataDump dump = new DataDump(4, format);
-            dump.addTitle("Dimension", "World tick", "System time", "Chunk");
+            DataDump dump = new DataDump(3, format);
+            dump.addTitle("World tick", "System time", "Chunk");
 
-            dump.setColumnProperties(0, DataDump.Alignment.RIGHT, true); // dim
-            dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // tick
-            dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // time
+            dump.setColumnProperties(0, DataDump.Alignment.RIGHT, true); // tick
+            dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // time
 
             dump.setUseColumnSeparator(true);
 
@@ -91,7 +89,6 @@ public class DataEntry
             ChunkPos pos = this.getPosition();
 
             dump.addData(
-                    String.valueOf(this.getDimension()),
                     String.valueOf(this.getWorldTick()),
                     String.valueOf(this.getSystemTime()),
                     String.format("[%5d, %5d]", pos.x, pos.z));
@@ -130,7 +127,7 @@ public class DataEntry
     {
         private final String entityName;
 
-        public DataEntryEntityEvent(DataType type, Entity entity)
+        public DataEntryEntityEvent(Entity entity)
         {
             super(entity.getEntityWorld(), entity.getPositionVector());
 
@@ -156,11 +153,10 @@ public class DataEntry
         public DataDump createDataDump(DataDump.Format format)
         {
             DataDump dump = new DataDump(4, format);
-            dump.addTitle("Dimension", "World tick", "System time", "Position", "Name");
+            dump.addTitle("World tick", "System time", "Position", "Name");
 
-            dump.setColumnProperties(0, DataDump.Alignment.RIGHT, true); // dim
-            dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // tick
-            dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // time
+            dump.setColumnProperties(0, DataDump.Alignment.RIGHT, true); // tick
+            dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // time
 
             dump.setUseColumnSeparator(true);
 
@@ -173,7 +169,6 @@ public class DataEntry
             Vec3d pos = this.getPosition();
 
             dump.addData(
-                    String.valueOf(this.getDimension()),
                     String.valueOf(this.getWorldTick()),
                     String.valueOf(this.getSystemTime()),
                     String.format("%.2f, %.2f, %.2f", pos.x, pos.y, pos.z),

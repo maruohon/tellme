@@ -1,7 +1,9 @@
 package fi.dy.masa.tellme.event.datalogging;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -14,13 +16,25 @@ public class LoggerWrapperBase
     protected final List<DataEntryBase<?>> loggedData = new ArrayList<>();
     protected boolean enablePrint;
     protected boolean enableLog;
+    protected boolean enabled;
 
     public LoggerWrapperBase(DataType type)
     {
         this.type = type;
+        this.enabled = true;
     }
 
-    public boolean isEnabled(OutputType type)
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    public boolean isOutputTypeEnabled(OutputType type)
     {
         switch (type)
         {
@@ -33,7 +47,7 @@ public class LoggerWrapperBase
         }
     }
 
-    public void setEnabled(OutputType type, boolean enable)
+    public void setOutputTypeEnabled(OutputType type, boolean enable)
     {
         switch (type)
         {
@@ -51,7 +65,8 @@ public class LoggerWrapperBase
         this.loggedData.clear();
     }
 
-    public void dumpData(DataDump.Format format)
+    @Nullable
+    public File dumpData(DataDump.Format format, int dimension)
     {
         if (this.loggedData.size() > 0)
         {
@@ -62,15 +77,17 @@ public class LoggerWrapperBase
                 entry.addDataToDump(dump);
             }
 
-            DataDump.dumpDataToFile("logged_data_" + this.type.getArgName(), dump.getLines());
+            return DataDump.dumpDataToFile("logged_data_" + this.type.getArgName() + "_dim_" + dimension, dump.getLines());
         }
+
+        return null;
     }
 
-    public void onChunkEvent(DataType type, Chunk chunk)
+    public void onChunkEvent(Chunk chunk)
     {
     }
 
-    public void onEntityEvent(DataType type, Entity entity)
+    public void onEntityEvent(Entity entity)
     {
     }
 

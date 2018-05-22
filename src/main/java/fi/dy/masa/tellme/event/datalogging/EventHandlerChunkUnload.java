@@ -11,6 +11,10 @@ public class EventHandlerChunkUnload
     public void onChunkUnload(ChunkEvent.Unload event)
     {
         Chunk chunk = event.getChunk();
-        DataLogger.instance(chunk.getWorld().provider.getDimension()).onChunkEvent(DataType.CHUNK_UNLOAD, chunk);
+
+        if (chunk.getWorld().isRemote == false)
+        {
+            DataLogger.instance(chunk.getWorld().provider.getDimension()).onChunkEvent(DataType.CHUNK_UNLOAD, chunk);
+        }
     }
 }

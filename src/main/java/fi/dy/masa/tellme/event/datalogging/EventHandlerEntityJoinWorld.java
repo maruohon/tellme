@@ -11,6 +11,10 @@ public class EventHandlerEntityJoinWorld
     public void onEntityJoinWorld(EntityJoinWorldEvent event)
     {
         Entity entity = event.getEntity();
-        DataLogger.instance(entity.getEntityWorld().provider.getDimension()).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
+
+        if (entity.getEntityWorld().isRemote == false)
+        {
+            DataLogger.instance(entity.getEntityWorld().provider.getDimension()).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
+        }
     }
 }

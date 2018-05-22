@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.event.datalogging;
 
+import java.io.File;
 import java.util.EnumMap;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
@@ -36,15 +37,15 @@ public class DataLogger
 
     public boolean setLoggingEnabled(DataType type, boolean enabled)
     {
-        return this.setEnabled(OutputType.PRINT, type, enabled);
+        return this.setOutputTypeEnabled(OutputType.LOG, type, enabled);
     }
 
     public boolean setPrintingEnabled(DataType type, boolean enabled)
     {
-        return this.setEnabled(OutputType.PRINT, type, enabled);
+        return this.setOutputTypeEnabled(OutputType.PRINT, type, enabled);
     }
 
-    private boolean setEnabled(OutputType outputType, DataType dataType, boolean enabled)
+    private boolean setOutputTypeEnabled(OutputType outputType, DataType dataType, boolean enabled)
     {
         LoggerWrapperBase wrapper;
         boolean changed = false;
@@ -58,34 +59,46 @@ public class DataLogger
             wrapper = this.getLoggerWrapper(dataType);
         }
 
-        changed = wrapper.isEnabled(outputType) != enabled;
-        wrapper.setEnabled(outputType, enabled);
+        changed = wrapper.isOutputTypeEnabled(outputType) != enabled;
+        wrapper.setOutputTypeEnabled(outputType, enabled);
 
-        this.updateEventHandlers(dataType, enabled);
+        this.updateEventHandlers(dataType);
 
         return changed;
     }
 
-    private void updateEventHandlers(DataType type, boolean enabled)
+    public boolean setEnabled(DataType type, boolean enabled)
     {
-        if (enabled)
+        LoggerWrapperBase wrapper = this.getLoggerWrapper(type);
+
+        if (wrapper != null)
         {
-            EventManager.registerHandler(type);
+            boolean changed = false;
+            changed = wrapper.isEnabled() != enabled;
+            wrapper.setEnabled(enabled);
+
+            this.updateEventHandlers(type);
+
+            return changed;
         }
-        else
+
+        return false;
+    }
+
+    private void updateEventHandlers(DataType type)
+    {
+        for (DataLogger logger : INSTANCES.values())
         {
-            for (DataLogger logger : INSTANCES.values())
+            LoggerWrapper wrapper = logger.loggers.get(type);
+
+            if (wrapper != null && wrapper.enabled && (wrapper.enableLog || wrapper.enablePrint))
             {
-                LoggerWrapper wrapper = logger.loggers.get(type);
-
-                if (wrapper != null && (wrapper.enableLog || wrapper.enablePrint))
-                {
-                    return;
-                }
+                EventManager.registerHandler(type);
+                return;
             }
-
-            EventManager.unregisterHandler(type);
         }
+
+        EventManager.unregisterHandler(type);
     }
 
     public void printLoggers(DataDump dump)
@@ -94,6 +107,7 @@ public class DataLogger
         {
             dump.addData(   String.valueOf(this.dimension),
                             wrapper.type.getOutputName(),
+                            String.valueOf(wrapper.enabled),
                             String.valueOf(wrapper.enablePrint),
                             String.valueOf(wrapper.enableLog));
         }
@@ -104,19 +118,20 @@ public class DataLogger
         this.getLoggerWrapper(type).clearData();
     }
 
-    public void dumpData(DataType type, DataDump.Format format)
+    @Nullable
+    public File dumpData(DataType type, DataDump.Format format)
     {
-        this.getLoggerWrapper(type).dumpData(format);
+        return this.getLoggerWrapper(type).dumpData(format, this.dimension);
     }
 
     public void onChunkEvent(DataType type, Chunk chunk)
     {
-        this.getLoggerWrapper(type).onChunkEvent(type, chunk);
+        this.getLoggerWrapper(type).onChunkEvent(chunk);
     }
 
     public void onEntityEvent(DataType type, Entity entity)
     {
-        this.getLoggerWrapper(type).onEntityEvent(type, entity);
+        this.getLoggerWrapper(type).onEntityEvent(entity);
     }
 
     @Nullable

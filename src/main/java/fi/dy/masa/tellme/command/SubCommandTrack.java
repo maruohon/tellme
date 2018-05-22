@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.command;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -109,7 +110,7 @@ public class SubCommandTrack extends SubCommand
             dims = new int[] { CommandBase.parseInt(args[1]) };
         }
 
-        DataDump dumpLoggers = new DataDump(4, DataDump.Format.ASCII);
+        DataDump dumpLoggers = new DataDump(5, DataDump.Format.ASCII);
 
         for (int dimension : dims)
         {
@@ -146,37 +147,58 @@ public class SubCommandTrack extends SubCommand
                 {
                     if (DataLogger.instance(dimension).setLoggingEnabled(type, true))
                     {
-                        this.sendMessage(sender, "Enabled logging mode for %s", type.getOutputName());
+                        this.sendMessage(sender, "Enabled logging mode for '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
                 else if (cmd.equals("add-print"))
                 {
                     if (DataLogger.instance(dimension).setPrintingEnabled(type, true))
                     {
-                        this.sendMessage(sender, "Enabled immediate-print mode for %s", type.getOutputName());
+                        this.sendMessage(sender, "Enabled immediate-print mode for '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
                 else if (cmd.equals("remove-log"))
                 {
                     if (DataLogger.instance(dimension).setLoggingEnabled(type, false))
                     {
-                        this.sendMessage(sender, "Disabled logging mode for %s", type.getOutputName());
+                        this.sendMessage(sender, "Disabled logging mode for '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
                 else if (cmd.equals("remove-print"))
                 {
                     if (DataLogger.instance(dimension).setPrintingEnabled(type, false))
                     {
-                        this.sendMessage(sender, "Disabled immediate-print mode for %s", type.getOutputName());
+                        this.sendMessage(sender, "Disabled immediate-print mode for '%s' in dimension %s", type.getOutputName(), dimension);
+                    }
+                }
+                else if (cmd.equals("enable"))
+                {
+                    if (DataLogger.instance(dimension).setEnabled(type, true))
+                    {
+                        this.sendMessage(sender, "Enabled tracking of '%s' in dimension %s", type.getOutputName(), dimension);
+                    }
+                }
+                else if (cmd.equals("disable"))
+                {
+                    if (DataLogger.instance(dimension).setEnabled(type, false))
+                    {
+                        this.sendMessage(sender, "Disabled tracking of '%s' in dimension %s", type.getOutputName(), dimension);
                     }
                 }
                 else if (cmd.equals("clear-data"))
                 {
                     DataLogger.instance(dimension).clearData(type);
+                    this.sendMessage(sender, "Cleared logged data for '%s' in dimension %s", type.getOutputName(), dimension);
                 }
                 else if (cmd.equals("dump"))
                 {
-                    DataLogger.instance(dimension).dumpData(type, DataDump.Format.ASCII);
+                    File file = DataLogger.instance(dimension).dumpData(type, DataDump.Format.ASCII);
+
+                    if (file != null)
+                    {
+                        String str = String.format("Dumped logged data for '%s' in dimension %d to file %%s", type.getOutputName(), dimension);
+                        sendClickableLinkMessage(sender, str, file);
+                    }
                 }
             }
         }
@@ -184,14 +206,16 @@ public class SubCommandTrack extends SubCommand
         if (cmd.equals("show-loggers"))
         {
             dumpLoggers.addFooter("Currently enabled loggers/printers");
-            dumpLoggers.addTitle("Dim", "Type", "Print", "Log");
+            dumpLoggers.addTitle("Dim", "Type", "Enabled", "Print", "Log");
 
             dumpLoggers.setColumnProperties(0, DataDump.Alignment.RIGHT, true);
             dumpLoggers.setColumnAlignment(2, DataDump.Alignment.RIGHT);
             dumpLoggers.setColumnAlignment(3, DataDump.Alignment.RIGHT);
+            dumpLoggers.setColumnAlignment(4, DataDump.Alignment.RIGHT);
             dumpLoggers.setUseColumnSeparator(true);
 
             DataDump.printDataToLogger(dumpLoggers.getLines());
+            this.sendMessage(sender, "Output printed to console");
         }
     }
 
