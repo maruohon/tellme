@@ -23,6 +23,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
@@ -122,7 +123,6 @@ public class BlockInfo
         return teInfo;
     }
 
-    @SuppressWarnings("deprecation")
     private static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
     {
         List<String> lines = new ArrayList<>();
@@ -132,9 +132,9 @@ public class BlockInfo
         IBlockState state = data.actualState;
 
         lines.add(String.format("Full block state: %s", state));
-        lines.add(String.format("Hardness: %.4f, Resistance: %.4f, Material: %s",
+        lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
-                state.getBlock().getExplosionResistance(player) * 5f,
+                state.getBlock().getExplosionResistance(world, pos, null, new Explosion(world, null, pos.getX(), pos.getY(), pos.getZ(), 2, true, true)),
                 getMaterialName(state.getMaterial())));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 
