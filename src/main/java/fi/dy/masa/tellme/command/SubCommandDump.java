@@ -10,11 +10,13 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.tellme.datadump.*;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.datadump.OreDictionaryDump.OreDumpType;
+import fi.dy.masa.tellme.util.EntityInfo;
 
 public class SubCommandDump extends SubCommand
 {
@@ -55,6 +57,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("oredictionary-by-key");
         this.subSubCommands.add("oredictionary-by-key-individual");
         this.subSubCommands.add("oredictionary-by-item");
+        this.subSubCommands.add("player-nbt");
         this.subSubCommands.add("potions");
         this.subSubCommands.add("potiontypes");
         this.subSubCommands.add("soundevents");
@@ -108,7 +111,7 @@ public class SubCommandDump extends SubCommand
     protected void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
     {
         Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
-        List<String> data = this.getData(arg, format);
+        List<String> data = this.getData(arg, format, sender);
 
         if (data.isEmpty())
         {
@@ -131,7 +134,7 @@ public class SubCommandDump extends SubCommand
         }
     }
 
-    private List<String> getData(String type, Format format)
+    private List<String> getData(String type, Format format, ICommandSender sender)
     {
         switch (type)
         {
@@ -156,6 +159,11 @@ public class SubCommandDump extends SubCommand
             case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
             case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
             case "oredictionary-by-item":           return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
+            case "player-nbt":
+                if (sender instanceof EntityPlayer)
+                {
+                    return EntityInfo.getFullEntityInfo((EntityPlayer) sender);
+                }
             case "potions":                         return PotionDump.getFormattedPotionDump(format);
             case "potiontypes":                     return PotionTypeDump.getFormattedPotionTypeDump(format);
             case "soundevents":                     return SoundEventDump.getFormattedSoundEventDump(format);

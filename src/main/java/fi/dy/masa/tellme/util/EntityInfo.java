@@ -24,7 +24,7 @@ public class EntityInfo
         return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName(), regName, target.getEntityId());
     }
 
-    private static List<String> getFullEntityInfo(Entity target)
+    public static List<String> getFullEntityInfo(Entity target)
     {
         List<String> lines = new ArrayList<>();
         lines.add(getBasicEntityInfo(target));
