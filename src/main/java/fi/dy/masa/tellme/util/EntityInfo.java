@@ -2,11 +2,15 @@ package fi.dy.masa.tellme.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -39,9 +43,45 @@ public class EntityInfo
         lines.add("Entity class: " + target.getClass().getName());
         lines.add("");
 
+        if (target instanceof EntityLivingBase)
+        {
+            lines.addAll(getActivePotionEffectsForEntity((EntityLivingBase) target, DataDump.Format.ASCII));
+            lines.add("");
+        }
+
         NBTFormatter.getPrettyFormattedNBT(lines, nbt);
 
         return lines;
+    }
+
+    public static List<String> getActivePotionEffectsForEntity(EntityLivingBase entity, DataDump.Format format)
+    {
+        Collection<PotionEffect> effects = entity.getActivePotionEffects();
+
+        if (effects.isEmpty() == false)
+        {
+            DataDump dump = new DataDump(4, format);
+
+            for (PotionEffect effect : effects)
+            {
+                ResourceLocation rl = effect.getPotion().getRegistryName();
+
+                dump.addData(
+                        rl != null ? rl.toString() : effect.getClass().getName(),
+                        String.valueOf(effect.getAmplifier()),
+                        String.valueOf(effect.getDuration()),
+                        String.valueOf(effect.getIsAmbient()));
+            }
+
+            dump.addTitle("Effect", "Amplifier", "Duration", "Ambient");
+            dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // amplifier
+            dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // duration
+            dump.setUseColumnSeparator(true);
+
+            return dump.getLines();
+        }
+
+        return Collections.emptyList();
     }
 
     public static void printBasicEntityInfoToChat(EntityPlayer player, Entity target)
