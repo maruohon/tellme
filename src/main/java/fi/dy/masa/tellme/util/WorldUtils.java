@@ -27,7 +27,7 @@ public class WorldUtils
         {
             for (int cX = center.x - radius; cX <= center.x + radius; cX++)
             {
-                chunks.add(world.getChunkFromChunkCoords(cX, cZ));
+                chunks.add(world.getChunk(cX, cZ));
             }
         }
 
@@ -42,7 +42,7 @@ public class WorldUtils
         {
             for (int cX = posMin.x; cX <= posMax.x; cX++)
             {
-                chunks.add(world.getChunkFromChunkCoords(cX, cZ));
+                chunks.add(world.getChunk(cX, cZ));
             }
         }
 

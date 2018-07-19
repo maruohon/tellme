@@ -91,8 +91,8 @@ public class ClientProxy extends CommonProxy
             {
                 String index = String.valueOf(i);
                 String name = tab.getTabLabel();
-                String translatedName = I18n.format(tab.getTranslatedTabLabel());
-                String iconItem = ItemDump.getStackInfoBasic(tab.getIconItemStack());
+                String translatedName = I18n.format(tab.getTranslationKey());
+                String iconItem = ItemDump.getStackInfoBasic(tab.createIcon());
 
                 dump.addData(index, name, translatedName, iconItem);
             }
