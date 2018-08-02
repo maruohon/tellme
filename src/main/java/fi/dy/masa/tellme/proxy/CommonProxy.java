@@ -5,8 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
+import com.google.gson.JsonObject;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -41,6 +43,8 @@ public class CommonProxy
     }
 
     public void addCreativeTabData(DataDump dump) {}
+
+    public void addCreativeTabNames(JsonObject obj, Item item) {}
 
     public void addMusicTypeData(DataDump dump) {}
 

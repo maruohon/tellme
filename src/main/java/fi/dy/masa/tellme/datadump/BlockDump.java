@@ -30,6 +30,8 @@ import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class BlockDump extends DataDump
 {
+    public static final Field field_blockHardness = ReflectionHelper.findField(Block.class, "field_149782_v", "blockHardness");
+    public static final Field field_blockResistance = ReflectionHelper.findField(Block.class, "field_149781_w", "blockResistance");
     private boolean dumpNBT;
 
     private BlockDump(Format format, boolean dumpNBT)
@@ -129,17 +131,14 @@ public class BlockDump extends DataDump
 
         try
         {
-            Field fieldHardness = ReflectionHelper.findField(Block.class, "field_149782_v", "blockHardness");
-            Field fieldResistance = ReflectionHelper.findField(Block.class, "field_149781_w", "blockResistance");
-
             for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
             {
                 ResourceLocation rl = entry.getKey();
                 String modName = ModNameUtils.getModName(rl);
                 String registryName = rl.toString();
                 Block block = entry.getValue();
-                String hardness = String.format("%.2f", fieldHardness.get(block));
-                String resistance = String.format("%.2f", fieldResistance.get(block));
+                String hardness = String.format("%.2f", field_blockHardness.get(block));
+                String resistance = String.format("%.2f", field_blockResistance.get(block));
                 blockDump.addData(modName, registryName, hardness, resistance);
             }
 

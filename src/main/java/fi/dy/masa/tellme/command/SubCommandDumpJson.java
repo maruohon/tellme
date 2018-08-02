@@ -8,6 +8,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.ItemDump;
 
 public class SubCommandDumpJson extends SubCommandDump
 {
@@ -20,6 +21,7 @@ public class SubCommandDumpJson extends SubCommandDump
     protected void addSubSubCommands()
     {
         this.subSubCommands.add("blocks");
+        this.subSubCommands.add("items-with-props");
     }
 
     @Override
@@ -51,7 +53,8 @@ public class SubCommandDumpJson extends SubCommandDump
     {
         switch (type)
         {
-            case "blocks":  return BlockDump.getJsonBlockDump();
+            case "blocks":              return BlockDump.getJsonBlockDump();
+            case "items-with-props":    return ItemDump.getJsonItemsWithPropsDump();
             default:
         }
 

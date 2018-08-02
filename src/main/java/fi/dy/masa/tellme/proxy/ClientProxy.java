@@ -1,6 +1,7 @@
 package fi.dy.masa.tellme.proxy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -9,12 +10,15 @@ import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.UnmodifiableIterator;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker.MusicType;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -97,6 +101,27 @@ public class ClientProxy extends CommonProxy
                 dump.addData(index, name, translatedName, iconItem);
             }
         }
+    }
+
+    @Override
+    public void addCreativeTabNames(JsonObject obj, Item item)
+    {
+        CreativeTabs[] tabs = item.getCreativeTabs();
+        String[] ctNames = new String[tabs.length];
+        int i = 0;
+        int count = 0;
+
+        for (CreativeTabs tab : tabs)
+        {
+            if (tab != null)
+            {
+                ctNames[i++] = I18n.format(tab.getTranslationKey());
+                count++;
+            }
+        }
+
+        ctNames = Arrays.copyOf(ctNames, count);
+        obj.add("CreativeTabs", new JsonPrimitive(String.join(",", ctNames)));
     }
 
     @Override
