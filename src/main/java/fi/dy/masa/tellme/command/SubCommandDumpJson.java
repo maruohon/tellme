@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -33,7 +34,7 @@ public class SubCommandDumpJson extends SubCommandDump
     @Override
     protected void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
     {
-        String data = this.getData(arg);
+        String data = this.getData(arg, sender);
 
         if (data == null)
         {
@@ -49,12 +50,18 @@ public class SubCommandDumpJson extends SubCommandDump
     }
 
     @Nullable
-    private String getData(String type)
+    private String getData(String type, ICommandSender sender)
     {
         switch (type)
         {
-            case "blocks":              return BlockDump.getJsonBlockDump();
-            case "items-with-props":    return ItemDump.getJsonItemsWithPropsDump();
+            case "blocks":
+                return BlockDump.getJsonBlockDump();
+            case "items-with-props":
+                if (sender instanceof EntityPlayer)
+                {
+                    return ItemDump.getJsonItemsWithPropsDump((EntityPlayer) sender);
+                }
+                break;
             default:
         }
 
