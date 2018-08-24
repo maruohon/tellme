@@ -8,9 +8,7 @@
         "IMixinDimensionType",
         "IMixinPotionEffect",
         "IMixinTileEntity",
-        "MixinChunk",
-        "MixinGuiScreen",
-        "MixinTabCompleter"
+        "MixinChunk"
     ],
     "injectors": {
         "defaultRequire": 1

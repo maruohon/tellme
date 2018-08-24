@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.ServerCommandProvider;
 import com.mumfrey.liteloader.core.LiteLoader;
-import fi.dy.masa.tellme.command.ClientCommandHandler;
+import fi.dy.masa.malilib.command.ClientCommandHandler;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.command.CommandTellme;
 import fi.dy.masa.tellme.reference.Reference;
