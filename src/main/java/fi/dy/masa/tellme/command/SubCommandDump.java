@@ -53,6 +53,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("food-items");
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
+        this.subSubCommands.add("items-with-tool-classes");
         this.subSubCommands.add("musictypes");
         this.subSubCommands.add("oredictionary-by-key");
         this.subSubCommands.add("oredictionary-by-key-individual");
@@ -153,8 +154,9 @@ public class SubCommandDump extends SubCommand
             case "entities":                        return EntityDump.getFormattedEntityDump(format);
             case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
             case "food-items":                      return FoodItemDump.getFormattedFoodItemDump(format);
-            case "items":                           return ItemDump.getFormattedItemDump(format, false);
-            case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, true);
+            case "items":                           return ItemDump.getFormattedItemDump(format, false, false);
+            case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, false, true);
+            case "items-with-tool-classes":         return ItemDump.getFormattedItemDump(format, true, false);
             case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);
             case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
             case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
@@ -164,6 +166,7 @@ public class SubCommandDump extends SubCommand
                 {
                     return EntityInfo.getFullEntityInfo((EntityPlayer) sender);
                 }
+                return Collections.emptyList();
             case "potions":                         return PotionDump.getFormattedPotionDump(format);
             case "potiontypes":                     return PotionTypeDump.getFormattedPotionTypeDump(format);
             case "soundevents":                     return SoundEventDump.getFormattedSoundEventDump(format);

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -44,7 +45,7 @@ public class ItemDump
 {
     public static final String[] HARVEST_LEVEL_NAMES = new String[] { "Wood/Gold", "Stone", "Iron", "Diamond" };
 
-    private static void addData(DataDump dump, Item item, ResourceLocation rl, boolean hasSubTypes, boolean dumpNBT, @Nonnull ItemStack stack)
+    private static void addData(DataDump dump, Item item, ResourceLocation rl, boolean hasSubTypes, boolean includeToolClass, boolean dumpNBT, @Nonnull ItemStack stack)
     {
         int id = Item.getIdFromItem(item);
         int meta = stack.isEmpty() == false ? stack.getMetadata() : 0;
@@ -54,36 +55,102 @@ public class ItemDump
         String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
         displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
-        if (dumpNBT)
+        if (includeToolClass)
         {
-            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
+            Set<String> toolClasses = item.getToolClasses(stack);
+            String toolClassesStr = "";
+            String harvestLevelStr = "";
 
-            dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
-                    String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack), nbt);
+            if (toolClasses.isEmpty() == false)
+            {
+                ArrayList<String> classes = new ArrayList<>();
+                classes.addAll(toolClasses);
+                Collections.sort(classes);
+                toolClassesStr = String.join(", ", classes);
+
+                for (int i = 0; i < classes.size(); ++i)
+                {
+                    String c = classes.get(i);
+                    int harvestLevel = item.getHarvestLevel(stack, c, null, null);
+                    String hlName = harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length ? HARVEST_LEVEL_NAMES[harvestLevel] : "?";
+                    classes.set(i, String.format("%s = %d (%s)", c, harvestLevel, hlName));
+                }
+
+                harvestLevelStr = String.join(", ", classes);
+            }
+
+            if (dumpNBT)
+            {
+                String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
+
+                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+                        String.valueOf(hasSubTypes), displayName, toolClassesStr, harvestLevelStr, getOredictKeysJoined(stack), nbt);
+            }
+            else
+            {
+                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+                        String.valueOf(hasSubTypes), displayName, toolClassesStr, harvestLevelStr, getOredictKeysJoined(stack));
+            }
         }
         else
         {
-            dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
-                    String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack));
+            if (dumpNBT)
+            {
+                String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
+
+                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+                        String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack), nbt);
+            }
+            else
+            {
+                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
+                        String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack));
+            }
         }
     }
 
-    public static List<String> getFormattedItemDump(Format format, boolean dumpNBT)
+    public static List<String> getFormattedItemDump(Format format, boolean includeToolClass, boolean dumpNBT)
     {
-        DataDump itemDump = new DataDump(dumpNBT ? 8 : 7, format);
+        int columnCount = 7;
 
-        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        if (includeToolClass)
         {
-            getDataForItemSubtypes(itemDump, entry.getValue(), entry.getKey(), dumpNBT);
+            columnCount += 2;
         }
 
         if (dumpNBT)
         {
-            itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys", "NBT");
+            columnCount += 1;
+        }
+
+        DataDump itemDump = new DataDump(columnCount, format);
+
+        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        {
+            getDataForItemSubtypes(itemDump, entry.getValue(), entry.getKey(), includeToolClass, dumpNBT);
+        }
+
+        if (includeToolClass)
+        {
+            if (dumpNBT)
+            {
+                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Tool classes", "Harvest levels", "Ore Dict keys", "NBT");
+            }
+            else
+            {
+                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Tool classes", "Harvest levels", "Ore Dict keys");
+            }
         }
         else
         {
-            itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys");
+            if (dumpNBT)
+            {
+                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys", "NBT");
+            }
+            else
+            {
+                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys");
+            }
         }
 
         itemDump.setColumnProperties(2, Alignment.RIGHT, true); // ID
@@ -103,7 +170,7 @@ public class ItemDump
         return itemDump.getLines();
     }
 
-    private static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, boolean dumpNBT)
+    private static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, boolean includeToolClass, boolean dumpNBT)
     {
         if (item.getHasSubtypes())
         {
@@ -117,14 +184,14 @@ public class ItemDump
                     for (ItemStack stack : stacks)
                     {
                         // FIXME: Ignore identical duplicate entries from different tabs...
-                        addData(itemDump, item, rl, true, dumpNBT, stack);
+                        addData(itemDump, item, rl, true, includeToolClass, dumpNBT, stack);
                     }
                 }
             }
         }
         else
         {
-            addData(itemDump, item, rl, false, dumpNBT, new ItemStack(item, 1, 0));
+            addData(itemDump, item, rl, false, includeToolClass, dumpNBT, new ItemStack(item, 1, 0));
         }
     }
 
