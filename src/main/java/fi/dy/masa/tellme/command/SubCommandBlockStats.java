@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -66,13 +67,13 @@ public class SubCommandBlockStats extends SubCommand
     private void printUsageDump(ICommandSender sender)
     {
         String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " dump [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+        sender.sendMessage(new TextComponentString(pre + " dump[-csv] [sort-by-count] [modid:blockname[:meta] modid:blockname[:meta] ...]"));
     }
 
     private void printUsageQuery(ICommandSender sender)
     {
         String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " query [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+        sender.sendMessage(new TextComponentString(pre + " query [sort-by-count] [modid:blockname[:meta] modid:blockname[:meta] ...]"));
     }
 
     @Override
@@ -82,21 +83,35 @@ public class SubCommandBlockStats extends SubCommand
         {
             return CommandBase.getListOfStringsMatchingLastWord(args, "count", "count-append", "dump", "dump-csv", "query");
         }
-        else if (args.length == 2)
+        else if (args.length >= 2)
         {
-            if (args[0].equals("dump") || args[0].equals("dump-csv") || args[0].equals("query"))
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
-            }
-            else if (args[0].equals("count"))
+            if (args.length == 2 && args[0].equals("count"))
             {
                 return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "box", "chunk-radius", "range");
             }
-        }
-        else if (args.length >= 3 && args.length <= 8 && args[0].equals("count") && args[1].equals("box"))
-        {
-            int index = args.length >= 3 && args.length <= 5 ? 2 : 5;
-            return CommandBase.getTabCompletionCoordinate(args, index, targetPos);
+            else if (args[0].equals("dump") || args[0].equals("dump-csv") || args[0].equals("query"))
+            {
+                if (args.length == 2)
+                {
+                    if (CommandBase.doesStringStartWith(args[1], "sort-by-count"))
+                    {
+                        return ImmutableList.of("sort-by-count");
+                    }
+                    else
+                    {
+                        return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
+                    }
+                }
+                else
+                {
+                    return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
+                }
+            }
+            else if (args.length >= 3 && args.length <= 8 && args[0].equals("count") && args[1].equals("box"))
+            {
+                int index = args.length >= 3 && args.length <= 5 ? 2 : 5;
+                return CommandBase.getTabCompletionCoordinate(args, index, targetPos);
+            }
         }
 
         return Collections.emptyList();
@@ -118,18 +133,19 @@ public class SubCommandBlockStats extends SubCommand
         super.execute(server, sender, args);
 
         String cmd = args[0];
+        args = dropFirstStrings(args, 1);
         BlockStats blockStats = sender instanceof EntityPlayer ? this.getBlockStatsForPlayer((EntityPlayer) sender) : this.blockStatsConsole;
 
         // "/tellme blockstats count ..."
-        if ((cmd.equals("count") || cmd.equals("count-append")) && args.length >= 2)
+        if ((cmd.equals("count") || cmd.equals("count-append")) && args.length >= 1)
         {
             // Possible command formats are:
             // count all-loaded-chunks [dimension]
             // count chunk-radius <radius> [dimension] [x y z (of the center)]
             // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]
             // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
-            String type = args[1];
-            args = dropFirstStrings(args, 2);
+            String type = args[0];
+            args = dropFirstStrings(args, 1);
             blockStats.setAppend(cmd.equals("count-append"));
 
             // Get the world - either the player's current world, or the one based on the provided dimension ID
@@ -238,15 +254,21 @@ public class SubCommandBlockStats extends SubCommand
         {
             List<String> lines;
             Format format = cmd.equals("dump-csv") ? Format.CSV : Format.ASCII;
+            boolean sortByCount = args.length >= 1 && args[0].equals("sort-by-count");
+
+            if (sortByCount)
+            {
+                args = dropFirstStrings(args, 1);
+            }
 
             // We have some filters specified
-            if (args.length > 1)
+            if (args.length >= 1)
             {
-                lines = blockStats.query(format, Arrays.asList(dropFirstStrings(args, 1)));
+                lines = blockStats.query(format, Arrays.asList(args), sortByCount);
             }
             else
             {
-                lines = blockStats.queryAll(format);
+                lines = blockStats.queryAll(format, sortByCount);
             }
 
             if (cmd.equals("query"))

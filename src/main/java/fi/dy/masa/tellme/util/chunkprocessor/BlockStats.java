@@ -1,9 +1,10 @@
 package fi.dy.masa.tellme.util.chunkprocessor;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import javax.annotation.Nullable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -85,11 +86,10 @@ public class BlockStats extends ChunkProcessorAllChunks
             this.blockStats.clear();
         }
 
-        for (Map.Entry<IBlockState, Long> entry : counts.entrySet())
+        for (IBlockState state : counts.keySet())
         {
             try
             {
-                IBlockState state = entry.getKey();
                 Block block = state.getBlock();
                 ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
                 String registryName = key != null ? key.toString() : "null";
@@ -97,6 +97,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 int meta = block.getMetaFromState(state);
                 ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
                 String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
+                long amount = counts.getLong(state);
 
                 if (key == null)
                 {
@@ -112,7 +113,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                     {
                         if (old.id == id && old.meta == meta)
                         {
-                            old.addToCount(entry.getValue());
+                            old.addToCount(amount);
                             appended = true;
                             break;
                         }
@@ -120,12 +121,12 @@ public class BlockStats extends ChunkProcessorAllChunks
 
                     if (appended == false)
                     {
-                        this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, entry.getValue()));
+                        this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, amount));
                     }
                 }
                 else
                 {
-                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, entry.getValue()));
+                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, amount));
                 }
             }
             catch (Exception e)
@@ -135,8 +136,10 @@ public class BlockStats extends ChunkProcessorAllChunks
         }
     }
 
-    private void addFilteredData(DataDump dump, List<String> filters)
+    private List<BlockInfo> getFilteredData(DataDump dump, List<String> filters, boolean sortByCount)
     {
+        List<BlockInfo> list = new ArrayList<>();
+
         for (String filter : filters)
         {
             int firstSemi = filter.indexOf(":");
@@ -160,7 +163,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                     {
                         if (info.meta == meta)
                         {
-                            dump.addData(info.name, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
+                            list.add(info);
                             break;
                         }
                     }
@@ -174,31 +177,39 @@ public class BlockStats extends ChunkProcessorAllChunks
             {
                 for (BlockInfo info : this.blockStats.get(filter))
                 {
-                    dump.addData(info.name, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
+                    list.add(info);
                 }
             }
         }
+
+        return list;
     }
 
-    public List<String> queryAll(Format format)
+    public List<String> queryAll(Format format, boolean sortByCount)
     {
-        return this.query(format, null);
+        return this.query(format, null, sortByCount);
     }
 
-    public List<String> query(Format format, @Nullable List<String> filters)
+    public List<String> query(Format format, @Nullable List<String> filters, boolean sortByCount)
     {
         DataDump dump = new DataDump(5, format);
+        List<BlockInfo> list = new ArrayList<>();
 
         if (filters != null)
         {
-            this.addFilteredData(dump, filters);
+            list.addAll(this.getFilteredData(dump, filters, sortByCount));
         }
         else
         {
-            for (BlockInfo info : this.blockStats.values())
-            {
-                dump.addData(info.name, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
-            }
+            list.addAll(this.blockStats.values());
+        }
+
+        BlockInfo.setSortByCount(sortByCount);
+        Collections.sort(list);
+
+        for (BlockInfo info : list)
+        {
+            dump.addData(info.registryName, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
         }
 
         dump.addTitle("Registry name", "ID", "meta", "Display name", "Count");
@@ -211,13 +222,15 @@ public class BlockStats extends ChunkProcessorAllChunks
         dump.setColumnProperties(4, Alignment.RIGHT, true); // count
 
         dump.setUseColumnSeparator(true);
+        dump.setSort(sortByCount == false);
 
         return dump.getLines();
     }
 
     private static class BlockInfo implements Comparable<BlockInfo>
     {
-        public final String name;
+        private static boolean sortByCount = false;
+        public final String registryName;
         public final String displayName;
         public final int id;
         public final int meta;
@@ -225,11 +238,16 @@ public class BlockStats extends ChunkProcessorAllChunks
 
         public BlockInfo(String name, String displayName, int id, int meta, long count)
         {
-            this.name = name;
+            this.registryName = name;
             this.displayName = displayName;
             this.id = id;
             this.meta = meta;
             this.count = count;
+        }
+
+        public static void setSortByCount(boolean sortByCount)
+        {
+            BlockInfo.sortByCount = sortByCount;
         }
 
         public void addToCount(long amount)
@@ -244,14 +262,28 @@ public class BlockStats extends ChunkProcessorAllChunks
                 throw new NullPointerException();
             }
 
-            if (this.id != other.id)
+            if (sortByCount)
             {
-                return this.id - other.id;
+                return this.count > other.count ? -1 : (this.count < other.count ? 1 : this.registryName.compareTo(other.registryName));
             }
-
-            if (this.meta != other.meta)
+            else
             {
-                return this.meta - other.meta;
+                int val = this.registryName.compareTo(other.registryName);
+
+                if (val != 0)
+                {
+                    return val;
+                }
+
+                if (this.id != other.id)
+                {
+                    return this.id - other.id;
+                }
+
+                if (this.meta != other.meta)
+                {
+                    return this.meta - other.meta;
+                }
             }
 
             return 0;
