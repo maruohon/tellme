@@ -36,6 +36,7 @@ public class SubCommandDump extends SubCommand
     protected void addSubSubCommands()
     {
         this.subSubCommands.add("all");
+        this.subSubCommands.add("advancements-simple");
         this.subSubCommands.add("biomes");
         this.subSubCommands.add("biomes-with-colors");
         this.subSubCommands.add("biomes-id-to-name");
@@ -139,6 +140,7 @@ public class SubCommandDump extends SubCommand
     {
         switch (type)
         {
+            case "advancements-simple":             return AdvancementDump.getFormattedAdvancementDumpSimple(format, sender);
             case "biomes":                          return BiomeDump.getFormattedBiomeDump(format, false);
             case "biomes-with-colors":              return BiomeDump.getFormattedBiomeDump(format, true);
             case "biomes-id-to-name":               return BiomeDump.getBiomeDumpIdToName(format);

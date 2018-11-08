@@ -7,18 +7,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker.MusicType;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.network.INetHandler;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -28,13 +33,16 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.ColorizerFoliage;
 import net.minecraft.world.ColorizerGrass;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.config.Configs;
@@ -43,6 +51,34 @@ import fi.dy.masa.tellme.datadump.ItemDump;
 
 public class ClientProxy extends CommonProxy
 {
+    @Override
+    @Nullable
+    public Iterable<Advancement> getAdvacements(ICommandSender sender)
+    {
+        Minecraft mc = Minecraft.getMinecraft();
+
+        if (mc.isSingleplayer() && mc.player != null)
+        {
+            World world = DimensionManager.getWorld(mc.player.getEntityWorld().provider.getDimension());
+
+            if (world instanceof WorldServer)
+            {
+                return ((WorldServer) world).getAdvancementManager().getAdvancements();
+            }
+        }
+        else
+        {
+            INetHandler nh = FMLClientHandler.instance().getClientPlayHandler();
+
+            if (nh instanceof NetHandlerPlayClient)
+            {
+                return ((NetHandlerPlayClient) nh).getAdvancementManager().getAdvancementList().getAdvancements();
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public String getBiomeName(Biome biome)
     {
