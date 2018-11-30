@@ -184,7 +184,7 @@ public class BlockDump extends DataDump
     public static void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
     {
         NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-        CreativeTabs tab = block.getCreativeTabToDisplayOn();
+        CreativeTabs tab = block.getCreativeTab();
         block.getSubBlocks(tab, stacks);
 
         if (stacks.size() > 0)
@@ -209,7 +209,7 @@ public class BlockDump extends DataDump
         // Get a mapping of modName => collection-of-block-names
         for (ResourceLocation key : Block.REGISTRY.getKeys())
         {
-            map.put(key.getResourceDomain(), key);
+            map.put(key.getNamespace(), key);
         }
 
         // First sort by mod name
