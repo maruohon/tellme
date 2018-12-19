@@ -137,7 +137,7 @@ public class ClientProxy extends CommonProxy
 
                 if (key == null)
                 {
-                    TellMe.logger.warn("null name for tab at index {} (name: '{}')", tab.getIndex(), name);
+                    TellMe.logger.warn("null translation key for tab at index {} (name: '{}')", tab.getIndex(), name);
                     continue;
                 }
 
