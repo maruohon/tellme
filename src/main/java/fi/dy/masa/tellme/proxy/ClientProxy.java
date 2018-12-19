@@ -23,6 +23,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.INetHandler;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -131,8 +132,29 @@ public class ClientProxy extends CommonProxy
             {
                 String index = String.valueOf(i);
                 String name = tab.getTabLabel();
-                String translatedName = I18n.format(tab.getTranslationKey());
-                String iconItem = ItemDump.getStackInfoBasic(tab.createIcon());
+                String key = tab.getTranslationKey();
+                ItemStack stack = tab.createIcon();
+
+                if (key == null)
+                {
+                    TellMe.logger.warn("null name for tab at index {} (name: '{}')", tab.getIndex(), name);
+                    continue;
+                }
+
+                if (name == null)
+                {
+                    TellMe.logger.warn("null name for tab at index {} (translation key: '{}')", tab.getIndex(), key);
+                    continue;
+                }
+
+                if (stack == null)
+                {
+                    TellMe.logger.warn("null icon item for tab at index {} (name: '{}', translation key: '{}')", tab.getIndex(), name, key);
+                    continue;
+                }
+
+                String translatedName = I18n.format(key);
+                String iconItem = ItemDump.getStackInfoBasic(stack);
 
                 dump.addData(index, name, translatedName, iconItem);
             }
