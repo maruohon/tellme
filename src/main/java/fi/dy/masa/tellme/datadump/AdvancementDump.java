@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.command.ICommandSender;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -23,11 +24,12 @@ public class AdvancementDump
         {
             try
             {
-                String id = adv.getId().toString();
+                String id = adv.getId() != null ? adv.getId().toString() : "<null>";
                 //String title = adv.getDisplay().getTitle().getUnformattedText();
-                String title = adv.getDisplayText().getUnformattedText();
-                String desc = adv.getDisplay().getDescription().getUnformattedText();
-                String parent = adv.getParent() != null ? adv.getParent().getId().toString() : "-";
+                String title = adv.getDisplayText() != null ? adv.getDisplayText().getUnformattedText() : "<null>";
+                DisplayInfo di = adv.getDisplay();
+                String desc = di != null && di.getDescription() != null ? di.getDescription().getUnformattedText() : "<null>";
+                String parent = adv.getParent() != null && adv.getParent().getId() != null ? adv.getParent().getId().toString() : "-";
 
                 advancementDump.addData(id, title, desc, parent);
             }
