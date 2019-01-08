@@ -5,31 +5,27 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerCareer;
 import net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
-public class VillagerProfessionDump extends DataDump
+public class VillagerProfessionDump
 {
     private static final Field field_careers = ReflectionHelper.findField(VillagerProfession.class, "careers");
 
-    private VillagerProfessionDump(Format format)
+    public static List<String> getFormattedVillagerProfessionDump(DataDump.Format format)
     {
-        super (2, format);
-    }
-
-    public static List<String> getFormattedVillagerProfessionDump(Format format)
-    {
-        VillagerProfessionDump villagerProfessionDump = new VillagerProfessionDump(format);
+        DataDump villagerProfessionDump = new DataDump(2, format);
         Iterator<Map.Entry<ResourceLocation, VillagerProfession>> iter = ForgeRegistries.VILLAGER_PROFESSIONS.getEntries().iterator();
 
         while (iter.hasNext())
         {
             Map.Entry<ResourceLocation, VillagerProfession> entry = iter.next();
             String regName = entry.getKey().toString();
-            String careers = getCareers(entry.getValue());
+            String careers = getCareersString(entry.getValue());
 
             villagerProfessionDump.addData(regName, careers);
         }
@@ -40,24 +36,38 @@ public class VillagerProfessionDump extends DataDump
         return villagerProfessionDump.getLines();
     }
 
-    private static String getCareers(VillagerProfession profession)
+    private static String getCareersString(VillagerProfession profession)
     {
-        try
+        List<VillagerCareer> careers = getCareers(profession);
+
+        if (careers != null)
         {
-            List<String> listCareers = new ArrayList<String>();
-            @SuppressWarnings("unchecked")
-            List<VillagerCareer> careers = (List<VillagerCareer>) field_careers.get(profession);
+            List<String> listCareerNames = new ArrayList<>();
 
             for (VillagerCareer career : careers)
             {
-                listCareers.add(career.getName());
+                listCareerNames.add(career.getName());
             }
 
-            return String.join(", ", listCareers);
+            return String.join(", ", listCareerNames);
+        }
+
+        return "ERROR";
+    }
+
+    @Nullable
+    public static List<VillagerCareer> getCareers(VillagerProfession profession)
+    {
+        try
+        {
+            @SuppressWarnings("unchecked")
+            List<VillagerCareer> careers = (List<VillagerCareer>) field_careers.get(profession);
+            return careers;
         }
         catch (Exception e)
         {
-            return "ERROR";
         }
+
+        return null;
     }
 }
