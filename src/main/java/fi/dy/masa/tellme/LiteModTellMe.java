@@ -5,8 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.ServerCommandProvider;
-import com.mumfrey.liteloader.core.LiteLoader;
 import fi.dy.masa.malilib.command.ClientCommandHandler;
+import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.command.CommandTellme;
 import fi.dy.masa.tellme.reference.Reference;
@@ -37,7 +37,7 @@ public class LiteModTellMe implements LiteMod, ServerCommandProvider
     @Override
     public void init(File configPath)
     {
-        configDirPath = new File(LiteLoader.getCommonConfigFolder(), Reference.MOD_ID).getAbsolutePath();
+        configDirPath = new File(FileUtils.getConfigDirectory(), Reference.MOD_ID).getAbsolutePath();
         ClientCommandHandler.INSTANCE.registerCommand(new ClientCommandTellme());
     }
 
