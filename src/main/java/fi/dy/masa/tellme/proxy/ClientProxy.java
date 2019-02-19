@@ -19,6 +19,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker.MusicType;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -84,6 +85,17 @@ public class ClientProxy extends CommonProxy
     public String getBiomeName(Biome biome)
     {
         return biome.getBiomeName();
+    }
+
+    @Override
+    public ICommandManager getCommandHandler()
+    {
+        if (Minecraft.getMinecraft().isSingleplayer() == false)
+        {
+            return net.minecraftforge.client.ClientCommandHandler.instance;
+        }
+
+        return super.getCommandHandler();
     }
 
     @Override

@@ -8,6 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -18,6 +19,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import fi.dy.masa.tellme.datadump.DataDump;
 
@@ -59,6 +61,11 @@ public class CommonProxy
         World world = sender.getEntityWorld();
 
         return (world instanceof WorldServer) ? ((WorldServer) world).getAdvancementManager().getAdvancements() : null;
+    }
+
+    public ICommandManager getCommandHandler()
+    {
+        return FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
     }
 
     public void getExtendedBlockStateInfo(World world, IBlockState state, BlockPos pos, List<String> lines)
