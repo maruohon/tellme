@@ -76,6 +76,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("items");
         this.subSubCommands.add("items-with-nbt");
         this.subSubCommands.add("items-with-tool-classes");
+        this.subSubCommands.add("mod-list");
         this.subSubCommands.add("musictypes");
         this.subSubCommands.add("oredictionary-by-key");
         this.subSubCommands.add("oredictionary-by-key-individual");
@@ -182,6 +183,7 @@ public class SubCommandDump extends SubCommand
             case "items":                           return ItemDump.getFormattedItemDump(format, false, false);
             case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, false, true);
             case "items-with-tool-classes":         return ItemDump.getFormattedItemDump(format, true, false);
+            case "mod-list":                        return ModListDump.getFormattedModListDump(format);
             case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);
             case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
             case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
