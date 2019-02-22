@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -184,7 +185,7 @@ public class Locate extends ChunkProcessorAllChunks
                 break;
             }
 
-            final int dim = chunk.getWorld().provider.getDimensionType().getId();
+            final int dim = WorldUtils.getDimensionId(chunk.getWorld());
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
@@ -225,7 +226,7 @@ public class Locate extends ChunkProcessorAllChunks
 
         for (Chunk chunk : chunks)
         {
-            final int dim = chunk.getWorld().provider.getDimensionType().getId();
+            final int dim = WorldUtils.getDimensionId(chunk.getWorld());
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunk.z << 4, posMin.getZ());
@@ -269,7 +270,7 @@ public class Locate extends ChunkProcessorAllChunks
                 break;
             }
 
-            final int dim = chunk.getWorld().provider.getDimensionType().getId();
+            final int dim = WorldUtils.getDimensionId(chunk.getWorld());
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());

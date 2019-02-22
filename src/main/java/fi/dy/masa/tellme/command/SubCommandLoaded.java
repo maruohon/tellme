@@ -103,7 +103,7 @@ public class SubCommandLoaded extends SubCommand
                 if (world != null)
                 {
                     LiteModTellMe.logger.info(String.format("DIM %4d: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
-                            world.provider.getDimensionType().getId(), world.provider.getDimensionType().getName(),
+                            fi.dy.masa.malilib.util.WorldUtils.getDimensionId(world), world.provider.getDimensionType().getName(),
                             WorldUtils.getLoadedChunkCount(world),
                             world.loadedEntityList.size(), world.playerEntities.size()));
                 }

@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.event.datalogging;
 
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
@@ -13,8 +14,7 @@ public class EventHandlers
 
         if (EventManager.isLoggingEnabled(DataType.CHUNK_LOAD) && world.isRemote == false)
         {
-            int dimension = world.provider.getDimensionType().getId();
-            DataLogger.instance(dimension).onChunkEvent(DataType.CHUNK_LOAD, chunk);
+            DataLogger.instance(WorldUtils.getDimensionId(world)).onChunkEvent(DataType.CHUNK_LOAD, chunk);
         }
     }
 
@@ -24,8 +24,7 @@ public class EventHandlers
 
         if (EventManager.isLoggingEnabled(DataType.CHUNK_UNLOAD) && world.isRemote == false)
         {
-            int dimension = world.provider.getDimensionType().getId();
-            DataLogger.instance(dimension).onChunkEvent(DataType.CHUNK_UNLOAD, chunk);
+            DataLogger.instance(WorldUtils.getDimensionId(world)).onChunkEvent(DataType.CHUNK_UNLOAD, chunk);
         }
     }
 
@@ -35,8 +34,7 @@ public class EventHandlers
 
         if (EventManager.isLoggingEnabled(DataType.ENTITY_JOIN_WORLD) && world.isRemote == false)
         {
-            int dimension = world.provider.getDimensionType().getId();
-            DataLogger.instance(dimension).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
+            DataLogger.instance(WorldUtils.getDimensionId(world)).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
         }
     }
 }

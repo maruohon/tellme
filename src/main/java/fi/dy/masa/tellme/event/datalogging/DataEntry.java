@@ -1,5 +1,6 @@
 package fi.dy.masa.tellme.event.datalogging;
 
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.tellme.datadump.DataDump;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
@@ -18,7 +19,7 @@ public class DataEntry
 
         private DataEntryBase(World world, P position)
         {
-            this.dimension = world.provider.getDimensionType().getId();
+            this.dimension = WorldUtils.getDimensionId(world);
             this.worldTick = world.getTotalWorldTime();
             this.systemTime = System.currentTimeMillis();
             this.position = position;

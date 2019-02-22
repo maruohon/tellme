@@ -20,7 +20,7 @@ public class ChunkDump
         {
             if (world != null)
             {
-                String dimId = String.valueOf(world.provider.getDimensionType().getId());
+                String dimId = String.valueOf(fi.dy.masa.malilib.util.WorldUtils.getDimensionId(world));
                 Collection<Chunk> chunks = WorldUtils.getLoadedChunks(world);
 
                 for (Chunk chunk : chunks)
