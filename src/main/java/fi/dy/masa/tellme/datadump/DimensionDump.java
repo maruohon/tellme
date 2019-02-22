@@ -6,33 +6,34 @@ import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.mixin.IMixinDimensionType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 public class DimensionDump
 {
     public static List<String> getFormattedDimensionDump(Format format, MinecraftServer server)
     {
-        DataDump dimensionDump = new DataDump(5, format);
+        DataDump dimensionDump = new DataDump(6, format);
         dimensionDump.setSort(false);
 
-        for (DimensionType type : DimensionType.values())
+        for (WorldServer world : server.worlds)
         {
-            World world = server.getWorld(type.getId());
-
+            DimensionType type = world.provider.getDimensionType();
             String typeId = String.valueOf(type.getId());
             String name = type.getName();
             String shouldLoadSpawn = String.valueOf(type.getId() == 0);
             String worldProviderClass = ((IMixinDimensionType) (Object) type).getClazz().getName();
             String currentlyLoaded = String.valueOf(world != null);
+            String loadedChunks = String.valueOf(world.getChunkProvider().getLoadedChunks().size());
 
-            dimensionDump.addData(typeId, name, shouldLoadSpawn, currentlyLoaded, worldProviderClass);
+            dimensionDump.addData(typeId, name, shouldLoadSpawn, currentlyLoaded, loadedChunks, worldProviderClass);
         }
 
-        dimensionDump.addTitle("DimensionType ID", "Name", "shouldLoadSpawn", "Currently loaded", "WorldProvider class");
+        dimensionDump.addTitle("DimensionType ID", "Name", "shouldLoadSpawn", "Currently loaded", "Loaded chunks", "WorldProvider class");
 
         dimensionDump.setColumnProperties(0, Alignment.RIGHT, true); // type ID
         dimensionDump.setColumnAlignment(2, Alignment.RIGHT); // shouldLoadSpawn
         dimensionDump.setColumnAlignment(3, Alignment.RIGHT); // currentlyLoaded
+        dimensionDump.setColumnProperties(4, Alignment.RIGHT, true); // loaded chunks
 
         dimensionDump.setUseColumnSeparator(true);
 
