@@ -9,7 +9,6 @@ import com.google.common.collect.Sets;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -118,9 +117,16 @@ public class SubCommandDump extends SubCommand
         Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
         List<String> data = this.getData(arg, format, sender);
 
+        if (data == null)
+        {
+            this.sendMessage(sender, "Non-existing dump type: '" + arg + "'");
+            return;
+        }
+
         if (data.isEmpty())
         {
-            throw new WrongUsageException("Unrecognized parameter: '" + arg + "'");
+            this.sendMessage(sender, "No data available for dump: '" + arg + "'");
+            return;
         }
 
         if (this.getName().startsWith("dump"))
@@ -139,6 +145,7 @@ public class SubCommandDump extends SubCommand
         }
     }
 
+    @Nullable
     private List<String> getData(String type, Format format, ICommandSender sender)
     {
         switch (type)
@@ -168,12 +175,7 @@ public class SubCommandDump extends SubCommand
             case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
             case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
             case "oredictionary-by-item":           return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
-            case "player-nbt":
-                if (sender instanceof EntityPlayer)
-                {
-                    return EntityInfo.getFullEntityInfo((EntityPlayer) sender);
-                }
-                return Collections.emptyList();
+            case "player-nbt":                      return (sender instanceof EntityPlayer) ? EntityInfo.getFullEntityInfo((EntityPlayer) sender) : Collections.emptyList();
             case "potions":                         return PotionDump.getFormattedPotionDump(format);
             case "potiontypes":                     return PotionTypeDump.getFormattedPotionTypeDump(format);
             case "soundevents":                     return SoundEventDump.getFormattedSoundEventDump(format);
@@ -182,9 +184,7 @@ public class SubCommandDump extends SubCommand
             case "villagerprofessions":             return VillagerProfessionDump.getFormattedVillagerProfessionDump(format);
             case "villagertrades":                  return VillagerTradesDump.getFormattedVillagerTradesDump(format);
             case "worldtypes":                      return WorldTypeDump.getFormattedWorldTypeDump(format);
-            default:
+            default:                                return null;
         }
-
-        return Collections.emptyList();
     }
 }
