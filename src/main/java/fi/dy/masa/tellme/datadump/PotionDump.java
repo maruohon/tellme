@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class PotionDump extends DataDump
 {
-    private static final Field field_isBeneficial = ReflectionHelper.findField(Potion.class, "field_188415_h", "beneficial");
+    private static final Field field_isBeneficial = ObfuscationReflectionHelper.findField(Potion.class, "field_188415_h"); // beneficial
 
     private PotionDump(Format format)
     {

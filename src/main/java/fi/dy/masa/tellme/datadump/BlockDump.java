@@ -22,16 +22,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class BlockDump extends DataDump
 {
-    public static final Field field_blockHardness = ReflectionHelper.findField(Block.class, "field_149782_v", "blockHardness");
-    public static final Field field_blockResistance = ReflectionHelper.findField(Block.class, "field_149781_w", "blockResistance");
+    public static final Field field_blockHardness = ObfuscationReflectionHelper.findField(Block.class, "field_149782_v"); // blockHardness
+    public static final Field field_blockResistance = ObfuscationReflectionHelper.findField(Block.class, "field_149781_w"); // blockResistance
     private boolean dumpNBT;
 
     private BlockDump(Format format, boolean dumpNBT)

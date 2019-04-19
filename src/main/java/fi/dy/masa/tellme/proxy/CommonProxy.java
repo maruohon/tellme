@@ -20,7 +20,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.datadump.DataDump;
 
 public class CommonProxy
@@ -29,7 +29,7 @@ public class CommonProxy
     {
         try
         {
-            String name = ReflectionHelper.getPrivateValue(Biome.class, biome, "field_76791_y", "biomeName");
+            String name = ObfuscationReflectionHelper.getPrivateValue(Biome.class, biome, "field_76791_y"); // biomeName
 
             if (name != null)
             {

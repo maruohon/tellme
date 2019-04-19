@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerCareer;
 import net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 public class VillagerProfessionDump
 {
-    private static final Field field_careers = ReflectionHelper.findField(VillagerProfession.class, "careers");
+    private static final Field field_careers = ObfuscationReflectionHelper.findField(VillagerProfession.class, "careers"); // careers
 
     public static List<String> getFormattedVillagerProfessionDump(DataDump.Format format)
     {

@@ -8,12 +8,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistryNamespaced;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 
 public class TileEntityDump extends DataDump
 {
-    private static final Field field_REGISTRY = ReflectionHelper.findField(TileEntity.class, "field_190562_f", "REGISTRY");
+    private static final Field field_REGISTRY = ObfuscationReflectionHelper.findField(TileEntity.class, "field_190562_f"); // REGISTRY
 
     private TileEntityDump(Format format)
     {

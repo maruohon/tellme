@@ -9,13 +9,13 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.potion.PotionType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 
 public class PotionTypeDump extends DataDump
 {
-    private static final Field field_isSplashPotion = ReflectionHelper.findField(PotionEffect.class, "field_82723_d", "isSplashPotion");
+    private static final Field field_isSplashPotion = ObfuscationReflectionHelper.findField(PotionEffect.class, "field_82723_d"); // isSplashPotion
 
     protected PotionTypeDump(Format format)
     {

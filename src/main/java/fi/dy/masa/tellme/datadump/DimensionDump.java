@@ -5,13 +5,13 @@ import java.util.List;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 
 public class DimensionDump
 {
-    private static final Field field_worldProvider = ReflectionHelper.findField(DimensionType.class, "field_186077_g", "clazz");
+    private static final Field field_worldProvider = ObfuscationReflectionHelper.findField(DimensionType.class, "field_186077_g"); // clazz
 
     @SuppressWarnings("unchecked")
     public static List<String> getFormattedDimensionDump(Format format)
