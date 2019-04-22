@@ -60,6 +60,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("oredictionary-by-key");
         this.subSubCommands.add("oredictionary-by-key-individual");
         this.subSubCommands.add("oredictionary-by-item");
+        this.subSubCommands.add("players");
         this.subSubCommands.add("player-nbt");
         this.subSubCommands.add("potions");
         this.subSubCommands.add("potiontypes");
@@ -175,6 +176,7 @@ public class SubCommandDump extends SubCommand
             case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
             case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
             case "oredictionary-by-item":           return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
+            case "players":                         return EntityInfo.getPlayerList(format);
             case "player-nbt":                      return (sender instanceof EntityPlayer) ? EntityInfo.getFullEntityInfo((EntityPlayer) sender) : Collections.emptyList();
             case "potions":                         return PotionDump.getFormattedPotionDump(format);
             case "potiontypes":                     return PotionTypeDump.getFormattedPotionTypeDump(format);

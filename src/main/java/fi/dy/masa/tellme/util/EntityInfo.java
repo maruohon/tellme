@@ -12,6 +12,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
@@ -122,6 +124,39 @@ public class EntityInfo
     {
         File file = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target));
         SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
+    }
+
+    public static List<String> getPlayerList(DataDump.Format format)
+    {
+        DataDump dump = new DataDump(6, format);
+
+        for (EntityPlayer player : FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers())
+        {
+            String name = player.getName();
+            String dim = String.valueOf(player.getEntityWorld().provider.getDimension());
+            String health = String.format("%.2f", player.getHealth());
+            BlockPos pos = new BlockPos(player);
+            int x = pos.getX();
+            int y = pos.getY();
+            int z = pos.getZ();
+            String blockPos = String.format("x: %d, y: %d, z: %d", x, y, z);
+            String chunkPos = String.format("cx: %d, cy: %d, cz: %d", x >> 4, y >> 4, z >> 4);
+            String regionPos = String.format("r.%d.%d", x >> 9, z >> 9);
+
+            dump.addData(name, health, dim, blockPos, chunkPos, regionPos);
+        }
+
+        dump.addTitle("Name", "Health", "Dimension", "Position", "Chunk", "Region");
+
+        dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // health
+        dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // dim
+        dump.setColumnProperties(3, DataDump.Alignment.RIGHT, false); // block pos
+        dump.setColumnProperties(4, DataDump.Alignment.RIGHT, false); // chunk pos
+        dump.setColumnProperties(5, DataDump.Alignment.RIGHT, false); // region pos
+
+        dump.setUseColumnSeparator(true);
+
+        return dump.getLines();
     }
 
     public static String getEntityNameFromClass(Class<? extends Entity> clazz)
