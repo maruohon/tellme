@@ -5,22 +5,28 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.biome.BiomeProvider;
 import net.minecraft.world.gen.structure.MapGenVillage;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -39,14 +45,13 @@ public class BiomeDump
         }
 
         DataDump biomeDump = new DataDump(columns, format);
-        biomeDump.setSort(false);
-        Iterator<Biome> iter = Biome.REGISTRY.iterator();
 
-        while (iter.hasNext())
+        for (Map.Entry<ResourceLocation, Biome> entry : ForgeRegistries.BIOMES.getEntries())
         {
-            Biome biome = iter.next();
+            Biome biome = entry.getValue();
             String id = String.valueOf(Biome.getIdForBiome(biome));
-            String regName = biome.getRegistryName().toString();
+            ResourceLocation rl = entry.getKey();
+            String regName = rl != null ? rl.toString() : "<null>";
             String name = TellMe.proxy.getBiomeName(biome);
             String biomeTypes = getBiomeTypesForBiome(biome);
             String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
@@ -109,6 +114,49 @@ public class BiomeDump
         biomeDump.setColumnProperties(3, Alignment.RIGHT, true); // temperature
         biomeDump.setColumnProperties(5, Alignment.RIGHT, true); // rainfall
         biomeDump.setColumnAlignment(6, Alignment.RIGHT); // snow
+
+        biomeDump.setUseColumnSeparator(true);
+
+        return biomeDump.getLines();
+    }
+
+    public static List<String> getFormattedBiomeDumpWithMobSpawns(Format format)
+    {
+        DataDump biomeDump = new DataDump(6, format);
+
+        for (Map.Entry<ResourceLocation, Biome> entry : ForgeRegistries.BIOMES.getEntries())
+        {
+            Biome biome = entry.getValue();
+            String id = String.valueOf(Biome.getIdForBiome(biome));
+            ResourceLocation rl = entry.getKey();
+            String regName = rl != null ? rl.toString() : "<null>";
+            String name = TellMe.proxy.getBiomeName(biome);
+            String biomeTypes = getBiomeTypesForBiome(biome);
+            String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
+            List<String> spawns = new ArrayList<>();
+
+            for (EnumCreatureType type : EnumCreatureType.values())
+            {
+                List<String> tmpList = new ArrayList<>();
+
+                // Add the spawns grouped by category and sorted alphabetically within each category
+                for (SpawnListEntry spawn : biome.getSpawnableList(type))
+                {
+                    ResourceLocation erl = EntityList.getKey(spawn.entityClass);
+                    String entName = erl != null ? erl.toString() : spawn.entityClass.getName();
+                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.minGroupCount, spawn.maxGroupCount));
+                }
+
+                Collections.sort(tmpList);
+                spawns.addAll(tmpList);
+            }
+
+            biomeDump.addData(id, regName, name, biomeTypes, biomeDictionaryTypes, String.join("; ", spawns));
+        }
+
+        biomeDump.addTitle("ID", "Registry name", "Biome name", "BiomeType", "BiomeDictionary.Type", "Spawns");
+
+        biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
 
         biomeDump.setUseColumnSeparator(true);
 
