@@ -51,6 +51,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("dimensions");
         this.subSubCommands.add("enchantments");
         this.subSubCommands.add("entities");
+        this.subSubCommands.add("entities-with-class");
         this.subSubCommands.add("fluids");
         this.subSubCommands.add("food-items");
         this.subSubCommands.add("items");
@@ -167,7 +168,8 @@ public class SubCommandDump extends SubCommand
             case "creativetabs":                    return CreativetabDump.getFormattedCreativetabDump(format);
             case "dimensions":                      return DimensionDump.getFormattedDimensionDump(format);
             case "enchantments":                    return EnchantmentDump.getFormattedEnchantmentDump(format);
-            case "entities":                        return EntityDump.getFormattedEntityDump(format);
+            case "entities":                        return EntityDump.getFormattedEntityDump(format, false);
+            case "entities-with-class":             return EntityDump.getFormattedEntityDump(format, true);
             case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
             case "food-items":                      return FoodItemDump.getFormattedFoodItemDump(format);
             case "items":                           return ItemDump.getFormattedItemDump(format, false, false);

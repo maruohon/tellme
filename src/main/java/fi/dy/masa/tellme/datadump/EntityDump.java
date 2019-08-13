@@ -18,16 +18,16 @@ public class EntityDump extends DataDump
         super(4, format);
     }
 
-    public static List<String> getFormattedEntityDump(Format format)
+    public static List<String> getFormattedEntityDump(Format format, boolean fullClassName)
     {
         EntityDump entityDump = new EntityDump(format);
         Iterator<Map.Entry<ResourceLocation, EntityEntry>> iter = ForgeRegistries.ENTITIES.getEntries().iterator();
 
-        while(iter.hasNext())
+        while (iter.hasNext())
         {
             Map.Entry<ResourceLocation, EntityEntry> entry = iter.next();
             Class<? extends Entity> clazz = entry.getValue().getEntityClass();
-            String className = clazz.getSimpleName();
+            String className = fullClassName ? clazz.getName() : clazz.getSimpleName();
             EntityRegistration er = EntityRegistry.instance().lookupModSpawn(clazz, true);
 
             if (er != null)
