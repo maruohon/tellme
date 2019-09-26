@@ -34,6 +34,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 import fi.dy.masa.tellme.TellMe;
@@ -45,132 +47,27 @@ public class ItemDump
 {
     public static final String[] HARVEST_LEVEL_NAMES = new String[] { "Wood/Gold", "Stone", "Iron", "Diamond" };
 
-    private static void addData(DataDump dump, Item item, ResourceLocation rl, boolean hasSubTypes, boolean includeToolClass, boolean dumpNBT, @Nonnull ItemStack stack)
+    public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic();
+    public static final ItemInfoProviderBase INFO_NBT = new ItemInfoProviderNBT();
+    public static final ItemInfoProviderBase INFO_PLANTABLES = new ItemInfoProviderPlantables();
+    public static final ItemInfoProviderBase INFO_TOOL_CLASS = new ItemInfoProviderToolClasses();
+
+    public static List<String> getFormattedItemDump(Format format, ItemInfoProviderBase provider)
     {
-        int id = Item.getIdFromItem(item);
-        int meta = stack.isEmpty() == false ? stack.getMetadata() : 0;
-
-        String modName = ModNameUtils.getModName(rl);
-        String registryName = rl.toString();
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
-
-        if (includeToolClass)
-        {
-            Set<String> toolClasses = item.getToolClasses(stack);
-            String toolClassesStr = "";
-            String harvestLevelStr = "";
-
-            if (toolClasses.isEmpty() == false)
-            {
-                ArrayList<String> classes = new ArrayList<>();
-                classes.addAll(toolClasses);
-                Collections.sort(classes);
-                toolClassesStr = String.join(", ", classes);
-
-                for (int i = 0; i < classes.size(); ++i)
-                {
-                    String c = classes.get(i);
-                    int harvestLevel = item.getHarvestLevel(stack, c, null, null);
-                    String hlName = harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length ? HARVEST_LEVEL_NAMES[harvestLevel] : "?";
-                    classes.set(i, String.format("%s = %d (%s)", c, harvestLevel, hlName));
-                }
-
-                harvestLevelStr = String.join(", ", classes);
-            }
-
-            if (dumpNBT)
-            {
-                String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
-
-                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
-                        String.valueOf(hasSubTypes), displayName, toolClassesStr, harvestLevelStr, getOredictKeysJoined(stack), nbt);
-            }
-            else
-            {
-                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
-                        String.valueOf(hasSubTypes), displayName, toolClassesStr, harvestLevelStr, getOredictKeysJoined(stack));
-            }
-        }
-        else
-        {
-            if (dumpNBT)
-            {
-                String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
-
-                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
-                        String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack), nbt);
-            }
-            else
-            {
-                dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
-                        String.valueOf(hasSubTypes), displayName, getOredictKeysJoined(stack));
-            }
-        }
-    }
-
-    public static List<String> getFormattedItemDump(Format format, boolean includeToolClass, boolean dumpNBT)
-    {
-        int columnCount = 7;
-
-        if (includeToolClass)
-        {
-            columnCount += 2;
-        }
-
-        if (dumpNBT)
-        {
-            columnCount += 1;
-        }
-
-        DataDump itemDump = new DataDump(columnCount, format);
+        DataDump itemDump = new DataDump(provider.getColumnCount(), format);
 
         for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            getDataForItemSubtypes(itemDump, entry.getValue(), entry.getKey(), includeToolClass, dumpNBT);
+            getDataForItemSubtypes(itemDump, entry.getValue(), entry.getKey(), provider);
         }
 
-        if (includeToolClass)
-        {
-            if (dumpNBT)
-            {
-                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Tool classes", "Harvest levels", "Ore Dict keys", "NBT");
-            }
-            else
-            {
-                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Tool classes", "Harvest levels", "Ore Dict keys");
-            }
-        }
-        else
-        {
-            if (dumpNBT)
-            {
-                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys", "NBT");
-            }
-            else
-            {
-                itemDump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys");
-            }
-        }
-
-        itemDump.setColumnProperties(2, Alignment.RIGHT, true); // ID
-        itemDump.setColumnProperties(3, Alignment.RIGHT, true); // meta
-        itemDump.setColumnAlignment(4, Alignment.RIGHT); // sub-types
-
-        itemDump.setUseColumnSeparator(true);
-
-        itemDump.addHeader("*** WARNING ***");
-        itemDump.addHeader("The block and item IDs are dynamic and will be different on each world!");
-        itemDump.addHeader("DO NOT use them for anything \"proper\"!! (other than manual editing/fixing of raw world data or something)");
-        itemDump.addHeader("*** ALSO ***");
-        itemDump.addHeader("The server doesn't have a list of sub block and sub items");
-        itemDump.addHeader("(= items with different damage value or blocks with different metadata).");
-        itemDump.addHeader("That is why the block and item list dumps only contain one entry per block/item class (separate ID) when run on a server.");
+        provider.addTitle(itemDump);
+        provider.addHeaders(itemDump);
 
         return itemDump.getLines();
     }
 
-    private static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, boolean includeToolClass, boolean dumpNBT)
+    private static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, ItemInfoProviderBase provider)
     {
         if (item.getHasSubtypes())
         {
@@ -184,14 +81,14 @@ public class ItemDump
                     for (ItemStack stack : stacks)
                     {
                         // FIXME: Ignore identical duplicate entries from different tabs...
-                        addData(itemDump, item, rl, true, includeToolClass, dumpNBT, stack);
+                        provider.addLine(itemDump, stack, rl);
                     }
                 }
             }
         }
         else
         {
-            addData(itemDump, item, rl, false, includeToolClass, dumpNBT, new ItemStack(item, 1, 0));
+            provider.addLine(itemDump, new ItemStack(item, 1, 0), rl);
         }
     }
 
@@ -470,6 +367,223 @@ public class ItemDump
         else if (hand == EnumHand.OFF_HAND)
         {
             player.inventory.offHandInventory.set(0, stack);
+        }
+    }
+
+    private static abstract class ItemInfoProviderBase
+    {
+        protected String getItemId(ItemStack stack)
+        {
+            return String.valueOf(Item.getIdFromItem(stack.getItem()));
+        }
+
+        protected String getItemMeta(ItemStack stack)
+        {
+            return String.valueOf(stack.isEmpty() == false ? stack.getMetadata() : 0);
+        }
+
+        protected String getModName(ResourceLocation rl)
+        {
+            return ModNameUtils.getModName(rl);
+        }
+
+        protected String getRegistryName(ResourceLocation rl)
+        {
+            return rl.toString();
+        }
+
+        protected String getDisplayName(ItemStack stack)
+        {
+            return stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
+        }
+
+        protected String getHasSubtypesString(ItemStack stack)
+        {
+            return String.valueOf(stack.getItem().getHasSubtypes());
+        }
+
+        protected String getNBTString(ItemStack stack)
+        {
+            return stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
+        }
+
+        protected String getToolClassesString(ItemStack stack)
+        {
+            Item item = stack.getItem();
+            Set<String> toolClasses = item.getToolClasses(stack);
+
+            if (toolClasses.isEmpty() == false)
+            {
+                ArrayList<String> classes = new ArrayList<>();
+                classes.addAll(toolClasses);
+                Collections.sort(classes);
+                return String.join(", ", classes);
+            }
+
+            return "";
+        }
+
+        protected String getHarvestLevelString(ItemStack stack)
+        {
+            Item item = stack.getItem();
+            Set<String> toolClasses = item.getToolClasses(stack);
+
+            if (toolClasses.isEmpty() == false)
+            {
+                ArrayList<String> classes = new ArrayList<>();
+                classes.addAll(toolClasses);
+                Collections.sort(classes);
+
+                for (int i = 0; i < classes.size(); ++i)
+                {
+                    String c = classes.get(i);
+                    int harvestLevel = item.getHarvestLevel(stack, c, null, null);
+                    String hlName = harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length ? HARVEST_LEVEL_NAMES[harvestLevel] : "?";
+                    classes.set(i, String.format("%s = %d (%s)", c, harvestLevel, hlName));
+                }
+
+                return String.join(", ", classes);
+            }
+
+            return "";
+        }
+
+        public void addHeaders(DataDump dump)
+        {
+            dump.setColumnProperties(2, Alignment.RIGHT, true); // ID
+            dump.setColumnProperties(3, Alignment.RIGHT, true); // meta
+            dump.setColumnAlignment(4, Alignment.RIGHT); // sub-types
+
+            dump.setUseColumnSeparator(true);
+
+            dump.addHeader("*** WARNING ***");
+            dump.addHeader("The block and item IDs are dynamic and will be different on each world!");
+            dump.addHeader("DO NOT use them for anything \"proper\"!! (other than manual editing/fixing of raw world data or something)");
+            dump.addHeader("*** ALSO ***");
+            dump.addHeader("The server doesn't have a list of sub block and sub items");
+            dump.addHeader("(= items with different damage value or blocks with different metadata).");
+            dump.addHeader("That is why the block and item list dumps only contain one entry per block/item class (separate ID) when run on a server.");
+        }
+
+        public abstract int getColumnCount();
+
+        public abstract void addTitle(DataDump dump);
+
+        public abstract void addLine(DataDump dump, ItemStack stack, ResourceLocation id);
+    }
+
+    public static class ItemInfoProviderBasic extends ItemInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 7;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys");
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
+        {
+            dump.addData(this.getModName(id),
+                         this.getRegistryName(id),
+                         this.getItemId(stack),
+                         this.getItemMeta(stack),
+                         this.getHasSubtypesString(stack),
+                         this.getDisplayName(stack),
+                         getOredictKeysJoined(stack));
+        }
+    }
+
+    public static class ItemInfoProviderNBT extends ItemInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 8;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys", "NBT");
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
+        {
+            dump.addData(this.getModName(id),
+                         this.getRegistryName(id),
+                         this.getItemId(stack),
+                         this.getItemMeta(stack),
+                         this.getHasSubtypesString(stack),
+                         this.getDisplayName(stack),
+                         getOredictKeysJoined(stack),
+                         this.getNBTString(stack));
+        }
+    }
+
+    public static class ItemInfoProviderToolClasses extends ItemInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 9;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Tool classes", "Harvest levels", "Ore Dict keys");
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
+        {
+            dump.addData(this.getModName(id),
+                         this.getRegistryName(id),
+                         this.getItemId(stack),
+                         this.getItemMeta(stack),
+                         this.getHasSubtypesString(stack),
+                         this.getDisplayName(stack),
+                         this.getToolClassesString(stack),
+                         this.getHarvestLevelString(stack),
+                         getOredictKeysJoined(stack));
+        }
+    }
+
+    public static class ItemInfoProviderPlantables extends ItemInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 8;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Plant Type", "Ore Dict keys");
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
+        {
+            if (stack.getItem() instanceof IPlantable)
+            {
+                dump.addData(this.getModName(id),
+                             this.getRegistryName(id),
+                             this.getItemId(stack),
+                             this.getItemMeta(stack),
+                             this.getHasSubtypesString(stack),
+                             this.getDisplayName(stack),
+                             ((IPlantable) stack.getItem()).getPlantType(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0), BlockPos.ORIGIN).name(),
+                             getOredictKeysJoined(stack));
+            }
         }
     }
 }

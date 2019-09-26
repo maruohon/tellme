@@ -55,6 +55,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("fluids");
         this.subSubCommands.add("food-items");
         this.subSubCommands.add("items");
+        this.subSubCommands.add("items-plantable");
         this.subSubCommands.add("items-with-nbt");
         this.subSubCommands.add("items-with-tool-classes");
         this.subSubCommands.add("mod-list");
@@ -172,9 +173,10 @@ public class SubCommandDump extends SubCommand
             case "entities-with-class":             return EntityDump.getFormattedEntityDump(format, true);
             case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
             case "food-items":                      return FoodItemDump.getFormattedFoodItemDump(format);
-            case "items":                           return ItemDump.getFormattedItemDump(format, false, false);
-            case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, false, true);
-            case "items-with-tool-classes":         return ItemDump.getFormattedItemDump(format, true, false);
+            case "items":                           return ItemDump.getFormattedItemDump(format, ItemDump.INFO_BASIC);
+            case "items-plantable":                 return ItemDump.getFormattedItemDump(format, ItemDump.INFO_PLANTABLES);
+            case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, ItemDump.INFO_NBT);
+            case "items-with-tool-classes":         return ItemDump.getFormattedItemDump(format, ItemDump.INFO_TOOL_CLASS);
             case "mod-list":                        return ModListDump.getFormattedModListDump(format);
             case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);
             case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
