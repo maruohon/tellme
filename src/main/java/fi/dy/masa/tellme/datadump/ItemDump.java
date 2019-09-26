@@ -27,6 +27,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
@@ -51,6 +52,7 @@ public class ItemDump
     public static final ItemInfoProviderBase INFO_NBT = new ItemInfoProviderNBT();
     public static final ItemInfoProviderBase INFO_PLANTABLES = new ItemInfoProviderPlantables();
     public static final ItemInfoProviderBase INFO_TOOL_CLASS = new ItemInfoProviderToolClasses();
+    public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
 
     public static List<String> getFormattedItemDump(Format format, ItemInfoProviderBase provider)
     {
@@ -65,6 +67,28 @@ public class ItemDump
         provider.addHeaders(itemDump);
 
         return itemDump.getLines();
+    }
+
+    public static List<String> getFormattedCraftableItemsDump(Format format)
+    {
+        ItemInfoProviderBase provider = INFO_CRAFTABLES;
+        DataDump dump = new DataDump(provider.getColumnCount(), format);
+
+        for (Map.Entry<ResourceLocation, IRecipe> entry : ForgeRegistries.RECIPES.getEntries())
+        {
+            IRecipe recipe = entry.getValue();
+            ItemStack stack = recipe.getRecipeOutput();
+
+            if (recipe.canFit(3, 3) && stack.isEmpty() == false)
+            {
+                provider.addLine(dump, stack, entry.getKey());
+            }
+        }
+
+        provider.addTitle(dump);
+        provider.addHeaders(dump);
+
+        return dump.getLines();
     }
 
     private static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, ItemInfoProviderBase provider)
@@ -584,6 +608,35 @@ public class ItemDump
                              ((IPlantable) stack.getItem()).getPlantType(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0), BlockPos.ORIGIN).name(),
                              getOredictKeysJoined(stack));
             }
+        }
+    }
+
+    public static class ItemInfoProviderCraftables extends ItemInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 7;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Display name", "Recipe name", "Ore Dict keys");
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
+        {
+            ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+
+            dump.addData(this.getModName(id),
+                         this.getRegistryName(itemId),
+                         this.getItemId(stack),
+                         this.getItemMeta(stack),
+                         this.getDisplayName(stack),
+                         this.getRegistryName(id),
+                         getOredictKeysJoined(stack));
         }
     }
 }

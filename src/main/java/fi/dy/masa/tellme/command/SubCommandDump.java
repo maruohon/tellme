@@ -55,6 +55,7 @@ public class SubCommandDump extends SubCommand
         this.subSubCommands.add("fluids");
         this.subSubCommands.add("food-items");
         this.subSubCommands.add("items");
+        this.subSubCommands.add("items-craftable");
         this.subSubCommands.add("items-plantable");
         this.subSubCommands.add("items-with-nbt");
         this.subSubCommands.add("items-with-tool-classes");
@@ -174,6 +175,7 @@ public class SubCommandDump extends SubCommand
             case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
             case "food-items":                      return FoodItemDump.getFormattedFoodItemDump(format);
             case "items":                           return ItemDump.getFormattedItemDump(format, ItemDump.INFO_BASIC);
+            case "items-craftable":                 return ItemDump.getFormattedCraftableItemsDump(format);
             case "items-plantable":                 return ItemDump.getFormattedItemDump(format, ItemDump.INFO_PLANTABLES);
             case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, ItemDump.INFO_NBT);
             case "items-with-tool-classes":         return ItemDump.getFormattedItemDump(format, ItemDump.INFO_TOOL_CLASS);
