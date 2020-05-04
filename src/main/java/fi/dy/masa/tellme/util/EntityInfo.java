@@ -6,65 +6,63 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.PotionEffect;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.SubCommand;
+import net.minecraft.util.text.TextFormatting;
 import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class EntityInfo
 {
     private static String getBasicEntityInfo(Entity target)
     {
-        ResourceLocation rl = EntityList.getKey(target);
-        String regName = rl != null ? rl.toString() : "null";
+        ResourceLocation rl = target.getType().getRegistryName();
+        String regName = rl != null ? rl.toString() : "<null>";
 
         return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName(), regName, target.getEntityId());
     }
 
-    public static List<String> getFullEntityInfo(Entity target)
+    public static List<String> getFullEntityInfo(Entity target, boolean targetIsChat)
     {
         List<String> lines = new ArrayList<>();
         lines.add(getBasicEntityInfo(target));
 
-        NBTTagCompound nbt = new NBTTagCompound();
+        CompoundNBT nbt = new CompoundNBT();
 
-        if (target.writeToNBTOptional(nbt) == false)
+        if (target.writeUnlessPassenger(nbt) == false)
         {
-            target.writeToNBT(nbt);
+            target.writeWithoutTypeId(nbt);
         }
 
         lines.add("Entity class: " + target.getClass().getName());
         lines.add("");
 
-        if (target instanceof EntityLivingBase)
+        if (target instanceof LivingEntity)
         {
-            lines.addAll(getActivePotionEffectsForEntity((EntityLivingBase) target, DataDump.Format.ASCII));
+            lines.addAll(getActivePotionEffectsForEntity((LivingEntity) target, DataDump.Format.ASCII));
             lines.add("");
         }
 
-        NBTFormatter.getPrettyFormattedNBT(lines, nbt);
+        lines.addAll((new NbtStringifierPretty(targetIsChat ? TextFormatting.GRAY.toString() : null)).getNbtLines(nbt));
 
         return lines;
     }
 
-    public static List<String> getActivePotionEffectsForEntity(EntityLivingBase entity, DataDump.Format format)
+    public static List<String> getActivePotionEffectsForEntity(LivingEntity entity, DataDump.Format format)
     {
-        Collection<PotionEffect> effects = entity.getActivePotionEffects();
+        Collection<EffectInstance> effects = entity.getActivePotionEffects();
 
         if (effects.isEmpty() == false)
         {
             DataDump dump = new DataDump(4, format);
 
-            for (PotionEffect effect : effects)
+            for (EffectInstance effect : effects)
             {
                 ResourceLocation rl = effect.getPotion().getRegistryName();
 
@@ -72,13 +70,12 @@ public class EntityInfo
                         rl != null ? rl.toString() : effect.getClass().getName(),
                         String.valueOf(effect.getAmplifier()),
                         String.valueOf(effect.getDuration()),
-                        String.valueOf(effect.getIsAmbient()));
+                        String.valueOf(effect.isAmbient()));
             }
 
             dump.addTitle("Effect", "Amplifier", "Duration", "Ambient");
             dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // amplifier
             dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // duration
-            dump.setUseColumnSeparator(true);
 
             return dump.getLines();
         }
@@ -86,54 +83,37 @@ public class EntityInfo
         return Collections.emptyList();
     }
 
-    public static void printBasicEntityInfoToChat(EntityPlayer player, Entity target)
+    public static void printBasicEntityInfoToChat(PlayerEntity player, Entity target)
     {
-        ResourceLocation rl = EntityList.getKey(target);
+        ResourceLocation rl = target.getType().getRegistryName();
         String regName = rl != null ? rl.toString() : "null";
         String textPre = String.format("Entity: %s [registry name: ", target.getName());
         String textPost = String.format("] (entityId: %d)", target.getEntityId());
 
-        player.sendMessage(ChatUtils.getClipboardCopiableMessage(textPre, regName, textPost));
+        player.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost));
     }
 
-    public static void printFullEntityInfoToConsole(EntityPlayer player, Entity target)
+    public static void printFullEntityInfoToConsole(PlayerEntity player, Entity target)
     {
-        List<String> lines = getFullEntityInfo(target);
-
-        for (String line : lines)
-        {
-            TellMe.logger.info(line);
-        }
+        printBasicEntityInfoToChat(player, target);
+        OutputUtils.printOutputToConsole(getFullEntityInfo(target, false));
     }
 
-    public static void printEntityInfo(EntityPlayer player, Entity target, boolean dumpToFile)
+    public static void dumpFullEntityInfoToFile(PlayerEntity player, Entity target)
     {
-        EntityInfo.printBasicEntityInfoToChat(player, target);
-
-        if (dumpToFile)
-        {
-            dumpFullEntityInfoToFile(player, target);
-        }
-        else
-        {
-            printFullEntityInfoToConsole(player, target);
-        }
-    }
-
-    public static void dumpFullEntityInfoToFile(EntityPlayer player, Entity target)
-    {
-        File file = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target));
-        SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
+        printBasicEntityInfoToChat(player, target);
+        File file = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target, false));
+        OutputUtils.sendClickableLinkMessage(player, "Output written to file %s", file);
     }
 
     public static List<String> getPlayerList(DataDump.Format format)
     {
         DataDump dump = new DataDump(6, format);
 
-        for (EntityPlayer player : FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers())
+        for (PlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers())
         {
-            String name = player.getName();
-            String dim = String.valueOf(player.getEntityWorld().provider.getDimension());
+            String name = player.getName().getString();
+            String dim = player.getEntityWorld().dimension.getType().getRegistryName().toString();
             String health = String.format("%.2f", player.getHealth());
             BlockPos pos = new BlockPos(player);
             int x = pos.getX();
@@ -154,31 +134,12 @@ public class EntityInfo
         dump.setColumnProperties(4, DataDump.Alignment.RIGHT, false); // chunk pos
         dump.setColumnProperties(5, DataDump.Alignment.RIGHT, false); // region pos
 
-        dump.setUseColumnSeparator(true);
-
         return dump.getLines();
     }
 
-    public static String getEntityNameFromClass(Class<? extends Entity> clazz)
+    public static String getEntityNameFor(EntityType<?> type)
     {
-        String name = null;
-        ResourceLocation rl = EntityList.getKey(clazz);
-
-        if (rl != null)
-        {
-            EntityEntry entry = ForgeRegistries.ENTITIES.getValue(rl);
-
-            if (entry != null)
-            {
-                name = entry.getName();
-            }
-        }
-
-        if (name == null)
-        {
-            name = clazz.getSimpleName();
-        }
-
-        return name;
+        ResourceLocation id = EntityType.getKey(type);
+        return id != null ? id.toString() : "<null>";
     }
 }

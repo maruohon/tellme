@@ -1,20 +1,14 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldType;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 
-@SuppressWarnings("deprecation")
-public class WorldTypeDump extends DataDump
+public class WorldTypeDump
 {
-    private WorldTypeDump(Format format)
+    public static List<String> getFormattedWorldTypeDump(DataDump.Format format)
     {
-        super(5, format);
-    }
-
-    public static List<String> getFormattedWorldTypeDump(Format format)
-    {
-        WorldTypeDump dump = new WorldTypeDump(format);
+        DataDump dump = new DataDump(4, format);
 
         for (WorldType type : WorldType.WORLD_TYPES)
         {
@@ -22,20 +16,17 @@ public class WorldTypeDump extends DataDump
             {
                 dump.addData(
                         type.getName(),
-                        I18n.translateToLocal("generator." + type.getName()),
                         Boolean.valueOf(type.isVersioned()).toString(),
                         String.valueOf(type.getVersion()),
                         String.valueOf(type.getId()));
             }
         }
 
-        dump.addTitle("Level name", "Display name", "Versioned", "Version", "ID (GUI)");
+        dump.addTitle("Name", "Versioned", "Version", "ID (GUI)");
 
-        dump.setColumnAlignment(2, Alignment.RIGHT); // Versioned
-        dump.setColumnProperties(3, Alignment.RIGHT, true); // Version
-        dump.setColumnProperties(4, Alignment.RIGHT, true); // GUI ID
-
-        dump.setUseColumnSeparator(true);
+        dump.setColumnAlignment(1, Alignment.RIGHT); // Versioned
+        dump.setColumnProperties(2, Alignment.RIGHT, true); // Version
+        dump.setColumnProperties(3, Alignment.RIGHT, true); // GUI ID
 
         return dump.getLines();
     }

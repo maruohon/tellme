@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryBase;
@@ -86,7 +87,7 @@ public class LoggerBase
     }
 
     @Nullable
-    public File dumpData(DataDump.Format format, int dimension)
+    public File dumpData(DataDump.Format format, DimensionType dimension)
     {
         if (this.loggedData.size() > 0)
         {
@@ -97,7 +98,9 @@ public class LoggerBase
                 entry.addDataToDump(dump);
             }
 
-            return DataDump.dumpDataToFile("logged_data_" + this.type.getArgName() + "_dim_" + dimension, dump.getLines());
+            String strDim = dimension.getRegistryName().toString().replace(':', '_');
+
+            return DataDump.dumpDataToFile("logged_data_" + this.type.getArgName() + "_dim_" + strDim, dump.getLines());
         }
 
         return null;
@@ -119,7 +122,7 @@ public class LoggerBase
         }
     }
 
-    public void onChunkEvent(Chunk chunk)
+    public void onChunkEvent(IChunk chunk)
     {
     }
 

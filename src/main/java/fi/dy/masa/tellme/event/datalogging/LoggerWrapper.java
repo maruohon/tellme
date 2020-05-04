@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunk;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventBase;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventLoad;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventUnload;
@@ -66,10 +66,10 @@ public class LoggerWrapper extends LoggerBase
     }
 
     @Override
-    public void onChunkEvent(Chunk chunk)
+    public void onChunkEvent(IChunk chunk)
     {
         if (this.enabled && (this.enablePrint || this.enableLog) &&
-            (this.useFilter == false || this.chunkFilters.contains(new ChunkPos(chunk.x, chunk.z))))
+            (this.useFilter == false || this.chunkFilters.contains(new ChunkPos(chunk.getPos().x, chunk.getPos().z))))
         {
             this.handleData(this.createChunkDataEntry(chunk));
         }
@@ -86,7 +86,7 @@ public class LoggerWrapper extends LoggerBase
     }
 
     @Nullable
-    private DataEntryChunkEventBase createChunkDataEntry(Chunk chunk)
+    private DataEntryChunkEventBase createChunkDataEntry(IChunk chunk)
     {
         switch (this.type)
         {

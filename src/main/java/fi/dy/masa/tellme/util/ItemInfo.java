@@ -1,17 +1,18 @@
 package fi.dy.masa.tellme.util;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.SubCommand;
+import net.minecraft.util.text.TextFormatting;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class ItemInfo
 {
@@ -27,71 +28,73 @@ public class ItemInfo
 
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)
     {
-        List<String> lines = new ArrayList<>();
-        lines.add(ItemData.getFor(stack).toString());
-
-        if (stack.hasTagCompound() == false)
+        if (stack.hasTag() == false)
         {
-            return lines;
+            return Collections.emptyList();
         }
 
+        List<String> lines = new ArrayList<>();
+
+        lines.add(ItemData.getFor(stack).toString());
         lines.add("");
-        lines.add(stack.getTagCompound().toString());
+        lines.add(stack.getTag().toString());
         lines.add("");
-        NBTFormatter.getPrettyFormattedNBT(lines, stack.getTagCompound());
+
+        lines.addAll((new NbtStringifierPretty(null)).getNbtLines(stack.getTag()));
 
         return lines;
     }
 
-    public static void printBasicItemInfoToChat(EntityPlayer player, @Nonnull ItemStack stack)
+    private static List<String> getPrettyNbtForChat(@Nonnull ItemStack stack)
     {
-        player.sendMessage(ItemData.getFor(stack).toChatMessage());
-    }
-
-    public static void printItemInfoToConsole(@Nonnull ItemStack stack)
-    {
-        List<String> lines = getFullItemInfo(stack);
-
-        for (String line : lines)
+        if (stack.hasTag() == false)
         {
-            TellMe.logger.info(line);
+            return Collections.emptyList();
         }
+
+        List<String> lines = new ArrayList<>();
+        lines.add("");
+        lines.addAll((new NbtStringifierPretty(TextFormatting.GRAY.toString())).getNbtLines(stack.getTag()));
+
+        return lines;
     }
 
-    public static void dumpItemInfoToFile(EntityPlayer player, @Nonnull ItemStack stack)
+    public static void printBasicItemInfoToChat(LivingEntity entity, @Nonnull ItemStack stack)
     {
-        File file = DataDump.dumpDataToFile("item_data", getFullItemInfo(stack));
-        SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
+        entity.sendMessage(ItemData.getFor(stack).toChatMessage());
     }
 
-    public static void printItemInfo(EntityPlayer player, @Nonnull ItemStack stack, boolean dumpToFile)
+    public static void printItemInfo(LivingEntity entity, @Nonnull ItemStack stack, OutputType outputType)
     {
-        printBasicItemInfoToChat(player, stack);
+        printBasicItemInfoToChat(entity, stack);
 
-        if (dumpToFile)
+        List<String> lines;
+
+        if (outputType == OutputType.CHAT && stack.hasTag())
         {
-            dumpItemInfoToFile(player, stack);
+            entity.sendMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""));
+            lines = getPrettyNbtForChat(stack);
         }
         else
         {
-            printItemInfoToConsole(stack);
+            lines = getFullItemInfo(stack);
         }
+
+        OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, "item_data", entity);
     }
 
     public static class ItemData
     {
         private final String regName;
         private final int id;
-        private final int meta;
         private final String displayName;
         private final String nbtInfo;
 
-        public ItemData(String displayName, String regName, int id, int meta, String nbtInfo)
+        public ItemData(String displayName, String regName, int id, String nbtInfo)
         {
             this.displayName = displayName;
             this.regName = regName;
             this.id = id;
-            this.meta = meta;
             this.nbtInfo = nbtInfo;
         }
 
@@ -100,7 +103,7 @@ public class ItemInfo
             String registryName = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
             String nbtInfo;
 
-            if (stack.hasTagCompound())
+            if (stack.hasTag())
             {
                 nbtInfo = "has NBT data";
             }
@@ -109,22 +112,21 @@ public class ItemInfo
                 nbtInfo = "no NBT data";
             }
 
-            return new ItemData(stack.getDisplayName(), registryName, Item.getIdFromItem(stack.getItem()), stack.getMetadata(), nbtInfo);
+            return new ItemData(stack.getDisplayName().getString(), registryName, Item.getIdFromItem(stack.getItem()), nbtInfo);
         }
 
         public ITextComponent toChatMessage()
         {
-            String copyStr = this.meta != 0 ? this.regName + ":" + this.meta : this.regName;
             String textPre = String.format("%s (", this.displayName);
-            String textPost = String.format(" - %d:%d) %s", this.id, this.meta, this.nbtInfo);
+            String textPost = String.format(" - id: %d) %s", this.id, this.nbtInfo);
 
-            return ChatUtils.getClipboardCopiableMessage(textPre, copyStr, textPost);
+            return OutputUtils.getClipboardCopiableMessage(textPre, this.regName, textPost);
         }
 
         @Override
         public String toString()
         {
-            return String.format("%s (%s - %d:%d) %s", this.displayName, this.regName, this.id, this.meta, this.nbtInfo);
+            return String.format("%s (%s - id: %d) %s", this.displayName, this.regName, this.id, this.nbtInfo);
         }
     }
 }

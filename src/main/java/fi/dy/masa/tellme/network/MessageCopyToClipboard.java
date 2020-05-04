@@ -1,26 +1,20 @@
 package fi.dy.masa.tellme.network;
 
-import java.awt.Desktop;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.text.StringTextComponent;
 import fi.dy.masa.tellme.TellMe;
-import io.netty.buffer.ByteBuf;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class MessageCopyToClipboard implements IMessage
+public class MessageCopyToClipboard
 {
     private String str;
 
-    public MessageCopyToClipboard()
+    public MessageCopyToClipboard(PacketBuffer buf)
     {
+        this.str = buf.readString();
     }
 
     public MessageCopyToClipboard(String str)
@@ -28,57 +22,40 @@ public class MessageCopyToClipboard implements IMessage
         this.str = str;
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf)
+    public void toBytes(PacketBuffer buf)
     {
-        this.str = ByteBufUtils.readUTF8String(buf);
+        buf.writeString(this.str);
     }
 
-    @Override
-    public void toBytes(ByteBuf buf)
+    public void handle(Supplier<NetworkEvent.Context> ctxSupplier)
     {
-        ByteBufUtils.writeUTF8String(buf, this.str);
-    }
+        NetworkEvent.Context ctx = ctxSupplier.get();
 
-    public static class Handler implements IMessageHandler<MessageCopyToClipboard, IMessage>
-    {
-        @Override
-        public IMessage onMessage(final MessageCopyToClipboard message, MessageContext ctx)
-        {
-            if (ctx.side != Side.CLIENT)
+        ctx.enqueueWork(() -> {
+            if (ctx.getDirection() != NetworkDirection.PLAY_TO_CLIENT)
             {
-                TellMe.logger.error("Wrong side in MessageCopyToClipboard: " + ctx.side);
-                return null;
+                TellMe.logger.error("Wrong side in MessageSyncSlot: " + ctx.getDirection());
+                return;
             }
 
-            Minecraft mc = FMLClientHandler.instance().getClient();
+            Minecraft mc = Minecraft.getInstance();
 
-            if (mc == null)
+            if (mc.player == null)
             {
-                TellMe.logger.error("Minecraft was null in MessageCopyToClipboard");
-                return null;
+                TellMe.logger.error("Player was null in MessageCopyToClipboard");
+                return;
             }
 
-            mc.addScheduledTask(new Runnable()
-            {
-                public void run()
+            mc.execute(() -> {
+                Minecraft.getInstance().keyboardListener.setClipboardString(this.str);
+
+                if (mc.player != null)
                 {
-                    processMessage(message);
+                    mc.player.sendStatusMessage(new StringTextComponent("Copied " + this.str), true);
                 }
             });
 
-            return null;
-        }
-
-        protected void processMessage(final MessageCopyToClipboard message)
-        {
-            if (Desktop.isDesktopSupported())
-            {
-                StringSelection stringSelection = new StringSelection(message.str);
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(stringSelection, null);
-                FMLClientHandler.instance().getClient().player.sendStatusMessage(new TextComponentString("Copied " + message.str), true);
-            }
-        }
+            ctx.setPacketHandled(true);
+        });
     }
 }

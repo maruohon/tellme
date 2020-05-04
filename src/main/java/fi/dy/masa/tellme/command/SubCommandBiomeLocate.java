@@ -1,248 +1,168 @@
 package fi.dy.masa.tellme.command;
 
-import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import com.google.common.collect.Maps;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.DimensionArgument;
+import net.minecraft.command.arguments.ILocationArgument;
+import net.minecraft.command.arguments.Vec2Argument;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeProvider;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.dimension.DimensionType;
+import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.BiomeLocator;
-import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.OutputUtils;
 
-public class SubCommandBiomeLocate extends SubCommand
+public class SubCommandBiomeLocate
 {
-    private final Map<UUID, BiomeLocator> biomeLocators = Maps.newHashMap();
-    private final BiomeLocator biomeLocatorConsole = new BiomeLocator();
+    private static final Map<UUID, BiomeLocator> BIOME_LOCATORS = Maps.newHashMap();
+    private static final BiomeLocator CONSOLE_BIOME_LOCATOR = new BiomeLocator();
 
-    public SubCommandBiomeLocate(CommandTellme baseCommand)
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        super(baseCommand);
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("locate-biome").executes(c -> printHelp(c.getSource())).build();
 
-        this.subSubCommands.add("dump");
-        this.subSubCommands.add("dump-csv");
-        this.subSubCommands.add("print");
-        this.subSubCommands.add("search");
-        this.subSubCommands.add("search-append");
+        LiteralCommandNode<CommandSource> actionNodeOutputData = Commands.literal("output-data").build();
+        ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
+                .executes(c -> outputData(c.getSource(),
+                        c.getArgument("output_type", OutputType.class),
+                        DataDump.Format.ASCII))
+                .build();
+        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
+                .executes(c -> outputData(c.getSource(),
+                        c.getArgument("output_type", OutputType.class),
+                        c.getArgument("output_format", DataDump.Format.class)
+                        ))
+                .build();
 
-        this.addSubCommandHelp("_generic", "Searches for the closest location of biomes around the center point");
-        this.addSubCommandHelp("search", "Searches for the closest location of biomes around the center point");
-        this.addSubCommandHelp("dump", "Dumps the results from a previous 'search' command into a file in config/tellme/");
-        this.addSubCommandHelp("dump-csv", "Dumps the results from a previous 'search' command into a CSV file in config/tellme/");
-        this.addSubCommandHelp("query", "Prints the results from a previous 'search' command into the console");
+        subCommandRootNode.addChild(createNodes("search", false));
+        subCommandRootNode.addChild(createNodes("search-append", true));
+
+        subCommandRootNode.addChild(actionNodeOutputData);
+        actionNodeOutputData.addChild(argOutputType);
+        argOutputType.addChild(argOutputFormat);
+
+        return subCommandRootNode;
     }
 
-    @Override
-    public String getName()
+    private static LiteralCommandNode<CommandSource> createNodes(String command, boolean isAppend)
     {
-        return "biomelocate";
+        LiteralCommandNode<CommandSource> actionNodeSearch = Commands.literal(command).build();
+
+        ArgumentCommandNode<CommandSource, Integer> argSampleInterval = Commands.argument("sample_interval", IntegerArgumentType.integer(1, Integer.MAX_VALUE)).build();
+        ArgumentCommandNode<CommandSource, Integer> argSampleRadius = Commands.argument("sample_radius",   IntegerArgumentType.integer(1, Integer.MAX_VALUE))
+                .executes(c -> search(c.getSource(), isAppend,
+                        IntegerArgumentType.getInteger(c, "sample_interval"),
+                        IntegerArgumentType.getInteger(c, "sample_radius")))
+                .build();
+
+        ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec2Argument.vec2())
+                .executes(c -> search(c.getSource(), isAppend,
+                        IntegerArgumentType.getInteger(c, "sample_interval"),
+                        IntegerArgumentType.getInteger(c, "sample_radius"),
+                        Vec2Argument.getVec2f(c, "center")))
+                .build();
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> search(c.getSource(), isAppend,
+                        IntegerArgumentType.getInteger(c, "sample_interval"),
+                        IntegerArgumentType.getInteger(c, "sample_radius"),
+                        Vec2Argument.getVec2f(c, "center"),
+                        DimensionArgument.getDimensionArgument(c, "dimension")))
+                .build();
+
+        actionNodeSearch.addChild(argSampleInterval);
+        argSampleInterval.addChild(argSampleRadius);
+        argSampleRadius.addChild(argCenter);
+        argCenter.addChild(argDimension);
+
+        return actionNodeSearch;
     }
 
-    private void printUsageSearch(ICommandSender sender)
+    private static int printHelp(CommandSource source)
     {
-        String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " search <sampleInterval> <maxSampleRadius> [centerX centerZ] [dimension]"));
+        CommandUtils.sendMessage(source, "Searches for the closest location of biomes around the center point.");
+        CommandUtils.sendMessage(source, "Usage: /tellme locate-biome <search | search-append> <sample_interval> <sample_radius> [centerX centerZ] [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme locate-biome output-data <to-chat | to-console | to-file> <ascii | csv>");
+        CommandUtils.sendMessage(source, "search: Clears previously stored results, and then searches for the closest location of biomes");
+        CommandUtils.sendMessage(source, "search-append: Searches for the closest location of biomes, appending the data to the previously stored results");
+        CommandUtils.sendMessage(source, "  - The sample_interval is the distance between sample points, in blocks");
+        CommandUtils.sendMessage(source, "  - The sample_radius is how many sample points are checked per side/axis");
+        CommandUtils.sendMessage(source, "output-data: Outputs the stored data from previous searches to the selected output location. The 'file' output's dump files will go to 'config/tellme/'.");
+
+        return 1;
     }
 
-    private void printUsageQuery(ICommandSender sender)
+    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius) throws CommandSyntaxException
     {
-        String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " <dump | query>"));
+        Entity entity = source.getEntity();
+        Vec2f center = entity != null ? new Vec2f((float) entity.posX, (float) entity.posZ) : Vec2f.ZERO;
+        return search(source, append, sampleInterval, sampleRadius, center);
     }
 
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vec2f center) throws CommandSyntaxException
     {
-        if (args.length == 1)
+        Entity entity = source.getEntity();
+
+        if (entity == null)
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, this.subSubCommands);
-        }
-        else if (args.length == 2)
-        {
-            if (args[0].equals("dump") || args[0].equals("dump-csv") || args[0].equals("query"))
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BIOMES.getKeys());
-            }
-            else if (args[0].equals("count"))
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, "area", "chunk-radius", "range", "sampled");
-            }
-        }
-        else if (args.length >= 3 && args[0].equals("count"))
-        {
-            if (args.length <= 6 && args[1].equals("area"))
-            {
-                int index = args.length <= 4 ? 2 : 4;
-                return CommandBase.getTabCompletionCoordinateXZ(args, index, targetPos);
-            }
-            else if (args.length >= 4 && args.length <= 5 && args[1].equals("chunk-radius"))
-            {
-                return CommandBase.getTabCompletionCoordinateXZ(args, 3, targetPos);
-            }
-            else if (args.length >= 5 && args.length <= 6 && args[1].equals("range"))
-            {
-                return CommandBase.getTabCompletionCoordinateXZ(args, 4, targetPos);
-            }
-            else if (args.length >= 5 && args.length <= 6 && args[1].equals("sampled"))
-            {
-                return CommandBase.getTabCompletionCoordinateXZ(args, 4, targetPos);
-            }
+            throw CommandUtils.NO_DIMENSION_EXCEPTION.create();
         }
 
-        return Collections.emptyList();
+        return search(source, append, sampleInterval, sampleRadius, center, entity.dimension);
     }
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vec2f center, DimensionType dimension) throws CommandSyntaxException
     {
-        if (args.length < 1)
-        {
-            this.sendMessage(sender, "Usage:");
-            this.printUsageSearch(sender);
-            this.printUsageQuery(sender);
-            return;
-        }
+        Entity entity = source.getEntity();
+        BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
+        World world = TellMe.dataProvider.getWorld(source.getServer(), dimension);
+        BiomeProvider biomeProvider = world.getChunkProvider().getChunkGenerator().getBiomeProvider();
 
-        super.execute(server, sender, args);
+        CommandUtils.sendMessage(source, "Finding closest biome locations...");
 
-        String cmd = args[0];
-        args = dropFirstStrings(args, 1);
-        BiomeLocator biomeLocator = sender instanceof EntityPlayer ? this.getBiomeLocatorForPlayer((EntityPlayer) sender) : this.biomeLocatorConsole;
+        biomeLocator.setAppend(append);
+        biomeLocator.findClosestBiomePositions(biomeProvider, new BlockPos(center.x, 0, center.y), sampleInterval, sampleRadius);
 
-        // "/tellme blockstats count ..."
-        if ((cmd.equals("search") || cmd.equals("search-append")) && args.length >= 2 && args.length <= 5)
-        {
-            // Possible command formats are:
-            // search <sampleInterval> <maxSampleRadius> [centerX centerZ] [dimension]
-            biomeLocator.setAppend(cmd.equals("search-append"));
+        CommandUtils.sendMessage(source, "Done");
 
-            // Get the world - either the player's current world, or the one based on the provided dimension ID
-            World world = this.getWorld(cmd, args, sender, server);
-            BlockPos pos = sender instanceof EntityPlayer ? sender.getPosition() : WorldUtils.getSpawnPoint(world);
-            String pre = this.getSubCommandUsagePre();
-            BiomeProvider biomeProvider = world.getBiomeProvider();
-
-            try
-            {
-                if (args.length >= 4)
-                {
-                    pos = parseBlockPosXZ(pos, args, 2, false);
-                }
-
-                int interval = CommandBase.parseInt(args[0]);
-                int radius = CommandBase.parseInt(args[1]);
-
-                if (interval <= 0)
-                {
-                    new NumberInvalidException("Interval must be a positive integer number");
-                }
-
-                if (radius < 0)
-                {
-                    new NumberInvalidException("Radius must be a positive integer number or 0");
-                }
-
-                this.sendMessage(sender, "Finding closest biome locations...");
-
-                biomeLocator.findClosestBiomePositions(biomeProvider, pos, interval, radius);
-
-                this.sendMessage(sender, "Done");
-            }
-            catch (NumberInvalidException e)
-            {
-                throw new WrongUsageException(pre + " count sampled <sampleInterval> <maxSampleRadius> [centerX centerZ] [dimension]");
-            }
-        }
-        else if (cmd.equals("print") || cmd.equals("dump") || cmd.equals("dump-csv"))
-        {
-            Format format = cmd.equals("dump-csv") ? Format.CSV : Format.ASCII;
-            List<String> lines = biomeLocator.getClosestBiomePositions(format);
-
-            if (cmd.equals("print"))
-            {
-                DataDump.printDataToLogger(lines);
-                this.sendMessage(sender, "Command output printed to console");
-            }
-            else
-            {
-                File file = DataDump.dumpDataToFile("biome_locations", lines, format);
-
-                if (file != null)
-                {
-                    sendClickableLinkMessage(sender, "Output written to file %s", file);
-                }
-            }
-        }
-        else
-        {
-            this.sendMessage(sender, "Usage:");
-            this.printUsageSearch(sender);
-            this.printUsageQuery(sender);
-        }
+        return 1;
     }
 
-    private World getWorld(String countSubCommand, String[] args, ICommandSender sender, MinecraftServer server) throws CommandException
+    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format)
     {
-        int index = -1;
-        World world = sender.getEntityWorld();
+        Entity entity = source.getEntity();
+        BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
+        List<String> lines = biomeLocator.getClosestBiomePositions(format);
 
-        switch (countSubCommand)
-        {
-            case "search":
-                if (args.length == 5)
-                    index = 4;
-                else if (args.length == 3)
-                    index = 2;
-                break;
-        }
+        OutputUtils.printOutput(lines, outputType, format, "biome_locate", source);
 
-        if (index >= 0 && args.length > index)
-        {
-            String dimStr = args[index];
-
-            try
-            {
-                int dimension = Integer.parseInt(dimStr);
-                world = server.getWorld(dimension);
-            }
-            catch (NumberFormatException e)
-            {
-                throw new NumberInvalidException("Invalid dimension '%s'", dimStr);
-            }
-
-            if (world == null)
-            {
-                throw new NumberInvalidException("Could not load dimension '%s'", dimStr);
-            }
-        }
-
-        return world;
+        return 1;
     }
 
-    private BiomeLocator getBiomeLocatorForPlayer(EntityPlayer player)
+    private static BiomeLocator getBiomeLocatorFor(@Nullable Entity entity)
     {
-        BiomeLocator locator = this.biomeLocators.get(player.getUniqueID());
-
-        if (locator == null)
+        if (entity == null)
         {
-            locator = new BiomeLocator();
-            this.biomeLocators.put(player.getUniqueID(), locator);
+            return CONSOLE_BIOME_LOCATOR;
         }
 
-        return locator;
+        return BIOME_LOCATORS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeLocator());
     }
 }

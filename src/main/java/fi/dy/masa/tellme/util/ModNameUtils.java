@@ -4,58 +4,41 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 
 public class ModNameUtils
 {
-    private static final Map<String, String> MOD_NAMES = new HashMap<String, String>();
+    private static final Map<String, String> MOD_IDS_TO_NAMES = new HashMap<>();
 
     public static String getModName(ResourceLocation rl)
     {
-        String domain = rl.getNamespace();
-        String modName = MOD_NAMES.get(domain);
+        if (MOD_IDS_TO_NAMES.isEmpty())
+        {
+            for (ModInfo modInfo : ModList.get().getMods())
+            {
+                String modName = TextFormatting.getTextWithoutFormattingCodes(modInfo.getDisplayName());
+                MOD_IDS_TO_NAMES.put(modInfo.getModId(), modName);
+            }
+        }
+
+        String modId = rl.getNamespace();
+        String modName = MOD_IDS_TO_NAMES.get(modId);
 
         if (modName == null)
         {
-            if (domain.equalsIgnoreCase("minecraft"))
+            if (modId.equalsIgnoreCase("minecraft"))
             {
                 modName = "Minecraft";
             }
             else
             {
-                ModContainer mc = getModContainer(domain);
-                modName = mc != null ? mc.getName() : "Unknown";
-
-                if (modName == null)
-                {
-                    modName = "Unknown";
-                }
+                modName = "Unknown";
             }
 
-            modName = TextFormatting.getTextWithoutFormattingCodes(modName);
-            MOD_NAMES.put(domain, modName);
+            MOD_IDS_TO_NAMES.put(modId, modName);
         }
 
         return modName;
-    }
-
-    public static ModContainer getModContainer(String modId)
-    {
-        Map<String, ModContainer> modList = Loader.instance().getIndexedModList();
-        ModContainer modContainer = modList.get(modId);
-
-        if (modContainer == null)
-        {
-            for (ModContainer mc : modList.values())
-            {
-                if (mc.getModId().equalsIgnoreCase(modId))
-                {
-                    return mc;
-                }
-            }
-        }
-
-        return modContainer;
     }
 }

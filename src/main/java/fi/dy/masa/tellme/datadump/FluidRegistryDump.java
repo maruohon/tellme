@@ -1,37 +1,39 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.util.ResourceLocation;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import net.minecraftforge.fluids.FluidAttributes;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class FluidRegistryDump extends DataDump
+public class FluidRegistryDump
 {
-    private FluidRegistryDump(Format format)
+    public static List<String> getFormattedFluidRegistryDump(DataDump.Format format)
     {
-        super(8, format);
-    }
+        DataDump fluidRegistryDump = new DataDump(8, format);
 
-    public static List<String> getFormattedFluidRegistryDump(Format format)
-    {
-        FluidRegistryDump fluidRegistryDump = new FluidRegistryDump(format);
-        Iterator<Map.Entry<String, Fluid>> iter = FluidRegistry.getRegisteredFluids().entrySet().iterator();
-
-        while (iter.hasNext())
+        for (Map.Entry<ResourceLocation, Fluid> entry : ForgeRegistries.FLUIDS.getEntries())
         {
-            Map.Entry<String, Fluid> entry = iter.next();
             Fluid fluid = entry.getValue();
-            String name = entry.getKey();
-            String density = String.valueOf(fluid.getDensity());
-            String temp = String.valueOf(fluid.getTemperature());
-            String viscosity = String.valueOf(fluid.getViscosity());
-            String luminosity = String.valueOf(fluid.getLuminosity());
-            String isGaseous = String.valueOf(fluid.isGaseous());
-            String rarity = fluid.getRarity().toString();
-            String block = fluid.getBlock() != null ? fluid.getBlock().getRegistryName().toString() : "-";
+            String name = entry.getKey().toString();
 
-            fluidRegistryDump.addData(name, density, temp, viscosity, luminosity, rarity, isGaseous, block);
+            FluidAttributes attr = fluid.getAttributes();
+            String density = String.valueOf(attr.getDensity());
+            String temp = String.valueOf(attr.getTemperature());
+            String viscosity = String.valueOf(attr.getViscosity());
+            String luminosity = String.valueOf(attr.getLuminosity());
+            String isGaseous = String.valueOf(attr.isGaseous());
+            String rarity = attr.getRarity().toString();
+            BlockState blockState = fluid.getDefaultState().getBlockState();
+            Block block = blockState.getBlock();
+            String blockName = block != null && block != Blocks.AIR && block.getRegistryName() != null ? block.getRegistryName().toString() : "-";
+
+            fluidRegistryDump.addData(name, density, temp, viscosity, luminosity, rarity, isGaseous, blockName);
         }
 
         fluidRegistryDump.addTitle("Name", "Density", "Temperature", "Viscosity", "Luminosity", "Rarity", "isGaseous", "Block");
@@ -41,8 +43,6 @@ public class FluidRegistryDump extends DataDump
         fluidRegistryDump.setColumnProperties(3, Alignment.RIGHT, true); // viscosity
         fluidRegistryDump.setColumnProperties(4, Alignment.RIGHT, true); // luminosity
         fluidRegistryDump.setColumnAlignment(6, Alignment.RIGHT); // isGaseous
-
-        fluidRegistryDump.setUseColumnSeparator(true);
 
         return fluidRegistryDump.getLines();
     }

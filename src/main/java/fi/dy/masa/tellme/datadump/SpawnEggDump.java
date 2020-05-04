@@ -1,36 +1,35 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import net.minecraft.entity.EntityList;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.SpawnEggItem;
+import fi.dy.masa.tellme.TellMe;
 
-public class SpawnEggDump extends DataDump
+public class SpawnEggDump
 {
-    protected SpawnEggDump(Format format)
+    public static List<String> getFormattedSpawnEggDump(DataDump.Format format)
     {
-        super(4, format);
-    }
+        DataDump spawnEggDump = new DataDump(4, format);
 
-    public static List<String> getFormattedSpawnEggDump(Format format)
-    {
-        SpawnEggDump spawnEggDump = new SpawnEggDump(format);
-        Iterator<Map.Entry<ResourceLocation, EntityList.EntityEggInfo>> iter = EntityList.ENTITY_EGGS.entrySet().iterator();
-
-        while (iter.hasNext())
+        for (SpawnEggItem egg : SpawnEggItem.getEggs())
         {
-            Map.Entry<ResourceLocation, EntityList.EntityEggInfo> entry = iter.next();
-            EntityList.EntityEggInfo egg = entry.getValue();
+            try
+            {
+                String id = egg.getRegistryName().toString();
 
-            String colorPrimary = String.format("0x%08X (%10d)", egg.primaryColor, egg.primaryColor);
-            String colorSecondary = String.format("0x%08X (%10d)", egg.secondaryColor, egg.secondaryColor);
+                int primaryColor = egg.getColor(0);
+                int secondaryColor = egg.getColor(1);
+                String colorPrimary = String.format("0x%08X (%10d)", primaryColor, primaryColor);
+                String colorSecondary = String.format("0x%08X (%10d)", secondaryColor, secondaryColor);
 
-            spawnEggDump.addData(entry.getKey().toString(), egg.spawnedID.toString(), colorPrimary, colorSecondary);
+                spawnEggDump.addData(id, egg.getType(null).getRegistryName().toString(), colorPrimary, colorSecondary);
+            }
+            catch (Exception e)
+            {
+                TellMe.logger.warn("Exception while dumping spawn eggs", e);
+            }
         }
 
         spawnEggDump.addTitle("Registry Name", "Spawned ID", "Egg primary color", "Egg secondary color");
-        spawnEggDump.setUseColumnSeparator(true);
 
         return spawnEggDump.getLines();
     }

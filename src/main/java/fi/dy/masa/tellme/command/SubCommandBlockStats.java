@@ -1,346 +1,331 @@
 package fi.dy.masa.tellme.command;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.DimensionArgument;
+import net.minecraft.command.arguments.ILocationArgument;
+import net.minecraft.command.arguments.Vec2Argument;
+import net.minecraft.command.arguments.Vec3Argument;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.CommandUtils.AreaType;
+import fi.dy.masa.tellme.command.CommandUtils.IDimensionRetriever;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
+import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.BlockStats;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class SubCommandBlockStats extends SubCommand
+public class SubCommandBlockStats
 {
-    private final Map<UUID, BlockStats> blockStats = Maps.newHashMap();
-    private final BlockStats blockStatsConsole = new BlockStats();
+    private static final Map<UUID, BlockStats> BLOCK_STATS = new HashMap<>();
+    private static final BlockStats CONSOLE_BLOCK_STATS = new BlockStats();
 
-    public SubCommandBlockStats(CommandTellme baseCommand)
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        super(baseCommand);
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("block-stats").executes(c -> printHelp(c.getSource())).build();
 
-        this.subSubCommands.add("count");
-        this.subSubCommands.add("count-append");
-        this.subSubCommands.add("dump");
-        this.subSubCommands.add("dump-csv");
-        this.subSubCommands.add("query");
+        subCommandRootNode.addChild(createCountNodes("count", false));
+        subCommandRootNode.addChild(createCountNodes("count-append", true));
+        subCommandRootNode.addChild(createOutputDataNodes());
 
-        this.addSubCommandHelp("_generic", "Calculates the number of each block type in a given area");
-        this.addSubCommandHelp("count", "Counts all the blocks in the given area");
-        this.addSubCommandHelp("dump", "Dumps the stats from a previous 'count' command into a file in config/tellme/");
-        this.addSubCommandHelp("dump-csv", "Dumps the stats from a previous 'count' command into a CSV file in config/tellme/");
-        this.addSubCommandHelp("query", "Prints the stats from a previous 'count' command into the console");
+        return subCommandRootNode;
     }
 
-    @Override
-    public String getName()
+    private static LiteralCommandNode<CommandSource> createCountNodes(String command, boolean isAppend)
     {
-        return "blockstats";
+        LiteralCommandNode<CommandSource> actionNodeCount = Commands.literal(command).build();
+
+        actionNodeCount.addChild(createCountNodeAllLoadedChunks(isAppend));
+        actionNodeCount.addChild(createCountNodeArea(isAppend));
+        actionNodeCount.addChild(createCountNodeBox(isAppend));
+        actionNodeCount.addChild(createCountNodeRange(isAppend));
+
+        return actionNodeCount;
     }
 
-    private void printUsageCount(ICommandSender sender)
+    // tellme output-data <to-chat | to-console | to-file> <ascii | csv> [sort-by-count] [modid:block] [modid:block] ...
+    private static LiteralCommandNode<CommandSource> createOutputDataNodes()
     {
-        String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " count all-loaded-chunks [dimension]"));
-        sender.sendMessage(new TextComponentString(pre + " count chunk-radius <radius> [dimension] [x y z (of the center)]"));
-        sender.sendMessage(new TextComponentString(pre + " count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]"));
-        sender.sendMessage(new TextComponentString(pre + " count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]"));
+        LiteralCommandNode<CommandSource> actionNodeOutputData = Commands.literal("output-data").build();
+
+        ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
+                .executes(c -> outputData(c.getSource(),
+                        c.getArgument("output_type", OutputType.class),
+                        DataDump.Format.ASCII,
+                        false))
+                .build();
+
+        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
+                .executes(c -> outputData(c.getSource(),
+                        c.getArgument("output_type", OutputType.class),
+                        c.getArgument("output_format", DataDump.Format.class),
+                        false))
+                .build();
+
+        LiteralCommandNode<CommandSource> argSortByCount = Commands.literal("sort-by-count")
+                .executes(c -> outputData(c.getSource(),
+                        c.getArgument("output_type", OutputType.class),
+                        c.getArgument("output_format", DataDump.Format.class),
+                        true))
+                .build();
+
+        @SuppressWarnings("unchecked")
+        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersNoSort = Commands.argument("block_filters",
+                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+                .executes(ctx -> outputData(ctx.getSource(),
+                        ctx.getArgument("output_type", OutputType.class),
+                        ctx.getArgument("output_format", DataDump.Format.class),
+                        false,
+                        ctx.getArgument("block_filters", List.class)))
+                .build();
+
+        @SuppressWarnings("unchecked")
+        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersSort = Commands.argument("block_filters",
+                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+                .executes(ctx -> outputData(ctx.getSource(),
+                        ctx.getArgument("output_type", OutputType.class),
+                        ctx.getArgument("output_format", DataDump.Format.class),
+                        true,
+                        ctx.getArgument("block_filters", List.class)))
+                .build();
+
+        actionNodeOutputData.addChild(argOutputType);
+        argOutputType.addChild(argOutputFormat);
+
+        argOutputFormat.addChild(argSortByCount);
+        argOutputFormat.addChild(argBlockFiltersNoSort);
+
+        argSortByCount.addChild(argBlockFiltersSort);
+
+        return actionNodeOutputData;
     }
 
-    private void printUsageDump(ICommandSender sender)
+    private static LiteralCommandNode<CommandSource> createCountNodeAllLoadedChunks(boolean isAppend)
     {
-        String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " dump[-csv] [sort-by-count] [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.LOADED.getArgument())
+                .executes(c -> countBlocksLoadedChunks(c.getSource(),
+                          CommandUtils::getDimensionFromSource, isAppend)).build();
+
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBlocksLoadedChunks(c.getSource(),
+                          (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argDimension);
+
+        return argAreaType;
     }
 
-    private void printUsageQuery(ICommandSender sender)
+    private static LiteralCommandNode<CommandSource> createCountNodeArea(boolean isAppend)
     {
-        String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " query [sort-by-count] [modid:blockname[:meta] modid:blockname[:meta] ...]"));
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.AREA.getArgument()).build();
+
+        ArgumentCommandNode<CommandSource, ILocationArgument> argStartCorner = Commands.argument("start_corner", Vec2Argument.vec2()).build();
+        ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec2Argument.vec2())
+                .executes(c -> countBlocksArea(c.getSource(),
+                        Vec2Argument.getVec2f(c, "start_corner"),
+                        Vec2Argument.getVec2f(c, "end_corner"),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBlocksArea(c.getSource(),
+                        Vec2Argument.getVec2f(c, "start_corner"),
+                        Vec2Argument.getVec2f(c, "end_corner"),
+                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argStartCorner);
+        argStartCorner.addChild(argEndCorner);
+        argEndCorner.addChild(argDimension);
+
+        return argAreaType;
     }
 
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    private static LiteralCommandNode<CommandSource> createCountNodeBox(boolean isAppend)
     {
-        if (args.length == 1)
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.BOX.getArgument()).build();
+
+        ArgumentCommandNode<CommandSource, ILocationArgument> argStartCorner = Commands.argument("start_corner", Vec3Argument.vec3()).build();
+        ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec3Argument.vec3())
+                .executes(c -> countBlocksBox(c.getSource(),
+                        Vec3Argument.getVec3(c, "start_corner"),
+                        Vec3Argument.getVec3(c, "end_corner"),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBlocksBox(c.getSource(),
+                        Vec3Argument.getVec3(c, "start_corner"),
+                        Vec3Argument.getVec3(c, "end_corner"),
+                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argStartCorner);
+        argStartCorner.addChild(argEndCorner);
+        argEndCorner.addChild(argDimension);
+
+        return argAreaType;
+    }
+
+    private static LiteralCommandNode<CommandSource> createCountNodeRange(boolean isAppend)
+    {
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.RANGE.getArgument()).build();
+
+        ArgumentCommandNode<CommandSource, Integer> argChunkBlockRange = Commands.argument("block_range", IntegerArgumentType.integer(0, 8192))
+                .executes(c -> countBlocksRange(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "block_range"),
+                        CommandUtils.getVec3dFromSource(c.getSource()),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec3Argument.vec3())
+                .executes(c -> countBlocksRange(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "block_range"),
+                        CommandUtils.getVec3dFromArg(c, "center"),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBlocksRange(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "block_range"),
+                        CommandUtils.getVec3dFromArg(c, "center"),
+                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argChunkBlockRange);
+        argChunkBlockRange.addChild(argCenter);
+        argCenter.addChild(argDimension);
+
+        return argAreaType;
+    }
+
+    private static int countBlocksRange(CommandSource source, int range, Vec3d center,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        BlockPos centerPos = new BlockPos(center);
+        BlockPos minPos = new BlockPos(centerPos.getX() - range, Math.max(  0, centerPos.getY() - range), centerPos.getZ() - range);
+        BlockPos maxPos = new BlockPos(centerPos.getX() + range, Math.min(255, centerPos.getY() + range), centerPos.getZ() + range);
+
+        return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
+    }
+
+    private static int countBlocksBox(CommandSource source, Vec3d corner1, Vec3d corner2,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        BlockPos minPos = new BlockPos(corner1);
+        BlockPos maxPos = new BlockPos(corner2);
+
+        return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
+    }
+
+    private static int countBlocksArea(CommandSource source, Vec2f corner1, Vec2f corner2,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
+        BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
+
+        return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
+    }
+
+    private static int countBlocksBox(CommandSource source, BlockPos minPos, BlockPos maxPos,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        BlockStats blockStats = getBlockStatsFor(source.getEntity());
+
+        CommandUtils.sendMessage(source, "Counting blocks...");
+
+        blockStats.setAppend(isAppend);
+        blockStats.processChunks(world, minPos, maxPos);
+
+        CommandUtils.sendMessage(source, "Done");
+
+        return 1;
+    }
+
+    private static int countBlocksLoadedChunks(CommandSource source, IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        BlockStats blockStats = getBlockStatsFor(source.getEntity());
+
+        CommandUtils.sendMessage(source, "Counting blocks...");
+
+        blockStats.setAppend(isAppend);
+        blockStats.processChunks(TellMe.dataProvider.getLoadedChunks(world));
+
+        CommandUtils.sendMessage(source, "Done");
+
+        return 1;
+    }
+
+    private static int printHelp(CommandSource source)
+    {
+        CommandUtils.sendMessage(source, "Calculates the number of blocks in a given area");
+        CommandUtils.sendMessage(source, "Usage: /tellme block-stats count[-append] all-loaded-chunks [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme block-stats count[-append] area <x1> <z1> <x2> <z2> [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme block-stats count[-append] box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme block-stats count[-append] range <block_range> [x y z (of the center)] [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme block-stats output-data <to-chat | to-console | to-file> <ascii | csv> <by-block | by-state> [sort-by-count] [modid:block] [modid:block] ...");
+        CommandUtils.sendMessage(source, "- count: Clears previously stored results, and then counts all the blocks in the given area");
+        CommandUtils.sendMessage(source, "- count-append: Counts all the blocks in the given area, appending the data to the previously stored results");
+        CommandUtils.sendMessage(source, "- output-data: Outputs the stored data from previous count operations to the selected output location.");
+        CommandUtils.sendMessage(source, "- output-data: The 'file' output's dump files will go to 'config/tellme/'.");
+        CommandUtils.sendMessage(source, "- output-data: If you give some block names, then only the data for those given blocks will be included in the output");
+
+        return 1;
+    }
+
+    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount) throws CommandSyntaxException
+    {
+        return outputData(source, outputType, format, sortByCount, null);
+    }
+
+    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
+    {
+        BlockStats blockStats = getBlockStatsFor(source.getEntity());
+        List<String> lines;
+
+        // We have some filters specified
+        if (filters != null && filters.isEmpty() == false)
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "count", "count-append", "dump", "dump-csv", "query");
-        }
-        else if (args.length >= 2)
-        {
-            if (args.length == 2 && args[0].equals("count"))
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, "all-loaded-chunks", "box", "chunk-radius", "range");
-            }
-            else if (args[0].equals("dump") || args[0].equals("dump-csv") || args[0].equals("query"))
-            {
-                if (args.length == 2)
-                {
-                    if (CommandBase.doesStringStartWith(args[1], "sort-by-count"))
-                    {
-                        return ImmutableList.of("sort-by-count");
-                    }
-                    else
-                    {
-                        return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
-                    }
-                }
-                else
-                {
-                    return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BLOCKS.getKeys());
-                }
-            }
-            else if (args.length >= 3 && args.length <= 8 && args[0].equals("count") && args[1].equals("box"))
-            {
-                int index = args.length >= 3 && args.length <= 5 ? 2 : 5;
-                return CommandBase.getTabCompletionCoordinate(args, index, targetPos);
-            }
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-    {
-        // "/tellme bockstats"
-        if (args.length < 1)
-        {
-            this.sendMessage(sender, "Usage:");
-            this.printUsageCount(sender);
-            this.printUsageDump(sender);
-            this.printUsageQuery(sender);
-            return;
-        }
-
-        super.execute(server, sender, args);
-
-        String cmd = args[0];
-        args = dropFirstStrings(args, 1);
-        BlockStats blockStats = sender instanceof EntityPlayer ? this.getBlockStatsForPlayer((EntityPlayer) sender) : this.blockStatsConsole;
-
-        // "/tellme blockstats count ..."
-        if ((cmd.equals("count") || cmd.equals("count-append")) && args.length >= 1)
-        {
-            // Possible command formats are:
-            // count all-loaded-chunks [dimension]
-            // count chunk-radius <radius> [dimension] [x y z (of the center)]
-            // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]
-            // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
-            String type = args[0];
-            args = dropFirstStrings(args, 1);
-            blockStats.setAppend(cmd.equals("count-append"));
-
-            // Get the world - either the player's current world, or the one based on the provided dimension ID
-            World world = this.getWorld(type, args, sender, server);
-            BlockPos pos = sender instanceof EntityPlayer ? sender.getPosition() : WorldUtils.getSpawnPoint(world);
-            String pre = this.getSubCommandUsagePre();
-
-            // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]
-            if (type.equals("range") && (args.length == 3 || args.length == 4 || args.length == 7))
-            {
-                try
-                {
-                    if (args.length == 7)
-                    {
-                        int x = CommandBase.parseInt(args[4]);
-                        int y = CommandBase.parseInt(args[5]);
-                        int z = CommandBase.parseInt(args[6]);
-                        pos = new BlockPos(x, y, z);
-                    }
-
-                    int rx = Math.abs(CommandBase.parseInt(args[0]));
-                    int ry = Math.abs(CommandBase.parseInt(args[1]));
-                    int rz = Math.abs(CommandBase.parseInt(args[2]));
-
-                    this.sendMessage(sender, "Counting blocks...");
-
-                    blockStats.processChunks(world, pos, rx, ry, rz);
-
-                    this.sendMessage(sender, "Done");
-                }
-                catch (NumberInvalidException e)
-                {
-                    throw new WrongUsageException(pre + " count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]");
-                }
-            }
-            // count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]
-            else if (type.equals("box") && (args.length == 6 || args.length == 7))
-            {
-                try
-                {
-                    BlockPos pos1 = parseBlockPos(pos, args, 0, false);
-                    BlockPos pos2 = parseBlockPos(pos, args, 3, false);
-
-                    this.sendMessage(sender, "Counting blocks...");
-
-                    blockStats.processChunks(world, pos1, pos2);
-
-                    this.sendMessage(sender, "Done");
-                }
-                catch (NumberInvalidException e)
-                {
-                    throw new WrongUsageException("Usage: " + pre + " count box <x1> <y1> <z1> <x2> <y2> <z2> [dimension]");
-                }
-            }
-            // count all-loaded-chunks [dimension]
-            else if (type.equals("all-loaded-chunks") && (args.length == 0 || args.length == 1))
-            {
-                this.sendMessage(sender, "Counting blocks...");
-
-                blockStats.processChunks(TellMe.proxy.getLoadedChunks(world));
-
-                this.sendMessage(sender, "Done");
-            }
-            // count chunk-radius <radius> [dimension] [x y z (of the center)]
-            else if (type.equals("chunk-radius") && (args.length == 1 || args.length == 2 || args.length == 5))
-            {
-                if (args.length == 5)
-                {
-                    int x = CommandBase.parseInt(args[2]);
-                    int y = CommandBase.parseInt(args[3]);
-                    int z = CommandBase.parseInt(args[4]);
-                    pos = new BlockPos(x, y, z);
-                }
-
-                int radius = 0;
-
-                try
-                {
-                    radius = Integer.parseInt(args[0]);
-                }
-                catch (NumberFormatException e)
-                {
-                    throw new WrongUsageException(pre + " count chunk-radius <radius> [dimension] [x y z (of the center)]");
-                }
-
-                int chunkCount = (radius * 2 + 1) * (radius * 2 + 1);
-
-                this.sendMessage(sender, "Loading all the " + chunkCount + " chunks in the given radius of " + radius + " chunks ...");
-
-                List<Chunk> chunks = WorldUtils.loadAndGetChunks(world, pos, radius);
-
-                this.sendMessage(sender, "Counting blocks in the selected " + chunks.size() + " chunks...");
-
-                blockStats.processChunks(chunks);
-
-                this.sendMessage(sender, "Done");
-            }
-            else
-            {
-                this.printUsageCount(sender);
-                throw new CommandException("Invalid (number of?) arguments!");
-            }
-        }
-        // "/tellme blockstats query ..." or "/tellme blockstats dump ..."
-        else if (cmd.equals("query") || cmd.equals("dump") || cmd.equals("dump-csv"))
-        {
-            List<String> lines;
-            Format format = cmd.equals("dump-csv") ? Format.CSV : Format.ASCII;
-            boolean sortByCount = args.length >= 1 && args[0].equals("sort-by-count");
-
-            if (sortByCount)
-            {
-                args = dropFirstStrings(args, 1);
-            }
-
-            // We have some filters specified
-            if (args.length >= 1)
-            {
-                lines = blockStats.query(format, Arrays.asList(args), sortByCount);
-            }
-            else
-            {
-                lines = blockStats.queryAll(format, sortByCount);
-            }
-
-            if (cmd.equals("query"))
-            {
-                DataDump.printDataToLogger(lines);
-                this.sendMessage(sender, "Command output printed to console");
-            }
-            else
-            {
-                File file = DataDump.dumpDataToFile("block_stats", lines, format);
-
-                if (file != null)
-                {
-                    sendClickableLinkMessage(sender, "Output written to file %s", file);
-                }
-            }
+            lines = blockStats.query(format, filters, sortByCount);
         }
         else
         {
-            this.sendMessage(sender, "Usage:");
-            this.printUsageCount(sender);
-            this.printUsageDump(sender);
-            this.printUsageQuery(sender);
+            lines = blockStats.queryAll(format, sortByCount);
         }
+
+        OutputUtils.printOutput(lines, outputType, format, "block_stats", source);
+
+        return 1;
     }
 
-    private World getWorld(String countSubCommand, String[] args, ICommandSender sender, MinecraftServer server) throws CommandException
+    private static BlockStats getBlockStatsFor(@Nullable Entity entity)
     {
-        int index = -1;
-        World world = sender.getEntityWorld();
-
-        switch (countSubCommand)
+        if (entity == null)
         {
-            case "all-loaded-chunks":   index = 0; break;
-            case "chunk-radius":        index = 1; break;
-            case "range":               index = 3; break;
-            case "box":                 index = 6; break;
+            return CONSOLE_BLOCK_STATS;
         }
 
-        if (index >= 0 && args.length > index)
-        {
-            String dimStr = args[index];
-
-            try
-            {
-                int dimension = Integer.parseInt(dimStr);
-                world = server.getWorld(dimension);
-            }
-            catch (NumberFormatException e)
-            {
-                throw new NumberInvalidException("Invalid dimension '%s'", dimStr);
-            }
-
-            if (world == null)
-            {
-                throw new NumberInvalidException("Could not load dimension '%s'", dimStr);
-            }
-        }
-
-        return world;
-    }
-
-    private BlockStats getBlockStatsForPlayer(EntityPlayer player)
-    {
-        BlockStats stats = this.blockStats.get(player.getUniqueID());
-
-        if (stats == null)
-        {
-            stats = new BlockStats();
-            this.blockStats.put(player.getUniqueID(), stats);
-        }
-
-        return stats;
+        return BLOCK_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BlockStats());
     }
 }

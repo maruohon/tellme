@@ -1,71 +1,81 @@
 package fi.dy.masa.tellme.command;
 
 import java.util.List;
-import javax.annotation.Nullable;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.World;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
+import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.RayTraceUtils;
 
-public class SubCommandLookingAt extends SubCommand
+public class SubCommandLookingAt
 {
-    public SubCommandLookingAt(CommandTellme baseCommand)
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        super(baseCommand);
-        this.subSubCommands.add("dump");
-        this.subSubCommands.add("print");
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("looking-at")
+                .executes(c -> execute(OutputType.CHAT, c.getSource(), false)).build();
+
+        ArgumentCommandNode<CommandSource, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create())
+                .executes(c -> execute(c.getArgument("output_type", OutputType.class), c.getSource(), false)).build();
+
+        LiteralCommandNode<CommandSource> adjacentNode = Commands.literal("adjacent")
+                .executes(c -> execute(c.getArgument("output_type", OutputType.class), c.getSource(), true)).build();
+
+        subCommandRootNode.addChild(outputTypeNode);
+        outputTypeNode.addChild(adjacentNode);
+
+        return subCommandRootNode;
     }
 
-    @Override
-    public String getName()
+    private static int execute(OutputType outputType, CommandSource source, boolean adjacent) throws CommandSyntaxException
     {
-        return "lookingat";
-    }
-
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
-    {
-        if (args.length == 2)
+        if (source.getEntity() == null)
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "adjacent");
+            throw CommandUtils.NOT_AN_ENTITY_EXCEPTION.create();
         }
 
-        return super.getTabCompletions(server, sender, args, targetPos);
+        handleLookedAtObject(source.getEntity(), outputType, adjacent);
+        return 1;
     }
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+    private static void handleLookedAtObject(Entity entity, OutputType outputType, boolean adjacent)
     {
-        super.execute(server, sender, args);
+        World world = entity.getEntityWorld();
+        RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(world, entity, true, 10d);
+        List<String> lines = null;
+        String fileName = "looking_at_";
 
-        if (args.length >= 1 && (args[0].equals("dump") || args[0].equals("print")) && sender instanceof EntityPlayer)
+        if (trace.getType() == RayTraceResult.Type.BLOCK)
         {
-            this.handleLookedAtObject((EntityPlayer) sender, args.length == 2 && args[1].equals("adjacent"), args[0].equals("dump"));
+            lines = BlockInfo.getBlockInfoFromRayTracedTarget(world, entity, trace, adjacent, outputType == OutputType.CHAT);
+            fileName += "block";
         }
-    }
-
-    private void handleLookedAtObject(EntityPlayer player, boolean adjacent, boolean dumpToFile)
-    {
-        RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(player.getEntityWorld(), player, true, 10d);
-
-        if (trace.typeOfHit == RayTraceResult.Type.BLOCK)
+        else if (trace.getType() == RayTraceResult.Type.ENTITY)
         {
-            BlockInfo.getBlockInfoFromRayTracedTarget(player.getEntityWorld(), player, trace, adjacent, dumpToFile);
+            lines = EntityInfo.getFullEntityInfo(((EntityRayTraceResult) trace).getEntity(), outputType == OutputType.CHAT);
+            fileName += "entity";
         }
-        else if (trace.typeOfHit == RayTraceResult.Type.ENTITY)
+
+        if (lines != null && lines.isEmpty() == false)
         {
-            EntityInfo.printEntityInfo(player, trace.entityHit, dumpToFile);
+            OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, fileName, entity);
         }
         else
         {
-            player.sendMessage(new TextComponentString("Not currently looking at anything within range"));
+            entity.sendMessage(new StringTextComponent("Not currently looking at anything within range"));
         }
     }
 }

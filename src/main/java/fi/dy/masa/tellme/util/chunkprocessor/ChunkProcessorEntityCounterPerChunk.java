@@ -8,14 +8,18 @@ import java.util.Map;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.datadump.DataDump;
 
-public class EntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
+public class ChunkProcessorEntityCounterPerChunk extends ChunkProcessorBase
 {
-    private Map<ChunkPos, Integer> perChunkCount = new HashMap<ChunkPos, Integer>();
+    private final Map<ChunkPos, Integer> perChunkCount = new HashMap<>();
     private int totalCount;
+
+    public ChunkProcessorEntityCounterPerChunk(DataDump.Format format)
+    {
+        super(format);
+    }
 
     @Override
     public void processChunk(Chunk chunk)
@@ -28,21 +32,25 @@ public class EntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
             total += entityLists[i].size();
         }
 
-        if (total == 0)
+        if (total > 0)
         {
-            this.chunksWithZeroCount++;
+            this.perChunkCount.put(chunk.getPos(), total);
+        }
+
+        if (total > 0)
+        {
+            this.totalCount += total;
         }
         else
         {
-            this.perChunkCount.put(chunk.getPos(), total);
-            this.totalCount += total;
+            ++this.chunksWithZeroCount;
         }
     }
 
     @Override
-    public EntityCountDump createDump(World world)
+    public DataDump getDump()
     {
-        List<CountsPerChunkHolder> counts = new ArrayList<CountsPerChunkHolder>();
+        List<CountsPerChunkHolder> counts = new ArrayList<>();
 
         for (ChunkPos pos : this.perChunkCount.keySet())
         {
@@ -51,8 +59,18 @@ public class EntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
 
         Collections.sort(counts);
 
-        EntityCountDump dump = new EntityCountDump(3);
+        DataDump dump = new DataDump(3, this.format);
+
+        dump.setSort(true).setSortReverse(true);
+        dump.setRepeatTitleAtBottom(false);
+
         dump.addTitle("Count", "Chunk", "Region");
+
+        final int loadedChunks = this.getLoadedChunkCount();
+        final int zeroCount = this.getChunksWithZeroCount();
+
+        dump.addHeader(String.format("The selected area contains %d loaded chunks", loadedChunks));
+        dump.addHeader(String.format("and %d unloaded chunks.", this.getUnloadedChunkCount()));
         dump.addHeader("Loaded entities by chunk:");
 
         for (CountsPerChunkHolder holder : counts)
@@ -64,7 +82,13 @@ public class EntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
         }
 
         dump.addFooter(String.format("In total there were %d loaded entities in %d chunks.",
-                this.totalCount, this.getLoadedChunkCount() - this.chunksWithZeroCount));
+                this.totalCount, this.getLoadedChunkCount() - zeroCount));
+
+        if (zeroCount != 0)
+        {
+            dump.addFooter(String.format("Out of %d loaded chunks in total,", loadedChunks));
+            dump.addFooter(String.format("there were %d chunks with no entities.", zeroCount));
+        }
 
         return dump;
     }

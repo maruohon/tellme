@@ -1,9 +1,8 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 
 public class ModListDump
 {
@@ -11,18 +10,15 @@ public class ModListDump
     {
         DataDump dump = new DataDump(2, format);
 
-        Map<String, ModContainer> mods = Loader.instance().getIndexedModList();
-
-        for (Map.Entry<String, ModContainer> entry : mods.entrySet())
+        for (ModInfo modInfo : ModList.get().getMods())
         {
-            String modId = entry.getKey();
-            String modName = entry.getValue().getName();
+            String modId = modInfo.getModId();
+            String modName = modInfo.getDisplayName();
 
             dump.addData(modId, modName);
         }
 
-        dump.addTitle("ModID", "Mod name");
-        dump.setUseColumnSeparator(true);
+        dump.addTitle("Mod ID", "Mod name");
 
         return dump.getLines();
     }

@@ -4,10 +4,11 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class SoundEventDump
 {
@@ -18,7 +19,9 @@ public class SoundEventDump
         for (Map.Entry<ResourceLocation, SoundEvent> entry : ForgeRegistries.SOUND_EVENTS.getEntries())
         {
             String regName = entry.getKey().toString();
-            String id = String.valueOf(SoundEvent.REGISTRY.getIDForObject(entry.getValue()));
+
+            @SuppressWarnings("deprecation")
+            String id = String.valueOf(Registry.SOUND_EVENT.getId(entry.getValue()));
 
             soundEventDump.addData(regName, id);
         }
@@ -27,8 +30,6 @@ public class SoundEventDump
 
         soundEventDump.setColumnProperties(1, Alignment.RIGHT, true); // id
 
-        soundEventDump.setUseColumnSeparator(true);
-
         return soundEventDump.getLines();
     }
 
@@ -36,14 +37,12 @@ public class SoundEventDump
     {
         DataDump musicTypeDump = new DataDump(4, format);
 
-        TellMe.proxy.addMusicTypeData(musicTypeDump);
+        TellMe.dataProvider.addMusicTypeData(musicTypeDump);
 
         musicTypeDump.addTitle("Name", "SoundEvent", "MinDelay", "MaxDelay");
 
         musicTypeDump.setColumnProperties(2, Alignment.RIGHT, true); // min delay
         musicTypeDump.setColumnProperties(3, Alignment.RIGHT, true); // max delay
-
-        musicTypeDump.setUseColumnSeparator(true);
 
         return musicTypeDump.getLines();
     }

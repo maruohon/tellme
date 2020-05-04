@@ -1,21 +1,31 @@
 package fi.dy.masa.tellme.util.chunkprocessor;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
 
-public class EntitiesLister extends ChunkProcessorLoadedChunks
+public class EntitiesLister extends ChunkProcessorBase
 {
-    private List<Entity> entities = new ArrayList<Entity>();
+    private final DataDump dump;
     private int totalCount;
+
+    public EntitiesLister(DataDump.Format format)
+    {
+        super(format);
+
+        DataDump dump = new DataDump(5, format);
+        dump.setColumnAlignment(1, Alignment.RIGHT); // health
+        dump.setSort(true);
+        dump.setRepeatTitleAtBottom(false);
+
+        dump.addTitle("Name", "Health", "Location", "Chunk", "Region");
+        dump.addHeader("All currently loaded entities:");
+
+        this.dump = dump;
+    }
 
     @Override
     public void processChunk(Chunk chunk)
@@ -25,50 +35,44 @@ public class EntitiesLister extends ChunkProcessorLoadedChunks
 
         for (int i = 0; i < entityLists.length; i++)
         {
-            Iterator<Entity> iter = entityLists[i].iterator();
+            ClassInheritanceMultiMap<Entity> map = entityLists[i];
 
-            while (iter.hasNext())
+            for (Entity entity : map)
             {
-                this.entities.add(iter.next());
+                double x = entity.posX;
+                double y = entity.posY;
+                double z = entity.posZ;
+                int ix = (int) Math.floor(x);
+                int iz = (int) Math.floor(z);
+
+                this.dump.addData(
+                        entity.getName().getString(),
+                        entity instanceof LivingEntity ? String.format("%.2f", ((LivingEntity) entity).getHealth()) : "-",
+                        String.format("x = %8.2f, y = %8.2f, z = %8.2f", x, y, z),
+                        String.format("[%5d, %5d]", ix >> 4, iz >> 4),
+                        String.format("r.%d.%d", ix >> 9, iz >> 9));
             }
 
             total += entityLists[i].size();
         }
 
-        if (total == 0)
+        if (total > 0)
         {
-            this.chunksWithZeroCount++;
+            this.totalCount += total;
         }
         else
         {
-            this.totalCount += total;
+            ++this.chunksWithZeroCount;
         }
     }
 
     @Override
-    public EntityCountDump createDump(World world)
+    public DataDump getDump()
     {
-        EntityCountDump dump = new EntityCountDump(5);
-        dump.addTitle("Name", "Health", "Location", "Chunk", "Region");
-        dump.addHeader("All currently loaded entities:");
-        dump.setColumnAlignment(1, Alignment.RIGHT); // health
-        dump.setSort(true);
-
-        for (Entity entity : this.entities)
-        {
-            BlockPos pos = entity.getPosition();
-
-            dump.addData(
-                    entity.getName(),
-                    entity instanceof EntityLivingBase ? String.format("%.2f", ((EntityLivingBase) entity).getHealth()) : "-",
-                    String.format("x = %8.2f, y = %8.2f, z = %8.2f", entity.posX, entity.posY, entity.posZ),
-                    String.format("[%5d, %5d]", pos.getX() >> 4, pos.getZ() >> 4),
-                    String.format("r.%d.%d", pos.getX() >> 9, pos.getZ() >> 9));
-        }
-
-        dump.addFooter(String.format("In total there were %d loaded entities in %d chunks.",
+        this.dump.clearFooter();
+        this.dump.addFooter(String.format("In total there were %d loaded entities in %d chunks.",
                 this.totalCount, this.getLoadedChunkCount() - this.chunksWithZeroCount));
 
-        return dump;
+        return this.dump;
     }
 }

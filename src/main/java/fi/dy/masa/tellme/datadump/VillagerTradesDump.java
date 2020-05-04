@@ -1,81 +1,64 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import net.minecraft.entity.passive.EntityVillager.ITradeList;
+import net.minecraft.entity.merchant.villager.VillagerProfession;
+import net.minecraft.entity.merchant.villager.VillagerTrades;
+import net.minecraft.entity.merchant.villager.VillagerTrades.ITrade;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.village.MerchantRecipe;
-import net.minecraft.village.MerchantRecipeList;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerCareer;
-import net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
+import net.minecraft.item.MerchantOffer;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 public class VillagerTradesDump
 {
     public static List<String> getFormattedVillagerTradesDump(DataDump.Format format)
     {
-        DataDump villagerProfessionDump = new DataDump(5, format);
-        Iterator<Map.Entry<ResourceLocation, VillagerProfession>> iter = ForgeRegistries.VILLAGER_PROFESSIONS.getEntries().iterator();
+        DataDump dump = new DataDump(6, format);
+        Random rand = new Random();
+        PlayerEntity player = null;
 
-        while (iter.hasNext())
+        for (Map.Entry<VillagerProfession, Int2ObjectMap<ITrade[]>> entry : VillagerTrades.VILLAGER_DEFAULT_TRADES.entrySet())
         {
-            Map.Entry<ResourceLocation, VillagerProfession> entry = iter.next();
-            List<VillagerCareer> careers = VillagerProfessionDump.getCareers(entry.getValue());
+            VillagerProfession profession = entry.getKey();
+            String regName = profession.getRegistryName().toString();
 
-            if (careers != null && entry.getKey() != null)
+            dump.addData(regName, profession.toString(), "", "", "", "");
+
+            for (int level = 0; level < 64; ++level)
             {
-                String regName = entry.getKey().toString();
+                ITrade[] trades = entry.getValue().get(level);
 
-                for (VillagerCareer career : careers)
+                if (trades == null)
                 {
-                    Random rand = new Random();
-                    MerchantRecipeList list = new MerchantRecipeList();
+                    break;
+                }
 
-                    for (int i = 0; i < 64; ++i)
+                dump.addData("", "", String.valueOf(level), "", "", "");
+
+                for (int i = 0; i < trades.length; ++i)
+                {
+                    MerchantOffer offer = trades[i].getOffer(player, rand);
+
+                    if (offer != null)
                     {
-                        List<ITradeList> trades = career.getTrades(i);
+                        ItemStack buy1 = offer.getBuyingStackFirst();
+                        ItemStack buy2 = offer.getBuyingStackSecond();
+                        ItemStack sell = offer.getSellingStack();
+                        String strBuy1 = buy1.isEmpty() == false ? buy1.getDisplayName().getString() : "";
+                        String strBuy2 = buy2.isEmpty() == false ? buy2.getDisplayName().getString() : "";
+                        String strSell = sell.isEmpty() == false ? sell.getDisplayName().getString() : "";
 
-                        if (trades == null)
-                        {
-                            break;
-                        }
-
-                        for (ITradeList trade : trades)
-                        {
-                            try
-                            {
-                                trade.addMerchantRecipe(null, list, rand);
-                            }
-                            catch (Exception e)
-                            {
-                                villagerProfessionDump.addData("", "", "?", "?", "[Exception. Treasure map?]");
-                            }
-                        }
-                    }
-
-                    villagerProfessionDump.addData(regName, career.getName(), "", "", "");
-
-                    for (MerchantRecipe recipe : list)
-                    {
-                        ItemStack buy1 = recipe.getItemToBuy();
-                        ItemStack buy2 = recipe.getSecondItemToBuy();
-                        ItemStack sell = recipe.getItemToSell();
-                        String strBuy1 = buy1.isEmpty() == false ? buy1.getDisplayName() : "";
-                        String strBuy2 = buy2.isEmpty() == false ? buy2.getDisplayName() : "";
-                        String strSell = sell.isEmpty() == false ? sell.getDisplayName() : "";
-                        villagerProfessionDump.addData("", "", strBuy1, strBuy2, strSell);
+                        dump.addData("", "", "", strBuy1, strBuy2, strSell);
                     }
                 }
             }
         }
 
-        villagerProfessionDump.addTitle("Registry name", "Career", "Buy 1", "Buy 2", "Sell");
-        villagerProfessionDump.setUseColumnSeparator(true);
-        villagerProfessionDump.setSort(false);
+        dump.addTitle("Registry name", "Profession", "Level", "Buy 1", "Buy 2", "Sell");
+        dump.setSort(false);
 
-        return villagerProfessionDump.getLines();
+        return dump.getLines();
     }
 }

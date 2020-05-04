@@ -1,91 +1,68 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.potion.Effect;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.EffectType;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.potion.PotionType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import fi.dy.masa.tellme.TellMe;
+import net.minecraft.util.registry.Registry;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class PotionTypeDump extends DataDump
+public class PotionTypeDump
 {
-    private static final Field field_isSplashPotion = ObfuscationReflectionHelper.findField(PotionEffect.class, "field_82723_d"); // isSplashPotion
-
-    protected PotionTypeDump(Format format)
+    public static List<String> getFormattedPotionTypeDump(DataDump.Format format)
     {
-        super(3, format);
-    }
+        DataDump potionTypeDump = new DataDump(3, format);
 
-    public static List<String> getFormattedPotionTypeDump(Format format)
-    {
-        PotionTypeDump potionTypeDump = new PotionTypeDump(format);
-        Iterator<Map.Entry<ResourceLocation, PotionType>> iter = ForgeRegistries.POTION_TYPES.getEntries().iterator();
-
-        while (iter.hasNext())
+        for (Map.Entry<ResourceLocation, Potion> entry : ForgeRegistries.POTION_TYPES.getEntries())
         {
-            Map.Entry<ResourceLocation, PotionType> entry = iter.next();
-            PotionType potionType = entry.getValue();
-
             String regName = entry.getKey().toString();
-            String id = String.valueOf(PotionType.REGISTRY.getIDForObject(potionType));
-            List<PotionEffect> effects = potionType.getEffects();
+            Potion potion = entry.getValue();
+
+            @SuppressWarnings("deprecation")
+            String id = String.valueOf(Registry.POTION.getId(potion));
+
+            List<EffectInstance> effects = potion.getEffects();
 
             potionTypeDump.addData(regName, id, String.join(", ", getEffectInfoLines(effects)));
         }
 
         potionTypeDump.addTitle("Registry name", "ID", "Effects");
-
         potionTypeDump.setColumnProperties(1, Alignment.RIGHT, true); // id
-
-        potionTypeDump.setUseColumnSeparator(true);
 
         return potionTypeDump.getLines();
     }
 
-    public static String getPotionInfo(Potion potion)
+    public static String getEffectInfo(Effect effect)
     {
-        String isBad = String.valueOf(potion.isBadEffect());
-        String isBeneficial = PotionDump.getIsBeneficial(potion);
+        String isBad = String.valueOf(effect.getEffectType() == EffectType.HARMFUL);
+        String isBeneficial = String.valueOf(effect.isBeneficial());
 
-        return "Potion:[reg:" + potion.getRegistryName().toString() + ",name:" + potion.getName() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
+        return "Potion:[reg:" + effect.getRegistryName().toString() + ",name:" + effect.getName() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
     }
 
-    public static String getPotionEffectInfo(PotionEffect effect)
+    public static String getPotionEffectInfo(EffectInstance effect)
     {
-        return String.format("PotionEffect:{%s,amplifier:%d,duration:%d,isSplashPotion:%s,isAmbient:%s}",
-                getPotionInfo(effect.getPotion()),
+        return String.format("PotionEffect:{%s,amplifier:%d,duration:%d,isAmbient:%s}",
+                getEffectInfo(effect.getPotion()),
                 effect.getAmplifier(),
                 effect.getDuration(),
-                getIsSplashPotion(effect),
-                effect.getIsAmbient());
+                effect.isAmbient());
     }
 
-    public static List<String> getEffectInfoLines(List<PotionEffect> effects)
+    public static List<String> getEffectInfoLines(List<EffectInstance> effects)
     {
         List<String> effectStrs = new ArrayList<String>();
-        for (PotionEffect effect : effects)
+
+        for (EffectInstance effect : effects)
         {
             effectStrs.add(getPotionEffectInfo(effect));
         }
-        return effectStrs;
-    }
 
-    public static String getIsSplashPotion(PotionEffect effect)
-    {
-        try
-        {
-            return String.valueOf(field_isSplashPotion.get(effect));
-        }
-        catch (Exception e)
-        {
-            TellMe.logger.warn("Failed to reflect PotionEffect#isSplashPotion", e);
-            return "";
-        }
+        return effectStrs;
     }
 }

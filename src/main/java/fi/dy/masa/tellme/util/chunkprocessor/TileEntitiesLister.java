@@ -1,35 +1,43 @@
 package fi.dy.masa.tellme.util.chunkprocessor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.util.BlockInfo;
 
-public class TileEntitiesLister extends ChunkProcessorLoadedChunks
+public class TileEntitiesLister extends ChunkProcessorBase
 {
-    private Multimap<ChunkPos, TileHolder> perChunkTiles = MultimapBuilder.hashKeys().arrayListValues().build();
+    private final DataDump dump;
     private int totalCount;
     private int tickingCount;
+
+    public TileEntitiesLister(DataDump.Format format)
+    {
+        super(format);
+
+        DataDump dump = new DataDump(6, format);
+
+        dump.setSort(true);
+        dump.setRepeatTitleAtBottom(false);
+
+        dump.addTitle("Region", "Chunk", "Position", "Tile", "Class", "Ticking");
+        dump.addHeader("Loaded TileEntities by chunk:");
+
+        this.dump = dump;
+    }
 
     @Override
     public void processChunk(Chunk chunk)
     {
         Map<BlockPos, TileEntity> map = chunk.getTileEntityMap();
-        ChunkPos pos = chunk.getPos();
         int count = chunk.getTileEntityMap().size();
 
         if (count == 0)
         {
-            this.chunksWithZeroCount++;
+            ++this.chunksWithZeroCount;
         }
         else
         {
@@ -38,12 +46,25 @@ public class TileEntitiesLister extends ChunkProcessorLoadedChunks
             for (Map.Entry<BlockPos, TileEntity> entry : map.entrySet())
             {
                 TileEntity te = entry.getValue();
-                this.perChunkTiles.put(pos, new TileHolder(entry.getKey(), te.getClass()));
+                boolean ticking = false;
 
-                if (te instanceof ITickable)
+                if (te instanceof ITickableTileEntity)
                 {
                     tickingCount++;
+                    ticking = true;
                 }
+
+                BlockPos pos = te.getPos();
+                int x = pos.getX();
+                int z = pos.getZ();
+
+                this.dump.addData(
+                        String.format("r.%d.%d", x >> 9, z >> 9),
+                        String.format("[%5d, %5d]", x >> 4, z >> 4),
+                        String.format("%6d, %3d, %6d", x, pos.getY(), z),
+                        BlockInfo.getBlockEntityNameFor(te.getType()),
+                        te.getClass().getName(),
+                        ticking ? "yes" : "");
             }
 
             this.totalCount += count;
@@ -52,60 +73,15 @@ public class TileEntitiesLister extends ChunkProcessorLoadedChunks
     }
 
     @Override
-    public EntityCountDump createDump(World world)
+    public DataDump getDump()
     {
-        EntityCountDump dump = new EntityCountDump(5);
-        dump.addTitle("Region", "Chunk", "Position", "Tile", "Ticking");
-        dump.addHeader("Loaded TileEntities by chunk:");
+        DataDump dump = this.dump;
 
-        for (ChunkPos chunkPos : this.perChunkTiles.keySet())
-        {
-            List<TileHolder> tiles = new ArrayList<>(this.perChunkTiles.get(chunkPos));
-
-            Collections.sort(tiles);
-
-            for (TileHolder holder : tiles)
-            {
-                dump.addData(
-                        String.format("r.%d.%d", chunkPos.x >> 5, chunkPos.z >> 5),
-                        String.format("[%5d, %5d]", chunkPos.x, chunkPos.z),
-                        String.format("x: %d, y: %d, z: %d", holder.pos.getX(), holder.pos.getY(), holder.pos.getZ()),
-                        String.valueOf(holder.clazz.getName()),
-                        ITickable.class.isAssignableFrom(holder.clazz) ? "yes" : "no");
-            }
-        }
-
+        dump.clearFooter();
         dump.addFooter(String.format("In total there were %d loaded TileEntities", this.totalCount));
         dump.addFooter(String.format("in %d chunks, of which %d are ticking.",
                 this.getLoadedChunkCount() - this.chunksWithZeroCount, this.tickingCount));
 
         return dump;
-    }
-
-    private static class TileHolder implements Comparable<TileHolder>
-    {
-        public final Class <? extends TileEntity> clazz;
-        public final BlockPos pos;
-
-        public TileHolder(BlockPos pos, Class <? extends TileEntity> clazz)
-        {
-            this.pos = pos;
-            this.clazz = clazz;
-        }
-
-        @Override
-        public int compareTo(TileHolder other)
-        {
-            String nameThis = this.clazz.getName();
-            String nameOther = other.clazz.getName();
-            int result = nameThis.compareTo(nameOther);
-
-            if (result != 0)
-            {
-                return result;
-            }
-
-            return this.pos.compareTo(other.pos);
-        }
     }
 }

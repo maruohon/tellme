@@ -1,21 +1,25 @@
 package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.Collection;
-import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.EntityInfo;
 
-public abstract class ChunkProcessorLoadedChunks
+public abstract class ChunkProcessorBase
 {
+    protected final DataDump.Format format;
     protected int chunksWithZeroCount;
     private int loadedChunks;
     private int unloadedChunks;
+
+    protected ChunkProcessorBase(DataDump.Format format)
+    {
+        this.format = format;
+    }
 
     public int getLoadedChunkCount()
     {
@@ -32,52 +36,54 @@ public abstract class ChunkProcessorLoadedChunks
         return this.chunksWithZeroCount;
     }
 
-    protected abstract void processChunk(Chunk chunk);
-
-    public abstract EntityCountDump createDump(World world);
-
-    public void processAllLoadedChunks(World world)
+    public void processChunks(Collection<Chunk> chunks)
     {
-        Collection<Chunk> loadedChunks = TellMe.proxy.getLoadedChunks(world);
-
-        for (Chunk chunk : loadedChunks)
+        for (Chunk chunk : chunks)
         {
             this.processChunk(chunk);
-            this.loadedChunks++;
+            ++this.loadedChunks;
         }
     }
 
     public void processChunksInArea(World world, ChunkPos pos1, ChunkPos pos2)
     {
-        IChunkProvider provider = world.getChunkProvider();
+        AbstractChunkProvider provider = world.getChunkProvider();
+        final int minCX = Math.min(pos1.x, pos2.x);
+        final int minCZ = Math.min(pos1.z, pos2.z);
+        final int maxCX = Math.max(pos1.x, pos2.x);
+        final int maxCZ = Math.max(pos1.z, pos2.z);
 
-        for (int chunkZ = pos1.z; chunkZ <= pos2.z; chunkZ++)
+        for (int cz = minCZ; cz <= maxCZ; ++cz)
         {
-            for (int chunkX = pos1.x; chunkX <= pos2.x; chunkX++)
+            for (int cx = minCX; cx <= maxCX; ++cx)
             {
-                Chunk chunk = provider.getLoadedChunk(chunkX, chunkZ);
+                Chunk chunk = provider.getChunk(cx, cz, false);
 
                 if (chunk != null)
                 {
                     this.processChunk(chunk);
-                    this.loadedChunks++;
+                    ++this.loadedChunks;
                 }
                 else
                 {
-                    this.unloadedChunks++;
+                    ++this.unloadedChunks;
                 }
             }
         }
     }
 
+    protected abstract void processChunk(Chunk chunk);
+
+    public abstract DataDump getDump();
+
     public static class EntitiesPerTypeHolder implements Comparable<EntitiesPerTypeHolder>
     {
-        public final Class <? extends Entity> clazz;
+        public final EntityType<?> type;
         public final int count;
 
-        public EntitiesPerTypeHolder(Class <? extends Entity> clazz, int count)
+        public EntitiesPerTypeHolder(EntityType<?> type, int count)
         {
-            this.clazz = clazz;
+            this.type = type;
             this.count = count;
         }
 
@@ -86,19 +92,8 @@ public abstract class ChunkProcessorLoadedChunks
         {
             if (this.count == other.count)
             {
-                String nameThis = EntityInfo.getEntityNameFromClass(this.clazz);
-                String nameOther = EntityInfo.getEntityNameFromClass(other.clazz);
-
-                if (nameThis == null)
-                {
-                    nameThis = this.clazz.getSimpleName();
-                }
-
-                if (nameOther == null)
-                {
-                    nameOther = other.clazz.getSimpleName();
-                }
-
+                String nameThis = EntityInfo.getEntityNameFor(this.type);
+                String nameOther = EntityInfo.getEntityNameFor(other.type);
                 return nameThis.compareTo(nameOther);
             }
 
@@ -137,31 +132,6 @@ public abstract class ChunkProcessorLoadedChunks
         {
             super(pos, totalCount);
             this.tickingCount = tickingCount;
-        }
-    }
-
-    public static class TileEntitiesPerTypeHolder implements Comparable<TileEntitiesPerTypeHolder>
-    {
-        public final Class <? extends TileEntity> clazz;
-        public final int count;
-
-        public TileEntitiesPerTypeHolder(Class <? extends TileEntity> clazz, int count)
-        {
-            this.clazz = clazz;
-            this.count = count;
-        }
-
-        @Override
-        public int compareTo(TileEntitiesPerTypeHolder other)
-        {
-            if (this.count == other.count)
-            {
-                String nameThis = this.clazz.getName();
-                String nameOther = other.clazz.getName();
-                return nameThis.compareTo(nameOther);
-            }
-
-            return this.count > other.count ? -1 : 1;
         }
     }
 }

@@ -4,27 +4,27 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunk;
 import fi.dy.masa.tellme.datadump.DataDump;
 
 public class DataEntry
 {
     public static abstract class DataEntryBase<P>
     {
-        private final int dimension;
+        private final String dimension;
         private final long worldTick;
         private final long systemTime;
         private final P position;
 
         private DataEntryBase(World world, P position)
         {
-            this.dimension = world.provider.getDimension();
-            this.worldTick = world.getTotalWorldTime();
+            this.dimension = world.getDimension().getType().getRegistryName().toString();
+            this.worldTick = world.getGameTime();
             this.systemTime = System.currentTimeMillis();
             this.position = position;
         }
 
-        public int getDimension()
+        public String getDimension()
         {
             return this.dimension;
         }
@@ -55,9 +55,9 @@ public class DataEntry
 
     public static abstract class DataEntryChunkEventBase extends DataEntryBase<ChunkPos>
     {
-        public DataEntryChunkEventBase(Chunk chunk)
+        public DataEntryChunkEventBase(IChunk chunk)
         {
-            super(chunk.getWorld(), chunk.getPos());
+            super(chunk.getWorldForge().getWorld(), chunk.getPos());
         }
 
         @Override
@@ -78,8 +78,6 @@ public class DataEntry
             dump.setColumnProperties(0, DataDump.Alignment.RIGHT, true); // tick
             dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // time
 
-            dump.setUseColumnSeparator(true);
-
             return dump;
         }
 
@@ -97,7 +95,7 @@ public class DataEntry
 
     public static class DataEntryChunkEventLoad extends DataEntryChunkEventBase
     {
-        public DataEntryChunkEventLoad(Chunk chunk)
+        public DataEntryChunkEventLoad(IChunk chunk)
         {
             super(chunk);
         }
@@ -111,7 +109,7 @@ public class DataEntry
 
     public static class DataEntryChunkEventUnload extends DataEntryChunkEventBase
     {
-        public DataEntryChunkEventUnload(Chunk chunk)
+        public DataEntryChunkEventUnload(IChunk chunk)
         {
             super(chunk);
         }
@@ -131,7 +129,7 @@ public class DataEntry
         {
             super(entity.getEntityWorld(), entity.getPositionVector());
 
-            this.entityName = entity.getName();
+            this.entityName = entity.getName().getString();
         }
 
         @Override
@@ -157,8 +155,6 @@ public class DataEntry
 
             dump.setColumnProperties(0, DataDump.Alignment.RIGHT, true); // tick
             dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true); // time
-
-            dump.setUseColumnSeparator(true);
 
             return dump;
         }

@@ -5,41 +5,41 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.datadump.DataDump;
 
-public class TileEntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
+public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
 {
-    private Map<ChunkPos, Integer> perChunkTotalCount = new HashMap<ChunkPos, Integer>();
-    private Map<ChunkPos, Integer> perChunkTickingCount = new HashMap<ChunkPos, Integer>();
+    private Map<ChunkPos, Integer> perChunkTotalCount = new HashMap<>();
+    private Map<ChunkPos, Integer> perChunkTickingCount = new HashMap<>();
     private int totalCount;
     private int tickingCount;
+
+    public ChunkProcessorTileEntityCounterPerChunk(DataDump.Format format)
+    {
+        super(format);
+    }
 
     @Override
     public void processChunk(Chunk chunk)
     {
         Map<BlockPos, TileEntity> map = chunk.getTileEntityMap();
         ChunkPos pos = chunk.getPos();
-        int count = chunk.getTileEntityMap().size();
+        final int count = chunk.getTileEntityMap().size();
 
-        if (count == 0)
-        {
-            this.chunksWithZeroCount++;
-        }
-        else
+        if (count > 0)
         {
             int tickingCount = 0;
 
             for (TileEntity te : map.values())
             {
-                if (te instanceof ITickable)
+                if (te instanceof ITickableTileEntity)
                 {
-                    tickingCount++;
+                    ++tickingCount;
                 }
             }
 
@@ -48,12 +48,16 @@ public class TileEntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
             this.totalCount += count;
             this.tickingCount += tickingCount;
         }
+        else
+        {
+            ++this.chunksWithZeroCount;
+        }
     }
 
     @Override
-    public EntityCountDump createDump(World world)
+    public DataDump getDump()
     {
-        List<TileEntityCountsPerChunkHolder> counts = new ArrayList<TileEntityCountsPerChunkHolder>();
+        List<TileEntityCountsPerChunkHolder> counts = new ArrayList<>();
 
         for (ChunkPos pos : this.perChunkTotalCount.keySet())
         {
@@ -62,16 +66,20 @@ public class TileEntitiesPerChunkCounter extends ChunkProcessorLoadedChunks
 
         Collections.sort(counts);
 
-        EntityCountDump dump = new EntityCountDump(4);
-        dump.addTitle("Chunk", "Total Count", "Ticking", "Region");
+        DataDump dump = new DataDump(4, this.format);
+
+        dump.setSort(true).setSortReverse(true);
+        dump.setRepeatTitleAtBottom(false);
+
+        dump.addTitle("Total Count", "Ticking", "Chunk", "Region");
         dump.addHeader("Loaded TileEntities by chunk:");
 
         for (TileEntityCountsPerChunkHolder holder : counts)
         {
             dump.addData(
-                    String.format("[%5d, %5d]", holder.pos.x, holder.pos.z),
                     String.valueOf(holder.count),
                     String.valueOf(holder.tickingCount),
+                    String.format("[%5d, %5d]", holder.pos.x, holder.pos.z),
                     String.format("r.%d.%d", holder.pos.x >> 5, holder.pos.z >> 5));
         }
 

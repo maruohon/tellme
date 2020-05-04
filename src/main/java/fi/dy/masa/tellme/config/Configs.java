@@ -1,113 +1,198 @@
 package fi.dy.masa.tellme.config;
 
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.util.List;
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.core.io.WritingMode;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.reference.Reference;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class Configs
 {
+    public static File dumpOutputDir = new File("config/tellme/");
     public static File configurationFile;
-    public static Configuration config;
-    
+
     public static final String CATEGORY_GENERIC = "Generic";
 
-    public static boolean enableDebugItemForBlockAndEntities;
-    public static boolean enableDebugItemForItems;
+    public static ItemStack debugItemBlocks = new ItemStack(Items.GOLD_NUGGET);
+    public static ItemStack debugItemItems = new ItemStack(Items.BLAZE_ROD);
 
-    private static String debugItemNameBlocks;
-    private static String debugItemNameItems;
+    private static final ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
+    public static ForgeConfigSpec COMMON_CONFIG;
 
-    public static ItemStack debugItemBlocks;
-    public static ItemStack debugItemItems;
+    private static File configFileGlobal;
+    private static Path lastLoadedConfig;
+
+    public static class Generic
+    {
+        public static boolean enableDebugItemForBlocksAndEntities;
+        public static boolean enableDebugItemForItems;
+
+        private static String debugItemNameBlocks;
+        private static String debugItemNameItems;
+    }
+
+    static
+    {
+        setupConfigs();
+    }
+
+    private static void setupConfigs()
+    {
+        addCategoryGeneric();
+
+        COMMON_CONFIG = COMMON_BUILDER.build();
+    }
+
+    private static void addCategoryGeneric()
+    {
+        COMMON_BUILDER.push(CATEGORY_GENERIC);
+
+        COMMON_BUILDER.comment(" Enables the debug item to right click on blocks or entities to get data about them")
+                      .define("enableDebugItemForBlocksAndEntities", true);
+
+        COMMON_BUILDER.comment(" Enables the debug item to right click with to dump data\n" +
+                               " from the item next to the right of it on the hotbar")
+                      .define("enableDebugItemForItems", true);
+
+        COMMON_BUILDER.comment(" The debug item to right click on blocks and entities with.")
+                      .define("debugItemNameBlocks", "minecraft:gold_nugget");
+
+        COMMON_BUILDER.comment(" The debug item to right click with to dump item NBT from the item to the right of it on the hotbar")
+                      .define("debugItemNameItems", "minecraft:blaze_rod");
+
+        COMMON_BUILDER.pop();
+    }
+
+    private static void setConfigValues(ForgeConfigSpec spec)
+    {
+        setValuesInClass(Generic.class, spec);
+
+        debugItemBlocks = getDebugItem(Generic.debugItemNameBlocks);
+        debugItemItems = getDebugItem(Generic.debugItemNameItems);
+    }
+
+    private static void setValuesInClass(Class<?> clazz, ForgeConfigSpec spec)
+    {
+        for (Field field : clazz.getDeclaredFields())
+        {
+            String category = clazz.getSimpleName();
+            String name = field.getName();
+
+            try
+            {
+                Class<?> type = field.getType();
+                field.setAccessible(true);
+
+                if (type == boolean.class)
+                {
+                    field.set(null, spec.getValues().<ForgeConfigSpec.BooleanValue>get(category + "." + name).get().booleanValue());
+                }
+                else if (type == double.class)
+                {
+                    field.set(null, spec.getValues().<ForgeConfigSpec.DoubleValue>get(category + "." + name).get().doubleValue());
+                }
+                else if (type == String.class)
+                {
+                    field.set(null, spec.getValues().<ForgeConfigSpec.ConfigValue<String>>get(category + "." + name).get());
+                }
+                else if (List.class.isAssignableFrom(type))
+                {
+                    field.set(null, spec.getValues().<ForgeConfigSpec.ConfigValue<List<String>>>get(category + "." + name).get());
+                }
+            }
+            catch (Exception e)
+            {
+                TellMe.logger.error("Failed to set config value for config '{}.{}'", category, name, e);
+            }
+        }
+    }
 
     @SubscribeEvent
-    public void onConfigChangedEvent(OnConfigChangedEvent event)
+    public static void onConfigLoad(final ModConfig.Loading event)
     {
-        if (Reference.MOD_ID.equals(event.getModID()))
-        {
-            loadConfigs(config);
-        }
+        //System.out.printf("*** ModConfig.Loading\n");
+        setConfigValues(COMMON_CONFIG);
     }
 
-    public static void loadConfigsFromFile(File configFile)
+    @SubscribeEvent
+    public static void onConfigReload(final ModConfig.ConfigReloading event)
     {
-        configurationFile = configFile;
-        config = new Configuration(configFile, null, true);
-        config.load();
-
-        loadConfigs(config);
+        //System.out.printf("*** ModConfig.ConfigReloading\n");
+        setConfigValues(COMMON_CONFIG);
     }
 
-    public static void loadConfigs(Configuration conf)
+    public static void loadConfig(Path path)
     {
-        Property prop;
+        TellMe.logger.info("Reloading the configs from file '{}'", path.toAbsolutePath().toString());
 
-        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForBlocksAndEntities", true);
-        prop.setComment("Enables the debug item to right click on blocks or entities");
-        enableDebugItemForBlockAndEntities = prop.getBoolean();
+        ForgeConfigSpec spec = COMMON_CONFIG;
+        final CommentedFileConfig configData = CommentedFileConfig.builder(path)
+                .sync()
+                .autosave()
+                .writingMode(WritingMode.REPLACE)
+                .build();
 
-        prop = conf.get(CATEGORY_GENERIC, "enableDebugItemForItems", true);
-        prop.setComment("Enables the debug item to right with to dump data from the item next to the right of it on the hotbar");
-        enableDebugItemForItems = prop.getBoolean();
+        configData.load();
+        spec.setConfig(configData);
 
-        prop = conf.get(CATEGORY_GENERIC, "debugItemNameBlocks", "minecraft:gold_nugget");
-        prop.setComment("The debug item to use for right clicking on blocks and entities. Examples: minecraft:gold_nugget or minecraft:coal@1 for Charcoal (metadata 1)");
-        debugItemNameBlocks = prop.getString();
-        debugItemBlocks = getDebugItem(debugItemNameBlocks);
+        setConfigValues(spec);
 
-        prop = conf.get(CATEGORY_GENERIC, "debugItemNameItems", "minecraft:blaze_rod");
-        prop.setComment("The debug item to use for right clicking with to dump item NBT");
-        debugItemNameItems = prop.getString();
-        debugItemItems = getDebugItem(debugItemNameItems);
+        lastLoadedConfig = path;
+    }
 
-        if (conf.hasChanged())
+    public static void setGlobalConfigDirAndLoadConfigs(File configDirCommon)
+    {
+        dumpOutputDir = new File(configDirCommon, Reference.MOD_ID);
+        File configFile = new File(configDirCommon, Reference.MOD_ID + ".toml");
+        configFileGlobal = configFile;
+
+        loadConfigsFromGlobalConfigFile();
+    }
+
+    public static void loadConfigsFromGlobalConfigFile()
+    {
+        loadConfig(configFileGlobal.toPath());
+    }
+
+    public static boolean reloadConfig()
+    {
+        if (lastLoadedConfig != null)
         {
-            conf.save();
+            loadConfig(lastLoadedConfig);
+            return true;
         }
+
+        return false;
     }
 
     private static ItemStack getDebugItem(String nameIn)
     {
-        String name = nameIn;
-        int meta = 0;
-
         try
         {
-            Pattern pattern = Pattern.compile("([a-zA-Z0-9_\\.-]+:[a-zA-Z0-9_\\.-]+)(?:@([0-9]+))?");
-            Matcher matcher = pattern.matcher(nameIn);
+            ResourceLocation id = new ResourceLocation(nameIn);
+            Item item = ForgeRegistries.ITEMS.getValue(id);
 
-            if (matcher.matches())
+            if (item != null && item != Items.AIR)
             {
-                name = matcher.group(1);
-                String metaStr = matcher.group(2);
-
-                if (metaStr != null)
-                {
-                    meta = Integer.parseInt(metaStr);
-                }
-            }
-            else
-            {
-                TellMe.logger.warn("Invalid syntax for debug item name '{}'", nameIn);
+                return new ItemStack(item);
             }
         }
-        catch (PatternSyntaxException | NumberFormatException e)
+        catch (Exception e)
         {
             TellMe.logger.warn("Failed to parse debug item name '{}'", nameIn, e);
         }
 
-        Item item = Item.REGISTRY.getObject(new ResourceLocation(name));
-
-        return item != null ? new ItemStack(item, 1, meta) : ItemStack.EMPTY;
+        return ItemStack.EMPTY;
     }
 }

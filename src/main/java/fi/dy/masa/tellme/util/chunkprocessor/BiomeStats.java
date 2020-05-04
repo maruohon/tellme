@@ -6,14 +6,16 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeProvider;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.world.biome.provider.BiomeProvider;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.BiomeLocator;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class BiomeStats
 {
@@ -28,14 +30,13 @@ public class BiomeStats
 
     public void getFullBiomeDistribution(BiomeProvider biomeProvider, BlockPos posMin, BlockPos posMax)
     {
-        Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<Biome>();
-        final long timeBefore = System.currentTimeMillis();
-        long count = 0;
+        Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<>();
+        final long timeBefore = System.nanoTime();
         final int chunkMinX = posMin.getX() >> 4;
         final int chunkMinZ = posMin.getZ() >> 4;
         final int chunkMaxX = posMax.getX() >> 4;
         final int chunkMaxZ = posMax.getZ() >> 4;
-        Biome[] biomes = new Biome[16 * 16];
+        long count = 0;
 
         for (int chunkZ = chunkMinZ; chunkZ <= chunkMaxZ; chunkZ++)
         {
@@ -48,7 +49,7 @@ public class BiomeStats
                 final int width = xMax - xMin + 1;
                 final int length = zMax - zMin + 1;
 
-                biomeProvider.getBiomes(biomes, xMin, zMin, width, length, false);
+                Biome[] biomes = biomeProvider.getBiomes(xMin, zMin, width, length, false);
 
                 for (int x = 0; x < width; x++)
                 {
@@ -62,35 +63,32 @@ public class BiomeStats
             }
         }
 
-        final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
-                count, (timeAfter - timeBefore) / 1000f));
+        final long timeAfter = System.nanoTime();
+        TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds", count, (timeAfter - timeBefore) / 1000000000D));
 
         this.addData(counts, count);
     }
 
     public void getSampledBiomeDistribution(BiomeProvider biomeProvider, int centerX, int centerZ, int sampleInterval, int sampleRadius)
     {
-        Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<Biome>();
-        final long timeBefore = System.currentTimeMillis();
-        long count = 0;
+        Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<>();
+        final long timeBefore = System.nanoTime();
         final int endX = centerX + sampleRadius * sampleInterval;
         final int endZ = centerZ + sampleRadius * sampleInterval;
-        Biome[] biomes = new Biome[1];
+        long count = 0;
 
         for (int z = centerZ - sampleRadius * sampleInterval; z <= endZ; z += sampleInterval)
         {
             for (int x = centerX - sampleRadius * sampleInterval; x <= endX; x += sampleInterval)
             {
-                biomeProvider.getBiomes(biomes, x, z, 1, 1, false);
+                Biome[] biomes = biomeProvider.getBiomes(x, z, 1, 1, false);
                 counts.addTo(biomes[0], 1);
-                count++;
+                ++count;
             }
         }
 
-        final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
-                count, (timeAfter - timeBefore) / 1000f));
+        final long timeAfter = System.nanoTime();
+        TellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds", count, (timeAfter - timeBefore) / 1000000000D));
 
         this.addData(counts, count);
     }
@@ -103,7 +101,7 @@ public class BiomeStats
             this.totalCount = 0;
         }
 
-        for (Map.Entry<Biome, Long> entry : counts.entrySet())
+        for (Map.Entry<Biome, Long> entry : counts.object2LongEntrySet())
         {
             if (this.append)
             {
@@ -129,8 +127,18 @@ public class BiomeStats
                 filter = "minecraft:" + filter;
             }
 
-            ResourceLocation key = new ResourceLocation(filter);
-            Biome biome = ForgeRegistries.BIOMES.getValue(key);
+            ResourceLocation key = null;
+            Biome biome = null;
+
+            try
+            {
+                key = new ResourceLocation(filter);
+            }
+            catch (Exception e)
+            {
+            }
+
+            biome = key != null ? ForgeRegistries.BIOMES.getValue(key) : null;
 
             if (biome == null)
             {
@@ -138,19 +146,20 @@ public class BiomeStats
                 continue;
             }
 
-            for (Map.Entry<Biome, Long> entry : this.biomeCounts.entrySet())
+            for (Map.Entry<Biome, Long> entry : this.biomeCounts.object2LongEntrySet())
             {
                 if (entry.getKey() == biome)
                 {
-                    int id = Biome.getIdForBiome(biome);
+                    @SuppressWarnings("deprecation")
+                    int id = Registry.BIOME.getId(biome);
                     long count = entry.getValue();
 
                     dump.addData(
                             key.toString(),
-                            TellMe.proxy.getBiomeName(biome),
+                            BiomeLocator.getBiomeDisplayName(biome),
                             String.valueOf(id),
                             String.valueOf(count),
-                            String.format("%.2f %%", (double) count * 100 / (double) this.totalCount));
+                            String.format("%.2f %%", (double) count * 100D / (double) this.totalCount));
                     break;
                 }
             }
@@ -172,7 +181,7 @@ public class BiomeStats
         }
         else
         {
-            for (Map.Entry<Biome, Long> entry : this.biomeCounts.entrySet())
+            for (Map.Entry<Biome, Long> entry : this.biomeCounts.object2LongEntrySet())
             {
                 Biome biome = entry.getKey();
 
@@ -183,15 +192,16 @@ public class BiomeStats
                 }
 
                 ResourceLocation key = ForgeRegistries.BIOMES.getKey(biome);
-                int id = Biome.getIdForBiome(biome);
+                @SuppressWarnings("deprecation")
+                int id = Registry.BIOME.getId(biome);
                 long count = entry.getValue();
 
                 dump.addData(
                         key != null ? key.toString() : "<null>",
-                        TellMe.proxy.getBiomeName(biome),
+                        BiomeLocator.getBiomeDisplayName(biome),
                         String.valueOf(id),
                         String.valueOf(count),
-                        String.format("%.2f", (double) count * 100 / (double) this.totalCount));
+                        String.format("%.2f", (double) count * 100D / (double) this.totalCount));
             }
         }
 
@@ -200,8 +210,6 @@ public class BiomeStats
         dump.setColumnProperties(2, Alignment.RIGHT, true); // Biome ID
         dump.setColumnProperties(3, Alignment.RIGHT, true); // count
         dump.setColumnProperties(4, Alignment.RIGHT, true); // count %
-
-        dump.setUseColumnSeparator(true);
 
         return dump.getLines();
     }

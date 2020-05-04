@@ -1,39 +1,30 @@
 package fi.dy.masa.tellme.command;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.CommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.Entity;
 import fi.dy.masa.tellme.datadump.BiomeDump;
 
-public class SubCommandBiome extends SubCommand
+public class SubCommandBiome
 {
-    public SubCommandBiome(CommandTellme baseCommand)
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        super(baseCommand);
-
-        this.addSubCommandHelp("_generic", "Prints information about the current biome to chat");
+        return Commands.literal("biome").executes(c -> execute(c.getSource())).build();
     }
 
-    @Override
-    public String getName()
+    private static int execute(CommandSource source) throws CommandSyntaxException
     {
-        return "biome";
-    }
+        Entity entity = source.getEntity();
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-    {
-        if (args.length == 0)
+        if (entity != null)
         {
-            if (sender instanceof EntityPlayer)
-            {
-                BiomeDump.printCurrentBiomeInfoToChat((EntityPlayer) sender);
-            }
+            BiomeDump.printCurrentBiomeInfoToChat(entity);
+            return 1;
         }
-        else
-        {
-            throw new CommandException("Too many arguments");
-        }
+
+        throw CommandUtils.NOT_AN_ENTITY_EXCEPTION.create();
     }
 }

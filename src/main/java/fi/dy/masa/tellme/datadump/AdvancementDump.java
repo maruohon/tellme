@@ -4,16 +4,15 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.command.ICommandSender;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 
 public class AdvancementDump
 {
-    public static List<String> getFormattedAdvancementDumpSimple(Format format, ICommandSender sender)
+    public static List<String> getFormattedAdvancementDumpSimple(Format format)
     {
         DataDump advancementDump = new DataDump(4, format);
-        Iterable<Advancement> iterable = TellMe.proxy.getAdvacements(sender);
+        Iterable<Advancement> iterable = TellMe.dataProvider.getAdvacements();
 
         if (iterable == null)
         {
@@ -26,9 +25,9 @@ public class AdvancementDump
             {
                 String id = adv.getId() != null ? adv.getId().toString() : "<null>";
                 //String title = adv.getDisplay().getTitle().getUnformattedText();
-                String title = adv.getDisplayText() != null ? adv.getDisplayText().getUnformattedText() : "<null>";
+                String title = adv.getDisplayText() != null ? adv.getDisplayText().getUnformattedComponentText() : "<null>";
                 DisplayInfo di = adv.getDisplay();
-                String desc = di != null && di.getDescription() != null ? di.getDescription().getUnformattedText() : "<null>";
+                String desc = di != null && di.getDescription() != null ? di.getDescription().getUnformattedComponentText() : "<null>";
                 String parent = adv.getParent() != null && adv.getParent().getId() != null ? adv.getParent().getId().toString() : "-";
 
                 advancementDump.addData(id, title, desc, parent);
@@ -40,8 +39,6 @@ public class AdvancementDump
         }
 
         advancementDump.addTitle("ID", "Name", "Description", "Parent");
-        advancementDump.setUseColumnSeparator(true);
-        //advancementDump.setSort(false);
 
         return advancementDump.getLines();
     }

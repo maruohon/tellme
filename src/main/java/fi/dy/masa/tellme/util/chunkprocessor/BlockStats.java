@@ -3,29 +3,35 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.ArrayListMultimap;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockStats extends ChunkProcessorAllChunks
 {
+    private final HashMap<BlockState, BlockInfo> blockStats = new HashMap<>();
+    private int chunkCount;
     private boolean append;
-    private final Multimap<String, BlockInfo> blockStats = MultimapBuilder.hashKeys().arrayListValues().build();
 
     public void setAppend(boolean append)
     {
@@ -33,22 +39,26 @@ public class BlockStats extends ChunkProcessorAllChunks
     }
 
     @Override
-    public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
+    public void processChunks(Collection<Chunk> chunks, BlockPos pos1, BlockPos pos2)
     {
-        Object2LongOpenHashMap<IBlockState> counts = new Object2LongOpenHashMap<IBlockState>();
+        final long timeBefore = System.nanoTime();
+        Object2LongOpenHashMap<BlockState> counts = new Object2LongOpenHashMap<>();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
-        final long timeBefore = System.currentTimeMillis();
+        final BlockState air = Blocks.AIR.getDefaultState();
+        BlockPos posMin = getMinCorner(pos1, pos2);
+        BlockPos posMax = getMaxCorner(pos1, pos2);
         int count = 0;
 
         for (Chunk chunk : chunks)
         {
+            ChunkPos chunkPos = chunk.getPos();
             final int topY = chunk.getTopFilledSegment() + 15;
-            final int xMin = Math.max(chunk.x << 4, posMin.getX());
+            final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
-            final int zMin = Math.max(chunk.z << 4, posMin.getZ());
-            final int xMax = Math.min((chunk.x << 4) + 15, posMax.getX());
+            final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
+            final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
-            final int zMax = Math.min((chunk.z << 4) + 15, posMax.getZ());
+            final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
 
             for (int z = zMin; z <= zMax; ++z)
             {
@@ -57,7 +67,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                     for (int y = yMin; y <= yMax; ++y)
                     {
                         pos.setPos(x, y, z);
-                        IBlockState state = chunk.getBlockState(pos);
+                        BlockState state = chunk.getBlockState(pos);
 
                         counts.addTo(state, 1);
                         count++;
@@ -68,65 +78,50 @@ public class BlockStats extends ChunkProcessorAllChunks
             // Add the amount of air that would be in non-existing chunk sections within the given volume
             if (topY < posMax.getY())
             {
-                counts.addTo(Blocks.AIR.getDefaultState(), (posMax.getY() - topY) * 256);
+                counts.addTo(air, (posMax.getY() - topY) * 256);
             }
         }
 
-        final long timeAfter = System.currentTimeMillis();
-        TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks in %.3f seconds.",
-                count, chunks.size(), (timeAfter - timeBefore) / 1000f));
+        this.chunkCount = this.append ? this.chunkCount + chunks.size() : chunks.size();
+
+        TellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks in %.4f seconds.",
+                count, chunks.size(), (System.nanoTime() - timeBefore) / 1000000000D));
 
         this.addParsedData(counts);
     }
 
-    private void addParsedData(Object2LongOpenHashMap<IBlockState> counts)
+    private void addParsedData(Object2LongOpenHashMap<BlockState> counts)
     {
         if (this.append == false)
         {
             this.blockStats.clear();
         }
 
-        for (IBlockState state : counts.keySet())
+        for (BlockState state : counts.keySet())
         {
             try
             {
                 Block block = state.getBlock();
                 ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
-                String registryName = key != null ? key.toString() : "null";
-                int id = Block.getIdFromBlock(block);
-                int meta = block.getMetaFromState(state);
-                ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
-                String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
+                String registryName = key != null ? key.toString() : "<null>";
+                ItemStack stack = new ItemStack(block);
+                String displayName = stack.isEmpty() == false ? stack.getDisplayName().getString() : (new TranslationTextComponent(block.getTranslationKey())).getString();
                 long amount = counts.getLong(state);
 
                 if (key == null)
                 {
-                    TellMe.logger.warn("Non-registered block: class = {}, id = {}, meta = {}, state 0 {}",
-                            block.getClass().getName(), id, meta, state);
+                    TellMe.logger.warn("Non-registered block: class = {}, state = {}", block.getClass().getName(), state);
                 }
+
+                BlockInfo info = this.blockStats.computeIfAbsent(state, (s) -> new BlockInfo(state, registryName, displayName, 0));
 
                 if (this.append)
                 {
-                    boolean appended = false;
-
-                    for (BlockInfo old : this.blockStats.get(registryName))
-                    {
-                        if (old.id == id && old.meta == meta)
-                        {
-                            old.addToCount(amount);
-                            appended = true;
-                            break;
-                        }
-                    }
-
-                    if (appended == false)
-                    {
-                        this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, amount));
-                    }
+                    info.addToCount(amount);
                 }
                 else
                 {
-                    this.blockStats.put(registryName, new BlockInfo(registryName, displayName, id, meta, amount));
+                    info.setCount(amount);
                 }
             }
             catch (Exception e)
@@ -136,63 +131,56 @@ public class BlockStats extends ChunkProcessorAllChunks
         }
     }
 
-    private List<BlockInfo> getFilteredData(DataDump dump, List<String> filters, boolean sortByCount)
+    private List<BlockInfo> getFilteredData(DataDump dump, List<String> filters, boolean sortByCount) throws CommandSyntaxException
     {
-        List<BlockInfo> list = new ArrayList<>();
+        ArrayList<BlockInfo> list = new ArrayList<>();
+        ArrayListMultimap<Block, BlockInfo> infoByBlock = ArrayListMultimap.create();
+
+        for (BlockInfo info : this.blockStats.values())
+        {
+            infoByBlock.put(info.state.getBlock(), info);
+        }
 
         for (String filter : filters)
         {
-            int firstSemi = filter.indexOf(":");
+            StringReader reader = new StringReader(filter);
+            BlockStateParser parser = (new BlockStateParser(reader, false)).parse(false);
+            BlockState state = parser.getState();
+            Block block = state.getBlock();
 
-            if (firstSemi == -1)
+            // No block state properties specified, get all states for this block
+            if (parser.getProperties().size() == 0)
             {
-                filter = "minecraft:" + filter;
+                list.addAll(infoByBlock.get(block));
             }
-
-            int lastSemi = filter.lastIndexOf(":");
-
-            // At least two ':' characters found; assume the first separates the modid and block name,
-            // and the second separates the block name and meta.
-            if (lastSemi != firstSemi && lastSemi < (filter.length() - 1))
+            // Exact state specified, only add that
+            else if (parser.getProperties().size() == state.getBlockState().getProperties().size())
             {
-                try
-                {
-                    int meta = Integer.parseInt(filter.substring(lastSemi + 1, filter.length()));
+                BlockInfo info = this.blockStats.get(state);
 
-                    for (BlockInfo info : this.blockStats.get(filter))
-                    {
-                        if (info.meta == meta)
-                        {
-                            list.add(info);
-                            break;
-                        }
-                    }
-                }
-                catch (NumberFormatException e)
-                {
-                    TellMe.logger.error("Caught an exception while parsing block meta value from user input", e);
-                }
-            }
-            else
-            {
-                for (BlockInfo info : this.blockStats.get(filter))
+                if (info != null)
                 {
                     list.add(info);
                 }
+            }
+            // Some properties specified, filter by those
+            else
+            {
+                // TODO 1.14+
             }
         }
 
         return list;
     }
 
-    public List<String> queryAll(Format format, boolean sortByCount)
+    public List<String> queryAll(Format format, boolean sortByCount) throws CommandSyntaxException
     {
         return this.query(format, null, sortByCount);
     }
 
-    public List<String> query(Format format, @Nullable List<String> filters, boolean sortByCount)
+    public List<String> query(Format format, @Nullable List<String> filters, boolean sortByCount) throws CommandSyntaxException
     {
-        DataDump dump = new DataDump(5, format);
+        DataDump dump = new DataDump(3, format);
         List<BlockInfo> list = new ArrayList<>();
 
         if (filters != null)
@@ -209,19 +197,13 @@ public class BlockStats extends ChunkProcessorAllChunks
 
         for (BlockInfo info : list)
         {
-            dump.addData(info.registryName, String.valueOf(info.id), String.valueOf(info.meta), info.displayName, String.valueOf(info.count));
+            dump.addData(info.registryName, info.displayName, String.valueOf(info.count));
         }
 
-        dump.addTitle("Registry name", "ID", "meta", "Display name", "Count");
-        dump.addHeader("NOTE: The Block ID is for very specific low-level purposes only!");
-        dump.addHeader("It WILL be different in every world since Minecraft 1.7,");
-        dump.addHeader("because they are dynamically allocated by the game!");
+        dump.addTitle("Registry name", "Display name", "Count");
+        dump.addFooter(String.format("Block stats from an area touching %d chunks", this.chunkCount));
 
-        dump.setColumnProperties(1, Alignment.RIGHT, true); // Block ID
-        dump.setColumnProperties(2, Alignment.RIGHT, true); // meta
-        dump.setColumnProperties(4, Alignment.RIGHT, true); // count
-
-        dump.setUseColumnSeparator(true);
+        dump.setColumnProperties(2, Alignment.RIGHT, true); // count
         dump.setSort(sortByCount == false);
 
         return dump.getLines();
@@ -230,18 +212,16 @@ public class BlockStats extends ChunkProcessorAllChunks
     private static class BlockInfo implements Comparable<BlockInfo>
     {
         private static boolean sortByCount = false;
+        public final BlockState state;
         public final String registryName;
         public final String displayName;
-        public final int id;
-        public final int meta;
         public long count;
 
-        public BlockInfo(String name, String displayName, int id, int meta, long count)
+        public BlockInfo(BlockState state, String name, String displayName, long count)
         {
+            this.state = state;
             this.registryName = name;
             this.displayName = displayName;
-            this.id = id;
-            this.meta = meta;
             this.count = count;
         }
 
@@ -253,6 +233,11 @@ public class BlockStats extends ChunkProcessorAllChunks
         public void addToCount(long amount)
         {
             this.count += amount;
+        }
+
+        public void setCount(long amount)
+        {
+            this.count = amount;
         }
 
         public int compareTo(BlockInfo other)
@@ -268,25 +253,8 @@ public class BlockStats extends ChunkProcessorAllChunks
             }
             else
             {
-                int val = this.registryName.compareTo(other.registryName);
-
-                if (val != 0)
-                {
-                    return val;
-                }
-
-                if (this.id != other.id)
-                {
-                    return this.id - other.id;
-                }
-
-                if (this.meta != other.meta)
-                {
-                    return this.meta - other.meta;
-                }
+                return this.registryName.compareTo(other.registryName);
             }
-
-            return 0;
         }
 
         @Override
@@ -294,8 +262,8 @@ public class BlockStats extends ChunkProcessorAllChunks
         {
             final int prime = 31;
             int result = 1;
-            result = prime * result + id;
-            result = prime * result + meta;
+            result = prime * result + ((registryName == null) ? 0 : registryName.hashCode());
+            result = prime * result + ((state == null) ? 0 : state.hashCode());
             return result;
         }
 
@@ -309,9 +277,19 @@ public class BlockStats extends ChunkProcessorAllChunks
             if (getClass() != obj.getClass())
                 return false;
             BlockInfo other = (BlockInfo) obj;
-            if (id != other.id)
+            if (registryName == null)
+            {
+                if (other.registryName != null)
+                    return false;
+            }
+            else if (!registryName.equals(other.registryName))
                 return false;
-            if (meta != other.meta)
+            if (state == null)
+            {
+                if (other.state != null)
+                    return false;
+            }
+            else if (!state.equals(other.state))
                 return false;
             return true;
         }

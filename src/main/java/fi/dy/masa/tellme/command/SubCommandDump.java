@@ -1,200 +1,206 @@
 package fi.dy.masa.tellme.command;
 
-import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import javax.annotation.Nullable;
-import com.google.common.collect.Sets;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import fi.dy.masa.tellme.datadump.*;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.OreDictionaryDump.OreDumpType;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.World;
+import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
+import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
+import fi.dy.masa.tellme.datadump.AdvancementDump;
+import fi.dy.masa.tellme.datadump.BiomeDump;
+import fi.dy.masa.tellme.datadump.BlockDump;
+import fi.dy.masa.tellme.datadump.BlockStatesDump;
+import fi.dy.masa.tellme.datadump.CommandDump;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DimensionDump;
+import fi.dy.masa.tellme.datadump.EnchantmentDump;
+import fi.dy.masa.tellme.datadump.EntityDump;
+import fi.dy.masa.tellme.datadump.FluidRegistryDump;
+import fi.dy.masa.tellme.datadump.FoodItemDump;
+import fi.dy.masa.tellme.datadump.ItemDump;
+import fi.dy.masa.tellme.datadump.ItemGroupDump;
+import fi.dy.masa.tellme.datadump.ModListDump;
+import fi.dy.masa.tellme.datadump.PotionDump;
+import fi.dy.masa.tellme.datadump.PotionTypeDump;
+import fi.dy.masa.tellme.datadump.SoundEventDump;
+import fi.dy.masa.tellme.datadump.SpawnEggDump;
+import fi.dy.masa.tellme.datadump.TagDump;
+import fi.dy.masa.tellme.datadump.TileEntityDump;
+import fi.dy.masa.tellme.datadump.VillagerProfessionDump;
+import fi.dy.masa.tellme.datadump.VillagerTradesDump;
+import fi.dy.masa.tellme.datadump.WorldTypeDump;
 import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.OutputUtils;
 
-public class SubCommandDump extends SubCommand
+public class SubCommandDump
 {
-    public SubCommandDump(CommandTellme baseCommand)
-    {
-        super(baseCommand);
+    private static final HashMap<String, DumpLineProvider> DUMP_PROVIDERS = new LinkedHashMap<>();
 
-        this.addSubSubCommands();
+    // /tellme dump <to-chat | to-console | to-file> <ascii | csv> <type> [type] ...
+
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    {
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("dump").build();
+        ArgumentCommandNode<CommandSource, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create()).build();
+        ArgumentCommandNode<CommandSource, DataDump.Format> outputFormatNode = Commands.argument("output_format", OutputFormatArgument.create()).build();
+
+        @SuppressWarnings("unchecked")
+        ArgumentCommandNode<CommandSource, List<String>> dumpTypesNode =
+                Commands.argument("dump_types",
+                        StringCollectionArgument.create(() -> SubCommandDump.getDumpProviders().keySet(), "No dump types given"))
+                .executes(c -> execute(c,
+                        c.getArgument("output_type", OutputType.class),
+                        c.getArgument("output_format", DataDump.Format.class),
+                        (List<String>) c.getArgument("dump_types", List.class)))
+                .build();
+
+        subCommandRootNode.addChild(outputTypeNode);
+        outputTypeNode.addChild(outputFormatNode);
+        outputFormatNode.addChild(dumpTypesNode);
+
+        return subCommandRootNode;
     }
 
-    @Override
-    public String getName()
+    private static int execute(CommandContext<CommandSource> ctx, OutputType outputType, DataDump.Format format, List<String> types) throws CommandSyntaxException
     {
-        return "dump";
-    }
+        HashMap<String, DumpLineProvider> providers = getDumpProviders();
 
-    protected void addSubSubCommands()
-    {
-        this.subSubCommands.add("all");
-        this.subSubCommands.add("advancements-simple");
-        this.subSubCommands.add("biomes");
-        this.subSubCommands.add("biomes-with-colors");
-        this.subSubCommands.add("biomes-with-mob-spawns");
-        this.subSubCommands.add("biomes-id-to-name");
-        this.subSubCommands.add("block-props");
-        this.subSubCommands.add("blocks");
-        this.subSubCommands.add("blocks-id-to-registryname");
-        this.subSubCommands.add("blocks-with-nbt");
-        this.subSubCommands.add("blockstates-by-block");
-        this.subSubCommands.add("blockstates-by-state");
-        this.subSubCommands.add("commands");
-        this.subSubCommands.add("creativetabs");
-        this.subSubCommands.add("dimensions");
-        this.subSubCommands.add("enchantments");
-        this.subSubCommands.add("entities");
-        this.subSubCommands.add("entities-with-class");
-        this.subSubCommands.add("fluids");
-        this.subSubCommands.add("food-items");
-        this.subSubCommands.add("items");
-        this.subSubCommands.add("items-craftable");
-        this.subSubCommands.add("items-plantable");
-        this.subSubCommands.add("items-with-nbt");
-        this.subSubCommands.add("items-with-tool-classes");
-        this.subSubCommands.add("mod-list");
-        this.subSubCommands.add("musictypes");
-        this.subSubCommands.add("oredictionary-by-key");
-        this.subSubCommands.add("oredictionary-by-key-individual");
-        this.subSubCommands.add("oredictionary-by-item");
-        this.subSubCommands.add("players");
-        this.subSubCommands.add("player-nbt");
-        this.subSubCommands.add("potions");
-        this.subSubCommands.add("potiontypes");
-        this.subSubCommands.add("soundevents");
-        this.subSubCommands.add("spawneggs");
-        this.subSubCommands.add("tileentities");
-        this.subSubCommands.add("villagerprofessions");
-        this.subSubCommands.add("villagertrades");
-        this.subSubCommands.add("worldtypes");
-    }
-
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
-    {
-        if (args.length >= 1)
+        // Don't bother outputting anything else a second time, if outputting everything once anyway
+        if (types.contains("all"))
         {
-            return CommandBase.getListOfStringsMatchingLastWord(args, this.getSubCommands());
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-    {
-        super.execute(server, sender, args);
-
-        if (args.length >= 1)
-        {
-            Set<String> types = Sets.newHashSet(args);
-
-            // Don't bother outputting anything else a second time, if outputting everything once anyway
-            if (types.contains("all"))
+            for (Map.Entry<String, DumpLineProvider> entry : providers.entrySet())
             {
-                for (String arg : this.subSubCommands)
+                String name = entry.getKey();
+                DumpLineProvider provider = entry.getValue();
+
+                try
                 {
-                    if (arg.equals("all") == false && arg.equals("help") == false)
+                    outputData(ctx, provider, name, outputType, format);
+                }
+                catch (Exception e)
+                {
+                    TellMe.logger.warn("Exception while dumping '{}'", name, e);
+                }
+            }
+        }
+        else
+        {
+            for (String name : types)
+            {
+                DumpLineProvider provider = providers.get(name);
+
+                if (provider != null)
+                {
+                    try
                     {
-                        this.outputData(server, sender, arg);
+                        outputData(ctx, provider, name, outputType, format);
+                    }
+                    catch (Exception e)
+                    {
+                        TellMe.logger.warn("Exception while dumping '{}'", name, e);
                     }
                 }
-            }
-            else
-            {
-                for (String arg : types)
+                else
                 {
-                    this.outputData(server, sender, arg);
+                    ctx.getSource().sendErrorMessage(new StringTextComponent("No such dump type: '" + name + "'"));
                 }
             }
         }
+
+        return 1;
     }
 
-    protected void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
+    public static void outputData(CommandContext<CommandSource> ctx,
+            DumpLineProvider provider, String name, OutputType outputType, DataDump.Format format) throws CommandSyntaxException
     {
-        Format format = this.getName().endsWith("-csv") ? Format.CSV : Format.ASCII;
-        List<String> data = this.getData(arg, format, sender);
-
-        if (data == null)
-        {
-            this.sendMessage(sender, "Non-existing dump type: '" + arg + "'");
-            return;
-        }
+        CommandSource source = ctx.getSource();
+        @Nullable Entity entity = source.getEntity();
+        @Nullable World world = entity.getEntityWorld();
+        List<String> data = provider.getLines(world, entity, format);
 
         if (data.isEmpty())
         {
-            this.sendMessage(sender, "No data available for dump: '" + arg + "'");
+            source.sendErrorMessage(new StringTextComponent("No data available for dump '" + name + "'"));
             return;
         }
 
-        if (this.getName().startsWith("dump"))
-        {
-            File file = DataDump.dumpDataToFile(arg, data, format);
-
-            if (file != null)
-            {
-                sendClickableLinkMessage(sender, "Output written to file %s", file);
-            }
-        }
-        else if (this.getName().startsWith("list"))
-        {
-            DataDump.printDataToLogger(data);
-            this.sendMessage(sender, "Command output printed to console");
-        }
+        OutputUtils.printOutput(data, outputType, format, name, source);
     }
 
-    @Nullable
-    private List<String> getData(String type, Format format, ICommandSender sender)
+    public static HashMap<String, DumpLineProvider> getDumpProviders()
     {
-        switch (type)
+        if (DUMP_PROVIDERS.isEmpty() == false)
         {
-            case "advancements-simple":             return AdvancementDump.getFormattedAdvancementDumpSimple(format, sender);
-            case "biomes":                          return BiomeDump.getFormattedBiomeDump(format, false);
-            case "biomes-with-colors":              return BiomeDump.getFormattedBiomeDump(format, true);
-            case "biomes-with-mob-spawns":          return BiomeDump.getFormattedBiomeDumpWithMobSpawns(format);
-            case "biomes-id-to-name":               return BiomeDump.getBiomeDumpIdToName(format);
-            case "block-props":                     return BlockDump.getFormattedBlockPropertiesDump(format);
-            case "blocks":                          return BlockDump.getFormattedBlockDump(format, false);
-            case "blocks-id-to-registryname":       return BlockDump.getBlockDumpIdToRegistryName(format);
-            case "blocks-with-nbt":                 return BlockDump.getFormattedBlockDump(format, true);
-            case "blockstates-by-block":            return BlockStatesDump.getFormattedBlockStatesDumpByBlock();
-            case "blockstates-by-state":            return BlockStatesDump.getFormattedBlockStatesDumpByState(format);
-            case "commands":                        return CommandDump.getFormattedCommandDump(format, sender);
-            case "creativetabs":                    return CreativetabDump.getFormattedCreativetabDump(format);
-            case "dimensions":                      return DimensionDump.getFormattedDimensionDump(format);
-            case "enchantments":                    return EnchantmentDump.getFormattedEnchantmentDump(format);
-            case "entities":                        return EntityDump.getFormattedEntityDump(format, false);
-            case "entities-with-class":             return EntityDump.getFormattedEntityDump(format, true);
-            case "fluids":                          return FluidRegistryDump.getFormattedFluidRegistryDump(format);
-            case "food-items":                      return FoodItemDump.getFormattedFoodItemDump(format);
-            case "items":                           return ItemDump.getFormattedItemDump(format, ItemDump.INFO_BASIC);
-            case "items-craftable":                 return ItemDump.getFormattedCraftableItemsDump(format);
-            case "items-plantable":                 return ItemDump.getFormattedItemDump(format, ItemDump.INFO_PLANTABLES);
-            case "items-with-nbt":                  return ItemDump.getFormattedItemDump(format, ItemDump.INFO_NBT);
-            case "items-with-tool-classes":         return ItemDump.getFormattedItemDump(format, ItemDump.INFO_TOOL_CLASS);
-            case "mod-list":                        return ModListDump.getFormattedModListDump(format);
-            case "musictypes":                      return SoundEventDump.getFormattedMusicTypeDump(format);
-            case "oredictionary-by-key":            return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_GROUPED);
-            case "oredictionary-by-key-individual": return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_ORE_INDIVIDUAL);
-            case "oredictionary-by-item":           return OreDictionaryDump.getFormattedOreDictionaryDump(format, OreDumpType.BY_STACK);
-            case "players":                         return EntityInfo.getPlayerList(format);
-            case "player-nbt":                      return (sender instanceof EntityPlayer) ? EntityInfo.getFullEntityInfo((EntityPlayer) sender) : Collections.emptyList();
-            case "potions":                         return PotionDump.getFormattedPotionDump(format);
-            case "potiontypes":                     return PotionTypeDump.getFormattedPotionTypeDump(format);
-            case "soundevents":                     return SoundEventDump.getFormattedSoundEventDump(format);
-            case "spawneggs":                       return SpawnEggDump.getFormattedSpawnEggDump(format);
-            case "tileentities":                    return TileEntityDump.getFormattedTileEntityDump(format);
-            case "villagerprofessions":             return VillagerProfessionDump.getFormattedVillagerProfessionDump(format);
-            case "villagertrades":                  return VillagerTradesDump.getFormattedVillagerTradesDump(format);
-            case "worldtypes":                      return WorldTypeDump.getFormattedWorldTypeDump(format);
-            default:                                return null;
+            return DUMP_PROVIDERS;
         }
+
+        HashMap<String, DumpLineProvider> dumpProviders = DUMP_PROVIDERS;
+
+        dumpProviders.put("advancements-simple",        (world, entity, format) -> AdvancementDump.getFormattedAdvancementDumpSimple(format));
+        dumpProviders.put("biomes",                     (world, entity, format) -> BiomeDump.getFormattedBiomeDump(format, false));
+        dumpProviders.put("biomes-with-colors",         (world, entity, format) -> BiomeDump.getFormattedBiomeDump(format, true));
+        dumpProviders.put("biomes-with-mob-spawns",     (world, entity, format) -> BiomeDump.getFormattedBiomeDumpWithMobSpawns(format));
+        dumpProviders.put("biomes-id-to-name",          (world, entity, format) -> BiomeDump.getBiomeDumpIdToName(format));
+        dumpProviders.put("block-props",                (world, entity, format) -> BlockDump.getFormattedBlockPropertiesDump(format));
+        dumpProviders.put("blocks",                     (world, entity, format) -> BlockDump.getFormattedBlockDump(format, false));
+        dumpProviders.put("blocks-with-nbt",            (world, entity, format) -> BlockDump.getFormattedBlockDump(format, true));
+        dumpProviders.put("blockstates-by-block",       (world, entity, format) -> BlockStatesDump.getFormattedBlockStatesDumpByBlock());
+        dumpProviders.put("blockstates-by-state",       (world, entity, format) -> BlockStatesDump.getFormattedBlockStatesDumpByState(format));
+        dumpProviders.put("commands",                   (world, entity, format) -> CommandDump.getFormattedCommandDump(format));
+        dumpProviders.put("creativetabs",               (world, entity, format) -> ItemGroupDump.getFormattedCreativetabDump(format));
+        dumpProviders.put("dimensions",                 (world, entity, format) -> DimensionDump.getFormattedDimensionDump(format));
+        dumpProviders.put("enchantments",               (world, entity, format) -> EnchantmentDump.getFormattedEnchantmentDump(format));
+        dumpProviders.put("entities",                   (world, entity, format) -> EntityDump.getFormattedEntityDump(null, format, false));
+        dumpProviders.put("entities-with-class",        (world, entity, format) -> EntityDump.getFormattedEntityDump(world, format, true));
+        dumpProviders.put("fluids",                     (world, entity, format) -> FluidRegistryDump.getFormattedFluidRegistryDump(format));
+        dumpProviders.put("food-items",                 (world, entity, format) -> FoodItemDump.getFormattedFoodItemDump(format));
+        dumpProviders.put("items",                      (world, entity, format) -> ItemDump.getFormattedItemDump(format, ItemDump.INFO_BASIC));
+        dumpProviders.put("items-craftable",            (world, entity, format) -> ItemDump.getFormattedCraftableItemsDump(format));
+        dumpProviders.put("items-plantable",            (world, entity, format) -> ItemDump.getFormattedItemDump(format, ItemDump.INFO_PLANTABLES));
+        dumpProviders.put("items-with-nbt",             (world, entity, format) -> ItemDump.getFormattedItemDump(format, ItemDump.INFO_NBT));
+        dumpProviders.put("items-with-tool-classes",    (world, entity, format) -> ItemDump.getFormattedItemDump(format, ItemDump.INFO_TOOL_CLASS));
+        dumpProviders.put("mod-list",                   (world, entity, format) -> ModListDump.getFormattedModListDump(format));
+        dumpProviders.put("musictypes",                 (world, entity, format) -> SoundEventDump.getFormattedMusicTypeDump(format));
+        dumpProviders.put("players",                    (world, entity, format) -> EntityInfo.getPlayerList(format));
+        dumpProviders.put("player-nbt",                 (world, entity, format) -> entity != null ? EntityInfo.getFullEntityInfo(entity, false) : Collections.emptyList());
+        dumpProviders.put("potions",                    (world, entity, format) -> PotionDump.getFormattedPotionDump(format));
+        dumpProviders.put("potiontypes",                (world, entity, format) -> PotionTypeDump.getFormattedPotionTypeDump(format));
+        dumpProviders.put("soundevents",                (world, entity, format) -> SoundEventDump.getFormattedSoundEventDump(format));
+        dumpProviders.put("spawneggs",                  (world, entity, format) -> SpawnEggDump.getFormattedSpawnEggDump(format));
+        dumpProviders.put("tags-block",                 (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.BLOCK, false));
+        dumpProviders.put("tags-block-split",           (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.BLOCK, true));
+        dumpProviders.put("tags-entitytype",            (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.ENTITY_TYPE, false));
+        dumpProviders.put("tags-entitytype-split",      (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.ENTITY_TYPE, true));
+        dumpProviders.put("tags-fluid",                 (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.FLUID, false));
+        dumpProviders.put("tags-fluid-split",           (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.FLUID, true));
+        dumpProviders.put("tags-item",                  (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.ITEM, false));
+        dumpProviders.put("tags-item-split",            (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.ITEM, true));
+        dumpProviders.put("tileentities",               (world, entity, format) -> TileEntityDump.getFormattedTileEntityDump(format));
+        dumpProviders.put("villagerprofessions",        (world, entity, format) -> VillagerProfessionDump.getFormattedVillagerProfessionDump(format));
+        dumpProviders.put("villagertrades",             (world, entity, format) -> VillagerTradesDump.getFormattedVillagerTradesDump(format));
+        dumpProviders.put("worldtypes",                 (world, entity, format) -> WorldTypeDump.getFormattedWorldTypeDump(format));
+
+        return DUMP_PROVIDERS;
+    }
+
+    public interface DumpLineProvider
+    {
+        List<String> getLines(@Nullable World world, @Nullable Entity entity, DataDump.Format format);
     }
 }

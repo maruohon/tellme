@@ -1,357 +1,343 @@
 package fi.dy.masa.tellme.command;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import com.google.common.collect.Maps;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.DimensionArgument;
+import net.minecraft.command.arguments.ILocationArgument;
+import net.minecraft.command.arguments.Vec2Argument;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeProvider;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.dimension.DimensionType;
+import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.CommandUtils.AreaType;
+import fi.dy.masa.tellme.command.CommandUtils.IDimensionRetriever;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
+import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.BiomeStats;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class SubCommandBiomeStats extends SubCommand
+public class SubCommandBiomeStats
 {
-    private final Map<UUID, BiomeStats> biomeStats = Maps.newHashMap();
-    private final BiomeStats biomeStatsConsole = new BiomeStats();
+    private static final Map<UUID, BiomeStats> BIOME_STATS = Maps.newHashMap();
+    private static final BiomeStats CONSOLE_BIOME_STATS = new BiomeStats();
 
-    public SubCommandBiomeStats(CommandTellme baseCommand)
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        super(baseCommand);
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("biome-stats").executes(c -> printHelp(c.getSource())).build();
 
-        this.subSubCommands.add("count");
-        this.subSubCommands.add("count-append");
-        this.subSubCommands.add("dump");
-        this.subSubCommands.add("dump-csv");
-        this.subSubCommands.add("query");
+        subCommandRootNode.addChild(createCountNodes("count", false));
+        subCommandRootNode.addChild(createCountNodes("count-append", true));
+        subCommandRootNode.addChild(createOutputDataNodes());
 
-        this.addSubCommandHelp("_generic", "Calculates the number of x/z columns with each biome in a given area");
-        this.addSubCommandHelp("count", "Counts all the biomes in the given area");
-        this.addSubCommandHelp("dump", "Dumps the stats from a previous 'count' command into a file in config/tellme/");
-        this.addSubCommandHelp("dump-csv", "Dumps the stats from a previous 'count' command into a CSV file in config/tellme/");
-        this.addSubCommandHelp("query", "Prints the stats from a previous 'count' command into the console");
+        return subCommandRootNode;
     }
 
-    @Override
-    public String getName()
+    private static LiteralCommandNode<CommandSource> createCountNodes(String command, boolean isAppend)
     {
-        return "biomestats";
+        LiteralCommandNode<CommandSource> actionNodeCount = Commands.literal(command).build();
+
+        actionNodeCount.addChild(createCountNodeArea(isAppend));
+        actionNodeCount.addChild(createCountNodeChunkRadius(isAppend));
+        actionNodeCount.addChild(createCountNodeRange(isAppend));
+        actionNodeCount.addChild(createCountNodeSampled(isAppend));
+
+        return actionNodeCount;
     }
 
-    private void printUsageCount(ICommandSender sender)
+    private static LiteralCommandNode<CommandSource> createOutputDataNodes()
     {
-        String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " count[-append] area <x1> <z1> <x2> <z2> [dimension]"));
-        sender.sendMessage(new TextComponentString(pre + " count[-append] chunk-radius <radius> [x z (of the center)] [dimension]"));
-        sender.sendMessage(new TextComponentString(pre + " count[-append] range <x-distance> <z-distance> [x z (of the center)] [dimension]"));
-        sender.sendMessage(new TextComponentString(pre + " count[-append] sampled <sampleInterval> <sampleRadius> [centerX centerZ] [dimension]"));
+        LiteralCommandNode<CommandSource> actionNodeOutputData = Commands.literal("output-data").build();
+
+        ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
+                .executes(c -> outputData(c.getSource(),
+                        c.getArgument("output_type", OutputType.class),
+                        DataDump.Format.ASCII))
+                .build();
+
+        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
+                .executes(c -> outputData(c.getSource(),
+                        c.getArgument("output_type", OutputType.class),
+                        c.getArgument("output_format", DataDump.Format.class)))
+                .build();
+
+        @SuppressWarnings("unchecked")
+        ArgumentCommandNode<CommandSource, List<String>> argBiomeFilters = Commands.argument("biome_filters",
+                StringCollectionArgument.create(() -> ForgeRegistries.BIOMES.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+                .executes(ctx -> outputData(ctx.getSource(),
+                        ctx.getArgument("output_type", OutputType.class),
+                        ctx.getArgument("output_format", DataDump.Format.class),
+                        ctx.getArgument("biome_filters", List.class)))
+                .build();
+
+        actionNodeOutputData.addChild(argOutputType);
+        argOutputType.addChild(argOutputFormat);
+        argOutputFormat.addChild(argBiomeFilters);
+
+        return actionNodeOutputData;
     }
 
-    private void printUsageQuery(ICommandSender sender)
+    private static LiteralCommandNode<CommandSource> createCountNodeArea(boolean isAppend)
     {
-        String pre = this.getSubCommandUsagePre();
-        sender.sendMessage(new TextComponentString(pre + " <dump | query> [modid:biome modid:biome ...]"));
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.AREA.getArgument()).build();
+
+        ArgumentCommandNode<CommandSource, ILocationArgument> argStartCorner = Commands.argument("start_corner", Vec2Argument.vec2()).build();
+        ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec2Argument.vec2())
+                .executes(c -> countBiomesArea(c.getSource(),
+                        Vec2Argument.getVec2f(c, "start_corner"),
+                        Vec2Argument.getVec2f(c, "end_corner"),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBiomesArea(c.getSource(),
+                        Vec2Argument.getVec2f(c, "start_corner"),
+                        Vec2Argument.getVec2f(c, "end_corner"),
+                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argStartCorner);
+        argStartCorner.addChild(argEndCorner);
+        argEndCorner.addChild(argDimension);
+
+        return argAreaType;
     }
 
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    private static LiteralCommandNode<CommandSource> createCountNodeChunkRadius(boolean isAppend)
     {
-        if (args.length == 1)
-        {
-            return CommandBase.getListOfStringsMatchingLastWord(args, this.subSubCommands);
-        }
-        else if (args.length == 2)
-        {
-            if (args[0].equals("dump") || args[0].equals("dump-csv") || args[0].equals("query"))
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BIOMES.getKeys());
-            }
-            else if (args[0].equals("count"))
-            {
-                return CommandBase.getListOfStringsMatchingLastWord(args, "area", "chunk-radius", "range", "sampled");
-            }
-        }
-        else if (args.length >= 3 && args[0].equals("count"))
-        {
-            if (args.length <= 6 && args[1].equals("area"))
-            {
-                int index = args.length <= 4 ? 2 : 4;
-                return CommandBase.getTabCompletionCoordinateXZ(args, index, targetPos);
-            }
-            else if (args.length >= 4 && args.length <= 5 && args[1].equals("chunk-radius"))
-            {
-                return CommandBase.getTabCompletionCoordinateXZ(args, 3, targetPos);
-            }
-            else if (args.length >= 5 && args.length <= 6 && args[1].equals("range"))
-            {
-                return CommandBase.getTabCompletionCoordinateXZ(args, 4, targetPos);
-            }
-            else if (args.length >= 5 && args.length <= 6 && args[1].equals("sampled"))
-            {
-                return CommandBase.getTabCompletionCoordinateXZ(args, 4, targetPos);
-            }
-        }
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.CHUNK_RADIUS.getArgument()).build();
 
-        return Collections.emptyList();
+        ArgumentCommandNode<CommandSource, Integer> argChunkRadius = Commands.argument("chunk_radius", IntegerArgumentType.integer(0, 4096))
+                .executes(c -> countBiomesChunkRadius(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "chunk_radius"),
+                        CommandUtils.getVec2fFromSource(c.getSource()),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec2Argument.vec2())
+                .executes(c -> countBiomesChunkRadius(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "chunk_radius"),
+                        CommandUtils.getVec2fFromArg(c, "center"),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBiomesChunkRadius(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "chunk_radius"),
+                        CommandUtils.getVec2fFromArg(c, "center"),
+                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argChunkRadius);
+        argChunkRadius.addChild(argCenter);
+        argCenter.addChild(argDimension);
+
+        return argAreaType;
     }
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+    private static LiteralCommandNode<CommandSource> createCountNodeRange(boolean isAppend)
     {
-        if (args.length < 1)
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.RANGE.getArgument()).build();
+
+        ArgumentCommandNode<CommandSource, Integer> argChunkRadiusX = Commands.argument("range_x", IntegerArgumentType.integer(0, 16384)).build();
+        ArgumentCommandNode<CommandSource, Integer> argChunkRadiusZ = Commands.argument("range_z", IntegerArgumentType.integer(0, 16384))
+                .executes(c -> countBiomesRange(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "range_x"),
+                        IntegerArgumentType.getInteger(c, "range_z"),
+                        CommandUtils.getVec2fFromSource(c.getSource()),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec2Argument.vec2())
+                .executes(c -> countBiomesRange(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "range_x"),
+                        IntegerArgumentType.getInteger(c, "range_z"),
+                        CommandUtils.getVec2fFromArg(c, "center"),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBiomesRange(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "range_x"),
+                        IntegerArgumentType.getInteger(c, "range_z"),
+                        CommandUtils.getVec2fFromArg(c, "center"),
+                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argChunkRadiusX);
+        argChunkRadiusX.addChild(argChunkRadiusZ);
+        argChunkRadiusZ.addChild(argCenter);
+        argCenter.addChild(argDimension);
+
+        return argAreaType;
+    }
+
+    private static LiteralCommandNode<CommandSource> createCountNodeSampled(boolean isAppend)
+    {
+        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.SAMPLED.getArgument()).build();
+
+        ArgumentCommandNode<CommandSource, Integer> argSampleInterval = Commands.argument("sample_interval", IntegerArgumentType.integer(1, Integer.MAX_VALUE)).build();
+        ArgumentCommandNode<CommandSource, Integer> argSampleRadius   = Commands.argument("sample_radius",   IntegerArgumentType.integer(1, Integer.MAX_VALUE))
+                .executes(c -> countBiomesSampled(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "sample_interval"),
+                        IntegerArgumentType.getInteger(c, "sample_radius"),
+                        CommandUtils.getVec2fFromSource(c.getSource()),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+
+        ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec2Argument.vec2())
+                .executes(c -> countBiomesSampled(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "sample_interval"),
+                        IntegerArgumentType.getInteger(c, "sample_radius"),
+                        CommandUtils.getVec2fFromArg(c, "center"),
+                        CommandUtils::getDimensionFromSource, isAppend))
+                .build();
+        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+                .executes(c -> countBiomesSampled(c.getSource(),
+                        IntegerArgumentType.getInteger(c, "sample_interval"),
+                        IntegerArgumentType.getInteger(c, "sample_radius"),
+                        CommandUtils.getVec2fFromArg(c, "center"),
+                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                .build();
+
+        argAreaType.addChild(argSampleInterval);
+        argSampleInterval.addChild(argSampleRadius);
+        argSampleRadius.addChild(argCenter);
+        argCenter.addChild(argDimension);
+
+        return argAreaType;
+    }
+
+    private static int printHelp(CommandSource source)
+    {
+        CommandUtils.sendMessage(source, "Calculates the number of x/z columns with each biome in a given area");
+        CommandUtils.sendMessage(source, "Usage: /tellme biome-stats <count | count-append> area <x1> <z1> <x2> <z2> [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme biome-stats <count | count-append> chunk-radius <radius> [x z (of the center)] [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme biome-stats <count | count-append> range <x-distance> <z-distance> [x z (of the center)] [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme biome-stats <count | count-append> sampled <sample_interval> <sample_radius> [centerX centerZ] [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme biome-stats output-data <to-chat | to-console | to-file> <ascii | csv> [modid:biome] [modid:biome] ...");
+        CommandUtils.sendMessage(source, "- count: Clears previously stored results, and then counts all the biomes in the given area");
+        CommandUtils.sendMessage(source, "- count-append: Counts all the biomes in the given area, appending the data to the previously stored results");
+        CommandUtils.sendMessage(source, "  > The sample_interval is the distance between sample points, in blocks");
+        CommandUtils.sendMessage(source, "  > The sample_radius is how many sample points are checked per side/axis");
+        CommandUtils.sendMessage(source, "- output-data: Outputs the stored data from previous count operations to the selected output location.");
+        CommandUtils.sendMessage(source, "- output-data: The 'file' output's dump files will go to 'config/tellme/'.");
+        CommandUtils.sendMessage(source, "- output-data: If you give some biome names, then only the data for those given biomes will be included in the output");
+
+        return 1;
+    }
+
+    private static int countBiomesChunkRadius(CommandSource source, int chunkRadius, Vec2f center,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        int centerChunkX = MathHelper.floor(center.x) >> 4;
+        int centerChunkZ = MathHelper.floor(center.y) >> 4;
+        BlockPos minPos = new BlockPos((centerChunkX - chunkRadius) * 16     , 0, (centerChunkZ - chunkRadius) * 16     );
+        BlockPos maxPos = new BlockPos((centerChunkX + chunkRadius) * 16 + 15, 0, (centerChunkZ + chunkRadius) * 16 + 15);
+
+        return countBiomesArea(source, minPos, maxPos, dimensionGetter, isAppend);
+    }
+
+    private static int countBiomesRange(CommandSource source, int rangeX, int rangeZ, Vec2f center,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        int centerX = MathHelper.floor(center.x);
+        int centerZ = MathHelper.floor(center.y);
+        BlockPos minPos = new BlockPos(centerX - rangeX, 0, centerZ - rangeZ);
+        BlockPos maxPos = new BlockPos(centerX + rangeX, 0, centerZ + rangeZ);
+
+        return countBiomesArea(source, minPos, maxPos, dimensionGetter, isAppend);
+    }
+
+    private static int countBiomesArea(CommandSource source, Vec2f minPosVec2, Vec2f maxPosVec2,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        BlockPos minPos = new BlockPos(minPosVec2.x, 0, minPosVec2.y);
+        BlockPos maxPos = new BlockPos(maxPosVec2.x, 0, maxPosVec2.y);
+
+        return countBiomesArea(source, minPos, maxPos, dimensionGetter, isAppend);
+    }
+
+    private static int countBiomesArea(CommandSource source, BlockPos minPos, BlockPos maxPos,
+            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
+        BiomeProvider biomeProvider = world.getChunkProvider().getChunkGenerator().getBiomeProvider();
+
+        CommandUtils.sendMessage(source, "Counting biomes...");
+
+        biomeStats.setAppend(isAppend);
+        biomeStats.getFullBiomeDistribution(biomeProvider, minPos, maxPos);
+
+        CommandUtils.sendMessage(source, "Done");
+
+        return 1;
+    }
+
+    private static int countBiomesSampled(CommandSource source, int sampleInterval,
+            int sampleRadius, Vec2f center, IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    {
+        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
+        BiomeProvider biomeProvider = world.getChunkProvider().getChunkGenerator().getBiomeProvider();
+
+        CommandUtils.sendMessage(source, "Counting biomes...");
+
+        biomeStats.setAppend(isAppend);
+        biomeStats.getSampledBiomeDistribution(biomeProvider, (int) center.x, (int) center.y, sampleInterval, sampleRadius);
+
+        CommandUtils.sendMessage(source, "Done");
+
+        return 1;
+    }
+
+    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format)
+    {
+        return outputData(source, outputType, format, null);
+    }
+
+    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, @Nullable List<String> filters)
+    {
+        BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
+        List<String> lines;
+
+        // We have some filters specified
+        if (filters != null && filters.isEmpty() == false)
         {
-            this.sendMessage(sender, "Usage:");
-            this.printUsageCount(sender);
-            this.printUsageQuery(sender);
-            return;
-        }
-
-        super.execute(server, sender, args);
-
-        String cmd = args[0];
-        BiomeStats biomeStats = sender instanceof EntityPlayer ? this.getBiomeStatsForPlayer((EntityPlayer) sender) : this.biomeStatsConsole;
-
-        // "/tellme blockstats count ..."
-        if ((cmd.equals("count") || cmd.equals("count-append")) && args.length >= 2)
-        {
-            // Possible command formats are:
-            // count area <x1> <z1> <x2> <z2> [dimension]
-            // count chunk-radius <radius> [x z (of the center)] [dimension]
-            // count range <x-distance> <z-distance> [x z (of the center)] [dimension]
-            String type = args[1];
-            args = dropFirstStrings(args, 2);
-            biomeStats.setAppend(cmd.equals("count-append"));
-
-            // Get the world - either the player's current world, or the one based on the provided dimension ID
-            World world = this.getWorld(type, args, sender, server);
-            BlockPos pos = sender instanceof EntityPlayer ? sender.getPosition() : WorldUtils.getSpawnPoint(world);
-            String pre = this.getSubCommandUsagePre();
-            BiomeProvider biomeProvider = world.getBiomeProvider();
-
-            // count range <x-distance> <z-distance> [x z (of the center)] [dimension]
-            if (type.equals("range") && (args.length >= 2 && args.length <= 5))
-            {
-                try
-                {
-                    if (args.length >= 4)
-                    {
-                        pos = parseBlockPosXZ(pos, args, 2, false);
-                    }
-
-                    int rx = Math.abs(CommandBase.parseInt(args[0]));
-                    int rz = Math.abs(CommandBase.parseInt(args[1]));
-
-                    this.sendMessage(sender, "Counting biomes...");
-
-                    biomeStats.getFullBiomeDistribution(biomeProvider, pos.add(-rx, 0, -rz), pos.add(rx, 0, rz));
-
-                    this.sendMessage(sender, "Done");
-                }
-                catch (NumberInvalidException e)
-                {
-                    throw new WrongUsageException(pre + " count range <x-distance> <z-distance> [x z (of the center)] [dimension]");
-                }
-            }
-            // count area <x1> <z1> <x2> <z2> [dimension]
-            else if (type.equals("area") && (args.length == 4 || args.length == 5))
-            {
-                try
-                {
-                    double x1 = CommandBase.parseDouble(pos.getX(), args[0], -30000000, 30000000, false);
-                    double z1 = CommandBase.parseDouble(pos.getZ(), args[1], -30000000, 30000000, false);
-                    double x2 = CommandBase.parseDouble(pos.getX(), args[2], -30000000, 30000000, false);
-                    double z2 = CommandBase.parseDouble(pos.getZ(), args[3], -30000000, 30000000, false);
-                    BlockPos pos1 = new BlockPos(Math.min(x1, x2), 0, Math.min(z1, z2));
-                    BlockPos pos2 = new BlockPos(Math.max(x1, x2), 0, Math.max(z1, z2));
-
-                    this.sendMessage(sender, "Counting biomes...");
-
-                    biomeStats.getFullBiomeDistribution(biomeProvider, pos1, pos2);
-
-                    this.sendMessage(sender, "Done");
-                }
-                catch (NumberInvalidException e)
-                {
-                    throw new WrongUsageException("Usage: " + pre + " count area <x1> <z1> <x2> <z2> [dimension]");
-                }
-            }
-            // count chunk-radius <radius> [x z (of the center)] [dimension]
-            else if (type.equals("chunk-radius") && (args.length >= 1 && args.length <= 4))
-            {
-                if (args.length == 4)
-                {
-                    pos = parseBlockPosXZ(pos, args, 1, false);
-                }
-
-                int radius = 0;
-
-                try
-                {
-                    radius = Integer.parseInt(args[0]);
-                }
-                catch (NumberFormatException e)
-                {
-                    throw new WrongUsageException(pre + " count chunk-radius <radius> [x y z (of the center)] [dimension]");
-                }
-
-                int chunkCount = (radius * 2 + 1) * (radius * 2 + 1);
-                this.sendMessage(sender, "Counting biomes in the selected " + chunkCount + " chunks...");
-
-                biomeStats.getFullBiomeDistribution(biomeProvider, pos.add(-radius * 16, 0, -radius * 16), pos.add(radius * 16, 0, radius * 16));
-
-                this.sendMessage(sender, "Done");
-            }
-            // count sampled <sampleInterval> <sampleRadius> [centerX centerZ] [dimension]
-            else if (type.equals("sampled") && (args.length >= 2 && args.length <= 5))
-            {
-                try
-                {
-                    if (args.length >= 4)
-                    {
-                        pos = parseBlockPosXZ(pos, args, 2, false);
-                    }
-
-                    int interval = CommandBase.parseInt(args[0]);
-                    int radius = CommandBase.parseInt(args[1]);
-
-                    if (interval <= 0)
-                    {
-                        new NumberInvalidException("Interval must be a positive integer number");
-                    }
-
-                    if (radius < 0)
-                    {
-                        new NumberInvalidException("Radius must be a positive integer number or 0");
-                    }
-
-                    this.sendMessage(sender, "Counting biomes...");
-
-                    biomeStats.getSampledBiomeDistribution(biomeProvider, pos.getX(), pos.getZ(), interval, radius);
-
-                    this.sendMessage(sender, "Done");
-                }
-                catch (NumberInvalidException e)
-                {
-                    throw new WrongUsageException(pre + " count sampled <sampleInterval> <sampleRadius> [centerX centerZ] [dimension]");
-                }
-            }
-            else
-            {
-                this.printUsageCount(sender);
-                throw new CommandException("Invalid (number of?) arguments!");
-            }
-        }
-        else if (cmd.equals("query") || cmd.equals("dump") || cmd.equals("dump-csv"))
-        {
-            List<String> lines;
-            Format format = cmd.equals("dump-csv") ? Format.CSV : Format.ASCII;
-
-            // We have some filters specified
-            if (args.length > 1)
-            {
-                lines = biomeStats.query(format, Arrays.asList(dropFirstStrings(args, 1)));
-            }
-            else
-            {
-                lines = biomeStats.queryAll(format);
-            }
-
-            if (cmd.equals("query"))
-            {
-                DataDump.printDataToLogger(lines);
-                this.sendMessage(sender, "Command output printed to console");
-            }
-            else
-            {
-                File file = DataDump.dumpDataToFile("biome_stats", lines, format);
-
-                if (file != null)
-                {
-                    sendClickableLinkMessage(sender, "Output written to file %s", file);
-                }
-            }
+            lines = biomeStats.query(format, filters);
         }
         else
         {
-            this.sendMessage(sender, "Usage:");
-            this.printUsageCount(sender);
-            this.printUsageQuery(sender);
+            lines = biomeStats.queryAll(format);
         }
+
+        OutputUtils.printOutput(lines, outputType, format, "biome_stats", source);
+
+        return 1;
     }
 
-    private World getWorld(String countSubCommand, String[] args, ICommandSender sender, MinecraftServer server) throws CommandException
+    private static BiomeStats getBiomeStatsFor(@Nullable Entity entity)
     {
-        int index = -1;
-        World world = sender.getEntityWorld();
-
-        switch (countSubCommand)
+        if (entity == null)
         {
-            case "area":
-                index = 4;
-                break;
-            case "chunk-radius":
-                if (args.length == 4)
-                    index = 3;
-                else if (args.length == 2)
-                    index = 1;
-                break;
-            case "range":
-            case "sampled":
-                if (args.length == 5)
-                    index = 4;
-                else if (args.length == 3)
-                    index = 2;
-                break;
+            return CONSOLE_BIOME_STATS;
         }
 
-        if (index >= 0 && args.length > index)
-        {
-            String dimStr = args[index];
-
-            try
-            {
-                int dimension = Integer.parseInt(dimStr);
-                world = server.getWorld(dimension);
-            }
-            catch (NumberFormatException e)
-            {
-                throw new NumberInvalidException("Invalid dimension '%s'", dimStr);
-            }
-
-            if (world == null)
-            {
-                throw new NumberInvalidException("Could not load dimension '%s'", dimStr);
-            }
-        }
-
-        return world;
-    }
-
-    private BiomeStats getBiomeStatsForPlayer(EntityPlayer player)
-    {
-        BiomeStats stats = this.biomeStats.get(player.getUniqueID());
-
-        if (stats == null)
-        {
-            stats = new BiomeStats();
-            this.biomeStats.put(player.getUniqueID(), stats);
-        }
-
-        return stats;
+        return BIOME_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeStats());
     }
 }

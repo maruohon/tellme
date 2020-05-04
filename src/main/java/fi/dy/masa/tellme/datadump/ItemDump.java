@@ -5,8 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import javax.annotation.Nonnull;
+import java.util.stream.Collectors;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -16,33 +15,34 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockFalling;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.FallingBlock;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Food;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemTool;
+import net.minecraft.item.ToolItem;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
+import net.minecraft.item.crafting.RecipeManager;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.common.IPlantable;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ModNameUtils;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.ToolType;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class ItemDump
 {
@@ -60,7 +60,7 @@ public class ItemDump
 
         for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            getDataForItemSubtypes(itemDump, entry.getValue(), entry.getKey(), provider);
+            provider.addLine(itemDump, new ItemStack(entry.getValue()), entry.getKey());
         }
 
         provider.addTitle(itemDump);
@@ -73,15 +73,20 @@ public class ItemDump
     {
         ItemInfoProviderBase provider = INFO_CRAFTABLES;
         DataDump dump = new DataDump(provider.getColumnCount(), format);
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 
-        for (Map.Entry<ResourceLocation, IRecipe> entry : ForgeRegistries.RECIPES.getEntries())
+        if (server != null)
         {
-            IRecipe recipe = entry.getValue();
-            ItemStack stack = recipe.getRecipeOutput();
+            RecipeManager manager = server.getRecipeManager();
 
-            if (recipe.canFit(3, 3) && stack.isEmpty() == false)
+            for (IRecipe<?> recipe : manager.getRecipes())
             {
-                provider.addLine(dump, stack, entry.getKey());
+                ItemStack stack = recipe.getRecipeOutput();
+
+                if (stack.isEmpty() == false && recipe.canFit(3, 3))
+                {
+                    provider.addLine(dump, stack, recipe.getId());
+                }
             }
         }
 
@@ -91,32 +96,43 @@ public class ItemDump
         return dump.getLines();
     }
 
-    private static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, ItemInfoProviderBase provider)
+    public static String getTagNamesJoined(Item item)
     {
-        if (item.getHasSubtypes())
-        {
-            for (CreativeTabs tab : item.getCreativeTabs())
-            {
-                if (tab != null)
-                {
-                    NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-                    item.getSubItems(tab, stacks);
-
-                    for (ItemStack stack : stacks)
-                    {
-                        // FIXME: Ignore identical duplicate entries from different tabs...
-                        provider.addLine(itemDump, stack, rl);
-                    }
-                }
-            }
-        }
-        else
-        {
-            provider.addLine(itemDump, new ItemStack(item, 1, 0), rl);
-        }
+        return item.getTags().stream().map((id) -> id.toString()).sorted().collect(Collectors.joining(", "));
     }
 
-    public static String getJsonItemsWithPropsDump(EntityPlayer player)
+    public static String getStackInfoBasic(ItemStack stack)
+    {
+        if (stack.isEmpty() == false)
+        {
+            ResourceLocation rl = stack.getItem().getRegistryName();
+            String regName = rl != null ? rl.toString() : "<null>";
+            String displayName = stack.getDisplayName().getString();
+            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+
+            return String.format("[%s - '%s']", regName, displayName);
+        }
+
+        return DataDump.EMPTY_STRING;
+    }
+
+    public static String getStackInfo(ItemStack stack)
+    {
+        if (stack.isEmpty() == false)
+        {
+            ResourceLocation rl = stack.getItem().getRegistryName();
+            String regName = rl != null ? rl.toString() : "<null>";
+            String displayName = stack.getDisplayName().getString();
+            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+            String nbt = stack.getTag() != null ? stack.getTag().toString() : "<no NBT>";
+
+            return String.format("[%s - '%s' - %s]", regName, displayName, nbt);
+        }
+
+        return DataDump.EMPTY_STRING;
+    }
+
+    public static String getJsonItemsWithPropsDump(PlayerEntity player)
     {
         HashMultimap<String, ResourceLocation> map = HashMultimap.create(10000, 16);
 
@@ -142,7 +158,7 @@ public class ItemDump
             for (ResourceLocation key : items)
             {
                 JsonArray arrItem = new JsonArray();
-                getDataForItemSubtypesForJson(arrItem, ForgeRegistries.ITEMS.getValue(key), key, player);
+                addDataForItemSubtypeForJson(arrItem, ForgeRegistries.ITEMS.getValue(key), key, player);
                 objectMod.add(key.toString(), arrItem);
             }
 
@@ -154,113 +170,21 @@ public class ItemDump
         return gson.toJson(root);
     }
 
-    public static String getOredictKeysJoined(@Nonnull ItemStack stack)
+    private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, ResourceLocation rl, PlayerEntity player)
     {
-        if (stack.isEmpty())
-        {
-            return DataDump.EMPTY_STRING;
-        }
-
-        int[] ids = OreDictionary.getOreIDs(stack);
-
-        if (ids.length == 0)
-        {
-            return DataDump.EMPTY_STRING;
-        }
-
-        List<String> names = new ArrayList<String>();
-
-        for (int id : ids)
-        {
-            names.add(OreDictionary.getOreName(id));
-        }
-
-        if (names.size() == 1)
-        {
-            return names.get(0);
-        }
-
-        Collections.sort(names);
-
-        return String.join(",", names);
-    }
-
-    public static String getStackInfoBasic(ItemStack stack)
-    {
-        if (stack.isEmpty() == false)
-        {
-            // old: [%s @ %d - display: %s - NBT: %s]
-            int meta = stack.getMetadata();
-            ResourceLocation rl = stack.getItem().getRegistryName();
-            String regName = rl != null ? rl.toString() : "<null>";
-            String displayName = meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName();
-            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
-
-            return String.format("[%s@%d - '%s']", regName, meta, displayName);
-        }
-
-        return DataDump.EMPTY_STRING;
-    }
-
-    public static String getStackInfo(ItemStack stack)
-    {
-        if (stack.isEmpty() == false)
-        {
-            // old: [%s @ %d - display: %s - NBT: %s]
-            int meta = stack.getMetadata();
-            ResourceLocation rl = stack.getItem().getRegistryName();
-            String regName = rl != null ? rl.toString() : "<null>";
-            String displayName = meta == OreDictionary.WILDCARD_VALUE ? "(WILDCARD)" : stack.getDisplayName();
-            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
-
-            return String.format("[%s@%d - '%s' - %s]", regName, meta, displayName,
-                    stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
-        }
-
-        return DataDump.EMPTY_STRING;
-    }
-
-    private static void getDataForItemSubtypesForJson(JsonArray arr, Item item, ResourceLocation rl, EntityPlayer player)
-    {
-        if (item.getHasSubtypes())
-        {
-            for (CreativeTabs tab : item.getCreativeTabs())
-            {
-                if (tab != null)
-                {
-                    NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
-                    item.getSubItems(tab, stacks);
-
-                    for (ItemStack stack : stacks)
-                    {
-                        // FIXME: Ignore identical duplicate entries from different tabs...
-                        addDataForItemSubtypeForJson(arr, item, rl, true, stack, player);
-                    }
-                }
-            }
-        }
-        else
-        {
-            addDataForItemSubtypeForJson(arr, item, rl, false, new ItemStack(item, 1, 0), player);
-        }
-    }
-
-    private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, ResourceLocation rl, boolean hasSubTypes, ItemStack stack, EntityPlayer player)
-    {
-        int itemId = Item.getIdFromItem(item);
-        int itemMeta = stack.getMetadata();
+        int id = Item.getIdFromItem(item);
+        ItemStack stack = new ItemStack(item);
         int maxDamage = stack.getMaxDamage();
-        String subTypes = hasSubTypes ? String.valueOf(hasSubTypes) : "?";
+        String idStr = String.valueOf(id);
         String exists = DataDump.isDummied(ForgeRegistries.ITEMS, rl) ? "false" : "true";
-        String oreDictKeys = ItemDump.getOredictKeysJoined(stack);
-        String itemName = item.getRegistryName().toString();
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : item.getTranslationKey(stack);
+        String tags = getTagNamesJoined(item);
+        String regName = rl != null ? rl.toString() : "<null>";
+        String displayName = stack.getDisplayName().getString();
         displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
         JsonObject obj = new JsonObject();
-        obj.add("RegistryName", new JsonPrimitive(itemName));
-        obj.add("ItemID", new JsonPrimitive(itemId));
-        obj.add("ItemMeta", new JsonPrimitive(itemMeta));
+        obj.add("RegistryName", new JsonPrimitive(regName));
+        obj.add("ItemID", new JsonPrimitive(idStr));
         obj.add("MaxStackSize", new JsonPrimitive(stack.getMaxStackSize()));
 
         if (maxDamage > 0)
@@ -268,42 +192,29 @@ public class ItemDump
             obj.add("MaxDurability", new JsonPrimitive(maxDamage));
         }
 
-        obj.add("SubTypes", new JsonPrimitive(subTypes));
         obj.add("Exists", new JsonPrimitive(exists));
         obj.add("DisplayName", new JsonPrimitive(displayName));
 
-        TellMe.proxy.addCreativeTabNames(obj, item);
+        TellMe.dataProvider.addItemGroupNames(obj, item);
 
-        if (item instanceof ItemBlock)
+        if (item instanceof BlockItem)
         {
             try
             {
                 World world = player.getEntityWorld();
-                BlockPos pos = BlockPos.ORIGIN;
-                ItemStack stackBefore = player.getHeldItemMainhand();
-                Block block = ((ItemBlock) item).getBlock();
-                IBlockState state = block.getDefaultState();
-
-                try {
-                    setHeldItemWithoutEquipSound(player, EnumHand.MAIN_HAND, stack);
-                    state = block.getStateForPlacement(world, pos, EnumFacing.UP, 0.5f, 1f, 0.5f, itemMeta, player, EnumHand.MAIN_HAND);
-                } catch (Exception e) {}
-
-                setHeldItemWithoutEquipSound(player, EnumHand.MAIN_HAND, stackBefore);
-
+                BlockPos pos = BlockPos.ZERO;
+                Block block = ((BlockItem) item).getBlock();
+                BlockState state = block.getDefaultState();
                 String hardness = String.format("%.2f", BlockDump.field_blockHardness.get(block));
                 String resistance = String.format("%.2f", BlockDump.field_blockResistance.get(block));
-                String tool = block.getHarvestTool(state);
+                String tool = block.getHarvestTool(state).getName();
                 int harvestLevel = block.getHarvestLevel(state);
                 String harvestLevelName = (harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length) ? HARVEST_LEVEL_NAMES[harvestLevel] : "Unknown";
-                boolean fallingBlock = block instanceof BlockFalling;
-
-                @SuppressWarnings("deprecation")
+                boolean fallingBlock = block instanceof FallingBlock;
                 int light = state.getLightValue();
                 // Ugly way to try to get the flammability...
-                boolean flammable = block.getFlammability(world, pos, EnumFacing.UP) > 0;//Blocks.FIRE.getFlammability(block) > 0;
-                @SuppressWarnings("deprecation")
-                int opacity = state.getLightOpacity();
+                boolean flammable = block.getFlammability(state, world, pos, Direction.UP) > 0;//Blocks.FIRE.getFlammability(block) > 0;
+                int opacity = state.getOpacity(world, pos);
 
                 obj.add("Type", new JsonPrimitive("block"));
                 obj.add("Hardness", new JsonPrimitive(hardness));
@@ -318,11 +229,11 @@ public class ItemDump
             }
             catch (Exception e) {}
         }
-        else if (item instanceof ItemFood)
+        else if (item.isFood())
         {
-            ItemFood itemFood = (ItemFood) item;
-            String hunger = stack.isEmpty() == false ? String.valueOf(itemFood.getHealAmount(stack)) : "?";
-            String saturation = stack.isEmpty() == false ? String.valueOf(itemFood.getSaturationModifier(stack)) : "?";
+            Food food = item.getFood();
+            String hunger = stack.isEmpty() == false ? String.valueOf(food.getHealing()) : "?";
+            String saturation = stack.isEmpty() == false ? String.valueOf(food.getSaturation()) : "?";
 
             obj.add("Type", new JsonPrimitive("food"));
             obj.add("Hunger", new JsonPrimitive(hunger));
@@ -331,28 +242,26 @@ public class ItemDump
         else
         {
             obj.add("Type", new JsonPrimitive("generic"));
-            List<String> toolClasses = new ArrayList<>(item.getToolClasses(stack));
+            List<ToolType> toolTypes = new ArrayList<>(item.getToolTypes(stack));
 
-            if (toolClasses.isEmpty() == false)
+            if (toolTypes.isEmpty() == false)
             {
-                StringBuilder levels = new StringBuilder(32);
-                levels.append(String.valueOf(item.getHarvestLevel(stack, toolClasses.get(0), null, null)));
+                ArrayList<String> toolTypeNames = new ArrayList<>();
+                toolTypes.forEach((c) -> toolTypeNames.add(c.getName()));
+                Collections.sort(toolTypeNames);
 
-                for (int i = 1; i < toolClasses.size(); ++i)
+                String levels = toolTypes.stream().map((t) -> String.valueOf(item.getHarvestLevel(stack, t, player, null))).collect(Collectors.joining(","));
+
+                obj.add("ToolTypes", new JsonPrimitive(String.join(",", toolTypeNames)));
+                obj.add("HarvestLevels", new JsonPrimitive(levels));
+
+                if (item instanceof ToolItem)
                 {
-                    levels.append(",").append(item.getHarvestLevel(stack, toolClasses.get(i), null, null));
-                }
-
-                obj.add("ToolClasses", new JsonPrimitive(String.join(",", toolClasses)));
-                obj.add("HarvestLevels", new JsonPrimitive(levels.toString()));
-
-                if (item instanceof ItemTool)
-                {
-                    obj.add("ToolMaterial", new JsonPrimitive(((ItemTool) item).getToolMaterialName()));
+                    obj.add("ToolMaterial", new JsonPrimitive(((ToolItem) item).getTier().toString()));
                 }
             }
 
-            Multimap<String, AttributeModifier> attributes = item.getAttributeModifiers(EntityEquipmentSlot.MAINHAND, stack);
+            Multimap<String, AttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlotType.MAINHAND, stack);
 
             if (attributes.isEmpty() == false)
             {
@@ -367,7 +276,7 @@ public class ItemDump
 
                     AttributeModifier att = entry.getValue();
                     o2.add("Name", new JsonPrimitive(att.getName()));
-                    o2.add("Operation", new JsonPrimitive(att.getOperation()));
+                    o2.add("Operation", new JsonPrimitive(att.getOperation().name()));
                     o2.add("Amount", new JsonPrimitive(att.getAmount()));
 
                     attributeArr.add(o1);
@@ -377,18 +286,18 @@ public class ItemDump
             }
         }
 
-        obj.add("OreDict", new JsonPrimitive(oreDictKeys));
+        obj.add("Tags", new JsonPrimitive(tags));
 
         arr.add(obj);
     }
 
-    public static void setHeldItemWithoutEquipSound(EntityPlayer player, EnumHand hand, ItemStack stack)
+    public static void setHeldItemWithoutEquipSound(PlayerEntity player, Hand hand, ItemStack stack)
     {
-        if (hand == EnumHand.MAIN_HAND)
+        if (hand == Hand.MAIN_HAND)
         {
             player.inventory.mainInventory.set(player.inventory.currentItem, stack);
         }
-        else if (hand == EnumHand.OFF_HAND)
+        else if (hand == Hand.OFF_HAND)
         {
             player.inventory.offHandInventory.set(0, stack);
         }
@@ -399,11 +308,6 @@ public class ItemDump
         protected String getItemId(ItemStack stack)
         {
             return String.valueOf(Item.getIdFromItem(stack.getItem()));
-        }
-
-        protected String getItemMeta(ItemStack stack)
-        {
-            return String.valueOf(stack.isEmpty() == false ? stack.getMetadata() : 0);
         }
 
         protected String getModName(ResourceLocation rl)
@@ -418,75 +322,23 @@ public class ItemDump
 
         protected String getDisplayName(ItemStack stack)
         {
-            return stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
-        }
-
-        protected String getHasSubtypesString(ItemStack stack)
-        {
-            return String.valueOf(stack.getItem().getHasSubtypes());
+            return stack.isEmpty() == false ? stack.getDisplayName().getString() : DataDump.EMPTY_STRING;
         }
 
         protected String getNBTString(ItemStack stack)
         {
-            return stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
-        }
-
-        protected String getToolClassesString(ItemStack stack)
-        {
-            Item item = stack.getItem();
-            Set<String> toolClasses = item.getToolClasses(stack);
-
-            if (toolClasses.isEmpty() == false)
-            {
-                ArrayList<String> classes = new ArrayList<>();
-                classes.addAll(toolClasses);
-                Collections.sort(classes);
-                return String.join(", ", classes);
-            }
-
-            return "";
-        }
-
-        protected String getHarvestLevelString(ItemStack stack)
-        {
-            Item item = stack.getItem();
-            Set<String> toolClasses = item.getToolClasses(stack);
-
-            if (toolClasses.isEmpty() == false)
-            {
-                ArrayList<String> classes = new ArrayList<>();
-                classes.addAll(toolClasses);
-                Collections.sort(classes);
-
-                for (int i = 0; i < classes.size(); ++i)
-                {
-                    String c = classes.get(i);
-                    int harvestLevel = item.getHarvestLevel(stack, c, null, null);
-                    String hlName = harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length ? HARVEST_LEVEL_NAMES[harvestLevel] : "?";
-                    classes.set(i, String.format("%s = %d (%s)", c, harvestLevel, hlName));
-                }
-
-                return String.join(", ", classes);
-            }
-
-            return "";
+            return stack.isEmpty() == false && stack.getTag() != null ? stack.getTag().toString() : DataDump.EMPTY_STRING;
         }
 
         public void addHeaders(DataDump dump)
         {
             dump.setColumnProperties(2, Alignment.RIGHT, true); // ID
-            dump.setColumnProperties(3, Alignment.RIGHT, true); // meta
-            dump.setColumnAlignment(4, Alignment.RIGHT); // sub-types
 
             dump.setUseColumnSeparator(true);
 
             dump.addHeader("*** WARNING ***");
-            dump.addHeader("The block and item IDs are dynamic and will be different on each world!");
-            dump.addHeader("DO NOT use them for anything \"proper\"!! (other than manual editing/fixing of raw world data or something)");
-            dump.addHeader("*** ALSO ***");
-            dump.addHeader("The server doesn't have a list of sub block and sub items");
-            dump.addHeader("(= items with different damage value or blocks with different metadata).");
-            dump.addHeader("That is why the block and item list dumps only contain one entry per block/item class (separate ID) when run on a server.");
+            dump.addHeader("Don't use the item ID for anything \"proper\"!!");
+            dump.addHeader("It's provided here for completeness's sake, it's different in every world.");
         }
 
         public abstract int getColumnCount();
@@ -501,13 +353,13 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 7;
+            return 5;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys");
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
         }
 
         @Override
@@ -516,10 +368,8 @@ public class ItemDump
             dump.addData(this.getModName(id),
                          this.getRegistryName(id),
                          this.getItemId(stack),
-                         this.getItemMeta(stack),
-                         this.getHasSubtypesString(stack),
                          this.getDisplayName(stack),
-                         getOredictKeysJoined(stack));
+                         getTagNamesJoined(stack.getItem()));
         }
     }
 
@@ -528,13 +378,13 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 8;
+            return 6;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Ore Dict keys", "NBT");
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags", "NBT");
         }
 
         @Override
@@ -543,10 +393,8 @@ public class ItemDump
             dump.addData(this.getModName(id),
                          this.getRegistryName(id),
                          this.getItemId(stack),
-                         this.getItemMeta(stack),
-                         this.getHasSubtypesString(stack),
                          this.getDisplayName(stack),
-                         getOredictKeysJoined(stack),
+                         getTagNamesJoined(stack.getItem()),
                          this.getNBTString(stack));
         }
     }
@@ -556,27 +404,49 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 9;
+            return 7;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Tool classes", "Harvest levels", "Ore Dict keys");
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tool classes", "Harvest levels", "Tags");
         }
 
         @Override
         public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
         {
-            dump.addData(this.getModName(id),
-                         this.getRegistryName(id),
-                         this.getItemId(stack),
-                         this.getItemMeta(stack),
-                         this.getHasSubtypesString(stack),
-                         this.getDisplayName(stack),
-                         this.getToolClassesString(stack),
-                         this.getHarvestLevelString(stack),
-                         getOredictKeysJoined(stack));
+            Item item = stack.getItem();
+
+            if (item.getToolTypes(stack).isEmpty() == false)
+            {
+                List<ToolType> toolTypes = new ArrayList<>(item.getToolTypes(stack));
+
+                Collections.sort(toolTypes, (t1, t2) -> t1.getName().compareTo(t2.getName()));
+
+                List<String> strings = new ArrayList<>();
+                toolTypes.forEach((c) -> strings.add(c.getName()));
+
+                String toolClasses = String.join(", ", strings);
+
+                for (int i = 0; i < toolTypes.size(); ++i)
+                {
+                    ToolType type = toolTypes.get(i);
+                    int harvestLevel = item.getHarvestLevel(stack, type, null, null);
+                    String hlName = harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length ? HARVEST_LEVEL_NAMES[harvestLevel] : "?";
+                    strings.set(i, String.format("%s = %d (%s)", type.getName(), harvestLevel, hlName));
+                }
+
+                String harvestLevels = String.join(", ", strings);
+
+                dump.addData(this.getModName(id),
+                             this.getRegistryName(id),
+                             this.getItemId(stack),
+                             this.getDisplayName(stack),
+                             toolClasses,
+                             harvestLevels,
+                             getTagNamesJoined(stack.getItem()));
+            }
         }
     }
 
@@ -585,28 +455,39 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 8;
+            return 6;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Subtypes", "Display name", "Plant Type", "Ore Dict keys");
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Plant Type", "Tags");
         }
 
         @Override
         public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
         {
-            if (stack.getItem() instanceof IPlantable)
+            if (stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock() instanceof IPlantable)
             {
-                dump.addData(this.getModName(id),
-                             this.getRegistryName(id),
-                             this.getItemId(stack),
-                             this.getItemMeta(stack),
-                             this.getHasSubtypesString(stack),
-                             this.getDisplayName(stack),
-                             ((IPlantable) stack.getItem()).getPlantType(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0), BlockPos.ORIGIN).name(),
-                             getOredictKeysJoined(stack));
+                World world = null;
+
+                try
+                {
+                    world = TellMe.dataProvider.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.OVERWORLD);
+                }
+                catch (Exception ignore) {}
+
+                if (world != null)
+                {
+                    Block block = ((BlockItem) stack.getItem()).getBlock();
+
+                    dump.addData(this.getModName(id),
+                            this.getRegistryName(id),
+                            this.getItemId(stack),
+                            this.getDisplayName(stack),
+                            ((IPlantable) block).getPlantType(world, BlockPos.ZERO).name(),
+                            getTagNamesJoined(stack.getItem()));
+                }
             }
         }
     }
@@ -616,13 +497,13 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 7;
+            return 6;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Meta/dmg", "Display name", "Recipe name", "Ore Dict keys");
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Recipe name", "Tags");
         }
 
         @Override
@@ -633,10 +514,9 @@ public class ItemDump
             dump.addData(this.getModName(id),
                          this.getRegistryName(itemId),
                          this.getItemId(stack),
-                         this.getItemMeta(stack),
                          this.getDisplayName(stack),
                          this.getRegistryName(id),
-                         getOredictKeysJoined(stack));
+                         getTagNamesJoined(stack.getItem()));
         }
     }
 }

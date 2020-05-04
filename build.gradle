@@ -1,17 +1,18 @@
+
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -24,92 +25,78 @@ configFile.withReader {
     project.ext.config = new ConfigSlurper().parse prop
 }
 
-group = config.group + config.mod_id // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = config.mod_id + '-' + config.minecraft_version_out
-
 minecraft {
-    version = config.minecraft_version + "-" + config.forge_version
-    runDir = "../minecraft"
+    //mappings channel: 'stable', version: config.mappings_version
+    mappings = config.mappings_version
 
-    // the mappings can be changed at any time, and must be in the following format.
-    // snapshot_YYYYMMDD   snapshot are built nightly.
-    // stable_#            stables are built at the discretion of the MCP team.
-    // Use non-default mappings at your own risk. they may not allways work.
-    // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings =  config.mappings_version
-    makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    //makeObfSourceJar = false
 
-    ext.mod_version = "${config.mod_version}"
+    ext.mod_version = config.mod_version
 
-    if (mod_version.endsWith('-dev')) {
-        mod_version = mod_version + "." + new Date().format('yyyyMMdd.HHmmss')
+    if (config.mod_version.endsWith('-dev')) {
+        config.mod_version = config.mod_version + "." + new Date().format('yyyyMMdd.HHmmss')
     }
 
+    /*
     replaceIn "reference/Reference.java"
     replace "@MOD_VERSION@", mod_version
 
     if (project.hasProperty("signJarKeyStore")) {
         replace "@FINGERPRINT@", signJarFingerprint
     }
+    */
 }
 
 dependencies {
-    // you may put jars on which you depend on in ./libs
-    // or you may define them like so..
-    //compile "some.group:artifact:version:classifier"
-    //compile "some.group:artifact:version"
-      
-    // for more info...
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    minecraft 'net.minecraftforge:forge:' + config.minecraft_version + '-' + config.forge_version
 }
 
-version = project.minecraft.mod_version
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    options.encoding = 'UTF-8'
+}
+
+group = config.group + "." + config.mod_id // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = config.mod_file_name + '-' + config.minecraft_version_out
+version = project.config.mod_version
+
+/**
+ * This section allows you to customise your generated jar (litemod) file. By
+ * default it includes the generated litemod.json file, however if you prefer to
+ * include your own file from resources, simply remove the line below.
+ */
+jar {
+    // Remove the "-mc1.12" suffix from the file name
+    //classifier = ""
+    // Don't append a 'mod-' filename prefix >_>
+    //baseName = archivesBaseName
+
+    manifest {
+        attributes([
+            "Specification-Title": "${config.mod_id}",
+            "Specification-Vendor": "${config.author}",
+            "Specification-Version": "1", // We are version 1 of ourselves
+            "Implementation-Title": "${config.mod_name}",
+            "Implementation-Version": "${config.mod_version}",
+            "Implementation-Vendor": "${config.author}",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
 
 processResources
 {
     // Exclude the GIMP image files
     exclude '**/*.xcf'
-
-    // Exclude the Cubik model files
-    exclude '**/*.bdc3D'
+    exclude '**/xcf'
 
     // this will ensure that this task is redone when the versions change.
-    inputs.property "mod_version", project.minecraft.mod_version
+    inputs.property "mod_version", project.config.mod_version
     inputs.property "minecraft_version", project.config.minecraft_version
-
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'mod_version': project.minecraft.mod_version, 'minecraft_version': project.config.minecraft_version
-    }
-        
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-
-    // Move access transformers to META-INF
-    //rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
 /*
-// This task creates a jar file containing the unobfuscated class files of the project
-task deobfJar(type: Jar) {
-    from sourceSets.main.output
-    // This classifier is standard and should not be changed
-    classifier = 'deobf'
-}
-
-// This section enables the last two tasks
-artifacts {
-    //archives sourcesJar
-    archives deobfJar
-}
-*/
-
 if (project.hasProperty("signJarKeyStore")) {
     task signJar(type: SignJar, dependsOn: reobfJar) {
         inputFile = jar.archivePath
@@ -123,3 +110,4 @@ if (project.hasProperty("signJarKeyStore")) {
 
     build.dependsOn signJar
 }
+*/

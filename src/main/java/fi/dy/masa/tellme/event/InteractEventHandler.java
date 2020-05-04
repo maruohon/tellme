@@ -1,17 +1,22 @@
 package fi.dy.masa.tellme.event;
 
+import java.util.List;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.RayTraceResult;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.config.Configs;
+import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
+import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.RayTraceUtils;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class InteractEventHandler
 {
@@ -24,15 +29,15 @@ public class InteractEventHandler
     @SubscribeEvent
     public void onRightClickItem(PlayerInteractEvent.RightClickItem event)
     {
-        EntityPlayer player = event.getEntityPlayer();
+        PlayerEntity player = event.getPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (Configs.enableDebugItemForItems && event.getWorld().isRemote == false &&
-            event.getHand() == EnumHand.MAIN_HAND && player.canUseCommand(4, "tellme"))
+        if (Configs.Generic.enableDebugItemForItems && event.getWorld().isRemote == false &&
+            event.getHand() == Hand.MAIN_HAND && player.getCommandSource().hasPermissionLevel(4))
         {
             if (ItemInfo.areItemStacksEqual(Configs.debugItemItems, player.getHeldItemMainhand()))
             {
-                this.printItemInfo(event.getEntityPlayer());
+                this.printItemInfo(player);
             }
             else if (ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
             {
@@ -55,47 +60,57 @@ public class InteractEventHandler
 
     private void printEntityInfo(PlayerInteractEvent event, Entity entity)
     {
-        EntityPlayer player = event.getEntityPlayer();
+        PlayerEntity player = event.getPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (Configs.enableDebugItemForBlockAndEntities &&
-            event.getHand() == EnumHand.MAIN_HAND &&
-            player.canUseCommand(4, "tellme") &&
-            ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+        if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
+            event.getHand() == Hand.MAIN_HAND &&
+            player.getCommandSource().hasPermissionLevel(4) &&
+            ItemStack.areItemsEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
             if (event.getWorld().isRemote == false)
             {
-                EntityInfo.printEntityInfo(player, entity, player.isSneaking());
+                if (player.isSneaking())
+                {
+                    EntityInfo.dumpFullEntityInfoToFile(player, entity);
+                }
+                else
+                {
+                    EntityInfo.printFullEntityInfoToConsole(player, entity);
+                }
             }
 
             event.setCanceled(true);
-            event.setCancellationResult(EnumActionResult.SUCCESS);
+            event.setCancellationResult(ActionResultType.SUCCESS);
         }
     }
 
     private void printBlockInfo(PlayerInteractEvent event, boolean useLiquids)
     {
-        EntityPlayer player = event.getEntityPlayer();
+        PlayerEntity player = event.getPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (Configs.enableDebugItemForBlockAndEntities &&
-            event.getHand() == EnumHand.MAIN_HAND &&
-            player.canUseCommand(4, "tellme") &&
-            ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+        if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
+            event.getHand() == Hand.MAIN_HAND &&
+            player.getCommandSource().hasPermissionLevel(4) &&
+            ItemStack.areItemsEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
         {
             if (event.getWorld().isRemote == false)
             {
-                BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player,
-                        RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids),
-                        ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand()), player.isSneaking());
+                RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids);
+                boolean adjacent = ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand());
+                List<String> lines = BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player, trace, adjacent, false);
+                OutputType outputType = player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE;
+
+                OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, "block_info_", player);
             }
 
             event.setCanceled(true);
-            event.setCancellationResult(EnumActionResult.SUCCESS);
+            event.setCancellationResult(ActionResultType.SUCCESS);
         }
     }
 
-    private void printItemInfo(EntityPlayer player)
+    private void printItemInfo(PlayerEntity player)
     {
         // Select the slot to the right from the current slot, or the first slot if the current slot is the last slot
         int slot = player.inventory.currentItem;
@@ -116,7 +131,7 @@ public class InteractEventHandler
 
         if (stack.isEmpty() == false && stack.getItem() != null)
         {
-            ItemInfo.printItemInfo(player, stack, player.isSneaking());
+            ItemInfo.printItemInfo(player, stack, player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE);
         }
     }
 }

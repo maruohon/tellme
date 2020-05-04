@@ -1,43 +1,34 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
+import java.util.Map;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.RegistryNamespaced;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class TileEntityDump extends DataDump
+public class TileEntityDump
 {
-    private static final Field field_REGISTRY = ObfuscationReflectionHelper.findField(TileEntity.class, "field_190562_f"); // REGISTRY
-
-    private TileEntityDump(Format format)
+    public static List<String> getFormattedTileEntityDump(DataDump.Format format)
     {
-        super(3, format);
-    }
-
-    public static List<String> getFormattedTileEntityDump(Format format)
-    {
-        TileEntityDump tileEntityDump = new TileEntityDump(format);
+        DataDump tileEntityDump = new DataDump(3, format);
 
         try
         {
-            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = getTileEntityRegistry();
-            Set<ResourceLocation> keys = registry.getKeys();
-
-            for (ResourceLocation key : keys)
+            for (Map.Entry<ResourceLocation, TileEntityType<?>> entry : ForgeRegistries.TILE_ENTITIES.getEntries())
             {
-                Class <? extends TileEntity> clazz = registry.getObject(key);
-                tileEntityDump.addData(clazz.getName(), key.toString(), ITickable.class.isAssignableFrom(clazz) ? "yes" : "-");
+                String id = entry.getKey().toString();
+                TileEntityType<?> type = entry.getValue();
+                TileEntity te = type.create();
+                Class <? extends TileEntity> clazz = te.getClass();
+                tileEntityDump.addData(id, clazz.getName(), ITickableTileEntity.class.isAssignableFrom(clazz) ? "yes" : "-");
             }
 
-            tileEntityDump.addTitle("Class", "Registry name", "Ticking?");
+            tileEntityDump.addTitle("Registry name", "Class", "Ticking?");
             tileEntityDump.setColumnAlignment(2, Alignment.RIGHT);
-            tileEntityDump.setUseColumnSeparator(true);
         }
         catch (Exception e)
         {
@@ -45,22 +36,5 @@ public class TileEntityDump extends DataDump
         }
 
         return tileEntityDump.getLines();
-    }
-
-    @Nullable
-    public static RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> getTileEntityRegistry()
-    {
-        try
-        {
-            @SuppressWarnings("unchecked")
-            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = (RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>>) field_REGISTRY.get(null);
-            return registry;
-        }
-        catch (IllegalAccessException e)
-        {
-            TellMe.logger.warn("Failed to get the TileEntity registry", e);
-        }
-
-        return null;
     }
 }

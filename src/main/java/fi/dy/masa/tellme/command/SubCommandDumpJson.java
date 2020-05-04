@@ -1,68 +1,69 @@
 package fi.dy.masa.tellme.command;
 
-import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
-import com.google.common.collect.Lists;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
+import com.google.common.collect.ImmutableList;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.ItemDump;
+import fi.dy.masa.tellme.util.OutputUtils;
 
-public class SubCommandDumpJson extends SubCommandDump
+public class SubCommandDumpJson
 {
-    public SubCommandDumpJson(CommandTellme baseCommand)
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        super(baseCommand);
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("dump-json").build();
+
+        @SuppressWarnings("unchecked")
+        ArgumentCommandNode<CommandSource, List<String>> dumpTypesNode =
+                Commands.argument("dump_types",
+                        StringCollectionArgument.create(() -> ImmutableList.of("blocks", "items-with-props"), "No dump types given"))
+                .executes(c -> execute(c, (List<String>) c.getArgument("dump_types", List.class))).build();
+
+        subCommandRootNode.addChild(dumpTypesNode);
+
+        return subCommandRootNode;
     }
 
-    @Override
-    protected void addSubSubCommands()
+    private static int execute(CommandContext<CommandSource> ctx, List<String> types) throws CommandSyntaxException
     {
-        this.subSubCommands.add("blocks");
-        this.subSubCommands.add("items-with-props");
-    }
+        @Nullable Entity entity = ctx.getSource().getEntity();
 
-    @Override
-    public String getName()
-    {
-        return "dump-json";
-    }
-
-    @Override
-    protected void outputData(MinecraftServer server, ICommandSender sender, String arg) throws CommandException
-    {
-        String data = this.getData(arg, sender);
-
-        if (data == null)
+        for (String type : types)
         {
-            throw new CommandException("Unrecognized parameter: '" + arg + "'");
+            String lines = getData(type, entity);
+
+            if (lines == null)
+            {
+                CommandUtils.throwException("Unrecognized type: '" + type + "'");;
+            }
+
+            OutputUtils.printOutput(Arrays.asList(lines), OutputType.FILE, DataDump.Format.ASCII, type, entity);
         }
 
-        File file = DataDump.dumpDataToFile(arg, Lists.newArrayList(data));
-
-        if (file != null)
-        {
-            sendClickableLinkMessage(sender, "Output written to file %s", file);
-        }
+        return 1;
     }
 
     @Nullable
-    private String getData(String type, ICommandSender sender)
+    private static String getData(String type, @Nullable Entity entity)
     {
         switch (type)
         {
-            case "blocks":
-                return BlockDump.getJsonBlockDump();
-            case "items-with-props":
-                if (sender instanceof EntityPlayer)
-                {
-                    return ItemDump.getJsonItemsWithPropsDump((EntityPlayer) sender);
-                }
-                break;
-            default:
+            case "blocks":              return BlockDump.getJsonBlockDump();
+            case "items-with-props":    if (entity instanceof PlayerEntity) { return ItemDump.getJsonItemsWithPropsDump((PlayerEntity) entity); } break;
         }
 
         return null;

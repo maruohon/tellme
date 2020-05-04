@@ -4,18 +4,14 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class EnchantmentDump extends DataDump
+public class EnchantmentDump
 {
-    private EnchantmentDump(Format format)
+    public static List<String> getFormattedEnchantmentDump(DataDump.Format format)
     {
-        super(5, format);
-    }
-
-    public static List<String> getFormattedEnchantmentDump(Format format)
-    {
-        EnchantmentDump enchantmentDump = new EnchantmentDump(format);
+        DataDump enchantmentDump = new DataDump(5, format);
         Set<ResourceLocation> keys = ForgeRegistries.ENCHANTMENTS.getKeys();
 
         for (ResourceLocation key : keys)
@@ -28,15 +24,15 @@ public class EnchantmentDump extends DataDump
                 String name = ench.getName() != null ? ench.getName() : "<null>";
                 String type = ench.type != null ? ench.type.toString() : "<null>";
                 String rarity = ench.getRarity() != null ? ench.getRarity().toString() : "<null>";
-                int id = Enchantment.getEnchantmentID(ench);
+                @SuppressWarnings("deprecation")
+                int id = Registry.ENCHANTMENT.getId(ench);
 
                 enchantmentDump.addData(regName, name, type, rarity, String.valueOf(id));
             }
         }
 
         enchantmentDump.addTitle("Registry name", "Name", "Type", "Rarity", "ID");
-        enchantmentDump.setColumnProperties(4, Alignment.RIGHT, true);
-        enchantmentDump.setUseColumnSeparator(true);
+        enchantmentDump.setColumnProperties(4, DataDump.Alignment.RIGHT, true);
 
         return enchantmentDump.getLines();
     }

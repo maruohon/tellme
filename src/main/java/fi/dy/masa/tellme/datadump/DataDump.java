@@ -8,17 +8,17 @@ import java.lang.invoke.MethodHandle;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.util.ResourceLocation;
+import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.config.Configs;
+import fi.dy.masa.tellme.util.MethodHandleUtils;
+import fi.dy.masa.tellme.util.MethodHandleUtils.UnableToFindMethodHandleException;
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.util.MethodHandleUtils;
-import fi.dy.masa.tellme.util.MethodHandleUtils.UnableToFindMethodHandleException;
 
 public class DataDump
 {
@@ -29,9 +29,9 @@ public class DataDump
     protected Alignment[] alignment;
     protected boolean[] columnIsNumeric;
     protected Row title;
-    protected List<Row> headers = new ArrayList<Row>();
-    protected List<Row> footers = new ArrayList<Row>();
-    protected List<Row> lines = new ArrayList<Row>();
+    protected final ArrayList<Row> lines = new ArrayList<>();
+    protected final List<Row> headers = new ArrayList<>();
+    protected final List<Row> footers = new ArrayList<>();
     protected int[] widths;
     protected int totalWidth;
     protected String formatStringColumns;
@@ -40,10 +40,11 @@ public class DataDump
     protected String formatStringTitleCSV;
     protected String formatStringSingleLeftCSV;
     protected String lineSeparator;
-    protected boolean useColumnSeparator = false;
-    protected boolean centerTitle = false;
+    protected boolean centerTitle;
     protected boolean repeatTitleAtBottom = true;
+    protected boolean useColumnSeparator = true;
     private boolean sort = true;
+    private boolean sortReverse;
     private Format format = Format.ASCII;
 
     static
@@ -111,29 +112,40 @@ public class DataDump
         return this.format;
     }
 
-    public void setFormat(Format format)
+    public DataDump setFormat(Format format)
     {
         this.format = format;
+        return this;
     }
 
-    public void setSort(boolean sort)
+    public DataDump setSort(boolean sort)
     {
         this.sort = sort;
+        return this;
     }
 
-    public void setCenterTitle(boolean center)
+    public DataDump setSortReverse(boolean reverse)
+    {
+        this.sortReverse = reverse;
+        return this;
+    }
+
+    public DataDump setCenterTitle(boolean center)
     {
         this.centerTitle = center;
+        return this;
     }
 
-    public void setRepeatTitleAtBottom(boolean repeat)
+    public DataDump setRepeatTitleAtBottom(boolean repeat)
     {
         this.repeatTitleAtBottom = repeat;
+        return this;
     }
 
-    public void setUseColumnSeparator(boolean value)
+    public DataDump setUseColumnSeparator(boolean value)
     {
         this.useColumnSeparator = value;
+        return this;
     }
 
     public void addTitle(String... data)
@@ -146,20 +158,30 @@ public class DataDump
 
     public void addHeader(String... data)
     {
-        //this.checkData(data);
+        this.checkHeaderData(data);
         this.headers.add(new Row(data));
     }
 
     public void addHeader(int index, String... data)
     {
-        //this.checkData(data);
+        this.checkHeaderData(data);
         this.headers.add(index, new Row(data));
     }
 
     public void addFooter(String... data)
     {
-        //this.checkData(data);
+        this.checkHeaderData(data);
         this.footers.add(new Row(data));
+    }
+
+    public void clearHeader()
+    {
+        this.headers.clear();
+    }
+
+    public void clearFooter()
+    {
+        this.footers.clear();
     }
 
     public void addData(String... data)
@@ -233,8 +255,7 @@ public class DataDump
     {
         if (data.length != this.columns && data.length != 1)
         {
-            throw new IllegalArgumentException("Invalid number of columns, you must add exactly " +
-                    this.columns + " columns for this type of DataDump");
+            throw new IllegalArgumentException("Invalid number of columns, you must add exactly " + this.columns + " columns for this type of DataDump");
         }
 
         int total = 0;
@@ -458,7 +479,14 @@ public class DataDump
     {
         if (this.sort)
         {
-            Collections.sort(this.lines);
+            if (this.sortReverse)
+            {
+                this.lines.sort((r1, r2) -> r2.compareTo(r1));
+            }
+            else
+            {
+                this.lines.sort((r1, r2) -> r1.compareTo(r2));
+            }
         }
 
         if (this.format == Format.ASCII)
@@ -553,13 +581,13 @@ public class DataDump
     public static File dumpDataToFile(String fileNameBase, String fileNameExtension, List<String> lines)
     {
         File outFile = null;
-        File cfgDir = new File(TellMe.configDirPath);
+        File outputDir = Configs.dumpOutputDir;
 
-        if (cfgDir.exists() == false)
+        if (outputDir.exists() == false)
         {
             try
             {
-                cfgDir.mkdirs();
+                outputDir.mkdirs();
             }
             catch (Exception e)
             {
@@ -570,13 +598,13 @@ public class DataDump
 
         String fileNameBaseWithDate = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis()));
         String fileName = fileNameBaseWithDate + fileNameExtension;
-        outFile = new File(cfgDir, fileName);
+        outFile = new File(outputDir, fileName);
         int postFix = 1;
 
         while (outFile.exists() && postFix < 100)
         {
             fileName = fileNameBaseWithDate + "_" + postFix + fileNameExtension;
-            outFile = new File(cfgDir, fileName);
+            outFile = new File(outputDir, fileName);
             postFix++;
         }
 
@@ -707,7 +735,28 @@ public class DataDump
 
     public enum Format
     {
-        ASCII,
-        CSV;
+        ASCII   ("ascii"),
+        CSV     ("csv");
+
+        private final String arg;
+
+        Format(String arg)
+        {
+            this.arg = arg;
+        }
+
+        @Nullable
+        public static Format fromArg(String arg)
+        {
+            for (Format type : Format.values())
+            {
+                if (type.arg.equals(arg))
+                {
+                    return type;
+                }
+            }
+
+            return null;
+        }
     }
 }

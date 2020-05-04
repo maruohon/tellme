@@ -3,90 +3,69 @@ package fi.dy.masa.tellme.command;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandManager;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.command.argument.FileArgument;
+import fi.dy.masa.tellme.config.Configs;
 
-public class SubCommandBatchRun extends SubCommand
+public class SubCommandBatchRun
 {
-    public static final FilenameFilter FILTER_FILES = new FilenameFilter()
+    public static String getHelp(CommandTellMe baseCommand)
     {
-        @Override
-        public boolean accept(File pathName, String name)
-        {
-            return (new File(pathName, name)).isFile();
-        }
-    };
-
-    public SubCommandBatchRun(CommandTellme baseCommand)
-    {
-        super(baseCommand);
-
-        this.addSubCommandHelp("_generic", "Runs commands from files inside config/tellme/batch_commands/");
+        return "Runs commands from files inside config/tellme/batch_commands/";
     }
 
-    @Override
-    public String getName()
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        return "batch-run";
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("batch-run").build();
+
+        ArgumentCommandNode<CommandSource, File> fileNameNode = Commands.argument("file_name", FileArgument.getFor(getBatchDirectory(), true))
+                .executes(c -> execute(dispatcher, c, c.getArgument("file_name", File.class))).build();
+
+        subCommandRootNode.addChild(fileNameNode);
+
+        return subCommandRootNode;
     }
 
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    private static int execute(CommandDispatcher<CommandSource> dispatcher, CommandContext<CommandSource> ctx, File file) throws CommandSyntaxException
     {
-        if (args.length != 1)
+        if (file != null && file.exists() && file.canRead())
         {
-            return Collections.emptyList();
-        }
-
-        return CommandBase.getListOfStringsMatchingLastWord(args, this.getExistingBatchFileNames());
-    }
-
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-    {
-        if (args.length == 1)
-        {
-            this.runBatchCommands(server, sender, args[0]);
+            runBatchCommands(null, ctx.getSource(), file);
         }
         else
         {
-            throw new WrongUsageException(this.getSubCommandUsagePre() + " batch-run <filename>");
+            CommandUtils.throwException("Usage: /tellme batch-run <filename>");
         }
+
+        return 1;
     }
 
-    private void runBatchCommands(MinecraftServer server, ICommandSender sender, String fileName)
+    private static void runBatchCommands(CommandDispatcher<CommandSource> dispatcher, CommandSource source, File batchFile) throws CommandSyntaxException
     {
-        File batchFile = this.getBatchCommandFile(fileName);
+        List<String> commands = getCommands(batchFile);
 
-        if (batchFile != null)
+        for (String command : commands)
         {
-            ICommandManager manager = server.getCommandManager();
-            List<String> commands = this.getCommands(batchFile);
-
-            for (String command : commands)
-            {
-                TellMe.logger.info("Running a command: '{}'", command);
-                manager.executeCommand(sender, command);
-            }
+            TellMe.logger.info("Running a command: '{}'", command);
+            dispatcher.execute(command, source);
         }
     }
 
-    private List<String> getCommands(File batchFile)
+    private static List<String> getCommands(File batchFile)
     {
         List<String> lines = new ArrayList<String>();
 
@@ -114,25 +93,21 @@ public class SubCommandBatchRun extends SubCommand
         return lines;
     }
 
-    @Nullable
-    private File getBatchCommandFile(String fileName)
+    private static File getBatchDirectory()
     {
-        File cfgDir = new File(TellMe.configDirPath);
-        File batchFile = new File(new File(cfgDir, "batch_commands"), fileName);
+        File cfgDir = Configs.dumpOutputDir;
+        return new File(cfgDir, "batch_commands");
+    }
 
+    @Nullable
+    private static File getBatchCommandFile(String fileName)
+    {
+        File batchFile = new File(getBatchDirectory(), fileName);
         return batchFile.exists() && batchFile.isFile() ? batchFile : null;
     }
 
-    private List<String> getExistingBatchFileNames()
+    public static List<String> getBatchFileNames()
     {
-        File dir = new File(new File(TellMe.configDirPath), "batch_commands");
-
-        if (dir.isDirectory())
-        {
-            String[] names = dir.list(FILTER_FILES);
-            return Arrays.asList(names);
-        }
-
-        return Collections.emptyList();
+        return CommandUtils.getFileNames(getBatchDirectory(), CommandUtils.FILTER_FILES);
     }
 }

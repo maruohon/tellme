@@ -2,53 +2,54 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
+import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.EntityType;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.structure.StructureBoundingBox;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.TileEntityDump;
 import fi.dy.masa.tellme.util.BlockInfo;
+import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.WorldUtils;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 
 public class Locate extends ChunkProcessorAllChunks
 {
+    private final List<LocationData> data = new ArrayList<>();
     private final LocateType locateType;
-    private final OutputType outputType;
-    private final Format format;
-    private final Set<String> filters;
+    private final DataDump.Format format;
+    private final Collection<String> filters;
     private boolean printDimension;
-    private List<LocationData> data = new ArrayList<>();
 
-    private Locate(LocateType locateType, OutputType outputType, Set<String> filters)
+    private Locate(LocateType locateType, DataDump.Format format, Collection<String> filters)
     {
         this.locateType = locateType;
-        this.outputType = outputType;
         this.filters = filters;
-        this.format = outputType == OutputType.DUMP_CSV ? Format.CSV : Format.ASCII;
+        this.format = format;
     }
 
-    public static Locate create(LocateType locateType, OutputType outputType, Set<String> filters)
+    public static Locate create(LocateType locateType, DataDump.Format format, Collection<String> filters)
     {
-        return new Locate(locateType, outputType, filters);
+        return new Locate(locateType, format, filters);
     }
 
     public Locate setPrintDimension(boolean printDimension)
@@ -57,20 +58,14 @@ public class Locate extends ChunkProcessorAllChunks
         return this;
     }
 
-    public OutputType getOutputType()
-    {
-        return this.outputType;
-    }
-
     public LocateType getLocateType()
     {
         return this.locateType;
     }
 
-    private IdentityHashMap<IBlockState, Integer> generateBlockStateFilters()
+    private Set<BlockState> generateBlockStateFilters()
     {
-        int i = 0; // dummy
-        IdentityHashMap<IBlockState, Integer> blockStateFilter = new IdentityHashMap<IBlockState, Integer>(this.filters.size() * 16);
+        Set<BlockState> filters = Sets.newIdentityHashSet();
         ResourceLocation air = new ResourceLocation("minecraft:air");
 
         for (String str : this.filters)
@@ -83,7 +78,7 @@ public class Locate extends ChunkProcessorAllChunks
             if (block != null && (block != Blocks.AIR || key.equals(air)))
             {
                 // First get all valid states for this block
-                Collection<IBlockState> states = block.getBlockState().getValidStates();
+                Collection<BlockState> states = block.getStateContainer().getValidStates();
                 // Then get the list of properties and their values in the given name (if any)
                 List<Pair<String, String>> props = BlockInfo.getProperties(str);
 
@@ -96,9 +91,9 @@ public class Locate extends ChunkProcessorAllChunks
                     }
                 }
 
-                for (IBlockState state : states)
+                for (BlockState state : states)
                 {
-                    blockStateFilter.put(state, i++);
+                    filters.add(state);
                 }
             }
             else
@@ -107,22 +102,25 @@ public class Locate extends ChunkProcessorAllChunks
             }
         }
 
-        return blockStateFilter;
+        return filters;
     }
 
-    private Set<Class<? extends Entity>> generateEntityFilters()
+    private Set<EntityType<?>> generateEntityFilters()
     {
-        Set<Class<? extends Entity>> set = new HashSet<Class<? extends Entity>>();
+        Set<EntityType<?>> set = Sets.newIdentityHashSet();
 
         for (String name : this.filters)
         {
-            Class<? extends Entity> clazz = EntityList.getClass(new ResourceLocation(name));
-
-            if (clazz != null)
+            try
             {
-                set.add(clazz);
+                EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(name));
+
+                if (type != null)
+                {
+                    set.add(type);
+                }
             }
-            else
+            catch (Exception e)
             {
                 TellMe.logger.warn("Invalid entity name '{}'", name);
             }
@@ -131,20 +129,22 @@ public class Locate extends ChunkProcessorAllChunks
         return set;
     }
 
-    private Set<Class<? extends TileEntity>> generateTileEntityFilters()
+    private Set<TileEntityType<?>> generateTileEntityFilters()
     {
-        Set<Class<? extends TileEntity>> set = new HashSet<Class<? extends TileEntity>>();
+        Set<TileEntityType<?>> set = Sets.newIdentityHashSet();
 
         for (String name : this.filters)
         {
-            RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = TileEntityDump.getTileEntityRegistry();
-            Class<? extends TileEntity> clazz = registry.getObject(new ResourceLocation(name));
-
-            if (clazz != null)
+            try
             {
-                set.add(clazz);
+                TileEntityType<?> type = ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(name));
+
+                if (type != null)
+                {
+                    set.add(type);
+                }
             }
-            else
+            catch (Exception e)
             {
                 TellMe.logger.warn("Invalid TileEntity name '{}'", name);
             }
@@ -171,7 +171,7 @@ public class Locate extends ChunkProcessorAllChunks
         }
     }
 
-    private void locateBlocks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, IdentityHashMap<IBlockState, Integer> filters)
+    private void locateBlocks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<BlockState> filters)
     {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
         int count = 0;
@@ -179,20 +179,21 @@ public class Locate extends ChunkProcessorAllChunks
 
         for (Chunk chunk : chunks)
         {
-            if (this.data.size() >= 100000)
+            if (this.data.size() > 100000)
             {
                 TellMe.logger.warn("Over 100 000 blocks found already, aborting...");
                 break;
             }
 
-            final int dim = chunk.getWorld().provider.getDimension();
+            ChunkPos chunkPos = chunk.getPos();
+            final String dim = WorldUtils.getDimensionId(chunk.getWorld());
             final int topY = chunk.getTopFilledSegment() + 15;
-            final int xMin = Math.max(chunk.x << 4, posMin.getX());
+            final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
-            final int zMin = Math.max(chunk.z << 4, posMin.getZ());
-            final int xMax = Math.min((chunk.x << 4) + 15, posMax.getX());
+            final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
+            final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
-            final int zMax = Math.min((chunk.z << 4) + 15, posMax.getZ());
+            final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
 
             for (int z = zMin; z <= zMax; ++z)
             {
@@ -201,12 +202,12 @@ public class Locate extends ChunkProcessorAllChunks
                     for (int y = yMin; y <= yMax; ++y)
                     {
                         pos.setPos(x, y, z);
-                        IBlockState state = chunk.getBlockState(pos);
+                        BlockState state = chunk.getBlockState(pos);
 
-                        if (filters.containsKey(state))
+                        if (filters.contains(state))
                         {
-                            //ResourceLocation name = state.getBlock().getRegistryName();
-                            this.data.add(LocationData.of(state.toString(), dim, new Vec3d(x, y, z)));
+                            ResourceLocation name = state.getBlock().getRegistryName();
+                            this.data.add(LocationData.of(name.toString(), dim, new Vec3d(x, y, z)));
                             count++;
                         }
                     }
@@ -219,20 +220,21 @@ public class Locate extends ChunkProcessorAllChunks
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
-    private void locateEntities(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<Class<? extends Entity>> filters)
+    private void locateEntities(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<EntityType<?>> filters)
     {
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
         for (Chunk chunk : chunks)
         {
-            final int dim = chunk.getWorld().provider.getDimension();
-            final int xMin = Math.max(chunk.x << 4, posMin.getX());
+            ChunkPos chunkPos = chunk.getPos();
+            final String dim = WorldUtils.getDimensionId(chunk.getWorld());
+            final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
-            final int zMin = Math.max(chunk.z << 4, posMin.getZ());
-            final int xMax = Math.min((chunk.x << 4) + 16, posMax.getX());
+            final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
+            final int xMax = Math.min((chunkPos.x << 4) + 16, posMax.getX());
             final int yMax = Math.min(256, posMax.getY());
-            final int zMax = Math.min((chunk.z << 4) + 16, posMax.getZ());
+            final int zMax = Math.min((chunkPos.z << 4) + 16, posMax.getZ());
             AxisAlignedBB bb = new AxisAlignedBB(xMin, yMin, zMin, xMax, yMax, zMax);
 
             for (int i = 0; i < chunk.getEntityLists().length; i++)
@@ -241,10 +243,12 @@ public class Locate extends ChunkProcessorAllChunks
 
                 for (Entity entity : map)
                 {
-                    if (filters.contains(entity.getClass()) && entity.getEntityBoundingBox().intersects(bb))
+                    EntityType<?> type = entity.getType();
+
+                    if (filters.contains(type) && entity.getBoundingBox().intersects(bb))
                     {
-                        ResourceLocation name = EntityList.getKey(entity);
-                        this.data.add(LocationData.of(name.toString(), dim, entity.getPositionVector()));
+                        String name = EntityInfo.getEntityNameFor(type);
+                        this.data.add(LocationData.of(name, dim, entity.getPositionVector()));
                         count++;
                     }
                 }
@@ -256,11 +260,10 @@ public class Locate extends ChunkProcessorAllChunks
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
-    private void locateTileEntities(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<Class<? extends TileEntity>> filters)
+    private void locateTileEntities(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<TileEntityType<?>> filters)
     {
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
-        RegistryNamespaced <ResourceLocation, Class <? extends TileEntity>> registry = TileEntityDump.getTileEntityRegistry();
 
         for (Chunk chunk : chunks)
         {
@@ -270,30 +273,28 @@ public class Locate extends ChunkProcessorAllChunks
                 break;
             }
 
-            final int dim = chunk.getWorld().provider.getDimension();
+            ChunkPos chunkPos = chunk.getPos();
+            final String dim = WorldUtils.getDimensionId(chunk.getWorld());
             final int topY = chunk.getTopFilledSegment() + 15;
-            final int xMin = Math.max(chunk.x << 4, posMin.getX());
+            final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
-            final int zMin = Math.max(chunk.z << 4, posMin.getZ());
-            final int xMax = Math.min((chunk.x << 4) + 15, posMax.getX());
+            final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
+            final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
-            final int zMax = Math.min((chunk.z << 4) + 15, posMax.getZ());
-            StructureBoundingBox box = StructureBoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
+            final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
+            MutableBoundingBox box = MutableBoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
 
             for (TileEntity te : chunk.getTileEntityMap().values())
             {
                 BlockPos pos = te.getPos();
+                TileEntityType<?> type = te.getType();
                 //System.out.printf("plop @ %s - box: %s\n", pos, box);
 
-                if (filters.contains(te.getClass()) && box.isVecInside(pos))
+                if (filters.contains(type) && box.isVecInside(pos))
                 {
-                    ResourceLocation name = registry.getNameForObject(te.getClass());
-
-                    if (name != null)
-                    {
-                        this.data.add(LocationData.of(name.toString(), dim, new Vec3d(pos)));
-                        count++;
-                    }
+                    String name = BlockInfo.getBlockEntityNameFor(type);
+                    this.data.add(LocationData.of(name.toString(), dim, new Vec3d(pos)));
+                    count++;
                 }
             }
         }
@@ -305,101 +306,148 @@ public class Locate extends ChunkProcessorAllChunks
 
     public List<String> getLines()
     {
-        DataDump dump = new DataDump(this.printDimension ? 5 : 4, this.format);
-        String fmtChunk = this.outputType == OutputType.DUMP_CSV ? "%d,%d" : "%4d,%4d";
-        String fmtPos = this.outputType == OutputType.DUMP_CSV ? "x = %.2f, y = %.2f, z = %.2f" : "x = %8.2f, y = %5.2f, z = %8.2f";
+        int columnCount = this.format == Format.CSV ? 8 : 4;
 
         if (this.printDimension)
         {
-            for (int i = 0; i < this.data.size(); i++)
+            columnCount += 1;
+        }
+
+        DataDump dump = new DataDump(columnCount, this.format);
+
+        for (int i = 0; i < this.data.size(); i++)
+        {
+            LocationData entry = this.data.get(i);
+            this.addLine(dump, entry, this.printDimension, this.format);
+        }
+
+        if (this.format == Format.CSV)
+        {
+            if (this.printDimension)
             {
-                LocationData entry = this.data.get(i);
-                Vec3d pos = entry.pos;
-
-                dump.addData(   entry.name,
-                                String.valueOf(entry.dim),
-                                String.format("r.%d.%d", ((int) pos.x) >> 9, ((int) pos.z) >> 9),
-                                String.format(fmtChunk, ((int) pos.x) >> 4, ((int) pos.z) >> 4),
-                                String.format(fmtPos, pos.x, pos.y, pos.z));
+                dump.addTitle("ID", "Dim", "Region X", "Region Z", "Chunk X", "Chunk Z", "x", "y", "z");
             }
-
-            dump.addTitle("ID", "Dim", "Region", "Chunk", "Location");
+            else
+            {
+                dump.addTitle("ID", "Region X", "Region Z", "Chunk X", "Chunk Z", "x", "y", "z");
+            }
         }
         else
         {
-            for (int i = 0; i < this.data.size(); i++)
+            if (this.printDimension)
             {
-                LocationData entry = this.data.get(i);
-                Vec3d pos = entry.pos;
-
-                dump.addData(   entry.name,
-                                String.format("r.%d.%d", ((int) pos.x) >> 9, ((int) pos.z) >> 9),
-                                String.format(fmtChunk, ((int) pos.x) >> 4, ((int) pos.z) >> 4),
-                                String.format(fmtPos, pos.x, pos.y, pos.z));
+                dump.addTitle("ID", "Dim", "Region", "Chunk", "Location");
             }
-
-            dump.addTitle("ID", "Region", "Chunk", "Location");
+            else
+            {
+                dump.addTitle("ID", "Region", "Chunk", "Location");
+            }
         }
 
-        dump.setUseColumnSeparator(true);
-
         return dump.getLines();
+    }
+
+    private void addLine(DataDump dump, LocationData data, boolean addDimension, Format format)
+    {
+        Vec3d pos = data.pos;
+        int rx = ((int) pos.x) >> 9;
+        int rz = ((int) pos.z) >> 9;
+        int cx = ((int) pos.x) >> 4;
+        int cz = ((int) pos.z) >> 4;
+
+        if (format == Format.CSV)
+        {
+            String fmtCoord = "%.2f";
+
+            if (addDimension)
+            {
+                dump.addData(data.name,
+                             data.dimension,
+                             String.valueOf(rx), String.valueOf(rz),
+                             String.valueOf(cx), String.valueOf(cz),
+                             String.format(fmtCoord, pos.x), String.format(fmtCoord, pos.y), String.format(fmtCoord, pos.z));
+            }
+            else
+            {
+                dump.addData(data.name,
+                             String.valueOf(rx), String.valueOf(rz),
+                             String.valueOf(cx), String.valueOf(cz),
+                             String.format(fmtCoord, pos.x), String.format(fmtCoord, pos.y), String.format(fmtCoord, pos.z));
+            }
+        }
+        else
+        {
+            String fmtRegion = "r.%d.%d";
+            String fmtChunk = "%5d, %5d";
+            String fmtPos = "x = %8.2f, y = %5.2f, z = %8.2f";
+
+            if (addDimension)
+            {
+                dump.addData(data.name,
+                             data.dimension,
+                             String.format(fmtRegion, rx, rz),
+                             String.format(fmtChunk, cx, cz),
+                             String.format(fmtPos, pos.x, pos.y, pos.z));
+            }
+            else
+            {
+                dump.addData(data.name,
+                             String.format(fmtRegion, rx, rz),
+                             String.format(fmtChunk, cx, cz),
+                             String.format(fmtPos, pos.x, pos.y, pos.z));
+            }
+        }
     }
 
     private static class LocationData
     {
         private final String name;
-        private final int dim;
+        private final String dimension;
         private final Vec3d pos;
 
-        private LocationData(String name, int dim, Vec3d pos)
+        private LocationData(String name, String dimension, Vec3d pos)
         {
             this.name = name;
-            this.dim = dim;
+            this.dimension = dimension;
             this.pos = pos;
         }
 
-        private static LocationData of(String name, int dim, Vec3d pos)
+        private static LocationData of(String name, String dimension, Vec3d pos)
         {
-            return new LocationData(name, dim, pos);
+            return new LocationData(name, dimension, pos);
         }
     }
 
     public enum LocateType
     {
-        INVALID,
-        BLOCK,
-        ENTITY,
-        TILE_ENTITY;
+        BLOCK       ("block",       "blocks",           () -> ForgeRegistries.BLOCKS),
+        ENTITY      ("entity",      "entities",         () -> ForgeRegistries.ENTITIES),
+        TILE_ENTITY ("tile-entity", "tile_entities",    () -> ForgeRegistries.TILE_ENTITIES);
 
-        public static LocateType fromArg(String arg)
+        private final String argument;
+        private final String plural;
+        private final Supplier<IForgeRegistry<?>> registrySupplier;
+
+        LocateType(String argument, String plural, Supplier<IForgeRegistry<?>> registrySupplier)
         {
-            switch (arg)
-            {
-                case "block":   return LocateType.BLOCK;
-                case "entity":  return LocateType.ENTITY;
-                case "te":      return LocateType.TILE_ENTITY;
-                default:        return LocateType.INVALID;
-            }
+            this.argument = argument;
+            this.plural = plural;
+            this.registrySupplier = registrySupplier;
         }
-    }
 
-    public enum OutputType
-    {
-        INVALID,
-        DUMP,
-        DUMP_CSV,
-        PRINT;
-
-        public static OutputType fromArg(String arg)
+        public String getArgument()
         {
-            switch (arg)
-            {
-                case "dump":        return OutputType.DUMP;
-                case "dump-csv":    return OutputType.DUMP_CSV;
-                case "print":       return OutputType.PRINT;
-                default:            return OutputType.INVALID;
-            }
+            return this.argument;
+        }
+
+        public String getPlural()
+        {
+            return this.plural;
+        }
+
+        public Supplier<IForgeRegistry<?>> getRegistrySupplier()
+        {
+            return this.registrySupplier;
         }
     }
 }

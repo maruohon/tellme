@@ -9,18 +9,13 @@ import java.util.Map.Entry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.IProperty;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class BlockStatesDump extends DataDump
+public class BlockStatesDump
 {
-    protected BlockStatesDump(int columns, Format format)
-    {
-        super(columns, format);
-    }
-
     public static List<String> getFormattedBlockStatesDumpByBlock()
     {
         List<String> outputLines = new ArrayList<String>();
@@ -32,7 +27,7 @@ public class BlockStatesDump extends DataDump
             Block block = entry.getValue();
 
             List<String> lines = new ArrayList<String>();
-            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = block.getDefaultState().getProperties().entrySet().iterator();
+            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = block.getDefaultState().getValues().entrySet().iterator();
 
             while (propIter.hasNext())
             {
@@ -50,9 +45,9 @@ public class BlockStatesDump extends DataDump
         return outputLines;
     }
 
-    public static List<String> getFormattedBlockStatesDumpByState(Format format)
+    public static List<String> getFormattedBlockStatesDumpByState(DataDump.Format format)
     {
-        BlockStatesDump blockStatesDump = new BlockStatesDump(2, format);
+        DataDump blockStatesDump = new DataDump(2, format);
         Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
 
         while (iter.hasNext())
@@ -61,12 +56,12 @@ public class BlockStatesDump extends DataDump
             Block block = entry.getValue();
             String regName = entry.getKey().toString();
 
-            ImmutableList<IBlockState> validStates = block.getBlockState().getValidStates();
+            ImmutableList<BlockState> validStates = block.getStateContainer().getValidStates();
 
-            for (IBlockState state : validStates)
+            for (BlockState state : validStates)
             {
                 List<String> lines = new ArrayList<String>();
-                UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = state.getProperties().entrySet().iterator();
+                UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = state.getValues().entrySet().iterator();
 
                 while (propIter.hasNext())
                 {
@@ -79,8 +74,6 @@ public class BlockStatesDump extends DataDump
         }
 
         blockStatesDump.addTitle("Block registry name", "BlockState properties");
-        blockStatesDump.setUseColumnSeparator(true);
-        //blockStatesDump.setSort(false);
 
         return blockStatesDump.getLines();
     }

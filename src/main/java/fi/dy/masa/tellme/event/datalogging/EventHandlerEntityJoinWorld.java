@@ -1,9 +1,10 @@
 package fi.dy.masa.tellme.event.datalogging;
 
 import net.minecraft.entity.Entity;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.world.World;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class EventHandlerEntityJoinWorld
 {
@@ -11,10 +12,11 @@ public class EventHandlerEntityJoinWorld
     public void onEntityJoinWorld(EntityJoinWorldEvent event)
     {
         Entity entity = event.getEntity();
+        World world = entity.getEntityWorld();
 
-        if (entity.getEntityWorld().isRemote == false)
+        if (world.isRemote == false)
         {
-            DataLogger.instance(entity.getEntityWorld().provider.getDimension()).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
+            DataLogger.instance(world.getDimension().getType()).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
         }
     }
 }

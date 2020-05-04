@@ -2,27 +2,29 @@ package fi.dy.masa.tellme.event.datalogging;
 
 import java.io.File;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.LoggerBase.OutputType;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class DataLogger
 {
-    private static final Int2ObjectOpenHashMap<DataLogger> INSTANCES = new Int2ObjectOpenHashMap<>();
+    private static final Map<DimensionType, DataLogger> INSTANCES = new HashMap<>();
 
     private final EnumMap<DataType, LoggerWrapper> loggers = new EnumMap<>(DataType.class);
     private final LoggerBase dummyWrapper = new LoggerBase(DataType.CHUNK_LOAD);
-    private final int dimension;
+    private final DimensionType dimension;
 
-    private DataLogger(int dimension)
+    private DataLogger(DimensionType dimension)
     {
         this.dimension = dimension;
     }
 
-    public static DataLogger instance(int dimension)
+    public static DataLogger instance(DimensionType dimension)
     {
         DataLogger logger = INSTANCES.get(dimension);
 
@@ -157,7 +159,7 @@ public class DataLogger
         return this.getLoggerWrapper(type).dumpData(format, this.dimension);
     }
 
-    public void onChunkEvent(DataType type, Chunk chunk)
+    public void onChunkEvent(DataType type, IChunk chunk)
     {
         this.getLoggerWrapper(type).onChunkEvent(chunk);
     }

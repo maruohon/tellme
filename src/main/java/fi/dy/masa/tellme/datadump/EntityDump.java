@@ -1,50 +1,61 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.common.registry.EntityRegistry.EntityRegistration;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
+import fi.dy.masa.tellme.util.ModNameUtils;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class EntityDump extends DataDump
+public class EntityDump
 {
-    private EntityDump(Format format)
+    public static List<String> getFormattedEntityDump(@Nullable World world, DataDump.Format format, boolean includeClassName)
     {
-        super(4, format);
-    }
+        DataDump entityDump = new DataDump(includeClassName ? 4 : 3, format);
 
-    public static List<String> getFormattedEntityDump(Format format, boolean fullClassName)
-    {
-        EntityDump entityDump = new EntityDump(format);
-        Iterator<Map.Entry<ResourceLocation, EntityEntry>> iter = ForgeRegistries.ENTITIES.getEntries().iterator();
-
-        while (iter.hasNext())
+        for (Map.Entry<ResourceLocation, EntityType<?>> entry : ForgeRegistries.ENTITIES.getEntries())
         {
-            Map.Entry<ResourceLocation, EntityEntry> entry = iter.next();
-            Class<? extends Entity> clazz = entry.getValue().getEntityClass();
-            String className = fullClassName ? clazz.getName() : clazz.getSimpleName();
-            EntityRegistration er = EntityRegistry.instance().lookupModSpawn(clazz, true);
+            ResourceLocation id = entry.getKey();
+            EntityType<?> type = entry.getValue();
+            String modName = ModNameUtils.getModName(id);
+            @SuppressWarnings("deprecation")
+            String entityId = String.valueOf(Registry.ENTITY_TYPE.getId(type));
 
-            if (er != null)
+            if (includeClassName && world != null)
             {
-                entityDump.addData(er.getContainer().getName(), er.getRegistryName().toString(), className, String.valueOf(er.getModEntityId()));
+                String className = "?";
+
+                try
+                {
+                    Entity entity = type.create(world);
+                    Class<? extends Entity> clazz = entity.getClass();
+                    entity.remove();
+                    className = clazz.getName();
+                }
+                catch (Exception e) {}
+
+                entityDump.addData(modName, id.toString(), className, entityId);
             }
             else
             {
-                entityDump.addData("Minecraft", entry.getKey().toString(), className, String.valueOf(EntityList.getID(clazz)));
+                entityDump.addData(modName, id.toString(), entityId);
             }
         }
 
-        entityDump.addTitle("Mod name", "Registry name", "Entity class name", "ID");
-
-        entityDump.setColumnProperties(3, Alignment.RIGHT, true); // id
-
-        entityDump.setUseColumnSeparator(true);
+        if (includeClassName)
+        {
+            entityDump.addTitle("Mod name", "Registry name", "Entity class name", "ID");
+            entityDump.setColumnProperties(3, DataDump.Alignment.RIGHT, true); // id
+        }
+        else
+        {
+            entityDump.addTitle("Mod name", "Registry name", "ID");
+            entityDump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // id
+        }
 
         return entityDump.getLines();
     }

@@ -1,63 +1,119 @@
 package fi.dy.masa.tellme.util;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
-import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.state.IProperty;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Explosion;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.SubCommand;
-import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockInfo
 {
-    public static <T extends Comparable<T>> IBlockState setPropertyValueFromString(IBlockState state, IProperty<T> prop, String valueStr)
+    private static final Map<Material, String> MATERIAL_NAMES = getMaterialNames();
+
+    private static Map<Material, String> getMaterialNames()
+    {
+        Map<Material, String> names = new HashMap<>();
+
+        names.put(Material.AIR, "AIR");
+        names.put(Material.ANVIL, "ANVIL");
+        names.put(Material.BAMBOO, "BAMBOO");
+        names.put(Material.BAMBOO_SAPLING, "BAMBOO_SAPLING");
+        names.put(Material.BARRIER, "BARRIER");
+        names.put(Material.BUBBLE_COLUMN, "BUBBLE_COLUMN");
+        names.put(Material.CACTUS, "CACTUS");
+        names.put(Material.CAKE, "CAKE");
+        names.put(Material.CARPET, "CARPET");
+        names.put(Material.CLAY, "CLAY");
+        names.put(Material.CORAL, "CORAL");
+        names.put(Material.DRAGON_EGG, "DRAGON_EGG");
+        names.put(Material.EARTH, "EARTH");
+        names.put(Material.FIRE, "FIRE");
+        names.put(Material.GLASS, "GLASS");
+        names.put(Material.GOURD, "GOURD");
+        names.put(Material.ICE, "ICE");
+        names.put(Material.IRON, "IRON");
+        names.put(Material.LAVA, "LAVA");
+        names.put(Material.LEAVES, "LEAVES");
+        names.put(Material.MISCELLANEOUS, "MISCELLANEOUS");
+        names.put(Material.OCEAN_PLANT, "OCEAN_PLANT");
+        names.put(Material.ORGANIC, "ORGANIC");
+        names.put(Material.PACKED_ICE, "PACKED_ICE");
+        names.put(Material.PISTON, "PISTON");
+        names.put(Material.PLANTS, "PLANTS");
+        names.put(Material.PORTAL, "PORTAL");
+        names.put(Material.REDSTONE_LIGHT, "REDSTONE_LIGHT");
+        names.put(Material.ROCK, "ROCK");
+        names.put(Material.SAND, "SAND");
+        names.put(Material.SEA_GRASS, "SEA_GRASS");
+        names.put(Material.SHULKER, "SHULKER");
+        names.put(Material.SNOW, "SNOW");
+        names.put(Material.SNOW_BLOCK, "SNOW_BLOCK");
+        names.put(Material.SPONGE, "SPONGE");
+        names.put(Material.STRUCTURE_VOID, "STRUCTURE_VOID");
+        names.put(Material.TALL_PLANTS, "TALL_PLANTS");
+        names.put(Material.TNT, "TNT");
+        names.put(Material.WATER, "WATER");
+        names.put(Material.WEB, "WEB");
+        names.put(Material.WOOD, "WOOD");
+        names.put(Material.WOOL, "WOOL");
+
+        return names;
+    }
+
+    public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, IProperty<T> prop, String valueStr)
     {
         Optional<T> value = prop.parseValue(valueStr);
 
         if (value.isPresent())
         {
-            return state.withProperty(prop, value.get());
+            return state.with(prop, value.get());
         }
 
         return state;
     }
 
-    public static <T extends Comparable<T>> List<IBlockState> getFilteredStates(Collection<IBlockState> initialStates, String propName, String propValue)
+    public static <T extends Comparable<T>> List<BlockState> getFilteredStates(Collection<BlockState> initialStates, String propName, String propValue)
     {
-        List<IBlockState> list = new ArrayList<>();
+        List<BlockState> list = new ArrayList<>();
 
-        for (IBlockState state : initialStates)
+        for (BlockState state : initialStates)
         {
-            @SuppressWarnings("unchecked")
-            IProperty<T> prop = (IProperty<T>) state.getBlock().getBlockState().getProperty(propName);
+            IProperty<?> prop = state.getBlock().getStateContainer().getProperty(propName);
 
             if (prop != null)
             {
-                Optional<T> value = prop.parseValue(propValue);
+                Optional<?> value = prop.parseValue(propValue);
 
-                if (value.isPresent() && state.getValue(prop).equals(value.get()))
+                if (value.isPresent() && state.get(prop).equals(value.get()))
                 {
                     list.add(state);
                 }
@@ -106,45 +162,50 @@ public class BlockInfo
     private static String getTileInfo(World world, BlockPos pos)
     {
         String teInfo = "";
-        IBlockState state = world.getBlockState(pos).getActualState(world, pos);
+        BlockState state = world.getBlockState(pos);
         boolean teInWorld = world.getTileEntity(pos) != null;
         boolean shouldHaveTE = state.getBlock().hasTileEntity(state);
 
         if (teInWorld == shouldHaveTE)
         {
-            teInfo = teInWorld ? "has a TileEntity" : "no TileEntity";
+            teInfo = teInWorld ? "has a BlockEntity" : "no BlockEntity";
         }
         else
         {
-            teInfo = teInWorld ? "!! is not supposed to have a TileEntity, but there is one in the world !!" :
-                                 "!! is supposed to have a TileEntity, but there isn't one in the world !!";
+            teInfo = teInWorld ? "!! is not supposed to have a BlockEntity, but there is one in the world !!" :
+                                 "!! is supposed to have a BlockEntity, but there isn't one in the world !!";
         }
 
         return teInfo;
     }
 
-    private static List<String> getFullBlockInfo(EntityPlayer player, World world, BlockPos pos)
+    private static List<String> getFullBlockInfo(World world, BlockPos pos, boolean targetIsChat)
     {
         List<String> lines = new ArrayList<>();
-        BlockData data = BlockData.getFor(world, pos, player);
-        lines.add(data.toString());
+        BlockData data = BlockData.getFor(world, pos);
 
-        IBlockState state = data.actualState;
+        // The basic block info is always printed to chat, don't include it a second time here
+        if (targetIsChat == false)
+        {
+            lines.add(data.toString());
+        }
+
+        BlockState state = data.state;
 
         lines.add(String.format("Full block state: %s", state));
         lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
-                state.getBlock().getExplosionResistance(world, pos, null, new Explosion(world, null, pos.getX(), pos.getY(), pos.getZ(), 2, true, true)),
+                state.getBlock().getExplosionResistance(state, world, pos, null, new Explosion(world, null, pos.getX(), pos.getY(), pos.getZ(), 2, false, Explosion.Mode.NONE)),
                 getMaterialName(state.getMaterial())));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 
         if (state.getProperties().size() > 0)
         {
-            lines.add("IBlockState properties, including getActualState():");
+            lines.add("BlockState properties:");
 
-            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = state.getProperties().entrySet().iterator();
+            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = state.getValues().entrySet().iterator();
 
-            while (iter.hasNext() == true)
+            while (iter.hasNext())
             {
                 Entry<IProperty<?>, Comparable<?>> entry = iter.next();
                 lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
@@ -152,144 +213,116 @@ public class BlockInfo
         }
         else
         {
-            lines.add("IBlockState properties: <none>");
+            lines.add("BlockState properties: <none>");
         }
 
-        TellMe.proxy.getExtendedBlockStateInfo(world, state, pos, lines);
+        getExtendedBlockStateInfo(world, state, pos, lines);
 
         TileEntity te = world.getTileEntity(pos);
 
         if (te != null)
         {
-            NBTTagCompound nbt = new NBTTagCompound();
-            te.writeToNBT(nbt);
-            lines.add("TileEntity class: " + te.getClass().getName());
+            CompoundNBT nbt = new CompoundNBT();
+            te.write(nbt);
+            lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
-            lines.add("TileEntity NBT (from TileEntity#writeToNBT()):");
-            NBTFormatter.getPrettyFormattedNBT(lines, nbt);
+            lines.add("BlockEntity NBT (from BlockEntity::write()):");
+            lines.addAll((new NbtStringifierPretty(targetIsChat ? TextFormatting.GRAY.toString() : null)).getNbtLines(nbt));
         }
 
         return lines;
     }
 
+    private static void getExtendedBlockStateInfo(IBlockReader world, BlockState state, BlockPos pos, List<String> lines)
+    {
+        try
+        {
+            state = state.getExtendedState(world, pos);
+
+            /*
+            if (state instanceof IExtendedBlockState)
+            {
+                IExtendedBlockState extendedState = (IExtendedBlockState) state;
+
+                if (extendedState.getUnlistedProperties().size() > 0)
+                {
+                    lines.add("IExtendedBlockState properties:");
+
+                    UnmodifiableIterator<Entry<IUnlistedProperty<?>, Optional<?>>> iterExt = extendedState.getUnlistedProperties().entrySet().iterator();
+
+                    while (iterExt.hasNext())
+                    {
+                        Entry<IUnlistedProperty<?>, Optional<?>> entry = iterExt.next();
+                        lines.add(MoreObjects.toStringHelper(entry.getKey())
+                                .add("name", entry.getKey().getName())
+                                .add("clazz", entry.getKey().getType())
+                                .add("value", entry.getValue().toString()).toString());
+                    }
+                }
+            }
+            */
+        }
+        catch (Exception e)
+        {
+            TellMe.logger.error("getFullBlockInfo(): Exception while calling getExtendedState() on the block {}", state);
+        }
+    }
+
     public static String getMaterialName(Material material)
     {
-        if (material == Material.AIR)           { return "AIR";         }
-        if (material == Material.GRASS)         { return "GRASS";       }
-        if (material == Material.GROUND)        { return "GROUND";      }
-        if (material == Material.WOOD)          { return "WOOD";        }
-        if (material == Material.ROCK)          { return "ROCK";        }
-        if (material == Material.IRON)          { return "IRON";        }
-        if (material == Material.ANVIL)         { return "ANVIL";       }
-        if (material == Material.WATER)         { return "WATER";       }
-        if (material == Material.LAVA)          { return "LAVA";        }
-        if (material == Material.LEAVES)        { return "LEAVES";      }
-        if (material == Material.PLANTS)        { return "PLANTS";      }
-        if (material == Material.VINE)          { return "VINE";        }
-        if (material == Material.SPONGE)        { return "SPONGE";      }
-        if (material == Material.CLOTH)         { return "CLOTH";       }
-        if (material == Material.FIRE)          { return "FIRE";        }
-        if (material == Material.SAND)          { return "SAND";        }
-        if (material == Material.CIRCUITS)      { return "CIRCUITS";    }
-        if (material == Material.CARPET)        { return "CARPET";      }
-        if (material == Material.GLASS)         { return "GLASS";       }
-        if (material == Material.REDSTONE_LIGHT){ return "REDSTONE_LIGHT"; }
-        if (material == Material.TNT)           { return "TNT";         }
-        if (material == Material.CORAL)         { return "CORAL";       }
-        if (material == Material.ICE)           { return "ICE";         }
-        if (material == Material.PACKED_ICE)    { return "PACKED_ICE";  }
-        if (material == Material.SNOW)          { return "SNOW";        }
-        if (material == Material.CRAFTED_SNOW)  { return "CRAFTED_SNOW";}
-        if (material == Material.CACTUS)        { return "CACTUS";      }
-        if (material == Material.CLAY)          { return "CLAY";        }
-        if (material == Material.GOURD)         { return "GOURD";       }
-        if (material == Material.DRAGON_EGG)    { return "DRAGON_EGG";  }
-        if (material == Material.PORTAL)        { return "PORTAL";      }
-        if (material == Material.CAKE)          { return "CAKE";        }
-        if (material == Material.WEB)           { return "WEB";         }
-        if (material == Material.PISTON)        { return "PISTON";      }
-        if (material == Material.BARRIER)       { return "BARRIER";     }
-        if (material == Material.STRUCTURE_VOID){ return "STRUCTURE_VOID"; }
-
-        return "unknown";
+        return MATERIAL_NAMES.getOrDefault(material, "<unknown>");
     }
 
-    public static void printBasicBlockInfoToChat(EntityPlayer player, World world, BlockPos pos)
+    public static void printBasicBlockInfoToChat(Entity entity, World world, BlockPos pos)
     {
-        player.sendMessage(BlockData.getFor(world, pos, player).toChatMessage());
+        entity.sendMessage(BlockData.getFor(world, pos).toChatMessage());
     }
 
-    public static void printBlockInfoToConsole(EntityPlayer player, World world, BlockPos pos)
-    {
-        List<String> lines = getFullBlockInfo(player, world, pos);
-
-        for (String line : lines)
-        {
-            TellMe.logger.info(line);
-        }
-    }
-
-    public static void dumpBlockInfoToFile(EntityPlayer player, World world, BlockPos pos)
-    {
-        File file = DataDump.dumpDataToFile("block_and_tileentity_data", getFullBlockInfo(player, world, pos));
-        SubCommand.sendClickableLinkMessage(player, "Output written to file %s", file);
-    }
-
-    public static void getBlockInfoFromRayTracedTarget(World world, EntityPlayer player, RayTraceResult trace, boolean adjacent, boolean dumpToFile)
+    @Nullable
+    public static List<String> getBlockInfoFromRayTracedTarget(World world, Entity entity, RayTraceResult trace, boolean adjacent, boolean targetIsChat)
     {
         // Ray traced to a block
-        if (trace.typeOfHit == RayTraceResult.Type.BLOCK)
+        if (trace.getType() == RayTraceResult.Type.BLOCK)
         {
-            BlockPos pos = adjacent ? trace.getBlockPos().offset(trace.sideHit) : trace.getBlockPos();
-            BlockInfo.printBasicBlockInfoToChat(player, world, pos);
+            BlockRayTraceResult hit = (BlockRayTraceResult) trace;
+            BlockPos pos = adjacent ? hit.getPos().offset(hit.getFace()) : hit.getPos();
+            BlockInfo.printBasicBlockInfoToChat(entity, world, pos);
 
-            if (dumpToFile)
-            {
-                dumpBlockInfoToFile(player, world, pos);
-            }
-            else
-            {
-                printBlockInfoToConsole(player, world, pos);
-            }
+            return getFullBlockInfo(world, pos, targetIsChat);
         }
+
+        return null;
     }
 
     public static class BlockData
     {
-        private final IBlockState actualState;
+        private final BlockState state;
         private final String regName;
-        private final int id;
-        private final int meta;
         private final String displayName;
         private final String teInfo;
 
-        public BlockData(IBlockState actualState, String displayName, String regName, int id, int meta, String teInfo)
+        public BlockData(BlockState state, String displayName, String regName, String teInfo)
         {
-            this.actualState = actualState;
+            this.state = state;
             this.displayName = displayName;
             this.regName = regName;
-            this.id = id;
-            this.meta = meta;
             this.teInfo = teInfo;
         }
 
-        public static BlockData getFor(World world, BlockPos pos, EntityPlayer player)
+        public static BlockData getFor(World world, BlockPos pos)
         {
-            IBlockState actualState = world.getBlockState(pos).getActualState(world, pos);
-            Block block = actualState.getBlock();
+            BlockState state = world.getBlockState(pos);
+            Block block = state.getBlock();
 
-            int id = Block.getIdFromBlock(block);
-            int meta = block.getMetaFromState(actualState);
-            ItemStack stack = block.getPickBlock(actualState, RayTraceUtils.getRayTraceFromEntity(world, player, true), world, pos, player);
-            //ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
-            //ItemStack stack = new ItemStack(block, 1, block.getDamageValue(world, pos));
+            @SuppressWarnings("deprecation")
+            ItemStack stack = block.getItem(world, pos, state);
             ResourceLocation rl = ForgeRegistries.BLOCKS.getKey(block);
             String registryName = rl != null ? rl.toString() : "<null>";
             String displayName;
 
             if (stack.isEmpty() == false)
             {
-                displayName = stack.getDisplayName();
+                displayName = stack.getDisplayName().getString();
             }
             // Blocks that are not obtainable/don't have an ItemBlock
             else
@@ -297,22 +330,27 @@ public class BlockInfo
                 displayName = registryName;
             }
 
-            return new BlockData(actualState, displayName, registryName, id, meta, getTileInfo(world, pos));
+            return new BlockData(state, displayName, registryName, getTileInfo(world, pos));
         }
 
         public ITextComponent toChatMessage()
         {
-            String copyStr = this.meta != 0 ? this.regName + ":" + this.meta : this.regName;
             String textPre = String.format("%s (", this.displayName);
-            String textPost = String.format(" - %d:%d) %s", this.id, this.meta, this.teInfo);
+            String textPost = String.format(") %s", this.teInfo);
 
-            return ChatUtils.getClipboardCopiableMessage(textPre, copyStr, textPost);
+            return OutputUtils.getClipboardCopiableMessage(textPre, this.regName, textPost);
         }
 
         @Override
         public String toString()
         {
-            return String.format("%s (%s - %d:%d) %s", this.displayName, this.regName, this.id, this.meta, this.teInfo);
+            return String.format("%s (%s) %s", this.displayName, this.regName, this.teInfo);
         }
+    }
+
+    public static String getBlockEntityNameFor(TileEntityType<?> type)
+    {
+        ResourceLocation id = TileEntityType.getId(type);
+        return id != null ? id.toString() : "<null>";
     }
 }

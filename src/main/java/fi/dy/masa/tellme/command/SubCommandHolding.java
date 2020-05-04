@@ -1,48 +1,52 @@
 package fi.dy.masa.tellme.command;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
+import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.util.ItemInfo;
 
-public class SubCommandHolding extends SubCommand
+public class SubCommandHolding
 {
-    public SubCommandHolding(CommandTellme baseCommand)
+    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
-        super(baseCommand);
-        this.subSubCommands.add("dump");
-        this.subSubCommands.add("print");
+        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("holding").build();
+        ArgumentCommandNode<CommandSource, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create())
+                .executes(c -> execute(c.getSource(), c.getArgument("output_type", OutputType.class))).build();
+
+        subCommandRootNode.addChild(outputTypeNode);
+
+        return subCommandRootNode;
     }
 
-    @Override
-    public String getName()
+    private static int execute(CommandSource source, OutputType outputType) throws CommandSyntaxException
     {
-        return "holding";
-    }
+        Entity entity = source.getEntity();
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
-    {
-        super.execute(server, sender, args);
-
-        if (args.length == 1 && sender instanceof EntityPlayer)
+        if (entity instanceof LivingEntity)
         {
-            if (args[0].equals("dump") || args[0].equals("print"))
-            {
-                this.handleHeldObject((EntityPlayer) sender, args[0].equals("dump"));
-            }
+            handleHeldObject((LivingEntity) entity, outputType);
+            return 1;
         }
+
+        throw CommandUtils.NOT_AN_ENTITY_EXCEPTION.create();
     }
 
-    private void handleHeldObject(EntityPlayer player, boolean dumpToFile)
+    private static void handleHeldObject(LivingEntity entity, OutputType outputType)
     {
-        ItemStack stack = player.getHeldItemMainhand();
+        ItemStack stack = entity.getHeldItemMainhand();
 
         if (stack.isEmpty() == false)
         {
-            ItemInfo.printItemInfo(player, stack, dumpToFile);
+            ItemInfo.printItemInfo(entity, stack, outputType);
         }
     }
 }

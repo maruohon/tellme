@@ -1,57 +1,68 @@
 package fi.dy.masa.tellme;
 
-import java.io.File;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import fi.dy.masa.tellme.command.CommandTellme;
+import fi.dy.masa.tellme.command.CommandReloadConfig;
+import fi.dy.masa.tellme.command.CommandTellMe;
 import fi.dy.masa.tellme.config.Configs;
+import fi.dy.masa.tellme.datadump.DataProviderBase;
+import fi.dy.masa.tellme.datadump.DataProviderClient;
 import fi.dy.masa.tellme.event.InteractEventHandler;
 import fi.dy.masa.tellme.network.PacketHandler;
-import fi.dy.masa.tellme.proxy.CommonProxy;
 import fi.dy.masa.tellme.reference.Reference;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLFingerprintViolationEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
 
-@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.MOD_VERSION, certificateFingerprint = Reference.FINGERPRINT,
-    guiFactory = "fi.dy.masa.tellme.config.TellMeGuiFactory",
-    acceptableRemoteVersions = "*",
-    acceptedMinecraftVersions = "1.12")
+@Mod(Reference.MOD_ID)
 public class TellMe
 {
-    @Mod.Instance(Reference.MOD_ID)
-    public static TellMe instance;
-
-    @SidedProxy(clientSide = Reference.PROXY_CLASS_CLIENT, serverSide = Reference.PROXY_CLASS_SERVER)
-    public static CommonProxy proxy;
-
     public static final Logger logger = LogManager.getLogger(Reference.MOD_ID);
-    public static String configDirPath;
+    public static DataProviderBase dataProvider;
+    private static boolean isClient;
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event)
+    public TellMe()
     {
-        configDirPath = new File(event.getModConfigurationDirectory(), Reference.MOD_ID).getAbsolutePath();
-        Configs.loadConfigsFromFile(event.getSuggestedConfigurationFile());
+        dataProvider = new DataProviderBase();
+
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Configs.COMMON_CONFIG, Reference.MOD_ID + ".toml");
+
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onFingerPrintViolation);
 
         MinecraftForge.EVENT_BUS.register(new InteractEventHandler());
-        proxy.registerClientCommand();
-        proxy.registerEventHandlers();
+        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
 
-        PacketHandler.init();
+        Configs.loadConfig(FMLPaths.CONFIGDIR.get().resolve(Reference.MOD_ID + ".toml"));
     }
 
-    @Mod.EventHandler
-    public void serverStarting(FMLServerStartingEvent event)
+    private void onCommonSetup(final FMLCommonSetupEvent event)
     {
-        event.registerServerCommand(new CommandTellme());
+        Configs.setGlobalConfigDirAndLoadConfigs(FMLPaths.CONFIGDIR.get().toFile());
+        PacketHandler.registerMessages();
     }
 
-    @Mod.EventHandler
-    public void onFingerPrintViolation(FMLFingerprintViolationEvent event)
+    private void onClientSetup(final FMLClientSetupEvent event)
+    {
+        isClient = true;
+        dataProvider = new DataProviderClient();
+    }
+
+    private void onServerStarting(final FMLServerStartingEvent event)
+    {
+        CommandReloadConfig.register(event.getCommandDispatcher());
+        CommandTellMe.registerServerCommand(event.getCommandDispatcher());
+    }
+
+    private void onFingerPrintViolation(final FMLFingerprintViolationEvent event)
     {
         // Not running in a dev environment
         if (event.isDirectory() == false)
@@ -67,5 +78,10 @@ public class TellMe
             logger.warn("*****   that it may contain malware or other unwanted things!                           *****");
             logger.warn("*********************************************************************************************");
         }
+    }
+
+    public static boolean isClient()
+    {
+        return isClient;
     }
 }
