@@ -11,15 +11,15 @@ public class ActivityDump
 {
     public static List<String> getFormattedDump(Format format)
     {
-        DataDump dump = new DataDump(1, format);
+        DataDump dump = new DataDump(2, format);
 
         for (Map.Entry<ResourceLocation, Activity> entry : ForgeRegistries.ACTIVITIES.getEntries())
         {
             Activity type = entry.getValue();
-            dump.addData(type.getRegistryName().toString());
+            dump.addData(type.getRegistryName().toString(), type.getKey());
         }
 
-        dump.addTitle("Registry name");
+        dump.addTitle("Registry name", "Key");
 
         return dump.getLines();
     }

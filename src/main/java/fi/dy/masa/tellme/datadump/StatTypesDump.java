@@ -2,9 +2,11 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -26,6 +28,26 @@ public class StatTypesDump
         }
 
         dump.addTitle("Type registry name", "Stat name");
+
+        return dump.getLines();
+    }
+
+    public static List<String> getFormattedDumpCustomStats(Format format)
+    {
+        DataDump dump = new DataDump(2, format);
+
+        for (ResourceLocation key : Registry.CUSTOM_STAT.keySet())
+        {
+            String typeName = key.toString();
+            Optional<ResourceLocation> stat = Registry.CUSTOM_STAT.getValue(key);
+
+            if (stat.isPresent())
+            {
+                dump.addData(typeName, stat.get().toString());
+            }
+        }
+
+        dump.addTitle("Registry name", "Stat name");
 
         return dump.getLines();
     }
