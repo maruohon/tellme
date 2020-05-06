@@ -10,8 +10,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class FoodItemDump

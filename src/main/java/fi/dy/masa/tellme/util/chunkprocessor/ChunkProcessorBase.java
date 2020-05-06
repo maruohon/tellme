@@ -6,8 +6,8 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public abstract class ChunkProcessorBase
 {

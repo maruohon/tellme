@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.util.ResourceLocation;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class VillagerProfessionDump

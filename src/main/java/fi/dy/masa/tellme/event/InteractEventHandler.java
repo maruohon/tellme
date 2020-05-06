@@ -9,12 +9,12 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.RayTraceResult;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.config.Configs;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.ItemInfo;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.RayTraceUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 

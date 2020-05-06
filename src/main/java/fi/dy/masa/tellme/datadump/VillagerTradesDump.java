@@ -9,6 +9,7 @@ import net.minecraft.entity.merchant.villager.VillagerTrades.ITrade;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MerchantOffer;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 public class VillagerTradesDump

@@ -9,6 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.util.ModNameUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class EntityDump

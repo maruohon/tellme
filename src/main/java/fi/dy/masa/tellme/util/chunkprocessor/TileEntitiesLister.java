@@ -5,8 +5,8 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BlockInfo;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class TileEntitiesLister extends ChunkProcessorBase
 {
@@ -21,10 +21,8 @@ public class TileEntitiesLister extends ChunkProcessorBase
         DataDump dump = new DataDump(6, format);
 
         dump.setSort(true);
-        dump.setRepeatTitleAtBottom(false);
-
-        dump.addTitle("Region", "Chunk", "Position", "Tile", "Class", "Ticking");
         dump.addHeader("Loaded TileEntities by chunk:");
+        dump.addTitle("Region", "Chunk", "Position", "Tile", "Class", "Ticking");
 
         this.dump = dump;
     }

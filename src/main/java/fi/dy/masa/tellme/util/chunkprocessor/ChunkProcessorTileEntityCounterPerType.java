@@ -10,8 +10,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BlockInfo;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
@@ -70,11 +70,9 @@ public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
 
         DataDump dump = new DataDump(4, this.format);
 
-        dump.setSort(true);
-        dump.setRepeatTitleAtBottom(false);
-
-        dump.addTitle("TileEntity type", "Class", "Count", "Is ticking?");
+        dump.setSort(true).setSortColumn(2).setSortReverse(true);
         dump.addHeader("Loaded TileEntities by type:");
+        dump.addTitle("TileEntity type", "Class", "Count", "Is ticking?");
 
         for (TileEntitiesPerTypeHolder holder : counts)
         {

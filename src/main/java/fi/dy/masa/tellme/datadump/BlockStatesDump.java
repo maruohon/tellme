@@ -12,6 +12,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.IProperty;
 import net.minecraft.util.ResourceLocation;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockStatesDump

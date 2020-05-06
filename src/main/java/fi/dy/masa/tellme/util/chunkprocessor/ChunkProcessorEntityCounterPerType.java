@@ -8,8 +8,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class ChunkProcessorEntityCounterPerType extends ChunkProcessorBase
@@ -64,9 +64,7 @@ public class ChunkProcessorEntityCounterPerType extends ChunkProcessorBase
 
         DataDump dump = new DataDump(2, this.format);
 
-        dump.setSort(true);
-        dump.setRepeatTitleAtBottom(false);
-
+        dump.setSort(true).setSortColumn(1).setSortReverse(true);
         dump.addTitle("Entity type", "Count");
 
         final int loadedChunks = this.getLoadedChunkCount();

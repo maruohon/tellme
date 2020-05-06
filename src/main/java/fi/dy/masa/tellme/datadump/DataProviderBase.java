@@ -32,6 +32,7 @@ import net.minecraft.world.server.ChunkManager;
 import net.minecraft.world.server.ServerWorld;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;

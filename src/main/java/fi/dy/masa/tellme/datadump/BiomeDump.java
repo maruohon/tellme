@@ -22,9 +22,10 @@ import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.structure.Structure;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.OutputUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
@@ -219,18 +220,18 @@ public class BiomeDump
 
         Collections.sort(data);
 
-        if (format == Format.ASCII)
-        {
-            for (IdToStringHolder holder : data)
-            {
-                lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
-            }
-        }
-        else if (format == Format.CSV)
+        if (format == Format.CSV)
         {
             for (IdToStringHolder holder : data)
             {
                 lines.add(String.valueOf(holder.getId()) + ",\"" + holder.getString() + "\"");
+            }
+        }
+        else
+        {
+            for (IdToStringHolder holder : data)
+            {
+                lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
             }
         }
 

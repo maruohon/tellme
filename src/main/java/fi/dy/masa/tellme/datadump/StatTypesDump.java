@@ -7,7 +7,8 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class StatTypesDump

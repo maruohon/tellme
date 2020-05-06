@@ -10,7 +10,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
 {
@@ -69,10 +69,8 @@ public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
         DataDump dump = new DataDump(4, this.format);
 
         dump.setSort(true).setSortReverse(true);
-        dump.setRepeatTitleAtBottom(false);
-
-        dump.addTitle("Total Count", "Ticking", "Chunk", "Region");
         dump.addHeader("Loaded TileEntities by chunk:");
+        dump.addTitle("Total Count", "Ticking", "Chunk", "Region");
 
         for (TileEntityCountsPerChunkHolder holder : counts)
         {

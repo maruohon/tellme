@@ -3,7 +3,8 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class SimpleVanillaRegistryKeyOnlyDump
 {

@@ -8,9 +8,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryBase;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class LoggerBase
 {

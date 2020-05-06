@@ -36,9 +36,11 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ModNameUtils;
+import fi.dy.masa.tellme.util.RegistryUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -176,7 +178,7 @@ public class ItemDump
         ItemStack stack = new ItemStack(item);
         int maxDamage = stack.getMaxDamage();
         String idStr = String.valueOf(id);
-        String exists = DataDump.isDummied(ForgeRegistries.ITEMS, rl) ? "false" : "true";
+        String exists = RegistryUtils.isDummied(ForgeRegistries.ITEMS, rl) ? "false" : "true";
         String tags = getTagNamesJoined(item);
         String regName = rl != null ? rl.toString() : "<null>";
         String displayName = stack.getDisplayName().getString();
@@ -333,8 +335,6 @@ public class ItemDump
         public void addHeaders(DataDump dump)
         {
             dump.setColumnProperties(2, Alignment.RIGHT, true); // ID
-
-            dump.setUseColumnSeparator(true);
 
             dump.addHeader("*** WARNING ***");
             dump.addHeader("Don't use the item ID for anything \"proper\"!!");

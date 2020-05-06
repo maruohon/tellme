@@ -4,8 +4,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
 public class EntitiesLister extends ChunkProcessorBase
 {
@@ -19,7 +19,6 @@ public class EntitiesLister extends ChunkProcessorBase
         DataDump dump = new DataDump(5, format);
         dump.setColumnAlignment(1, Alignment.RIGHT); // health
         dump.setSort(true);
-        dump.setRepeatTitleAtBottom(false);
 
         dump.addTitle("Name", "Health", "Location", "Chunk", "Region");
         dump.addHeader("All currently loaded entities:");

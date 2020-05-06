@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.chunk.ChunkStatus;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class ChunkStatusDump

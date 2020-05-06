@@ -2,7 +2,8 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
 public class ItemGroupDump
 {

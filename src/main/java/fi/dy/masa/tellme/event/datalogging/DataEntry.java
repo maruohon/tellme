@@ -5,7 +5,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
-import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class DataEntry
 {

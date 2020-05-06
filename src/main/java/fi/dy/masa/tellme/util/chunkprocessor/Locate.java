@@ -24,16 +24,23 @@ import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class Locate extends ChunkProcessorAllChunks
 {
+    private static final String FMT_COORD_2 = "%.2f";
+    private static final String FMT_REGION = "r.%d.%d";
+    private static final String FMT_CHUNK = "%d, %d";
+    private static final String FMT_CHUNK_5 = "%5d, %5d";
+    private static final String FMT_COORDS = "x = %.2f, y = %.2f, z = %.2f";
+    private static final String FMT_COORDS_8 = "x = %8.2f, y = %5.2f, z = %8.2f";
+
     private final List<LocationData> data = new ArrayList<>();
     private final LocateType locateType;
     private final DataDump.Format format;
@@ -113,11 +120,16 @@ public class Locate extends ChunkProcessorAllChunks
         {
             try
             {
-                EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(name));
+                ResourceLocation key = new ResourceLocation(name);
 
-                if (type != null)
+                if (ForgeRegistries.ENTITIES.containsKey(key))
                 {
-                    set.add(type);
+                    EntityType<?> type = ForgeRegistries.ENTITIES.getValue(key);
+
+                    if (type != null)
+                    {
+                        set.add(type);
+                    }
                 }
             }
             catch (Exception e)
@@ -325,11 +337,11 @@ public class Locate extends ChunkProcessorAllChunks
         {
             if (this.printDimension)
             {
-                dump.addTitle("ID", "Dim", "Region X", "Region Z", "Chunk X", "Chunk Z", "x", "y", "z");
+                dump.addTitle("ID", "Dim", "RX", "RZ", "CX", "CZ", "x", "y", "z");
             }
             else
             {
-                dump.addTitle("ID", "Region X", "Region Z", "Chunk X", "Chunk Z", "x", "y", "z");
+                dump.addTitle("ID", "RX", "RZ", "CX", "CZ", "x", "y", "z");
             }
         }
         else
@@ -357,7 +369,7 @@ public class Locate extends ChunkProcessorAllChunks
 
         if (format == Format.CSV)
         {
-            String fmtCoord = "%.2f";
+            String fmtCoord = FMT_COORD_2;
 
             if (addDimension)
             {
@@ -377,9 +389,9 @@ public class Locate extends ChunkProcessorAllChunks
         }
         else
         {
-            String fmtRegion = "r.%d.%d";
-            String fmtChunk = "%5d, %5d";
-            String fmtPos = "x = %8.2f, y = %5.2f, z = %8.2f";
+            String fmtRegion = FMT_REGION;
+            String fmtChunk = format == Format.ASCII ? FMT_CHUNK_5 : FMT_CHUNK;
+            String fmtPos = format == Format.ASCII ? FMT_COORDS_8 : FMT_COORDS;
 
             if (addDimension)
             {

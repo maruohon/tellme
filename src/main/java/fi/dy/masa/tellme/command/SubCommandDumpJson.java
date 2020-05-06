@@ -17,9 +17,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.datadump.BlockDump;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.ItemDump;
 import fi.dy.masa.tellme.util.OutputUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandDumpJson
 {

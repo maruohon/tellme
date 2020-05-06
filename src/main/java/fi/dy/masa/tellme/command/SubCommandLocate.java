@@ -20,10 +20,10 @@ import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.Locate;
 import fi.dy.masa.tellme.util.chunkprocessor.Locate.LocateType;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLocate
 {

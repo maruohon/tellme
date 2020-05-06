@@ -25,7 +25,6 @@ import fi.dy.masa.tellme.command.argument.EnumArgument;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.datadump.ChunkDump;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DimensionDump;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -36,6 +35,7 @@ import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorTileEntityCounterPerC
 import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorTileEntityCounterPerType;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesLister;
 import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesLister;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLoaded
 {

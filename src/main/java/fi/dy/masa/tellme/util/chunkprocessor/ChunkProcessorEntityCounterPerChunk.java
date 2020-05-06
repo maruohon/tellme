@@ -9,7 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkProcessorEntityCounterPerChunk extends ChunkProcessorBase
 {
@@ -62,8 +62,6 @@ public class ChunkProcessorEntityCounterPerChunk extends ChunkProcessorBase
         DataDump dump = new DataDump(3, this.format);
 
         dump.setSort(true).setSortReverse(true);
-        dump.setRepeatTitleAtBottom(false);
-
         dump.addTitle("Count", "Chunk", "Region");
 
         final int loadedChunks = this.getLoadedChunkCount();

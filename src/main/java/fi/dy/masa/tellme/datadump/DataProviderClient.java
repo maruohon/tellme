@@ -37,6 +37,7 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class DataProviderClient extends DataProviderBase

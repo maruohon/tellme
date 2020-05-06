@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import net.minecraft.item.SpawnEggItem;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SpawnEggDump
 {

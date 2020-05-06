@@ -2,7 +2,8 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import net.minecraft.world.WorldType;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
 public class WorldTypeDump
 {

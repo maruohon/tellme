@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.entity.ai.brain.schedule.Activity;
 import net.minecraft.util.ResourceLocation;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class ActivityDump

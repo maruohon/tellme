@@ -30,7 +30,6 @@ import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.BlockStatesDump;
 import fi.dy.masa.tellme.datadump.ChunkStatusDump;
 import fi.dy.masa.tellme.datadump.CommandDump;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DimensionDump;
 import fi.dy.masa.tellme.datadump.EnchantmentDump;
 import fi.dy.masa.tellme.datadump.EntityDump;
@@ -56,6 +55,7 @@ import fi.dy.masa.tellme.datadump.VillagerTradesDump;
 import fi.dy.masa.tellme.datadump.WorldTypeDump;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.OutputUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class SubCommandDump

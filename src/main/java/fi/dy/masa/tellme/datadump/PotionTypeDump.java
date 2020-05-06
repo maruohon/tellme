@@ -9,7 +9,8 @@ import net.minecraft.potion.EffectType;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class PotionTypeDump

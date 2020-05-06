@@ -19,8 +19,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.ModNameUtils;
+import fi.dy.masa.tellme.util.RegistryUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -59,7 +61,7 @@ public class BlockDump
         Item item = stack.getItem();
         ResourceLocation itemIdRl = item != Items.AIR ? item.getRegistryName() : null;
         String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
-        String exists = DataDump.isDummied(ForgeRegistries.BLOCKS, id) ? "false" : "true";
+        String exists = RegistryUtils.isDummied(ForgeRegistries.BLOCKS, id) ? "false" : "true";
 
         if (dumpNBT)
         {
@@ -141,7 +143,7 @@ public class BlockDump
                 Block block = ForgeRegistries.BLOCKS.getValue(key);
                 ItemStack stack = new ItemStack(block);
                 Item item = stack.getItem();
-                String exists = DataDump.isDummied(ForgeRegistries.BLOCKS, key) ? "false" : "true";
+                String exists = RegistryUtils.isDummied(ForgeRegistries.BLOCKS, key) ? "false" : "true";
 
                 objBlock.add("RegistryName", new JsonPrimitive(registryName));
                 objBlock.add("Exists", new JsonPrimitive(exists));

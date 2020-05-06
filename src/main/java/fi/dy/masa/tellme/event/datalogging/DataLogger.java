@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.dimension.DimensionType;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.LoggerBase.OutputType;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class DataLogger
 {

@@ -26,9 +26,9 @@ import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
-import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.util.BiomeLocator;
 import fi.dy.masa.tellme.util.OutputUtils;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandBiomeLocate
 {
