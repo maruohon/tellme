@@ -226,7 +226,7 @@ public class SubCommandDump
         dumpProviders.put("tags-item-split",            (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.ITEM, true));
         dumpProviders.put("tile-entities",              (world, entity, format) -> TileEntityDump.getFormattedTileEntityDump(format));
         dumpProviders.put("villager-professions",       (world, entity, format) -> VillagerProfessionDump.getFormattedVillagerProfessionDump(format));
-        dumpProviders.put("villager-trades",            (world, entity, format) -> VillagerTradesDump.getFormattedVillagerTradesDump(format));
+        dumpProviders.put("villager-trades",            (world, entity, format) -> VillagerTradesDump.getFormattedVillagerTradesDump(format, entity));
         dumpProviders.put("world-carvers",              (world, entity, format) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(format, ForgeRegistries.WORLD_CARVERS));
         dumpProviders.put("world-types",                (world, entity, format) -> WorldTypeDump.getFormattedWorldTypeDump(format));
 
