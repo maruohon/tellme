@@ -7,12 +7,12 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class PacketHandler
 {
-    public static final String PROTOCOL = "0.2";
+    public static final String PROTOCOL = "0.1";
 
     public static final SimpleChannel INSTANCE = NetworkRegistry.ChannelBuilder
                                                     .named(new ResourceLocation(Reference.MOD_ID, "msgs"))
-                                                    .clientAcceptedVersions(PROTOCOL::equals)
-                                                    .serverAcceptedVersions(PROTOCOL::equals)
+                                                    .clientAcceptedVersions((str) -> true)
+                                                    .serverAcceptedVersions((str) -> true)
                                                     .networkProtocolVersion(() -> PROTOCOL).simpleChannel();
 
     public static void registerMessages()
