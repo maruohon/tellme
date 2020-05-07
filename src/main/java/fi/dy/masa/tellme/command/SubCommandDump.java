@@ -227,6 +227,7 @@ public class SubCommandDump
         dumpProviders.put("tile-entities",              (world, entity, format) -> TileEntityDump.getFormattedTileEntityDump(format));
         dumpProviders.put("villager-professions",       (world, entity, format) -> VillagerProfessionDump.getFormattedVillagerProfessionDump(format));
         dumpProviders.put("villager-trades",            (world, entity, format) -> VillagerTradesDump.getFormattedVillagerTradesDump(format, entity));
+        dumpProviders.put("villager-types",             (world, entity, format) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(format, Registry.VILLAGER_TYPE));
         dumpProviders.put("world-carvers",              (world, entity, format) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(format, ForgeRegistries.WORLD_CARVERS));
         dumpProviders.put("world-types",                (world, entity, format) -> WorldTypeDump.getFormattedWorldTypeDump(format));
 
