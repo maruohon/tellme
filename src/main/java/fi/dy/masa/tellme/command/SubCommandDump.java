@@ -170,6 +170,8 @@ public class SubCommandDump
         dumpProviders.put("biomes-with-mob-spawns",     (world, entity, format) -> BiomeDump.getFormattedBiomeDumpWithMobSpawns(format));
         dumpProviders.put("biomes-id-to-name",          (world, entity, format) -> BiomeDump.getBiomeDumpIdToName(format));
         dumpProviders.put("block-props",                (world, entity, format) -> BlockDump.getFormattedBlockPropertiesDump(format));
+        dumpProviders.put("block-placer-types",         (world, entity, format) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(format, Registry.BLOCK_PLACER_TYPE));
+        dumpProviders.put("block-state-provider-types", (world, entity, format) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(format, Registry.BLOCK_STATE_PROVIDER_TYPE));
         dumpProviders.put("blocks",                     (world, entity, format) -> BlockDump.getFormattedBlockDump(format, false));
         dumpProviders.put("blocks-with-nbt",            (world, entity, format) -> BlockDump.getFormattedBlockDump(format, true));
         dumpProviders.put("blockstates-by-block",       (world, entity, format) -> BlockStatesDump.getFormattedBlockStatesDumpByBlock());
@@ -187,6 +189,7 @@ public class SubCommandDump
         dumpProviders.put("entities-with-class",        (world, entity, format) -> EntityDump.getFormattedEntityDump(world, format, true));
         dumpProviders.put("features",                   (world, entity, format) -> FeatureDump.getFormattedDump(format));
         dumpProviders.put("fluids",                     (world, entity, format) -> FluidRegistryDump.getFormattedFluidRegistryDump(format));
+        dumpProviders.put("foliage-placer-types",       (world, entity, format) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(format, Registry.FOLIAGE_PLACER_TYPE));
         dumpProviders.put("food-items",                 (world, entity, format) -> FoodItemDump.getFormattedFoodItemDump(format));
         dumpProviders.put("items",                      (world, entity, format) -> ItemDump.getFormattedItemDump(format, ItemDump.INFO_BASIC));
         dumpProviders.put("items-craftable",            (world, entity, format) -> ItemDump.getFormattedCraftableItemsDump(format));
@@ -225,6 +228,7 @@ public class SubCommandDump
         dumpProviders.put("tags-item",                  (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.ITEM, false));
         dumpProviders.put("tags-item-split",            (world, entity, format) -> TagDump.getFormattedTagDump(format, TagDump.TagType.ITEM, true));
         dumpProviders.put("tile-entities",              (world, entity, format) -> TileEntityDump.getFormattedTileEntityDump(format));
+        dumpProviders.put("tree-decorator-types",       (world, entity, format) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(format, Registry.TREE_DECORATOR_TYPE));
         dumpProviders.put("villager-professions",       (world, entity, format) -> VillagerProfessionDump.getFormattedVillagerProfessionDump(format));
         dumpProviders.put("villager-trades",            (world, entity, format) -> VillagerTradesDump.getFormattedVillagerTradesDump(format, entity));
         dumpProviders.put("villager-types",             (world, entity, format) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(format, Registry.VILLAGER_TYPE));
