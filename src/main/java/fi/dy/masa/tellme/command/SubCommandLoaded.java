@@ -1,6 +1,5 @@
 package fi.dy.masa.tellme.command;
 
-import java.util.Arrays;
 import java.util.List;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,7 +20,7 @@ import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.IDimensionRetriever;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
-import fi.dy.masa.tellme.command.argument.EnumArgument;
+import fi.dy.masa.tellme.command.argument.GroupingArgument;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.datadump.ChunkDump;
@@ -171,8 +170,7 @@ public class SubCommandLoaded
     private static LiteralCommandNode<CommandSource> createNodesEntities(LoadedTarget target)
     {
         LiteralCommandNode<CommandSource> argEntityType = Commands.literal(target.getArgument()).build();
-        ArgumentCommandNode<CommandSource, Grouping> argGrouping = Commands.argument("grouping",
-                EnumArgument.<Grouping>create(Arrays.asList(Grouping.values()), Grouping::fromArgument, (e) -> e.getArgument())).build();
+        ArgumentCommandNode<CommandSource, Grouping> argGrouping = Commands.argument("grouping", GroupingArgument.create()).build();
         ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create()).build();
         ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create()).build();
 

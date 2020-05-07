@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.command.argument;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -19,14 +20,20 @@ public class FileArgument implements ArgumentType<File>
         return new StringTextComponent("No such file: " + v);
     });
     private static final SimpleCommandExceptionType EMPTY_FILE_NAME = new SimpleCommandExceptionType(new StringTextComponent("Empty file name"));
+    private static final SimpleCommandExceptionType NO_DIRECTORY = new SimpleCommandExceptionType(new StringTextComponent("No base directory set"));
 
-    private final File dir;
+    @Nullable private final File dir;
     private final boolean shouldExist;
 
-    private FileArgument(File dir, boolean shouldExist)
+    private FileArgument(@Nullable File dir, boolean shouldExist)
     {
         this.dir = dir;
         this.shouldExist = shouldExist;
+    }
+
+    public static FileArgument createEmpty()
+    {
+        return new FileArgument(null, false);
     }
 
     public static FileArgument getFor(File dir, boolean shouldExist)
@@ -37,6 +44,11 @@ public class FileArgument implements ArgumentType<File>
     @Override
     public File parse(StringReader reader) throws CommandSyntaxException
     {
+        if (this.dir == null)
+        {
+            throw NO_DIRECTORY.create();
+        }
+
         final int startPos = reader.getCursor();
 
         while (reader.canRead() && reader.peek() != ' ')
@@ -64,6 +76,11 @@ public class FileArgument implements ArgumentType<File>
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder)
     {
+        if (this.dir == null)
+        {
+            return builder.buildFuture();
+        }
+
         return CommandUtils.suggestIterable(CommandUtils.getFileNames(this.dir, CommandUtils.FILTER_FILES), builder);
     }
 }

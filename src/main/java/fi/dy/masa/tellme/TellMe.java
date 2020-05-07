@@ -1,10 +1,19 @@
 package fi.dy.masa.tellme;
 
+import java.util.Collections;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import net.minecraft.command.arguments.ArgumentSerializer;
+import net.minecraft.command.arguments.ArgumentTypes;
 import fi.dy.masa.tellme.command.CommandReloadConfig;
 import fi.dy.masa.tellme.command.CommandTellMe;
+import fi.dy.masa.tellme.command.argument.BiomeArgument;
+import fi.dy.masa.tellme.command.argument.FileArgument;
+import fi.dy.masa.tellme.command.argument.GroupingArgument;
+import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
+import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.datadump.DataProviderBase;
 import fi.dy.masa.tellme.datadump.DataProviderClient;
@@ -49,6 +58,13 @@ public class TellMe
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
 
         Configs.loadConfig(FMLPaths.CONFIGDIR.get().resolve(Reference.MOD_ID + ".toml"));
+
+        ArgumentTypes.register("tellme:biome", BiomeArgument.class, new ArgumentSerializer<>(BiomeArgument::create));
+        ArgumentTypes.register("tellme:file", FileArgument.class, new ArgumentSerializer<>(FileArgument::createEmpty));
+        ArgumentTypes.register("tellme:grouping", GroupingArgument.class, new ArgumentSerializer<>(GroupingArgument::create));
+        ArgumentTypes.register("tellme:output_format", OutputFormatArgument.class, new ArgumentSerializer<>(OutputFormatArgument::create));
+        ArgumentTypes.register("tellme:output_type", OutputTypeArgument.class, new ArgumentSerializer<>(OutputTypeArgument::create));
+        ArgumentTypes.register("tellme:string_collection", StringCollectionArgument.class, new ArgumentSerializer<>(() -> StringCollectionArgument.create(() -> Collections.emptyList(), "")));
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event)

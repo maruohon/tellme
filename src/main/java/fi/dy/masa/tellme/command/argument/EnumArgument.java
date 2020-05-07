@@ -22,15 +22,10 @@ public class EnumArgument<T extends Enum<T>> implements ArgumentType<T>
     private final Function<String, T> entryFactory;
     private final ImmutableList<String> typeArguments;
 
-    public EnumArgument(List<T> values, Function<String, T> stringToEntryFactory, Function<T, String> entryToStringFactory)
+    protected EnumArgument(List<T> values, Function<String, T> stringToEntryFactory, Function<T, String> entryToStringFactory)
     {
         this.entryFactory = stringToEntryFactory;
         this.typeArguments = ImmutableList.copyOf(values.stream().map((entry) -> entryToStringFactory.apply(entry)).collect(Collectors.toList()));
-    }
-
-    public static <T extends Enum<T>> EnumArgument<T> create(List<T> values, Function<String, T> stringToEntryFactory, Function<T, String> entryToStringFactory)
-    {
-        return new EnumArgument<>(values, stringToEntryFactory, entryToStringFactory);
     }
 
     @Override
