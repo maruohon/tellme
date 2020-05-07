@@ -7,7 +7,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.biome.BiomeManager;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -17,6 +17,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class BiomeLocator
 {
     private final Object2ObjectOpenHashMap<Biome, BlockPos> biomePositions = new Object2ObjectOpenHashMap<>();
+    private final BlockPos.Mutable posMutable = new BlockPos.Mutable();
     private BlockPos center = BlockPos.ZERO;
     private int count;
     private boolean append;
@@ -26,7 +27,7 @@ public class BiomeLocator
         this.append = append;
     }
 
-    public void findClosestBiomePositions(BiomeProvider biomeProvider, BlockPos center, int sampleInterval, int maxRadius)
+    public void findClosestBiomePositions(BiomeManager biomeManager, BlockPos center, int sampleInterval, int maxRadius)
     {
         final long timeBefore = System.nanoTime();
         final int totalBiomes = ForgeRegistries.BIOMES.getKeys().size();
@@ -42,7 +43,7 @@ public class BiomeLocator
         {
             final int offset = radius * sampleInterval;
 
-            if (this.samplePositionsOnRing(center.getX(), center.getZ(), offset, sampleInterval, totalBiomes, biomeProvider))
+            if (this.samplePositionsOnRing(center.getX(), center.getZ(), offset, sampleInterval, totalBiomes, biomeManager))
             {
                 break;
             }
@@ -54,7 +55,7 @@ public class BiomeLocator
     }
 
     private boolean samplePositionsOnRing(int centerX, int centerZ, int offset, int sampleInterval,
-            int totalBiomes, BiomeProvider biomeProvider)
+            int totalBiomes, BiomeManager biomeManager)
     {
         final int minX = centerX - offset;
         final int minZ = centerZ - offset;
@@ -63,7 +64,7 @@ public class BiomeLocator
 
         for (int x = minX; x <= maxX; x += sampleInterval)
         {
-            if (this.samplePosition(x, minZ, totalBiomes, biomeProvider))
+            if (this.samplePosition(x, minZ, totalBiomes, biomeManager))
             {
                 return true;
             }
@@ -71,7 +72,7 @@ public class BiomeLocator
 
         for (int z = minZ + sampleInterval; z <= maxZ; z += sampleInterval)
         {
-            if (this.samplePosition(maxZ, z, totalBiomes, biomeProvider))
+            if (this.samplePosition(maxZ, z, totalBiomes, biomeManager))
             {
                 return true;
             }
@@ -79,7 +80,7 @@ public class BiomeLocator
 
         for (int x = maxX - sampleInterval; x >= minX; x -= sampleInterval)
         {
-            if (this.samplePosition(x, maxZ, totalBiomes, biomeProvider))
+            if (this.samplePosition(x, maxZ, totalBiomes, biomeManager))
             {
                 return true;
             }
@@ -87,7 +88,7 @@ public class BiomeLocator
 
         for (int z = maxZ - sampleInterval; z > minZ; z -= sampleInterval)
         {
-            if (this.samplePosition(minX, z, totalBiomes, biomeProvider))
+            if (this.samplePosition(minX, z, totalBiomes, biomeManager))
             {
                 return true;
             }
@@ -96,17 +97,17 @@ public class BiomeLocator
         return false;
     }
 
-    private boolean samplePosition(int x, int z, int totalBiomes, BiomeProvider biomeProvider)
+    private boolean samplePosition(int x, int z, int totalBiomes, BiomeManager biomeManager)
     {
-        Biome[] biomes = biomeProvider.getBiomes(x, z, 1, 1, false);
+        this.posMutable.setPos(x, 0, z);
+        Biome biome = biomeManager.getBiome(this.posMutable);
         this.count++;
 
-        BlockPos newPos = new BlockPos(x, 0, z);
-        BlockPos oldPos = this.biomePositions.get(biomes[0]);
+        BlockPos oldPos = this.biomePositions.get(biome);
 
-        if (oldPos == null || oldPos.distanceSq(this.center) > newPos.distanceSq(this.center))
+        if (oldPos == null || oldPos.distanceSq(this.center) > this.posMutable.distanceSq(this.center))
         {
-            this.biomePositions.put(biomes[0], newPos);
+            this.biomePositions.put(biome, this.posMutable.toImmutable());
 
             if (this.biomePositions.size() >= totalBiomes)
             {

@@ -70,7 +70,7 @@ public class InteractEventHandler
         {
             if (event.getWorld().isRemote == false)
             {
-                if (player.isSneaking())
+                if (player.isShiftKeyDown())
                 {
                     EntityInfo.dumpFullEntityInfoToFile(player, entity);
                 }
@@ -100,7 +100,7 @@ public class InteractEventHandler
                 RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids);
                 boolean adjacent = ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand());
                 List<String> lines = BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player, trace, adjacent, false);
-                OutputType outputType = player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE;
+                OutputType outputType = player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE;
 
                 OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, "block_info_", player);
             }
@@ -131,7 +131,7 @@ public class InteractEventHandler
 
         if (stack.isEmpty() == false && stack.getItem() != null)
         {
-            ItemInfo.printItemInfo(player, stack, player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE);
+            ItemInfo.printItemInfo(player, stack, player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE);
         }
     }
 }

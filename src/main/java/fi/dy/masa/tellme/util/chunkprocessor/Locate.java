@@ -185,9 +185,9 @@ public class Locate extends ChunkProcessorAllChunks
 
     private void locateBlocks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<BlockState> filters)
     {
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
-        int count = 0;
         final long timeBefore = System.currentTimeMillis();
+        BlockPos.Mutable pos = new BlockPos.Mutable();
+        int count = 0;
 
         for (Chunk chunk : chunks)
         {

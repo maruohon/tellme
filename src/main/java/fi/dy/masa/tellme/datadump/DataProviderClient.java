@@ -150,23 +150,23 @@ public class DataProviderClient extends DataProviderBase
         String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
 
         // These are client-side only:
-        int color = biome.getGrassColor(pos);
+        int color = this.getGrassColor(biome, pos);
         entity.sendMessage(new StringTextComponent(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
 
-        color = biome.getFoliageColor(pos);
+        color = this.getFoliageColor(biome, pos);
         entity.sendMessage(new StringTextComponent(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
     }
 
     @Override
     public int getFoliageColor(Biome biome, BlockPos pos)
     {
-        return biome.getFoliageColor(pos);
+        return biome.getFoliageColor();
     }
 
     @Override
     public int getGrassColor(Biome biome, BlockPos pos)
     {
-        return biome.getGrassColor(pos);
+        return biome.getGrassColor(pos.getX(), pos.getZ());
     }
 
     @Override

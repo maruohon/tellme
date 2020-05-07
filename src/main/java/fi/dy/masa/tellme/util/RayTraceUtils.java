@@ -33,7 +33,7 @@ public class RayTraceUtils
     @Nonnull
     public static RayTraceResult getRayTraceFromEntity(World worldIn, Entity entityIn, boolean useLiquids, double range)
     {
-        Vec3d eyesVec = new Vec3d(entityIn.posX, entityIn.posY + entityIn.getEyeHeight(), entityIn.posZ);
+        Vec3d eyesVec = new Vec3d(entityIn.getPosX(), entityIn.getPosY() + entityIn.getEyeHeight(), entityIn.getPosZ());
         Vec3d rangedLookRot = entityIn.getLook(1f).scale(range);
         Vec3d lookVec = eyesVec.add(rangedLookRot);
 

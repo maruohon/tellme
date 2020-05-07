@@ -237,7 +237,7 @@ public class BlockInfo
     {
         try
         {
-            state = state.getExtendedState(world, pos);
+            //state = state.getExtendedState(world, pos);
 
             /*
             if (state instanceof IExtendedBlockState)

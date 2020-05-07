@@ -22,7 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.AreaType;
@@ -277,12 +277,12 @@ public class SubCommandBiomeStats
     {
         World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
         BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
-        BiomeProvider biomeProvider = world.getChunkProvider().getChunkGenerator().getBiomeProvider();
+        BiomeManager biomeManager = world.getBiomeManager();
 
         CommandUtils.sendMessage(source, "Counting biomes...");
 
         biomeStats.setAppend(isAppend);
-        biomeStats.getFullBiomeDistribution(biomeProvider, minPos, maxPos);
+        biomeStats.getFullBiomeDistribution(biomeManager, minPos, maxPos);
 
         CommandUtils.sendMessage(source, "Done");
 
@@ -294,12 +294,12 @@ public class SubCommandBiomeStats
     {
         World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
         BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
-        BiomeProvider biomeProvider = world.getChunkProvider().getChunkGenerator().getBiomeProvider();
+        BiomeManager biomeManager = world.getBiomeManager();
 
         CommandUtils.sendMessage(source, "Counting biomes...");
 
         biomeStats.setAppend(isAppend);
-        biomeStats.getSampledBiomeDistribution(biomeProvider, (int) center.x, (int) center.y, sampleInterval, sampleRadius);
+        biomeStats.getSampledBiomeDistribution(biomeManager, (int) center.x, (int) center.y, sampleInterval, sampleRadius);
 
         CommandUtils.sendMessage(source, "Done");
 

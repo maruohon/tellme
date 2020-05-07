@@ -72,14 +72,14 @@ public class DataProviderBase
 
     public int getFoliageColor(Biome biome, BlockPos pos)
     {
-        double temperature = MathHelper.clamp(biome.func_225486_c(pos), 0.0F, 1.0F);
+        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
         double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
         return FoliageColors.get(temperature, humidity);
     }
 
     public int getGrassColor(Biome biome, BlockPos pos)
     {
-        double temperature = MathHelper.clamp(biome.func_225486_c(pos), 0.0F, 1.0F);
+        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
         double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
         return GrassColors.get(temperature, humidity);
     }
@@ -97,7 +97,7 @@ public class DataProviderBase
 
                 for (ChunkHolder holder : immutableLoadedChunks.values())
                 {
-                    Optional<Chunk> optional = holder.func_219297_b().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                    Optional<Chunk> optional = holder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
 
                     if (optional.isPresent())
                     {

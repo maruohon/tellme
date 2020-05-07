@@ -138,7 +138,7 @@ public class CommandUtils
     public static Vec2f getVec2fFromSource(CommandSource source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? new Vec2f((float) entity.posX, (float) entity.posZ) : Vec2f.ZERO;
+        return entity != null ? new Vec2f((float) entity.getPosX(), (float) entity.getPosZ()) : Vec2f.ZERO;
     }
 
     public static Vec2f getVec2fFromArg(CommandContext<CommandSource> ctx, String argName) throws CommandSyntaxException

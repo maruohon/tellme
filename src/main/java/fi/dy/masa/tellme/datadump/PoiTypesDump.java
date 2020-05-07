@@ -2,9 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.village.PointOfInterestType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -14,18 +12,14 @@ public class PoiTypesDump
 {
     public static List<String> getFormattedDump(Format format)
     {
-        DataDump dump = new DataDump(3, format);
+        DataDump dump = new DataDump(2, format);
 
         for (Map.Entry<ResourceLocation, PointOfInterestType> entry : ForgeRegistries.POI_TYPES.getEntries())
         {
-            PointOfInterestType type = entry.getValue();
-            @Nullable SoundEvent sound = type.getWorkSound();
-            String workSound = sound != null ? sound.getRegistryName().toString() : "-";
-
-            dump.addData(type.getRegistryName().toString(), type.toString(), workSound);
+            dump.addData(entry.getKey().toString(), entry.getValue().toString());
         }
 
-        dump.addTitle("Registry name", "Name", "Work sound");
+        dump.addTitle("Registry name", "Name");
 
         return dump.getLines();
     }
