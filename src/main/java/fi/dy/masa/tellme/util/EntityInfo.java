@@ -25,7 +25,7 @@ public class EntityInfo
         ResourceLocation rl = target.getType().getRegistryName();
         String regName = rl != null ? rl.toString() : "<null>";
 
-        return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName(), regName, target.getEntityId());
+        return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getEntityId());
     }
 
     public static List<String> getFullEntityInfo(Entity target, boolean targetIsChat)
@@ -87,7 +87,7 @@ public class EntityInfo
     {
         ResourceLocation rl = target.getType().getRegistryName();
         String regName = rl != null ? rl.toString() : "null";
-        String textPre = String.format("Entity: %s [registry name: ", target.getName());
+        String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
         String textPost = String.format("] (entityId: %d)", target.getEntityId());
 
         player.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost));

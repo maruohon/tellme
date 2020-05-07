@@ -327,7 +327,7 @@ public class BlockInfo
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = registryName;
+                displayName = block.getNameTextComponent().getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));
