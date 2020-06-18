@@ -6,12 +6,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
@@ -23,15 +23,15 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLookingAt
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<ServerCommandSource> registerSubCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("looking-at")
+        LiteralCommandNode<ServerCommandSource> subCommandRootNode = CommandManager.literal("looking-at")
                 .executes(c -> execute(OutputType.CHAT, c.getSource(), false)).build();
 
-        ArgumentCommandNode<CommandSource, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create())
+        ArgumentCommandNode<ServerCommandSource, OutputType> outputTypeNode = CommandManager.argument("output_type", OutputTypeArgument.create())
                 .executes(c -> execute(c.getArgument("output_type", OutputType.class), c.getSource(), false)).build();
 
-        LiteralCommandNode<CommandSource> adjacentNode = Commands.literal("adjacent")
+        LiteralCommandNode<ServerCommandSource> adjacentNode = CommandManager.literal("adjacent")
                 .executes(c -> execute(c.getArgument("output_type", OutputType.class), c.getSource(), true)).build();
 
         subCommandRootNode.addChild(outputTypeNode);
@@ -40,7 +40,7 @@ public class SubCommandLookingAt
         return subCommandRootNode;
     }
 
-    private static int execute(OutputType outputType, CommandSource source, boolean adjacent) throws CommandSyntaxException
+    private static int execute(OutputType outputType, ServerCommandSource source, boolean adjacent) throws CommandSyntaxException
     {
         if (source.getEntity() == null)
         {
@@ -54,18 +54,18 @@ public class SubCommandLookingAt
     private static void handleLookedAtObject(Entity entity, OutputType outputType, boolean adjacent)
     {
         World world = entity.getEntityWorld();
-        RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(world, entity, true, 10d);
+        HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, entity, true, 10d);
         List<String> lines = null;
         String fileName = "looking_at_";
 
-        if (trace.getType() == RayTraceResult.Type.BLOCK)
+        if (trace.getType() == HitResult.Type.BLOCK)
         {
             lines = BlockInfo.getBlockInfoFromRayTracedTarget(world, entity, trace, adjacent, outputType == OutputType.CHAT);
             fileName += "block";
         }
-        else if (trace.getType() == RayTraceResult.Type.ENTITY)
+        else if (trace.getType() == HitResult.Type.ENTITY)
         {
-            lines = EntityInfo.getFullEntityInfo(((EntityRayTraceResult) trace).getEntity(), outputType == OutputType.CHAT);
+            lines = EntityInfo.getFullEntityInfo(((EntityHitResult) trace).getEntity(), outputType == OutputType.CHAT);
             fileName += "entity";
         }
 
@@ -75,7 +75,7 @@ public class SubCommandLookingAt
         }
         else
         {
-            entity.sendMessage(new StringTextComponent("Not currently looking at anything within range"));
+            entity.sendMessage(new LiteralText("Not currently looking at anything within range"));
         }
     }
 }

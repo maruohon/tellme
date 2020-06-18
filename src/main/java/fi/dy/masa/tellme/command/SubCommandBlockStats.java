@@ -12,16 +12,18 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.DimensionArgument;
-import net.minecraft.command.arguments.ILocationArgument;
-import net.minecraft.command.arguments.Vec2Argument;
-import net.minecraft.command.arguments.Vec3Argument;
+import net.minecraft.command.arguments.DimensionArgumentType;
+import net.minecraft.command.arguments.PosArgument;
+import net.minecraft.command.arguments.Vec2ArgumentType;
+import net.minecraft.command.arguments.Vec3ArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
@@ -34,16 +36,15 @@ import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.BlockStats;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class SubCommandBlockStats
 {
     private static final Map<UUID, BlockStats> BLOCK_STATS = new HashMap<>();
     private static final BlockStats CONSOLE_BLOCK_STATS = new BlockStats();
 
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<ServerCommandSource> registerSubCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("block-stats").executes(c -> printHelp(c.getSource())).build();
+        LiteralCommandNode<ServerCommandSource> subCommandRootNode = CommandManager.literal("block-stats").executes(c -> printHelp(c.getSource())).build();
 
         subCommandRootNode.addChild(createCountNodes("count", false));
         subCommandRootNode.addChild(createCountNodes("count-append", true));
@@ -52,9 +53,9 @@ public class SubCommandBlockStats
         return subCommandRootNode;
     }
 
-    private static LiteralCommandNode<CommandSource> createCountNodes(String command, boolean isAppend)
+    private static LiteralCommandNode<ServerCommandSource> createCountNodes(String command, boolean isAppend)
     {
-        LiteralCommandNode<CommandSource> actionNodeCount = Commands.literal(command).build();
+        LiteralCommandNode<ServerCommandSource> actionNodeCount = CommandManager.literal(command).build();
 
         actionNodeCount.addChild(createCountNodeAllLoadedChunks(isAppend));
         actionNodeCount.addChild(createCountNodeArea(isAppend));
@@ -65,25 +66,25 @@ public class SubCommandBlockStats
     }
 
     // tellme output-data <to-chat | to-console | to-file> <ascii | csv> [sort-by-count] [modid:block] [modid:block] ...
-    private static LiteralCommandNode<CommandSource> createOutputDataNodes()
+    private static LiteralCommandNode<ServerCommandSource> createOutputDataNodes()
     {
-        LiteralCommandNode<CommandSource> actionNodeOutputData = Commands.literal("output-data").build();
+        LiteralCommandNode<ServerCommandSource> actionNodeOutputData = CommandManager.literal("output-data").build();
 
-        ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
+        ArgumentCommandNode<ServerCommandSource, OutputType> argOutputType = CommandManager.argument("output_type", OutputTypeArgument.create())
                 .executes(c -> outputData(c.getSource(),
                         c.getArgument("output_type", OutputType.class),
                         DataDump.Format.ASCII,
                         false))
                 .build();
 
-        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
+        ArgumentCommandNode<ServerCommandSource, DataDump.Format> argOutputFormat = CommandManager.argument("output_format", OutputFormatArgument.create())
                 .executes(c -> outputData(c.getSource(),
                         c.getArgument("output_type", OutputType.class),
                         c.getArgument("output_format", DataDump.Format.class),
                         false))
                 .build();
 
-        LiteralCommandNode<CommandSource> argSortByCount = Commands.literal("sort-by-count")
+        LiteralCommandNode<ServerCommandSource> argSortByCount = CommandManager.literal("sort-by-count")
                 .executes(c -> outputData(c.getSource(),
                         c.getArgument("output_type", OutputType.class),
                         c.getArgument("output_format", DataDump.Format.class),
@@ -91,8 +92,8 @@ public class SubCommandBlockStats
                 .build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersNoSort = Commands.argument("block_filters",
-                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+        ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersNoSort = CommandManager.argument("block_filters",
+                StringCollectionArgument.create(() -> Registry.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> outputData(ctx.getSource(),
                         ctx.getArgument("output_type", OutputType.class),
                         ctx.getArgument("output_format", DataDump.Format.class),
@@ -101,8 +102,8 @@ public class SubCommandBlockStats
                 .build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersSort = Commands.argument("block_filters",
-                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+        ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersSort = CommandManager.argument("block_filters",
+                StringCollectionArgument.create(() -> Registry.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> outputData(ctx.getSource(),
                         ctx.getArgument("output_type", OutputType.class),
                         ctx.getArgument("output_format", DataDump.Format.class),
@@ -121,15 +122,15 @@ public class SubCommandBlockStats
         return actionNodeOutputData;
     }
 
-    private static LiteralCommandNode<CommandSource> createCountNodeAllLoadedChunks(boolean isAppend)
+    private static LiteralCommandNode<ServerCommandSource> createCountNodeAllLoadedChunks(boolean isAppend)
     {
-        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.LOADED.getArgument())
+        LiteralCommandNode<ServerCommandSource> argAreaType = CommandManager.literal(AreaType.LOADED.getArgument())
                 .executes(c -> countBlocksLoadedChunks(c.getSource(),
                           CommandUtils::getDimensionFromSource, isAppend)).build();
 
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<ServerCommandSource, DimensionType> argDimension  = CommandManager.argument("dimension", DimensionArgumentType.dimension())
                 .executes(c -> countBlocksLoadedChunks(c.getSource(),
-                          (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                          (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argDimension);
@@ -137,22 +138,22 @@ public class SubCommandBlockStats
         return argAreaType;
     }
 
-    private static LiteralCommandNode<CommandSource> createCountNodeArea(boolean isAppend)
+    private static LiteralCommandNode<ServerCommandSource> createCountNodeArea(boolean isAppend)
     {
-        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.AREA.getArgument()).build();
+        LiteralCommandNode<ServerCommandSource> argAreaType = CommandManager.literal(AreaType.AREA.getArgument()).build();
 
-        ArgumentCommandNode<CommandSource, ILocationArgument> argStartCorner = Commands.argument("start_corner", Vec2Argument.vec2()).build();
-        ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec2Argument.vec2())
+        ArgumentCommandNode<ServerCommandSource, PosArgument> argStartCorner = CommandManager.argument("start_corner", Vec2ArgumentType.vec2()).build();
+        ArgumentCommandNode<ServerCommandSource, PosArgument> argEndCorner = CommandManager.argument("end_corner", Vec2ArgumentType.vec2())
                 .executes(c -> countBlocksArea(c.getSource(),
-                        Vec2Argument.getVec2f(c, "start_corner"),
-                        Vec2Argument.getVec2f(c, "end_corner"),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                                               Vec2ArgumentType.getVec2(c, "start_corner"),
+                                               Vec2ArgumentType.getVec2(c, "end_corner"),
+                                               CommandUtils::getDimensionFromSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<ServerCommandSource, DimensionType> argDimension  = CommandManager.argument("dimension", DimensionArgumentType.dimension())
                 .executes(c -> countBlocksArea(c.getSource(),
-                        Vec2Argument.getVec2f(c, "start_corner"),
-                        Vec2Argument.getVec2f(c, "end_corner"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                                               Vec2ArgumentType.getVec2(c, "start_corner"),
+                                               Vec2ArgumentType.getVec2(c, "end_corner"),
+                                               (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argStartCorner);
@@ -162,23 +163,23 @@ public class SubCommandBlockStats
         return argAreaType;
     }
 
-    private static LiteralCommandNode<CommandSource> createCountNodeBox(boolean isAppend)
+    private static LiteralCommandNode<ServerCommandSource> createCountNodeBox(boolean isAppend)
     {
-        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.BOX.getArgument()).build();
+        LiteralCommandNode<ServerCommandSource> argAreaType = CommandManager.literal(AreaType.BOX.getArgument()).build();
 
-        ArgumentCommandNode<CommandSource, ILocationArgument> argStartCorner = Commands.argument("start_corner", Vec3Argument.vec3()).build();
-        ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec3Argument.vec3())
+        ArgumentCommandNode<ServerCommandSource, PosArgument> argStartCorner = CommandManager.argument("start_corner", Vec3ArgumentType.vec3()).build();
+        ArgumentCommandNode<ServerCommandSource, PosArgument> argEndCorner = CommandManager.argument("end_corner", Vec3ArgumentType.vec3())
                 .executes(c -> countBlocksBox(c.getSource(),
-                        Vec3Argument.getVec3(c, "start_corner"),
-                        Vec3Argument.getVec3(c, "end_corner"),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                                              Vec3ArgumentType.getVec3(c, "start_corner"),
+                                              Vec3ArgumentType.getVec3(c, "end_corner"),
+                                              CommandUtils::getDimensionFromSource, isAppend))
                 .build();
 
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<ServerCommandSource, DimensionType> argDimension  = CommandManager.argument("dimension", DimensionArgumentType.dimension())
                 .executes(c -> countBlocksBox(c.getSource(),
-                        Vec3Argument.getVec3(c, "start_corner"),
-                        Vec3Argument.getVec3(c, "end_corner"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                                              Vec3ArgumentType.getVec3(c, "start_corner"),
+                                              Vec3ArgumentType.getVec3(c, "end_corner"),
+                                              (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argStartCorner);
@@ -188,27 +189,27 @@ public class SubCommandBlockStats
         return argAreaType;
     }
 
-    private static LiteralCommandNode<CommandSource> createCountNodeRange(boolean isAppend)
+    private static LiteralCommandNode<ServerCommandSource> createCountNodeRange(boolean isAppend)
     {
-        LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.RANGE.getArgument()).build();
+        LiteralCommandNode<ServerCommandSource> argAreaType = CommandManager.literal(AreaType.RANGE.getArgument()).build();
 
-        ArgumentCommandNode<CommandSource, Integer> argChunkBlockRange = Commands.argument("block_range", IntegerArgumentType.integer(0, 8192))
+        ArgumentCommandNode<ServerCommandSource, Integer> argChunkBlockRange = CommandManager.argument("block_range", IntegerArgumentType.integer(0, 8192))
                 .executes(c -> countBlocksRange(c.getSource(),
-                        IntegerArgumentType.getInteger(c, "block_range"),
-                        CommandUtils.getVec3dFromSource(c.getSource()),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                                                IntegerArgumentType.getInteger(c, "block_range"),
+                                                CommandUtils.getVec3dFromSource(c.getSource()),
+                                                CommandUtils::getDimensionFromSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec3Argument.vec3())
+        ArgumentCommandNode<ServerCommandSource, PosArgument> argCenter = CommandManager.argument("center", Vec3ArgumentType.vec3())
                 .executes(c -> countBlocksRange(c.getSource(),
-                        IntegerArgumentType.getInteger(c, "block_range"),
-                        CommandUtils.getVec3dFromArg(c, "center"),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                                                IntegerArgumentType.getInteger(c, "block_range"),
+                                                CommandUtils.getVec3dFromArg(c, "center"),
+                                                CommandUtils::getDimensionFromSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<ServerCommandSource, DimensionType> argDimension  = CommandManager.argument("dimension", DimensionArgumentType.dimension())
                 .executes(c -> countBlocksRange(c.getSource(),
-                        IntegerArgumentType.getInteger(c, "block_range"),
-                        CommandUtils.getVec3dFromArg(c, "center"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                                                IntegerArgumentType.getInteger(c, "block_range"),
+                                                CommandUtils.getVec3dFromArg(c, "center"),
+                                                (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argChunkBlockRange);
@@ -218,7 +219,7 @@ public class SubCommandBlockStats
         return argAreaType;
     }
 
-    private static int countBlocksRange(CommandSource source, int range, Vec3d center,
+    private static int countBlocksRange(ServerCommandSource source, int range, Vec3d center,
             IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         BlockPos centerPos = new BlockPos(center);
@@ -228,7 +229,7 @@ public class SubCommandBlockStats
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
 
-    private static int countBlocksBox(CommandSource source, Vec3d corner1, Vec3d corner2,
+    private static int countBlocksBox(ServerCommandSource source, Vec3d corner1, Vec3d corner2,
             IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         BlockPos minPos = new BlockPos(corner1);
@@ -237,7 +238,7 @@ public class SubCommandBlockStats
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
 
-    private static int countBlocksArea(CommandSource source, Vec2f corner1, Vec2f corner2,
+    private static int countBlocksArea(ServerCommandSource source, Vec2f corner1, Vec2f corner2,
             IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
@@ -246,10 +247,10 @@ public class SubCommandBlockStats
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
 
-    private static int countBlocksBox(CommandSource source, BlockPos minPos, BlockPos maxPos,
+    private static int countBlocksBox(ServerCommandSource source, BlockPos minPos, BlockPos maxPos,
             IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        World world = TellMe.dataProvider.getWorld(source.getMinecraftServer(), dimensionGetter.getDimensionFromSource(source));
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
 
         CommandUtils.sendMessage(source, "Counting blocks...");
@@ -262,9 +263,9 @@ public class SubCommandBlockStats
         return 1;
     }
 
-    private static int countBlocksLoadedChunks(CommandSource source, IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    private static int countBlocksLoadedChunks(ServerCommandSource source, IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        World world = TellMe.dataProvider.getWorld(source.getMinecraftServer(), dimensionGetter.getDimensionFromSource(source));
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
 
         CommandUtils.sendMessage(source, "Counting blocks...");
@@ -277,7 +278,7 @@ public class SubCommandBlockStats
         return 1;
     }
 
-    private static int printHelp(CommandSource source)
+    private static int printHelp(ServerCommandSource source)
     {
         CommandUtils.sendMessage(source, "Calculates the number of blocks in a given area");
         CommandUtils.sendMessage(source, "Usage: /tellme block-stats count[-append] all-loaded-chunks [dimension]");
@@ -294,12 +295,12 @@ public class SubCommandBlockStats
         return 1;
     }
 
-    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount) throws CommandSyntaxException
+    private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount) throws CommandSyntaxException
     {
         return outputData(source, outputType, format, sortByCount, null);
     }
 
-    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
+    private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
     {
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
         List<String> lines;
@@ -326,6 +327,6 @@ public class SubCommandBlockStats
             return CONSOLE_BLOCK_STATS;
         }
 
-        return BLOCK_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BlockStats());
+        return BLOCK_STATS.computeIfAbsent(entity.getUuid(), (e) -> new BlockStats());
     }
 }

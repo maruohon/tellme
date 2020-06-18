@@ -1,11 +1,10 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
-import net.minecraft.entity.merchant.villager.VillagerProfession;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.village.VillagerProfession;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class VillagerProfessionDump
 {
@@ -13,10 +12,10 @@ public class VillagerProfessionDump
     {
         DataDump villagerProfessionDump = new DataDump(2, format);
 
-        for (Map.Entry<ResourceLocation, VillagerProfession> entry : ForgeRegistries.PROFESSIONS.getEntries())
+        for (Identifier id : Registry.VILLAGER_PROFESSION.getIds())
         {
-            String regName = entry.getKey().toString();
-            VillagerProfession profession = entry.getValue();
+            String regName = id.toString();
+            VillagerProfession profession = Registry.VILLAGER_PROFESSION.get(id);
 
             villagerProfessionDump.addData(regName, profession.toString());
         }

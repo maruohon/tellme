@@ -52,7 +52,7 @@ public class RowFormatterAsciiTable extends RowFormatterBase
     {
         int lineLength = this.dump.maxTotalLineLength;
         boolean isCenter = false;
-        String fmt = null;
+        String fmt;
 
         if (this.dump.centerTitle)
         {

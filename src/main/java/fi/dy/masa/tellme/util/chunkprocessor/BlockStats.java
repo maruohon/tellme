@@ -13,19 +13,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.command.arguments.BlockStateParser;
+import net.minecraft.command.arguments.BlockArgumentParser;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockStats extends ChunkProcessorAllChunks
 {
@@ -39,11 +40,11 @@ public class BlockStats extends ChunkProcessorAllChunks
     }
 
     @Override
-    public void processChunks(Collection<Chunk> chunks, BlockPos pos1, BlockPos pos2)
+    public void processChunks(Collection<WorldChunk> chunks, BlockPos pos1, BlockPos pos2)
     {
         final long timeBefore = System.nanoTime();
         Object2LongOpenHashMap<BlockState> counts = new Object2LongOpenHashMap<>();
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+        BlockPos.Mutable pos = new BlockPos.Mutable(0, 0, 0);
         final BlockState air = Blocks.AIR.getDefaultState();
         BlockPos posMin = getMinCorner(pos1, pos2);
         BlockPos posMax = getMaxCorner(pos1, pos2);
@@ -52,7 +53,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         for (Chunk chunk : chunks)
         {
             ChunkPos chunkPos = chunk.getPos();
-            final int topY = chunk.getTopFilledSegment() + 15;
+            final int topY = chunk.getHighestNonEmptySectionYOffset() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
@@ -66,7 +67,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 {
                     for (int y = yMin; y <= yMax; ++y)
                     {
-                        pos.setPos(x, y, z);
+                        pos.set(x, y, z);
                         BlockState state = chunk.getBlockState(pos);
 
                         counts.addTo(state, 1);
@@ -102,10 +103,10 @@ public class BlockStats extends ChunkProcessorAllChunks
             try
             {
                 Block block = state.getBlock();
-                ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
+                Identifier key = Registry.BLOCK.getId(block);
                 String registryName = key != null ? key.toString() : "<null>";
                 ItemStack stack = new ItemStack(block);
-                String displayName = stack.isEmpty() == false ? stack.getDisplayName().getString() : (new TranslationTextComponent(block.getTranslationKey())).getString();
+                String displayName = stack.isEmpty() == false ? stack.getName().getString() : (new TranslatableText(block.getTranslationKey())).getString();
                 long amount = counts.getLong(state);
 
                 if (key == null)
@@ -144,8 +145,8 @@ public class BlockStats extends ChunkProcessorAllChunks
         for (String filter : filters)
         {
             StringReader reader = new StringReader(filter);
-            BlockStateParser parser = (new BlockStateParser(reader, false)).parse(false);
-            BlockState state = parser.getState();
+            BlockArgumentParser parser = (new BlockArgumentParser(reader, false)).parse(false);
+            BlockState state = parser.getBlockState();
             Block block = state.getBlock();
 
             // No block state properties specified, get all states for this block
@@ -154,7 +155,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 list.addAll(infoByBlock.get(block));
             }
             // Exact state specified, only add that
-            else if (parser.getProperties().size() == state.getBlockState().getProperties().size())
+            else if (parser.getProperties().size() == state.getProperties().size())
             {
                 BlockInfo info = this.blockStats.get(state);
 

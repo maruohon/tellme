@@ -15,25 +15,23 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.Material;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.state.IProperty;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.state.property.Property;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockInfo
 {
@@ -53,45 +51,45 @@ public class BlockInfo
         names.put(Material.CAKE, "CAKE");
         names.put(Material.CARPET, "CARPET");
         names.put(Material.CLAY, "CLAY");
-        names.put(Material.CORAL, "CORAL");
-        names.put(Material.DRAGON_EGG, "DRAGON_EGG");
+        names.put(Material.COBWEB, "COBWEB");
         names.put(Material.EARTH, "EARTH");
+        names.put(Material.EGG, "EGG");
         names.put(Material.FIRE, "FIRE");
         names.put(Material.GLASS, "GLASS");
-        names.put(Material.GOURD, "GOURD");
         names.put(Material.ICE, "ICE");
-        names.put(Material.IRON, "IRON");
         names.put(Material.LAVA, "LAVA");
         names.put(Material.LEAVES, "LEAVES");
-        names.put(Material.MISCELLANEOUS, "MISCELLANEOUS");
-        names.put(Material.OCEAN_PLANT, "OCEAN_PLANT");
+        names.put(Material.METAL, "METAL");
         names.put(Material.ORGANIC, "ORGANIC");
         names.put(Material.PACKED_ICE, "PACKED_ICE");
+        names.put(Material.PART, "PART");
         names.put(Material.PISTON, "PISTON");
-        names.put(Material.PLANTS, "PLANTS");
+        names.put(Material.PLANT, "PLANT");
         names.put(Material.PORTAL, "PORTAL");
-        names.put(Material.REDSTONE_LIGHT, "REDSTONE_LIGHT");
-        names.put(Material.ROCK, "ROCK");
+        names.put(Material.PUMPKIN, "PUMPKIN");
+        names.put(Material.REDSTONE_LAMP, "REDSTONE_LAMP");
+        names.put(Material.REPLACEABLE_PLANT, "REPLACEABLE_PLANT");
         names.put(Material.SAND, "SAND");
-        names.put(Material.SEA_GRASS, "SEA_GRASS");
-        names.put(Material.SHULKER, "SHULKER");
+        names.put(Material.SEAGRASS, "SEAGRASS");
+        names.put(Material.SHULKER_BOX, "SHULKER_BOX");
         names.put(Material.SNOW, "SNOW");
         names.put(Material.SNOW_BLOCK, "SNOW_BLOCK");
         names.put(Material.SPONGE, "SPONGE");
+        names.put(Material.STONE, "STONE");
         names.put(Material.STRUCTURE_VOID, "STRUCTURE_VOID");
-        names.put(Material.TALL_PLANTS, "TALL_PLANTS");
         names.put(Material.TNT, "TNT");
+        names.put(Material.UNDERWATER_PLANT, "UNDERWATER_PLANT");
+        names.put(Material.UNUSED_PLANT, "UNUSED_PLANT");
         names.put(Material.WATER, "WATER");
-        names.put(Material.WEB, "WEB");
         names.put(Material.WOOD, "WOOD");
         names.put(Material.WOOL, "WOOL");
 
         return names;
     }
 
-    public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, IProperty<T> prop, String valueStr)
+    public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, Property<T> prop, String valueStr)
     {
-        Optional<T> value = prop.parseValue(valueStr);
+        Optional<T> value = prop.getValue(valueStr);
 
         if (value.isPresent())
         {
@@ -107,11 +105,11 @@ public class BlockInfo
 
         for (BlockState state : initialStates)
         {
-            IProperty<?> prop = state.getBlock().getStateContainer().getProperty(propName);
+            Property<?> prop = state.getBlock().getStateFactory().getProperty(propName);
 
             if (prop != null)
             {
-                Optional<?> value = prop.parseValue(propValue);
+                Optional<?> value = prop.getValue(propValue);
 
                 if (value.isPresent() && state.get(prop).equals(value.get()))
                 {
@@ -163,8 +161,8 @@ public class BlockInfo
     {
         String teInfo = "";
         BlockState state = world.getBlockState(pos);
-        boolean teInWorld = world.getTileEntity(pos) != null;
-        boolean shouldHaveTE = state.getBlock().hasTileEntity(state);
+        boolean teInWorld = world.getBlockEntity(pos) != null;
+        boolean shouldHaveTE = state.getBlock().hasBlockEntity();
 
         if (teInWorld == shouldHaveTE)
         {
@@ -194,8 +192,8 @@ public class BlockInfo
 
         lines.add(String.format("Full block state: %s", state));
         lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
-                state.getBlockHardness(world, pos),
-                state.getBlock().getExplosionResistance(state, world, pos, null, new Explosion(world, null, pos.getX(), pos.getY(), pos.getZ(), 2, false, Explosion.Mode.NONE)),
+                state.getHardness(world, pos),
+                state.getBlock().getBlastResistance(),
                 getMaterialName(state.getMaterial())));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 
@@ -203,11 +201,11 @@ public class BlockInfo
         {
             lines.add("BlockState properties:");
 
-            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = state.getValues().entrySet().iterator();
+            UnmodifiableIterator<Entry<Property<?>, Comparable<?>>> iter = state.getEntries().entrySet().iterator();
 
             while (iter.hasNext())
             {
-                Entry<IProperty<?>, Comparable<?>> entry = iter.next();
+                Entry<Property<?>, Comparable<?>> entry = iter.next();
                 lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
             }
         }
@@ -216,56 +214,19 @@ public class BlockInfo
             lines.add("BlockState properties: <none>");
         }
 
-        getExtendedBlockStateInfo(world, state, pos, lines);
-
-        TileEntity te = world.getTileEntity(pos);
+        BlockEntity te = world.getBlockEntity(pos);
 
         if (te != null)
         {
-            CompoundNBT nbt = new CompoundNBT();
-            te.write(nbt);
+            CompoundTag nbt = new CompoundTag();
+            te.toTag(nbt);
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
             lines.add("BlockEntity NBT (from BlockEntity::write()):");
-            lines.addAll((new NbtStringifierPretty(targetIsChat ? TextFormatting.GRAY.toString() : null)).getNbtLines(nbt));
+            lines.addAll((new NbtStringifierPretty(targetIsChat ? Formatting.GRAY.toString() : null)).getNbtLines(nbt));
         }
 
         return lines;
-    }
-
-    private static void getExtendedBlockStateInfo(IBlockReader world, BlockState state, BlockPos pos, List<String> lines)
-    {
-        try
-        {
-            state = state.getExtendedState(world, pos);
-
-            /*
-            if (state instanceof IExtendedBlockState)
-            {
-                IExtendedBlockState extendedState = (IExtendedBlockState) state;
-
-                if (extendedState.getUnlistedProperties().size() > 0)
-                {
-                    lines.add("IExtendedBlockState properties:");
-
-                    UnmodifiableIterator<Entry<IUnlistedProperty<?>, Optional<?>>> iterExt = extendedState.getUnlistedProperties().entrySet().iterator();
-
-                    while (iterExt.hasNext())
-                    {
-                        Entry<IUnlistedProperty<?>, Optional<?>> entry = iterExt.next();
-                        lines.add(MoreObjects.toStringHelper(entry.getKey())
-                                .add("name", entry.getKey().getName())
-                                .add("clazz", entry.getKey().getType())
-                                .add("value", entry.getValue().toString()).toString());
-                    }
-                }
-            }
-            */
-        }
-        catch (Exception e)
-        {
-            TellMe.logger.error("getFullBlockInfo(): Exception while calling getExtendedState() on the block {}", state);
-        }
     }
 
     public static String getMaterialName(Material material)
@@ -279,13 +240,13 @@ public class BlockInfo
     }
 
     @Nullable
-    public static List<String> getBlockInfoFromRayTracedTarget(World world, Entity entity, RayTraceResult trace, boolean adjacent, boolean targetIsChat)
+    public static List<String> getBlockInfoFromRayTracedTarget(World world, Entity entity, HitResult trace, boolean adjacent, boolean targetIsChat)
     {
         // Ray traced to a block
-        if (trace.getType() == RayTraceResult.Type.BLOCK)
+        if (trace.getType() == HitResult.Type.BLOCK)
         {
-            BlockRayTraceResult hit = (BlockRayTraceResult) trace;
-            BlockPos pos = adjacent ? hit.getPos().offset(hit.getFace()) : hit.getPos();
+            BlockHitResult hit = (BlockHitResult) trace;
+            BlockPos pos = adjacent ? hit.getBlockPos().offset(hit.getSide()) : hit.getBlockPos();
             BlockInfo.printBasicBlockInfoToChat(entity, world, pos);
 
             return getFullBlockInfo(world, pos, targetIsChat);
@@ -314,26 +275,25 @@ public class BlockInfo
             BlockState state = world.getBlockState(pos);
             Block block = state.getBlock();
 
-            @SuppressWarnings("deprecation")
-            ItemStack stack = block.getItem(world, pos, state);
-            ResourceLocation rl = ForgeRegistries.BLOCKS.getKey(block);
+            ItemStack stack = block.getPickStack(world, pos, state);
+            Identifier rl = Registry.BLOCK.getId(block);
             String registryName = rl != null ? rl.toString() : "<null>";
             String displayName;
 
             if (stack.isEmpty() == false)
             {
-                displayName = stack.getDisplayName().getString();
+                displayName = stack.getName().getString();
             }
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = block.getNameTextComponent().getString();
+                displayName = block.getName().getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));
         }
 
-        public ITextComponent toChatMessage()
+        public Text toChatMessage()
         {
             String textPre = String.format("%s (", this.displayName);
             String textPost = String.format(") %s", this.teInfo);
@@ -348,9 +308,9 @@ public class BlockInfo
         }
     }
 
-    public static String getBlockEntityNameFor(TileEntityType<?> type)
+    public static String getBlockEntityNameFor(BlockEntityType<?> type)
     {
-        ResourceLocation id = TileEntityType.getId(type);
+        Identifier id = BlockEntityType.getId(type);
         return id != null ? id.toString() : "<null>";
     }
 }

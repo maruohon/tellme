@@ -2,42 +2,34 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-import com.google.common.collect.ImmutableList;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.entity.EntityCategory;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biome.SpawnListEntry;
-import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.world.gen.feature.StructureFeature;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.mixin.IMixinWeightedPickerEntry;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeManager;
-import net.minecraftforge.common.BiomeManager.BiomeEntry;
-import net.minecraftforge.common.BiomeManager.BiomeType;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BiomeDump
 {
-    public static List<String> getFormattedBiomeDump(Format format, boolean outputColors)
+    public static List<String> getFormattedBiomeDump(Format format, boolean outputColors, @Nullable World world)
     {
         final boolean isClient = TellMe.isClient();
-        int columns = 11;
+        int columns = 8;
 
         if (outputColors)
         {
@@ -46,41 +38,36 @@ public class BiomeDump
 
         DataDump biomeDump = new DataDump(columns, format);
 
-        for (Map.Entry<ResourceLocation, Biome> entry : ForgeRegistries.BIOMES.getEntries())
+        for (Identifier id : Registry.BIOME.getIds())
         {
-            Biome biome = entry.getValue();
-            @SuppressWarnings("deprecation")
-            String id = String.valueOf(Registry.BIOME.getId(biome));
-            ResourceLocation rl = entry.getKey();
-            String regName = rl != null ? rl.toString() : "<null>";
+            Biome biome = Registry.BIOME.get(id);
+            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            String regName = id.toString();
             String name = TellMe.dataProvider.getBiomeName(biome);
-            String biomeTypes = getBiomeTypesForBiome(biome);
-            String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
-            String validFor = getValidForString(biome);
-            String temp = String.format("%5.2f", biome.getDefaultTemperature());
-            String tempCat = biome.getTempCategory().toString();
-            Biome.RainType rainType = biome.getPrecipitation();
-            String rain = rainType != Biome.RainType.NONE ? rainType.getName() : "-";
-            String downfall = String.format("%.2f", biome.getDownfall());
-            String oceanic = String.valueOf(BiomeManager.oceanBiomes.contains(biome));
+            String validFor = world != null ? getValidForString(biome, world.getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
+            String temp = String.format("%5.2f", biome.getTemperature());
+            String tempCat = biome.getTemperatureGroup().toString();
+            Biome.Precipitation rainType = biome.getPrecipitation();
+            String rain = rainType != Biome.Precipitation.NONE ? rainType.getName() : "-";
+            String downfall = String.format("%.2f", biome.getRainfall());
             int waterColor = biome.getWaterColor();
 
             if (isClient)
             {
                 if (outputColors)
                 {
-                    int foliageColor = TellMe.dataProvider.getFoliageColor(biome, BlockPos.ZERO);
-                    int grassColor = TellMe.dataProvider.getGrassColor(biome, BlockPos.ZERO);
+                    int foliageColor = TellMe.dataProvider.getFoliageColor(biome, BlockPos.ORIGIN);
+                    int grassColor = TellMe.dataProvider.getGrassColor(biome, BlockPos.ORIGIN);
                     String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
                     String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
                     String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
 
-                    biomeDump.addData(id, regName, name, temp, tempCat, rain, downfall, oceanic, biomeTypes, biomeDictionaryTypes, validFor,
+                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor,
                                         waterColorStr, grassColorStr, foliageColorStr);
                 }
                 else
                 {
-                    biomeDump.addData(id, regName, name, temp, tempCat, rain, downfall, oceanic, biomeTypes, biomeDictionaryTypes, validFor);
+                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor);
                 }
             }
             else
@@ -88,11 +75,11 @@ public class BiomeDump
                 if (outputColors)
                 {
                     String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
-                    biomeDump.addData(id, regName, name, temp, tempCat, rain, downfall, oceanic, biomeTypes, biomeDictionaryTypes, validFor, waterColorStr);
+                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor, waterColorStr);
                 }
                 else
                 {
-                    biomeDump.addData(id, regName, name, temp, tempCat, rain, downfall, oceanic, biomeTypes, biomeDictionaryTypes, validFor);
+                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor);
                 }
             }
         }
@@ -100,64 +87,60 @@ public class BiomeDump
         if (isClient && outputColors)
         {
             biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
-                                "RainType", "Downfall", "oceanic", "BiomeType", "BiomeDictionary.Type", "Valid for",
+                                "RainType", "Downfall", "Valid for",
                                 "waterColorMultiplier", "grassColorMultiplier", "foliageColorMultiplier");
         }
         else if (outputColors)
         {
             biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
-                               "RainType", "Downfall", "oceanic", "BiomeType", "BiomeDictionary.Type", "Valid for", "waterColorMultiplier");
+                               "RainType", "Downfall", "Valid for", "waterColorMultiplier");
         }
         else
         {
             biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
-                               "RainType", "Downfall", "oceanic", "BiomeType", "BiomeDictionary.Type", "Valid for");
+                               "RainType", "Downfall", "Valid for");
         }
 
         biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
         biomeDump.setColumnProperties(3, Alignment.RIGHT, true); // temperature
-        biomeDump.setColumnProperties(5, Alignment.RIGHT, true); // rainfall
-        biomeDump.setColumnAlignment(6, Alignment.RIGHT); // snow
+        biomeDump.setColumnProperties(5, Alignment.RIGHT, true); // raintype
+        biomeDump.setColumnAlignment(6, Alignment.RIGHT); // downfall
 
         return biomeDump.getLines();
     }
 
     public static List<String> getFormattedBiomeDumpWithMobSpawns(Format format)
     {
-        DataDump biomeDump = new DataDump(6, format);
+        DataDump biomeDump = new DataDump(4, format);
 
-        for (Map.Entry<ResourceLocation, Biome> entry : ForgeRegistries.BIOMES.getEntries())
+        for (Identifier id : Registry.BIOME.getIds())
         {
-            Biome biome = entry.getValue();
-            @SuppressWarnings("deprecation")
-            String id = String.valueOf(Registry.BIOME.getId(biome));
-            ResourceLocation rl = entry.getKey();
-            String regName = rl != null ? rl.toString() : "<null>";
+            Biome biome = Registry.BIOME.get(id);
+            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            String regName = id.toString();
             String name = TellMe.dataProvider.getBiomeName(biome);
-            String biomeTypes = getBiomeTypesForBiome(biome);
-            String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
             List<String> spawns = new ArrayList<>();
 
-            for (EntityClassification type : EntityClassification.values())
+            for (EntityCategory type : EntityCategory.values())
             {
                 List<String> tmpList = new ArrayList<>();
 
                 // Add the spawns grouped by category and sorted alphabetically within each category
-                for (SpawnListEntry spawn : biome.getSpawns(type))
+                for (Biome.SpawnEntry spawn : biome.getEntitySpawnList(type))
                 {
-                    ResourceLocation erl = spawn.entityType.getRegistryName();
-                    String entName = erl != null ? erl.toString() : "<null>";
-                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.minGroupCount, spawn.maxGroupCount));
+                    Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
+                    String entName = erl.toString();
+                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, ((IMixinWeightedPickerEntry) spawn).getWeight(), spawn.minGroupSize, spawn.maxGroupSize));
                 }
 
                 Collections.sort(tmpList);
                 spawns.addAll(tmpList);
             }
 
-            biomeDump.addData(id, regName, name, biomeTypes, biomeDictionaryTypes, String.join("; ", spawns));
+            biomeDump.addData(intId, regName, name, String.join("; ", spawns));
         }
 
-        biomeDump.addTitle("ID", "Registry name", "Biome name", "BiomeType", "BiomeDictionary.Type", "Spawns");
+        biomeDump.addTitle("ID", "Registry name", "Biome name", "Spawns");
         biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
 
         return biomeDump.getLines();
@@ -166,41 +149,36 @@ public class BiomeDump
     public static void printCurrentBiomeInfoToChat(Entity entity)
     {
         World world = entity.getEntityWorld();
-        BlockPos pos = entity.getPosition();
+        BlockPos pos = entity.getBlockPos();
         Biome biome = world.getBiome(pos);
 
-        @SuppressWarnings("deprecation")
-        int id = Registry.BIOME.getId(biome);
-        String pre = TextFormatting.GREEN.toString();
-        String preAqua = TextFormatting.AQUA.toString();
-        String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
+        int intId = Registry.BIOME.getRawId(biome);
+        String pre = Formatting.GREEN.toString();
+        String preAqua = Formatting.AQUA.toString();
+        String rst = Formatting.RESET.toString() + Formatting.WHITE.toString();
 
         String name = TellMe.dataProvider.getBiomeName(biome);
-        String regName = biome.getRegistryName().toString();
-        String biomeTypes = getBiomeTypesForBiome(biome);
-        String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
-        String validFor = getValidForString(biome);
-        String snowing = biome.doesSnowGenerate(world, pos) ? pre + "true" : TextFormatting.RED.toString() + "false";
-        String textPre = String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s", pre, name, rst, pre, id, rst, pre);
-        Biome.RainType rainType = biome.getPrecipitation();
+        String regName = Registry.BIOME.getId(biome).toString();
+        String validFor = getValidForString(biome, world.getChunkManager().getChunkGenerator().getBiomeSource());
+        String snowing = biome.canSetSnow(world, pos) ? pre + "true" : Formatting.RED.toString() + "false";
+        String textPre = String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s", pre, name, rst, pre, intId, rst, pre);
+        Biome.Precipitation rainType = biome.getPrecipitation();
         int waterColor = biome.getWaterColor();
 
-        entity.sendMessage(new StringTextComponent("------------- Current biome info ------------"));
+        entity.sendMessage(new LiteralText("------------- Current biome info ------------"));
         entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, rst));
-        entity.sendMessage(new StringTextComponent(String.format("RainType: %s%s%s, downfall: %s%f%s, snows: %s%s",
-                pre, rainType.getName(), rst, pre, biome.getDownfall(), rst, snowing, rst)));
-        entity.sendMessage(new StringTextComponent(String.format("BiomeType: %s%s%s", preAqua, biomeTypes, rst)));
-        entity.sendMessage(new StringTextComponent(String.format("BiomeDictionary.Type: %s%s%s", preAqua, biomeDictionaryTypes, rst)));
+        entity.sendMessage(new LiteralText(String.format("RainType: %s%s%s, downfall: %s%f%s, snows: %s%s",
+                pre, rainType.getName(), rst, pre, biome.getRainfall(), rst, snowing, rst)));
 
         if (StringUtils.isBlank(validFor) == false)
         {
-            entity.sendMessage(new StringTextComponent(String.format("Valid for: %s%s%s", preAqua, validFor, rst)));
+            entity.sendMessage(new LiteralText(String.format("Valid for: %s%s%s", preAqua, validFor, rst)));
         }
 
-        entity.sendMessage(new StringTextComponent(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
+        entity.sendMessage(new LiteralText(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
                 pre, waterColor, waterColor, rst)));
-        entity.sendMessage(new StringTextComponent(String.format("temperature: %s%f%s, temp. category: %s%s%s",
-                pre, biome.getTemperature(pos), rst, pre, biome.getTempCategory(), rst)));
+        entity.sendMessage(new LiteralText(String.format("temperature: %s%f%s, temp. category: %s%s%s",
+                pre, biome.getTemperature(pos), rst, pre, biome.getTemperatureGroup(), rst)));
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
@@ -208,14 +186,14 @@ public class BiomeDump
 
     public static List<String> getBiomeDumpIdToName(Format format)
     {
-        List<IdToStringHolder> data = new ArrayList<IdToStringHolder>();
-        List<String> lines = new ArrayList<String>();
+        List<IdToStringHolder> data = new ArrayList<>();
+        List<String> lines = new ArrayList<>();
 
-        for (Biome biome : ForgeRegistries.BIOMES)
+        for (Identifier id : Registry.BIOME.getIds())
         {
-            @SuppressWarnings("deprecation")
-            int id = Registry.BIOME.getId(biome);
-            data.add(new IdToStringHolder(id, biome.getRegistryName().toString()));
+            Biome biome = Registry.BIOME.get(id);
+            int intId = Registry.BIOME.getRawId(biome);
+            data.add(new IdToStringHolder(intId, id.toString()));
         }
 
         Collections.sort(data);
@@ -224,81 +202,39 @@ public class BiomeDump
         {
             for (IdToStringHolder holder : data)
             {
-                lines.add(String.valueOf(holder.getId()) + ",\"" + holder.getString() + "\"");
+                lines.add(holder.getId() + ",\"" + holder.getString() + "\"");
             }
         }
         else
         {
             for (IdToStringHolder holder : data)
             {
-                lines.add(String.valueOf(holder.getId()) + " = " + holder.getString());
+                lines.add(holder.getId() + " = " + holder.getString());
             }
         }
 
         return lines;
     }
 
-    private static String getBiomeTypesForBiome(Biome biome)
-    {
-        Set<String> typeNames = new HashSet<>();
-
-        for (BiomeType type : BiomeType.values())
-        {
-            ImmutableList<BiomeEntry> entries = BiomeManager.getBiomes(type);
-
-            for (BiomeEntry entry : entries)
-            {
-                if (entry.biome == biome)
-                {
-                    typeNames.add(type.toString().toUpperCase());
-                    break;
-                }
-            }
-        }
-
-        if (typeNames.isEmpty() == false)
-        {
-            List<String> typeList = new ArrayList<>(typeNames);
-            Collections.sort(typeList);
-            return String.join(", ", typeList);
-        }
-
-        return "";
-    }
-
-    private static String getBiomeDictionaryTypesForBiome(Biome biome)
-    {
-        List<String> typeStrings = new ArrayList<>();
-        Set<BiomeDictionary.Type> types = BiomeDictionary.getTypes(biome);
-
-        for (BiomeDictionary.Type type : types)
-        {
-            typeStrings.add(type.getName().toUpperCase());
-        }
-
-        if (typeStrings.isEmpty() == false)
-        {
-            Collections.sort(typeStrings);
-            return String.join(", ", typeStrings);
-        }
-
-        return "";
-    }
-
-    private static String getValidForString(Biome biome)
+    private static String getValidForString(Biome biome, BiomeSource biomeSource)
     {
         List<String> strings = new ArrayList<>();
 
-        if (BiomeProvider.BIOMES_TO_SPAWN_IN.contains(biome))
+        if (biomeSource.getSpawnBiomes().contains(biome))
         {
             strings.add("spawn");
         }
 
-        for (Structure<?> structure : Feature.STRUCTURES.values())
+        for (StructureFeature<?> feature : Feature.STRUCTURES.values())
         {
-            if (biome.hasStructure(structure))
+            if (biome.hasStructureFeature(feature))
             {
-                strings.add(structure.getRegistryName().toString());
+                Identifier id = Registry.FEATURE.getId(feature);
+
+                if (id != null)
+                {
+                    strings.add(id.toString());
+                }
             }
         }
 

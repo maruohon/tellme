@@ -4,8 +4,8 @@ import java.util.Collection;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.AbstractChunkProvider;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -36,9 +36,9 @@ public abstract class ChunkProcessorBase
         return this.chunksWithZeroCount;
     }
 
-    public void processChunks(Collection<Chunk> chunks)
+    public void processChunks(Collection<WorldChunk> chunks)
     {
-        for (Chunk chunk : chunks)
+        for (WorldChunk chunk : chunks)
         {
             this.processChunk(chunk);
             ++this.loadedChunks;
@@ -47,7 +47,7 @@ public abstract class ChunkProcessorBase
 
     public void processChunksInArea(World world, ChunkPos pos1, ChunkPos pos2)
     {
-        AbstractChunkProvider provider = world.getChunkProvider();
+        ChunkManager provider = world.getChunkManager();
         final int minCX = Math.min(pos1.x, pos2.x);
         final int minCZ = Math.min(pos1.z, pos2.z);
         final int maxCX = Math.max(pos1.x, pos2.x);
@@ -57,7 +57,7 @@ public abstract class ChunkProcessorBase
         {
             for (int cx = minCX; cx <= maxCX; ++cx)
             {
-                Chunk chunk = provider.getChunk(cx, cz, false);
+                WorldChunk chunk = provider.getWorldChunk(cx, cz, false);
 
                 if (chunk != null)
                 {
@@ -72,7 +72,7 @@ public abstract class ChunkProcessorBase
         }
     }
 
-    protected abstract void processChunk(Chunk chunk);
+    protected abstract void processChunk(WorldChunk chunk);
 
     public abstract DataDump getDump();
 

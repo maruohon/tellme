@@ -3,52 +3,52 @@ package fi.dy.masa.tellme.util;
 import java.io.File;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class OutputUtils
 {
-    public static ITextComponent getClipboardCopiableMessage(String textPre, String textToCopy, String textPost)
+    public static Text getClipboardCopiableMessage(String textPre, String textToCopy, String textPost)
     {
-        StringTextComponent componentCopy = new StringTextComponent(textToCopy);
+        LiteralText componentCopy = new LiteralText(textToCopy);
         componentCopy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + textToCopy));
-        componentCopy.getStyle().setUnderlined(Boolean.TRUE);
+        componentCopy.getStyle().setUnderline(Boolean.TRUE);
 
-        StringTextComponent hoverText = new StringTextComponent(String.format("Copy the string '%s' to clipboard", textToCopy));
+        LiteralText hoverText = new LiteralText(String.format("Copy the string '%s' to clipboard", textToCopy));
         componentCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
-        StringTextComponent full = new StringTextComponent(textPre);
-        full.appendSibling(componentCopy).appendText(textPost);
+        LiteralText full = new LiteralText(textPre);
+        full.append(componentCopy).append(textPost);
 
         return full;
     }
 
     public static void sendClickableLinkMessage(Entity entity, String messageKey, File file)
     {
-        ITextComponent name = new StringTextComponent(file.getName());
+        Text name = new LiteralText(file.getName());
 
         if (TellMe.isClient())
         {
             name.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
-            name.getStyle().setUnderlined(Boolean.valueOf(true));
+            name.getStyle().setUnderline(Boolean.TRUE);
         }
 
-        entity.sendMessage(new TranslationTextComponent(messageKey, name));
+        entity.sendMessage(new TranslatableText(messageKey, name));
     }
 
     public static void printOutputToChat(List<String> lines, Entity entity)
     {
         for (String line : lines)
         {
-            entity.sendMessage(new StringTextComponent(line));
+            entity.sendMessage(new LiteralText(line));
         }
     }
 
@@ -67,13 +67,13 @@ public class OutputUtils
     }
 
     public static void printOutput(@Nullable List<String> lines, OutputType outputType, DataDump.Format format,
-            @Nullable String fileNameBase, CommandSource source)
+            @Nullable String fileNameBase, ServerCommandSource source)
     {
         printOutput(lines, outputType, source, fileNameBase, format == DataDump.Format.CSV ? ".csv" : ".txt");
     }
 
     public static void printOutput(@Nullable List<String> lines, OutputType outputType,
-            CommandSource source, @Nullable String fileNameBase, @Nullable String fileNameExtension)
+            ServerCommandSource source, @Nullable String fileNameBase, @Nullable String fileNameExtension)
     {
         if (lines == null || lines.isEmpty())
         {
@@ -93,7 +93,11 @@ public class OutputUtils
 
             case CONSOLE:
                 printOutputToConsole(lines);
-                entity.sendMessage(new StringTextComponent("Output printed to console"));
+
+                if (entity != null)
+                {
+                    entity.sendMessage(new LiteralText("Output printed to console"));
+                }
                 break;
 
             case FILE:
@@ -107,7 +111,7 @@ public class OutputUtils
                     }
                     else
                     {
-                        source.sendFeedback(new StringTextComponent("Output written to file '" + file.getName() + "'"), false);
+                        source.sendFeedback(new LiteralText("Output written to file '" + file.getName() + "'"), false);
                     }
                 }
                 break;

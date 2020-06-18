@@ -1,7 +1,7 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -12,7 +12,7 @@ public class SimpleVanillaRegistryKeyOnlyDump
     {
         DataDump dump = new DataDump(1, format);
 
-        for (ResourceLocation key : registry.keySet())
+        for (Identifier key : registry.getIds())
         {
             dump.addData(key.toString());
         }

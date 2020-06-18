@@ -5,39 +5,46 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class EntityInfo
 {
     private static String getBasicEntityInfo(Entity target)
     {
-        ResourceLocation rl = target.getType().getRegistryName();
+        Identifier rl = Registry.ENTITY_TYPE.getId(target.getType());
         String regName = rl != null ? rl.toString() : "<null>";
 
         return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getEntityId());
     }
 
-    public static List<String> getFullEntityInfo(Entity target, boolean targetIsChat)
+    public static List<String> getFullEntityInfo(@Nullable Entity target, boolean targetIsChat)
     {
+        if (target == null)
+        {
+            return Collections.emptyList();
+        }
+
         List<String> lines = new ArrayList<>();
         lines.add(getBasicEntityInfo(target));
 
-        CompoundNBT nbt = new CompoundNBT();
+        CompoundTag nbt = new CompoundTag();
 
-        if (target.writeUnlessPassenger(nbt) == false)
+        if (target.saveToTag(nbt) == false)
         {
-            target.writeWithoutTypeId(nbt);
+            target.toTag(nbt);
         }
 
         lines.add("Entity class: " + target.getClass().getName());
@@ -49,22 +56,22 @@ public class EntityInfo
             lines.add("");
         }
 
-        lines.addAll((new NbtStringifierPretty(targetIsChat ? TextFormatting.GRAY.toString() : null)).getNbtLines(nbt));
+        lines.addAll((new NbtStringifierPretty(targetIsChat ? Formatting.GRAY.toString() : null)).getNbtLines(nbt));
 
         return lines;
     }
 
     public static List<String> getActivePotionEffectsForEntity(LivingEntity entity, DataDump.Format format)
     {
-        Collection<EffectInstance> effects = entity.getActivePotionEffects();
+        Collection<StatusEffectInstance> effects = entity.getStatusEffects();
 
         if (effects.isEmpty() == false)
         {
             DataDump dump = new DataDump(4, format);
 
-            for (EffectInstance effect : effects)
+            for (StatusEffectInstance effect : effects)
             {
-                ResourceLocation rl = effect.getPotion().getRegistryName();
+                Identifier rl = Registry.STATUS_EFFECT.getId(effect.getEffectType());
 
                 dump.addData(
                         rl != null ? rl.toString() : effect.getClass().getName(),
@@ -85,7 +92,7 @@ public class EntityInfo
 
     public static void printBasicEntityInfoToChat(PlayerEntity player, Entity target)
     {
-        ResourceLocation rl = target.getType().getRegistryName();
+        Identifier rl = Registry.ENTITY_TYPE.getId(target.getType());
         String regName = rl != null ? rl.toString() : "null";
         String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
         String textPost = String.format("] (entityId: %d)", target.getEntityId());
@@ -106,24 +113,27 @@ public class EntityInfo
         OutputUtils.sendClickableLinkMessage(player, "Output written to file %s", file);
     }
 
-    public static List<String> getPlayerList(DataDump.Format format)
+    public static List<String> getPlayerList(DataDump.Format format, @Nullable MinecraftServer server)
     {
         DataDump dump = new DataDump(6, format);
 
-        for (PlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers())
+        if (server != null)
         {
-            String name = player.getName().getString();
-            String dim = player.getEntityWorld().dimension.getType().getRegistryName().toString();
-            String health = String.format("%.2f", player.getHealth());
-            BlockPos pos = new BlockPos(player);
-            int x = pos.getX();
-            int y = pos.getY();
-            int z = pos.getZ();
-            String blockPos = String.format("x: %d, y: %d, z: %d", x, y, z);
-            String chunkPos = String.format("cx: %d, cy: %d, cz: %d", x >> 4, y >> 4, z >> 4);
-            String regionPos = String.format("r.%d.%d", x >> 9, z >> 9);
+            for (PlayerEntity player : server.getPlayerManager().getPlayerList())
+            {
+                String name = player.getName().getString();
+                String dim = Registry.DIMENSION.getId(player.getEntityWorld().dimension.getType()).toString();
+                String health = String.format("%.2f", player.getHealth());
+                BlockPos pos = new BlockPos(player);
+                int x = pos.getX();
+                int y = pos.getY();
+                int z = pos.getZ();
+                String blockPos = String.format("x: %d, y: %d, z: %d", x, y, z);
+                String chunkPos = String.format("cx: %d, cy: %d, cz: %d", x >> 4, y >> 4, z >> 4);
+                String regionPos = String.format("r.%d.%d", x >> 9, z >> 9);
 
-            dump.addData(name, health, dim, blockPos, chunkPos, regionPos);
+                dump.addData(name, health, dim, blockPos, chunkPos, regionPos);
+            }
         }
 
         dump.addTitle("Name", "Health", "Dimension", "Position", "Chunk", "Region");
@@ -139,7 +149,7 @@ public class EntityInfo
 
     public static String getEntityNameFor(EntityType<?> type)
     {
-        ResourceLocation id = EntityType.getKey(type);
+        Identifier id = EntityType.getId(type);
         return id != null ? id.toString() : "<null>";
     }
 }

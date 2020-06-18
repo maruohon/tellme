@@ -1,16 +1,14 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class EntityDump
 {
@@ -18,13 +16,11 @@ public class EntityDump
     {
         DataDump entityDump = new DataDump(includeClassName ? 4 : 3, format);
 
-        for (Map.Entry<ResourceLocation, EntityType<?>> entry : ForgeRegistries.ENTITIES.getEntries())
+        for (Identifier id : Registry.ENTITY_TYPE.getIds())
         {
-            ResourceLocation id = entry.getKey();
-            EntityType<?> type = entry.getValue();
+            EntityType<?> type = Registry.ENTITY_TYPE.get(id);
             String modName = ModNameUtils.getModName(id);
-            @SuppressWarnings("deprecation")
-            String entityId = String.valueOf(Registry.ENTITY_TYPE.getId(type));
+            String entityId = String.valueOf(Registry.ENTITY_TYPE.getRawId(type));
 
             if (includeClassName && world != null)
             {

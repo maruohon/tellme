@@ -1,46 +1,65 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffectType;
+import net.minecraft.potion.Potion;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class PotionDump
 {
-    public static List<String> getFormattedPotionDump(DataDump.Format format)
+    public static List<String> getFormattedPotionTypeDump(DataDump.Format format)
     {
-        DataDump potionDump = new DataDump(7, format);
+        DataDump potionTypeDump = new DataDump(3, format);
 
-        for (Map.Entry<ResourceLocation, Effect> entry : ForgeRegistries.POTIONS.getEntries())
+        for (Identifier id : Registry.POTION.getIds())
         {
-            ResourceLocation rl = entry.getKey();
-            Effect effect = entry.getValue();
+            Potion potion = Registry.POTION.get(id);
+            String intId = String.valueOf(Registry.POTION.getRawId(potion));
 
-            @SuppressWarnings("deprecation")
-            String id = String.valueOf(Registry.EFFECTS.getId(effect));
+            List<StatusEffectInstance> effects = potion.getEffects();
 
-            String modName = ModNameUtils.getModName(rl);
-            String regName = rl.toString();
-            String name = effect.getName();
-            String color = String.format("0x%08X (%10d)", effect.getLiquidColor(), effect.getLiquidColor());
-            String isBad = String.valueOf(effect.getEffectType() == EffectType.HARMFUL);
-            String isBeneficial = String.valueOf(effect.isBeneficial());
-
-            potionDump.addData(modName, regName, name, id, color, isBad, isBeneficial);
+            potionTypeDump.addData(id.toString(), intId, String.join(", ", getEffectInfoLines(effects)));
         }
 
-        potionDump.addTitle("Mod name", "Registry name", "Potion Name", "ID", "Liquid color", "Is bad", "Is beneficial");
+        potionTypeDump.addTitle("Registry name", "ID", "Effects");
+        potionTypeDump.setColumnProperties(1, Alignment.RIGHT, true); // id
 
-        potionDump.setColumnProperties(3, Alignment.RIGHT, true); // id
-        potionDump.setColumnAlignment(5, Alignment.RIGHT); // is bad
-        potionDump.setColumnAlignment(6, Alignment.RIGHT); // is beneficial
+        return potionTypeDump.getLines();
+    }
 
-        return potionDump.getLines();
+    public static String getEffectInfo(StatusEffect effect)
+    {
+        String isBad = String.valueOf(effect.getType() == StatusEffectType.HARMFUL);
+        String isBeneficial = String.valueOf(effect.method_5573());
+        String regName = Registry.STATUS_EFFECT.getId(effect).toString();
+
+        return "Potion:[reg:" + regName + ",name:" + effect.getTranslationKey() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
+    }
+
+    public static String getPotionEffectInfo(StatusEffectInstance effect)
+    {
+        return String.format("PotionEffect:{%s,amplifier:%d,duration:%d,isAmbient:%s}",
+                getEffectInfo(effect.getEffectType()),
+                effect.getAmplifier(),
+                effect.getDuration(),
+                effect.isAmbient());
+    }
+
+    public static List<String> getEffectInfoLines(List<StatusEffectInstance> effects)
+    {
+        List<String> effectStrs = new ArrayList<>();
+
+        for (StatusEffectInstance effect : effects)
+        {
+            effectStrs.add(getPotionEffectInfo(effect));
+        }
+
+        return effectStrs;
     }
 }

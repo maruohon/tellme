@@ -3,21 +3,21 @@ package fi.dy.masa.tellme.util;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.biome.source.BiomeSource;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BiomeLocator
 {
     private final Object2ObjectOpenHashMap<Biome, BlockPos> biomePositions = new Object2ObjectOpenHashMap<>();
-    private BlockPos center = BlockPos.ZERO;
+    private BlockPos center = BlockPos.ORIGIN;
     private int count;
     private boolean append;
 
@@ -26,10 +26,10 @@ public class BiomeLocator
         this.append = append;
     }
 
-    public void findClosestBiomePositions(BiomeProvider biomeProvider, BlockPos center, int sampleInterval, int maxRadius)
+    public void findClosestBiomePositions(BiomeSource biomeProvider, BlockPos center, int sampleInterval, int maxRadius)
     {
         final long timeBefore = System.nanoTime();
-        final int totalBiomes = ForgeRegistries.BIOMES.getKeys().size();
+        final int totalBiomes = Registry.BIOME.getIds().size();
         this.count = 0;
         this.center = center;
 
@@ -54,7 +54,7 @@ public class BiomeLocator
     }
 
     private boolean samplePositionsOnRing(int centerX, int centerZ, int offset, int sampleInterval,
-            int totalBiomes, BiomeProvider biomeProvider)
+            int totalBiomes, BiomeSource biomeProvider)
     {
         final int minX = centerX - offset;
         final int minZ = centerZ - offset;
@@ -96,15 +96,15 @@ public class BiomeLocator
         return false;
     }
 
-    private boolean samplePosition(int x, int z, int totalBiomes, BiomeProvider biomeProvider)
+    private boolean samplePosition(int x, int z, int totalBiomes, BiomeSource biomeProvider)
     {
-        Biome[] biomes = biomeProvider.getBiomes(x, z, 1, 1, false);
+        Biome[] biomes = biomeProvider.sampleBiomes(x, z, 1, 1, false);
         this.count++;
 
         BlockPos newPos = new BlockPos(x, 0, z);
         BlockPos oldPos = this.biomePositions.get(biomes[0]);
 
-        if (oldPos == null || oldPos.distanceSq(this.center) > newPos.distanceSq(this.center))
+        if (oldPos == null || oldPos.getSquaredDistance(this.center) > newPos.getSquaredDistance(this.center))
         {
             this.biomePositions.put(biomes[0], newPos);
 
@@ -127,11 +127,11 @@ public class BiomeLocator
 
             if (biome == null)
             {
-                TellMe.logger.warn("Null biome '{}' with position {} ?!", biome, entry.getValue());
+                TellMe.logger.warn("Null biome at position {} ?!", entry.getValue());
                 continue;
             }
 
-            ResourceLocation key = ForgeRegistries.BIOMES.getKey(biome);
+            Identifier key = Registry.BIOME.getId(biome);
 
             dump.addData(
                     key != null ? key.toString() : "<null>",
@@ -150,6 +150,6 @@ public class BiomeLocator
 
     public static String getBiomeDisplayName(Biome biome)
     {
-        return (new TranslationTextComponent(biome.getTranslationKey())).getString();
+        return (new TranslatableText(biome.getTranslationKey())).getString();
     }
 }

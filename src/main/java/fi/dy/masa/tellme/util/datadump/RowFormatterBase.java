@@ -38,13 +38,10 @@ public abstract class RowFormatterBase
                 linesOut.add(this.lineSeparator);
             }
 
-            final int len = headers.size();
-
-            if (len > 0)
+            if (headers.isEmpty() == false)
             {
-                for (int i = 0; i < len; i++)
+                for (String header : headers)
                 {
-                    String header = headers.get(i);
                     linesOut.add(this.getFormattedHeaderOrFooter(header));
                 }
 

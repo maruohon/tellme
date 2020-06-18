@@ -2,15 +2,16 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.merchant.villager.VillagerProfession;
-import net.minecraft.entity.merchant.villager.VillagerTrades;
-import net.minecraft.entity.merchant.villager.VillagerTrades.ITrade;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.MerchantOffer;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.village.TradeOffer;
+import net.minecraft.village.TradeOffers;
+import net.minecraft.village.VillagerProfession;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
@@ -21,21 +22,21 @@ public class VillagerTradesDump
         DataDump dump = new DataDump(6, format);
         Random rand = new Random();
 
-        ArrayList<VillagerProfession> professions = new ArrayList<>(VillagerTrades.VILLAGER_DEFAULT_TRADES.keySet());
-        professions.sort((v1, v2) -> v1.getRegistryName().toString().compareTo(v2.getRegistryName().toString()));
+        ArrayList<VillagerProfession> professions = new ArrayList<>(TradeOffers.PROFESSION_TO_LEVELED_TRADE.keySet());
+        professions.sort(Comparator.comparing(v -> Registry.VILLAGER_PROFESSION.getId(v).toString()));
 
         for (VillagerProfession profession : professions)
         {
-            String regName = profession.getRegistryName().toString();
+            String regName = Registry.VILLAGER_PROFESSION.getId(profession).toString();
 
             dump.addData(regName, profession.toString(), "", "", "", "");
-            Int2ObjectMap<ITrade[]> map = VillagerTrades.VILLAGER_DEFAULT_TRADES.get(profession);
+            Int2ObjectMap<TradeOffers.Factory[]> map = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(profession);
             ArrayList<Integer> levels = new ArrayList<>(map.keySet());
             Collections.sort(levels);
 
             for (int level : levels)
             {
-                ITrade[] trades = map.get(level);
+                TradeOffers.Factory[] trades = map.get(level);
 
                 if (trades == null)
                 {
@@ -48,25 +49,28 @@ public class VillagerTradesDump
                 {
                     try
                     {
-                        ITrade trade = trades[i];
+                        TradeOffers.Factory trade = trades[i];
 
                         // Exclude the map trades, they are super slow to fetch
-                        if (trade.getClass().getName().equals("net.minecraft.entity.merchant.villager.VillagerTrades$EmeraldForMapTrade"))
+                        String name = trade.getClass().getName();
+
+                        if (name.equals("net.minecraft.village.TradeOffers$SellMapFactory") ||
+                            name.equals("net.minecraft.class_3853$class_1654"))
                         {
                             dump.addData("", "", "skipping", "map trade", "lvl: " + level, "id: " + i);
                             continue;
                         }
 
-                        MerchantOffer offer = trade.getOffer(trader, rand);
+                        TradeOffer offer = trade.create(trader, rand);
 
                         if (offer != null)
                         {
-                            ItemStack buy1 = offer.getBuyingStackFirst();
-                            ItemStack buy2 = offer.getBuyingStackSecond();
-                            ItemStack sell = offer.getSellingStack();
-                            String strBuy1 = buy1.isEmpty() == false ? buy1.getDisplayName().getString() : "";
-                            String strBuy2 = buy2.isEmpty() == false ? buy2.getDisplayName().getString() : "";
-                            String strSell = sell.isEmpty() == false ? sell.getDisplayName().getString() : "";
+                            ItemStack buy1 = offer.getOriginalFirstBuyItem();
+                            ItemStack buy2 = offer.getSecondBuyItem();
+                            ItemStack sell = offer.getSellItem();
+                            String strBuy1 = buy1.isEmpty() == false ? buy1.getName().getString() : "";
+                            String strBuy2 = buy2.isEmpty() == false ? buy2.getName().getString() : "";
+                            String strSell = sell.isEmpty() == false ? sell.getName().getString() : "";
 
                             dump.addData("", "", "", strBuy1, strBuy2, strSell);
                         }

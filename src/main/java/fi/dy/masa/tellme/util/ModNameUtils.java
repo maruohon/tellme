@@ -2,27 +2,29 @@ package fi.dy.masa.tellme.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
 public class ModNameUtils
 {
     private static final Map<String, String> MOD_IDS_TO_NAMES = new HashMap<>();
 
-    public static String getModName(ResourceLocation rl)
+    public static String getModName(Identifier rl)
     {
+        String modId = rl.getNamespace();
+
         if (MOD_IDS_TO_NAMES.isEmpty())
         {
-            for (ModInfo modInfo : ModList.get().getMods())
+            for (net.fabricmc.loader.api.ModContainer container : net.fabricmc.loader.api.FabricLoader.getInstance().getAllMods())
             {
-                String modName = TextFormatting.getTextWithoutFormattingCodes(modInfo.getDisplayName());
-                MOD_IDS_TO_NAMES.put(modInfo.getModId(), modName);
+                if (container.getMetadata().getId().equals(modId))
+                {
+                    String modName = Formatting.strip(container.getMetadata().getName());
+                    MOD_IDS_TO_NAMES.put(modId, modName);
+                }
             }
         }
 
-        String modId = rl.getNamespace();
         String modName = MOD_IDS_TO_NAMES.get(modId);
 
         if (modName == null)

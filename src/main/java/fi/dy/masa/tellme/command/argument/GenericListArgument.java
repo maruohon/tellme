@@ -49,13 +49,13 @@ public class GenericListArgument<T> implements ArgumentType<List<T>>
             CommandUtils.throwException(this.emptyTypesMessage);
         }
 
-        return types.stream().map(this.stringToTypeFactory::apply).collect(Collectors.toList());
+        return types.stream().map(this.stringToTypeFactory).collect(Collectors.toList());
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder)
     {
         return CommandUtils.suggestIterable(this.suggestionsSupplier.get()
-                .stream().map(this.typeToStringFactory::apply).collect(Collectors.toList()), builder);
+                .stream().map(this.typeToStringFactory).collect(Collectors.toList()), builder);
     }
 }

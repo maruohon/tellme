@@ -5,21 +5,21 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.util.ItemInfo;
 
 public class SubCommandHolding
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<ServerCommandSource> registerSubCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("holding").build();
-        ArgumentCommandNode<CommandSource, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create())
+        LiteralCommandNode<ServerCommandSource> subCommandRootNode = CommandManager.literal("holding").build();
+        ArgumentCommandNode<ServerCommandSource, OutputType> outputTypeNode = CommandManager.argument("output_type", OutputTypeArgument.create())
                 .executes(c -> execute(c.getSource(), c.getArgument("output_type", OutputType.class))).build();
 
         subCommandRootNode.addChild(outputTypeNode);
@@ -27,7 +27,7 @@ public class SubCommandHolding
         return subCommandRootNode;
     }
 
-    private static int execute(CommandSource source, OutputType outputType) throws CommandSyntaxException
+    private static int execute(ServerCommandSource source, OutputType outputType) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
 
@@ -42,7 +42,7 @@ public class SubCommandHolding
 
     private static void handleHeldObject(LivingEntity entity, OutputType outputType)
     {
-        ItemStack stack = entity.getHeldItemMainhand();
+        ItemStack stack = entity.getMainHandStack();
 
         if (stack.isEmpty() == false)
         {

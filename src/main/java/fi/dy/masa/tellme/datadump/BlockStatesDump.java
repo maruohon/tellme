@@ -2,40 +2,36 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.state.IProperty;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.state.property.Property;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockStatesDump
 {
     public static List<String> getFormattedBlockStatesDumpByBlock()
     {
-        List<String> outputLines = new ArrayList<String>();
-        Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
+        List<String> outputLines = new ArrayList<>();
 
-        while (iter.hasNext())
+        for (Identifier id : Registry.BLOCK.getIds())
         {
-            Map.Entry<ResourceLocation, Block> entry = iter.next();
-            Block block = entry.getValue();
+            Block block = Registry.BLOCK.get(id);
 
-            List<String> lines = new ArrayList<String>();
-            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = block.getDefaultState().getValues().entrySet().iterator();
+            List<String> lines = new ArrayList<>();
+            UnmodifiableIterator<Entry<Property<?>, Comparable<?>>> propIter = block.getDefaultState().getEntries().entrySet().iterator();
 
             while (propIter.hasNext())
             {
                 lines.add(propIter.next().getKey().toString());
             }
 
-            outputLines.add(entry.getKey().toString() + ": " + String.join(", ", lines));
+            outputLines.add(id.toString() + ": " + String.join(", ", lines));
         }
 
         Collections.sort(outputLines);
@@ -49,24 +45,22 @@ public class BlockStatesDump
     public static List<String> getFormattedBlockStatesDumpByState(DataDump.Format format)
     {
         DataDump blockStatesDump = new DataDump(2, format);
-        Iterator<Map.Entry<ResourceLocation, Block>> iter = ForgeRegistries.BLOCKS.getEntries().iterator();
 
-        while (iter.hasNext())
+        for (Identifier id : Registry.BLOCK.getIds())
         {
-            Map.Entry<ResourceLocation, Block> entry = iter.next();
-            Block block = entry.getValue();
-            String regName = entry.getKey().toString();
+            Block block = Registry.BLOCK.get(id);
+            String regName = id.toString();
 
-            ImmutableList<BlockState> validStates = block.getStateContainer().getValidStates();
+            ImmutableList<BlockState> validStates = block.getStateFactory().getStates();
 
             for (BlockState state : validStates)
             {
                 List<String> lines = new ArrayList<String>();
-                UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = state.getValues().entrySet().iterator();
+                UnmodifiableIterator<Entry<Property<?>, Comparable<?>>> propIter = state.getEntries().entrySet().iterator();
 
                 while (propIter.hasNext())
                 {
-                    Entry<IProperty<?>, Comparable<?>> propEntry = propIter.next();
+                    Entry<Property<?>, Comparable<?>> propEntry = propIter.next();
                     lines.add(propEntry.getKey().getName() + "=" + propEntry.getValue().toString());
                 }
 

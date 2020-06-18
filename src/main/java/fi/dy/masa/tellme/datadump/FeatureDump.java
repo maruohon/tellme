@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.Biome.SpawnListEntry;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.Feature;
+import fi.dy.masa.tellme.mixin.IMixinWeightedPickerEntry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class FeatureDump
 {
@@ -18,13 +18,13 @@ public class FeatureDump
     {
         DataDump dump = new DataDump(3, format);
 
-        for (Map.Entry<ResourceLocation, Feature<?>> entry : ForgeRegistries.FEATURES.getEntries())
+        for (Identifier id : Registry.FEATURE.getIds())
         {
-            Feature<?> type = entry.getValue();
-            String mobSpawns = getMobSpawnsString(type.getSpawnList());
-            String passiveSpawns = getMobSpawnsString(type.getCreatureSpawnList());
+            Feature<?> type = Registry.FEATURE.get(id);
+            String mobSpawns = getMobSpawnsString(type.getMonsterSpawns());
+            String passiveSpawns = getMobSpawnsString(type.getCreatureSpawns());
 
-            dump.addData(type.getRegistryName().toString(), mobSpawns, passiveSpawns);
+            dump.addData(id.toString(), mobSpawns, passiveSpawns);
         }
 
         dump.addTitle("Registry name", "Mob spawns", "Passive spawns");
@@ -32,15 +32,15 @@ public class FeatureDump
         return dump.getLines();
     }
 
-    public static String getMobSpawnsString(Collection<SpawnListEntry> list)
+    public static String getMobSpawnsString(Collection<Biome.SpawnEntry> list)
     {
         List<String> spawns = new ArrayList<>();
 
-        for (SpawnListEntry spawn : list)
+        for (Biome.SpawnEntry spawn : list)
         {
-            ResourceLocation erl = spawn.entityType.getRegistryName();
+            Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
             String entName = erl != null ? erl.toString() : "<null>";
-            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.minGroupCount, spawn.maxGroupCount));
+            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, ((IMixinWeightedPickerEntry) spawn).getWeight(), spawn.minGroupSize, spawn.maxGroupSize));
         }
 
         Collections.sort(spawns);

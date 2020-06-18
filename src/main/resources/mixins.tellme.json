@@ -1,0 +1,16 @@
+{
+    "required": true,
+    "package": "fi.dy.masa.tellme.mixin",
+    "minVersion": "0.7",
+    "compatibilityLevel": "JAVA_8",
+    "client": [
+        "IMixinFluidTags",
+        "IMixinServerWorld",
+        "IMixinThreadedAnvilChunkStorage",
+        "IMixinWeightedPickerEntry",
+        "MixinCommandManager"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

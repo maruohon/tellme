@@ -1,15 +1,13 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import net.minecraft.stats.Stat;
-import net.minecraft.stats.StatType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.stat.Stat;
+import net.minecraft.stat.StatType;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class StatTypesDump
 {
@@ -17,10 +15,10 @@ public class StatTypesDump
     {
         DataDump dump = new DataDump(2, format);
 
-        for (Map.Entry<ResourceLocation, StatType<?>> entry : ForgeRegistries.STAT_TYPES.getEntries())
+        for (Identifier id : Registry.STAT_TYPE.getIds())
         {
-            StatType<?> type = entry.getValue();
-            String typeName = type.getRegistryName().toString();
+            StatType<?> type = Registry.STAT_TYPE.get(id);
+            String typeName = id.toString();
 
             for (Stat<?> stat : type)
             {
@@ -37,10 +35,10 @@ public class StatTypesDump
     {
         DataDump dump = new DataDump(2, format);
 
-        for (ResourceLocation key : Registry.CUSTOM_STAT.keySet())
+        for (Identifier key : Registry.CUSTOM_STAT.getIds())
         {
             String typeName = key.toString();
-            Optional<ResourceLocation> stat = Registry.CUSTOM_STAT.getValue(key);
+            Optional<Identifier> stat = Registry.CUSTOM_STAT.getOrEmpty(key);
 
             if (stat.isPresent())
             {

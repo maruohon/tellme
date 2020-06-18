@@ -7,12 +7,12 @@ import javax.annotation.Nonnull;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class ItemInfo
 {
@@ -23,7 +23,7 @@ public class ItemInfo
             return stack1.isEmpty() == stack2.isEmpty();
         }
 
-        return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
+        return stack1.isItemEqual(stack2) && ItemStack.areTagsEqual(stack1, stack2);
     }
 
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)
@@ -54,7 +54,7 @@ public class ItemInfo
 
         List<String> lines = new ArrayList<>();
         lines.add("");
-        lines.addAll((new NbtStringifierPretty(TextFormatting.GRAY.toString())).getNbtLines(stack.getTag()));
+        lines.addAll((new NbtStringifierPretty(Formatting.GRAY.toString())).getNbtLines(stack.getTag()));
 
         return lines;
     }
@@ -100,7 +100,7 @@ public class ItemInfo
 
         public static ItemData getFor(ItemStack stack)
         {
-            String registryName = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+            String registryName = Registry.ITEM.getId(stack.getItem()).toString();
             String nbtInfo;
 
             if (stack.hasTag())
@@ -112,10 +112,10 @@ public class ItemInfo
                 nbtInfo = "no NBT data";
             }
 
-            return new ItemData(stack.getDisplayName().getString(), registryName, Item.getIdFromItem(stack.getItem()), nbtInfo);
+            return new ItemData(stack.getName().getString(), registryName, Item.getRawId(stack.getItem()), nbtInfo);
         }
 
-        public ITextComponent toChatMessage()
+        public Text toChatMessage()
         {
             String textPre = String.format("%s (", this.displayName);
             String textPost = String.format(" - id: %d) %s", this.id, this.nbtInfo);

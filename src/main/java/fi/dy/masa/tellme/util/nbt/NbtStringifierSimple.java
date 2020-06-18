@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import fi.dy.masa.tellme.util.Constants;
 
 public class NbtStringifierSimple extends NbtStringifierBase
 {
@@ -18,7 +18,7 @@ public class NbtStringifierSimple extends NbtStringifierBase
         super(true, baseColor);
     }
 
-    public String getNbtString(CompoundNBT tag)
+    public String getNbtString(CompoundTag tag)
     {
         this.stringBuilder = new StringBuilder();
 
@@ -33,15 +33,15 @@ public class NbtStringifierSimple extends NbtStringifierBase
     }
 
     @Override
-    protected void appendPrimitive(String tagName, INBT tag)
+    protected void appendPrimitive(String tagName, Tag tag)
     {
         this.stringBuilder.append(this.getFormattedPrimitiveString(tag));
     }
 
     @Override
-    protected void appendCompound(String tagName, CompoundNBT tag)
+    protected void appendCompound(String tagName, CompoundTag tag)
     {
-        List<String> keys = Lists.newArrayList(tag.keySet());
+        List<String> keys = Lists.newArrayList(tag.getKeys());
         Collections.sort(keys);
         boolean first = true;
 
@@ -56,7 +56,7 @@ public class NbtStringifierSimple extends NbtStringifierBase
 
             this.stringBuilder.append(this.getFormattedTagName(key));
             this.stringBuilder.append(':');
-            this.appendTag(key, tag.get(key));
+            this.appendTag(key, tag.getTag(key));
             first = false;
         }
 
@@ -64,7 +64,7 @@ public class NbtStringifierSimple extends NbtStringifierBase
     }
 
     @Override
-    protected void appendList(String tagName, ListNBT list)
+    protected void appendList(String tagName, ListTag list)
     {
         final int size = list.size();
 

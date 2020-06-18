@@ -1,15 +1,13 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class SoundEventDump
 {
@@ -17,14 +15,12 @@ public class SoundEventDump
     {
         DataDump soundEventDump = new DataDump(2, format);
 
-        for (Map.Entry<ResourceLocation, SoundEvent> entry : ForgeRegistries.SOUND_EVENTS.getEntries())
+        for (Identifier id : Registry.SOUND_EVENT.getIds())
         {
-            String regName = entry.getKey().toString();
+            SoundEvent sound = Registry.SOUND_EVENT.get(id);
+            String intId = String.valueOf(Registry.SOUND_EVENT.getRawId(sound));
 
-            @SuppressWarnings("deprecation")
-            String id = String.valueOf(Registry.SOUND_EVENT.getId(entry.getValue()));
-
-            soundEventDump.addData(regName, id);
+            soundEventDump.addData(id.toString(), intId);
         }
 
         soundEventDump.addTitle("Registry name", "ID");

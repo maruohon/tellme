@@ -11,26 +11,25 @@ import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.TypeFilterableList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.util.math.MutableIntBoundingBox;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
 
 public class Locate extends ChunkProcessorAllChunks
 {
@@ -73,19 +72,19 @@ public class Locate extends ChunkProcessorAllChunks
     private Set<BlockState> generateBlockStateFilters()
     {
         Set<BlockState> filters = Sets.newIdentityHashSet();
-        ResourceLocation air = new ResourceLocation("minecraft:air");
+        Identifier air = new Identifier("minecraft:air");
 
         for (String str : this.filters)
         {
             int index = str.indexOf('[');
             String name = index > 0 ? str.substring(0, index) : str;
-            ResourceLocation key = new ResourceLocation(name);
-            Block block = ForgeRegistries.BLOCKS.getValue(key);
+            Identifier key = new Identifier(name);
+            Block block = Registry.BLOCK.get(key);
 
             if (block != null && (block != Blocks.AIR || key.equals(air)))
             {
                 // First get all valid states for this block
-                Collection<BlockState> states = block.getStateContainer().getValidStates();
+                Collection<BlockState> states = block.getStateFactory().getStates();
                 // Then get the list of properties and their values in the given name (if any)
                 List<Pair<String, String>> props = BlockInfo.getProperties(str);
 
@@ -98,10 +97,7 @@ public class Locate extends ChunkProcessorAllChunks
                     }
                 }
 
-                for (BlockState state : states)
-                {
-                    filters.add(state);
-                }
+                filters.addAll(states);
             }
             else
             {
@@ -120,11 +116,11 @@ public class Locate extends ChunkProcessorAllChunks
         {
             try
             {
-                ResourceLocation key = new ResourceLocation(name);
+                Identifier key = new Identifier(name);
 
-                if (ForgeRegistries.ENTITIES.containsKey(key))
+                if (Registry.ENTITY_TYPE.containsId(key))
                 {
-                    EntityType<?> type = ForgeRegistries.ENTITIES.getValue(key);
+                    EntityType<?> type = Registry.ENTITY_TYPE.get(key);
 
                     if (type != null)
                     {
@@ -141,15 +137,15 @@ public class Locate extends ChunkProcessorAllChunks
         return set;
     }
 
-    private Set<TileEntityType<?>> generateTileEntityFilters()
+    private Set<BlockEntityType<?>> generateTileEntityFilters()
     {
-        Set<TileEntityType<?>> set = Sets.newIdentityHashSet();
+        Set<BlockEntityType<?>> set = Sets.newIdentityHashSet();
 
         for (String name : this.filters)
         {
             try
             {
-                TileEntityType<?> type = ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(name));
+                BlockEntityType<?> type = Registry.BLOCK_ENTITY.get(new Identifier(name));
 
                 if (type != null)
                 {
@@ -166,7 +162,7 @@ public class Locate extends ChunkProcessorAllChunks
     }
 
     @Override
-    public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
+    public void processChunks(Collection<WorldChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         switch (this.locateType)
         {
@@ -183,13 +179,13 @@ public class Locate extends ChunkProcessorAllChunks
         }
     }
 
-    private void locateBlocks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<BlockState> filters)
+    private void locateBlocks(Collection<WorldChunk> chunks, BlockPos posMin, BlockPos posMax, Set<BlockState> filters)
     {
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+        BlockPos.Mutable pos = new BlockPos.Mutable(0, 0, 0);
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
-        for (Chunk chunk : chunks)
+        for (WorldChunk chunk : chunks)
         {
             if (this.data.size() > 100000)
             {
@@ -199,7 +195,7 @@ public class Locate extends ChunkProcessorAllChunks
 
             ChunkPos chunkPos = chunk.getPos();
             final String dim = WorldUtils.getDimensionId(chunk.getWorld());
-            final int topY = chunk.getTopFilledSegment() + 15;
+            final int topY = chunk.getHighestNonEmptySectionYOffset() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
@@ -213,12 +209,12 @@ public class Locate extends ChunkProcessorAllChunks
                 {
                     for (int y = yMin; y <= yMax; ++y)
                     {
-                        pos.setPos(x, y, z);
+                        pos.set(x, y, z);
                         BlockState state = chunk.getBlockState(pos);
 
                         if (filters.contains(state))
                         {
-                            ResourceLocation name = state.getBlock().getRegistryName();
+                            Identifier name = Registry.BLOCK.getId(state.getBlock());
                             this.data.add(LocationData.of(name.toString(), dim, new Vec3d(x, y, z)));
                             count++;
                         }
@@ -232,12 +228,12 @@ public class Locate extends ChunkProcessorAllChunks
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
-    private void locateEntities(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<EntityType<?>> filters)
+    private void locateEntities(Collection<WorldChunk> chunks, BlockPos posMin, BlockPos posMax, Set<EntityType<?>> filters)
     {
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
-        for (Chunk chunk : chunks)
+        for (WorldChunk chunk : chunks)
         {
             ChunkPos chunkPos = chunk.getPos();
             final String dim = WorldUtils.getDimensionId(chunk.getWorld());
@@ -247,11 +243,11 @@ public class Locate extends ChunkProcessorAllChunks
             final int xMax = Math.min((chunkPos.x << 4) + 16, posMax.getX());
             final int yMax = Math.min(256, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 16, posMax.getZ());
-            AxisAlignedBB bb = new AxisAlignedBB(xMin, yMin, zMin, xMax, yMax, zMax);
+            Box bb = new Box(xMin, yMin, zMin, xMax, yMax, zMax);
 
-            for (int i = 0; i < chunk.getEntityLists().length; i++)
+            for (int i = 0; i < chunk.getEntitySectionArray().length; i++)
             {
-                ClassInheritanceMultiMap<Entity> map = chunk.getEntityLists()[i];
+                TypeFilterableList<Entity> map = chunk.getEntitySectionArray()[i];
 
                 for (Entity entity : map)
                 {
@@ -260,7 +256,7 @@ public class Locate extends ChunkProcessorAllChunks
                     if (filters.contains(type) && entity.getBoundingBox().intersects(bb))
                     {
                         String name = EntityInfo.getEntityNameFor(type);
-                        this.data.add(LocationData.of(name, dim, entity.getPositionVector()));
+                        this.data.add(LocationData.of(name, dim, entity.getPos()));
                         count++;
                     }
                 }
@@ -272,12 +268,12 @@ public class Locate extends ChunkProcessorAllChunks
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
-    private void locateTileEntities(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<TileEntityType<?>> filters)
+    private void locateTileEntities(Collection<WorldChunk> chunks, BlockPos posMin, BlockPos posMax, Set<BlockEntityType<?>> filters)
     {
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
-        for (Chunk chunk : chunks)
+        for (WorldChunk chunk : chunks)
         {
             if (this.data.size() >= 100000)
             {
@@ -287,25 +283,25 @@ public class Locate extends ChunkProcessorAllChunks
 
             ChunkPos chunkPos = chunk.getPos();
             final String dim = WorldUtils.getDimensionId(chunk.getWorld());
-            final int topY = chunk.getTopFilledSegment() + 15;
+            final int topY = chunk.getHighestNonEmptySectionYOffset() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
-            MutableBoundingBox box = MutableBoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
+            MutableIntBoundingBox box = MutableIntBoundingBox.create(xMin, yMin, zMin, xMax, yMax, zMax);
 
-            for (TileEntity te : chunk.getTileEntityMap().values())
+            for (BlockEntity te : chunk.getBlockEntities().values())
             {
                 BlockPos pos = te.getPos();
-                TileEntityType<?> type = te.getType();
+                BlockEntityType<?> type = te.getType();
                 //System.out.printf("plop @ %s - box: %s\n", pos, box);
 
-                if (filters.contains(type) && box.isVecInside(pos))
+                if (filters.contains(type) && box.contains(pos))
                 {
                     String name = BlockInfo.getBlockEntityNameFor(type);
-                    this.data.add(LocationData.of(name.toString(), dim, new Vec3d(pos)));
+                    this.data.add(LocationData.of(name, dim, new Vec3d(pos)));
                     count++;
                 }
             }
@@ -432,15 +428,15 @@ public class Locate extends ChunkProcessorAllChunks
 
     public enum LocateType
     {
-        BLOCK       ("block",       "blocks",           () -> ForgeRegistries.BLOCKS),
-        ENTITY      ("entity",      "entities",         () -> ForgeRegistries.ENTITIES),
-        TILE_ENTITY ("tile-entity", "tile_entities",    () -> ForgeRegistries.TILE_ENTITIES);
+        BLOCK       ("block",       "blocks",           () -> Registry.BLOCK),
+        ENTITY      ("entity",      "entities",         () -> Registry.ENTITY_TYPE),
+        TILE_ENTITY ("tile-entity", "tile_entities",    () -> Registry.BLOCK_ENTITY);
 
         private final String argument;
         private final String plural;
-        private final Supplier<IForgeRegistry<?>> registrySupplier;
+        private final Supplier<Registry<?>> registrySupplier;
 
-        LocateType(String argument, String plural, Supplier<IForgeRegistry<?>> registrySupplier)
+        LocateType(String argument, String plural, Supplier<Registry<?>> registrySupplier)
         {
             this.argument = argument;
             this.plural = plural;
@@ -457,7 +453,7 @@ public class Locate extends ChunkProcessorAllChunks
             return this.plural;
         }
 
-        public Supplier<IForgeRegistry<?>> getRegistrySupplier()
+        public Supplier<Registry<?>> getRegistrySupplier()
         {
             return this.registrySupplier;
         }

@@ -1,23 +1,23 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import net.minecraft.world.WorldType;
+import net.minecraft.world.level.LevelGeneratorType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
-public class WorldTypeDump
+public class LevelGeneratorTypeDump
 {
     public static List<String> getFormattedWorldTypeDump(DataDump.Format format)
     {
         DataDump dump = new DataDump(4, format);
 
-        for (WorldType type : WorldType.WORLD_TYPES)
+        for (LevelGeneratorType type : LevelGeneratorType.TYPES)
         {
             if (type != null)
             {
                 dump.addData(
                         type.getName(),
-                        Boolean.valueOf(type.isVersioned()).toString(),
+                        String.valueOf(type.isVersioned()),
                         String.valueOf(type.getVersion()),
                         String.valueOf(type.getId()));
             }

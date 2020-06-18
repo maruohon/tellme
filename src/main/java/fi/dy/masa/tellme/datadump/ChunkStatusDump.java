@@ -1,12 +1,11 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.ChunkStatus;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class ChunkStatusDump
 {
@@ -14,18 +13,17 @@ public class ChunkStatusDump
     {
         DataDump dump = new DataDump(4, format);
 
-        for (Map.Entry<ResourceLocation, ChunkStatus> entry : ForgeRegistries.CHUNK_STATUS.getEntries())
+        for (Identifier id : Registry.CHUNK_STATUS.getIds())
         {
-            ChunkStatus val = entry.getValue();
-            String ordinal = String.valueOf(val.ordinal());
-            String regName = val.getRegistryName().toString();
-            String type = val.getType().name();
-            String taskRange = String.valueOf(val.getTaskRange());
+            ChunkStatus val = Registry.CHUNK_STATUS.get(id);
+            String index = String.valueOf(val.getIndex());
+            String type = val.getChunkType().name();
+            String taskRange = String.valueOf(val.getTaskMargin());
 
-            dump.addData(ordinal, regName, type, taskRange);
+            dump.addData(index, id.toString(), type, taskRange);
         }
 
-        dump.addTitle("Ordinal", "Registry name", "Type", "Task Range");
+        dump.addTitle("Index", "Registry name", "Type", "Task Margin");
 
         return dump.getLines();
     }

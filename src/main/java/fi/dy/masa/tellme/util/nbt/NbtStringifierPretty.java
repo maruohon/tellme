@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import fi.dy.masa.tellme.util.Constants;
 
 public class NbtStringifierPretty extends NbtStringifierBase
 {
@@ -21,7 +21,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
         super(false, baseColor);
     }
 
-    public List<String> getNbtLines(CompoundNBT tag)
+    public List<String> getNbtLines(CompoundTag tag)
     {
         this.lines = new ArrayList<>();
         this.setIndentationLevel(0);
@@ -61,9 +61,9 @@ public class NbtStringifierPretty extends NbtStringifierBase
     }
 
     @Override
-    protected void appendPrimitive(String tagName, INBT tag)
+    protected void appendPrimitive(String tagName, Tag tag)
     {
-        String tagType = INBT.getTypeName(tag.getId());
+        String tagType = Tag.idToString(tag.getType());
         String value = this.getFormattedPrimitiveString(tag);
         String name = this.getFormattedTagName(tagName);
 
@@ -71,12 +71,12 @@ public class NbtStringifierPretty extends NbtStringifierBase
     }
 
     @Override
-    protected void appendCompound(String tagName, CompoundNBT compound)
+    protected void appendCompound(String tagName, CompoundTag compound)
     {
-        List<String> keys = Lists.newArrayList(compound.keySet());
+        List<String> keys = Lists.newArrayList(compound.getKeys());
         Collections.sort(keys);
 
-        String tagType = INBT.getTypeName(compound.getId());
+        String tagType = Tag.idToString(compound.getType());
         String name = this.getFormattedTagName(tagName);
         this.addIndentedLine(String.format("[%s (%d values)] %s", tagType, keys.size(), name));
 
@@ -85,7 +85,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
         for (String key : keys)
         {
-            INBT tag = compound.get(key);
+            Tag tag = compound.getTag(key);
             this.appendTag(key, tag);
         }
 
@@ -94,13 +94,13 @@ public class NbtStringifierPretty extends NbtStringifierBase
     }
 
     @Override
-    protected void appendList(String tagName, ListNBT list)
+    protected void appendList(String tagName, ListTag list)
     {
         final int size = list.size();
 
-        String tagType = INBT.getTypeName(list.getId());
-        int containedId = list.getTagType();
-        String containedTypeName = containedId > 0 ? INBT.getTypeName(containedId) : "?";
+        String tagType = Tag.idToString(list.getType());
+        int containedId = list.getListType();
+        String containedTypeName = containedId > 0 ? Tag.idToString(containedId) : "?";
         String name = this.getFormattedTagName(tagName);
         this.addIndentedLine(String.format("[%s (%d values of type %s)] %s", tagType, size, containedTypeName, name));
 
@@ -109,7 +109,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
         for (int i = 0; i < size; ++i)
         {
-            INBT tag = list.get(i);
+            Tag tag = list.get(i);
             this.appendTag("", tag);
         }
 
@@ -119,7 +119,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
     protected void appendNumericArrayStart(String tagName, int tagId, int arraySize)
     {
-        String tagType = INBT.getTypeName(tagId);
+        String tagType = Tag.idToString(tagId);
         String name = this.getFormattedTagName(tagName);
         this.addIndentedLine(String.format("[%s (%d entries)] %s", tagType, arraySize, name));
 

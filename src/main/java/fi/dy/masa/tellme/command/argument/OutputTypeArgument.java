@@ -12,7 +12,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.text.LiteralText;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 
@@ -20,10 +20,8 @@ public class OutputTypeArgument implements ArgumentType<OutputType>
 {
     private static final ImmutableList<String> TYPE_ARGUMENTS = ImmutableList.copyOf(Arrays.asList(OutputType.values()).stream().map((type) -> type.getArgument()).collect(Collectors.toList()));
 
-    public static final DynamicCommandExceptionType NO_SUCH_TYPE_EXCEPTION = new DynamicCommandExceptionType((v) -> {
-        return new StringTextComponent("Unknown output type: " + v);
-    });
-    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new StringTextComponent("No output type given"));
+    public static final DynamicCommandExceptionType NO_SUCH_TYPE_EXCEPTION = new DynamicCommandExceptionType((v) -> new LiteralText("Unknown output type: " + v));
+    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new LiteralText("No output type given"));
 
     public static OutputTypeArgument create()
     {

@@ -1,10 +1,9 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.lang.reflect.Field;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
@@ -12,41 +11,40 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.block.BlockState;
-import net.minecraft.command.CommandSource;
+import net.minecraft.advancement.Advancement;
+import net.minecraft.client.color.world.FoliageColors;
+import net.minecraft.client.color.world.GrassColors;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.FoliageColors;
-import net.minecraft.world.GrassColors;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.server.ChunkHolder;
-import net.minecraft.world.server.ChunkManager;
-import net.minecraft.world.server.ServerWorld;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
+import fi.dy.masa.tellme.mixin.IMixinThreadedAnvilChunkStorage;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class DataProviderBase
 {
-    private static final Field field_ChunkManager_immutableLoadedChunks = ObfuscationReflectionHelper.findField(ChunkManager.class, "field_219252_f");
+    public File getConfigDirectory()
+    {
+        return new File("config");
+    }
 
     @Nullable
-    public Collection<Advancement> getAdvacements()
+    public Collection<Advancement> getAdvancements(MinecraftServer server)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
+        return server != null ? server.getAdvancementManager().getAdvancements() : null;
     }
 
     public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
@@ -55,16 +53,18 @@ public class DataProviderBase
 
     public World getWorld(@Nullable MinecraftServer server, DimensionType dimensionType) throws CommandSyntaxException
     {
+        String name = Registry.DIMENSION.getId(dimensionType).toString();
+
         if (server == null)
         {
-            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(dimensionType.getRegistryName().toString());
+            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(name);
         }
 
-        World world = DimensionManager.getWorld(server, dimensionType, false, false);
+        World world = server.getWorld(dimensionType);
 
         if (world == null)
         {
-            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(dimensionType.getRegistryName().toString());
+            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(name);
         }
 
         return world;
@@ -72,32 +72,32 @@ public class DataProviderBase
 
     public int getFoliageColor(Biome biome, BlockPos pos)
     {
-        double temperature = MathHelper.clamp(biome.func_225486_c(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return FoliageColors.get(temperature, humidity);
+        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
+        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        return FoliageColors.getColor(temperature, humidity);
     }
 
     public int getGrassColor(Biome biome, BlockPos pos)
     {
-        double temperature = MathHelper.clamp(biome.func_225486_c(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return GrassColors.get(temperature, humidity);
+        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
+        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        return GrassColors.getColor(temperature, humidity);
     }
 
-    public Collection<Chunk> getLoadedChunks(World world)
+    public Collection<WorldChunk> getLoadedChunks(World world)
     {
         if (world instanceof ServerWorld)
         {
-            ArrayList<Chunk> chunks = new ArrayList<>();
+            ServerWorld serverWorld = (ServerWorld) world; 
+            ArrayList<WorldChunk> chunks = new ArrayList<>();
 
             try
             {
-                @SuppressWarnings("unchecked")
-                Long2ObjectLinkedOpenHashMap<ChunkHolder> immutableLoadedChunks = (Long2ObjectLinkedOpenHashMap<ChunkHolder>) field_ChunkManager_immutableLoadedChunks.get(((ServerWorld) world).getChunkProvider().chunkManager);
+                Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) serverWorld.method_14178().threadedAnvilChunkStorage).getChunkHolders();
 
-                for (ChunkHolder holder : immutableLoadedChunks.values())
+                for (ChunkHolder holder : chunkHolders.values())
                 {
-                    Optional<Chunk> optional = holder.func_219297_b().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                    Optional<WorldChunk> optional = holder.method_20725().getNow(ChunkHolder.UNLOADED_WORLD_CHUNK).left();
 
                     if (optional.isPresent())
                     {
@@ -118,25 +118,19 @@ public class DataProviderBase
 
     public String getBiomeName(Biome biome)
     {
-        return (new TranslationTextComponent(biome.getTranslationKey())).getString();
+        return (new TranslatableText(biome.getTranslationKey())).getString();
     }
 
-    public void getExtendedBlockStateInfo(World world, BlockState state, BlockPos pos, List<String> lines)
+    public void addCommandDumpData(DataDump dump, MinecraftServer server)
     {
-    }
-
-    public void addCommandDumpData(DataDump dump)
-    {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-
         if (server != null)
         {
-            CommandDispatcher<CommandSource> dispatcher = server.getCommandManager().getDispatcher();
+            CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();
 
-            for (CommandNode<CommandSource> cmd : dispatcher.getRoot().getChildren())
+            for (CommandNode<ServerCommandSource> cmd : dispatcher.getRoot().getChildren())
             {
                 String cmdName = cmd.getName();
-                Command<CommandSource> command = cmd.getCommand();
+                Command<ServerCommandSource> command = cmd.getCommand();
                 String commandClassName = command != null ? command.getClass().getName() : "-";
                 dump.addData(cmdName, commandClassName);
             }

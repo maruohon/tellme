@@ -1,53 +1,53 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
-import net.minecraft.item.Food;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class FoodItemDump
 {
-    private static void addData(DataDump dump, Item item, ResourceLocation rl)
+    private static void addData(DataDump dump, Item item, Identifier rl, ItemDump.ItemDumpContext ctx)
     {
         String registryName = rl.toString();
         ItemStack stack = new ItemStack(item);
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName().getString() : DataDump.EMPTY_STRING;
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+        String displayName = stack.isEmpty() == false ? stack.getName().getString() : DataDump.EMPTY_STRING;
+        displayName = Formatting.strip(displayName);
 
-        Food food = item.getFood();
-        String hunger = String.valueOf(food.getHealing());
-        String saturation = String.valueOf(food.getSaturation());
+        FoodComponent food = item.getFoodComponent();
+        String hunger = String.valueOf(food.getHunger());
+        String saturation = String.valueOf(food.getSaturationModifier());
         String isMeat = String.valueOf(food.isMeat());
-        String isFastEat = String.valueOf(food.isFastEating());
-        List<Pair<EffectInstance, Float>> effects = food.getEffects();
+        String isFastEat = String.valueOf(food.isAlwaysEdible());
+        List<Pair<StatusEffectInstance, Float>> effects = food.getStatusEffects();
         String effectsStr = effects.stream()
                 .map((pair) -> "{[" + pair.getLeft().toString() + "], Propability: " + pair.getRight() + "}")
                 .collect(Collectors.joining(", "));
 
-        dump.addData(registryName, displayName, hunger, saturation, isMeat, isFastEat, ItemDump.getTagNamesJoined(item), effectsStr);
+        dump.addData(registryName, displayName, hunger, saturation, isMeat, isFastEat, ItemDump.getTagNamesJoined(item, ctx.tagMap), effectsStr);
     }
 
     public static List<String> getFormattedFoodItemDump(Format format)
     {
         DataDump itemDump = new DataDump(8, format);
+        ItemDump.ItemDumpContext ctx = new ItemDump.ItemDumpContext(ItemDump.createItemTagMap());
 
-        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        for (Identifier id : Registry.ITEM.getIds())
         {
-            Item item = entry.getValue();
+            Item item = Registry.ITEM.get(id);
 
             if (item.isFood())
             {
-                addData(itemDump, item, entry.getKey());
+                addData(itemDump, item, id, ctx);
             }
         }
 

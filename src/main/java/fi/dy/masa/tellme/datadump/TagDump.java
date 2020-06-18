@@ -8,12 +8,13 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.EntityTypeTags;
+import net.minecraft.tag.ItemTags;
+import net.minecraft.tag.Tag;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import fi.dy.masa.tellme.mixin.IMixinFluidTags;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class TagDump
@@ -26,12 +27,12 @@ public class TagDump
         {
             case BLOCK:
             {
-                Map<ResourceLocation, Tag<Block>> tagMap = BlockTags.getCollection().getTagMap();
+                Map<Identifier, Tag<Block>> tagMap = BlockTags.getContainer().getEntries();
 
-                for (Map.Entry<ResourceLocation, Tag<Block>> entry : tagMap.entrySet())
+                for (Map.Entry<Identifier, Tag<Block>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                             entry.getValue().values().stream().map((b) -> Registry.BLOCK.getId(b).toString()), split);
                 }
 
                 break;
@@ -39,12 +40,12 @@ public class TagDump
 
             case ITEM:
             {
-                Map<ResourceLocation, Tag<Item>> tagMap = ItemTags.getCollection().getTagMap();
+                Map<Identifier, Tag<Item>> tagMap = ItemTags.getContainer().getEntries();
 
-                for (Map.Entry<ResourceLocation, Tag<Item>> entry : tagMap.entrySet())
+                for (Map.Entry<Identifier, Tag<Item>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().values().stream().map((i) -> Registry.ITEM.getId(i).toString()), split);
                 }
 
                 break;
@@ -52,12 +53,12 @@ public class TagDump
 
             case FLUID:
             {
-                Map<ResourceLocation, Tag<Fluid>> tagMap = FluidTags.getCollection().getTagMap();
+                Map<Identifier, Tag<Fluid>> tagMap = IMixinFluidTags.getContainer().getEntries();
 
-                for (Map.Entry<ResourceLocation, Tag<Fluid>> entry : tagMap.entrySet())
+                for (Map.Entry<Identifier, Tag<Fluid>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().values().stream().map((f) -> Registry.FLUID.getId(f).toString()), split);
                 }
 
                 break;
@@ -65,12 +66,12 @@ public class TagDump
 
             case ENTITY_TYPE:
             {
-                Map<ResourceLocation, Tag<EntityType<?>>> tagMap = EntityTypeTags.getCollection().getTagMap();
+                Map<Identifier, Tag<EntityType<?>>> tagMap = EntityTypeTags.getContainer().getEntries();
 
-                for (Map.Entry<ResourceLocation, Tag<EntityType<?>>> entry : tagMap.entrySet())
+                for (Map.Entry<Identifier, Tag<EntityType<?>>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().values().stream().map((e) -> Registry.ENTITY_TYPE.getId(e).toString()), split);
                 }
 
                 break;

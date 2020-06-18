@@ -9,10 +9,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.ILocationArgument;
-import net.minecraft.command.arguments.Vec3Argument;
+import net.minecraft.command.arguments.PosArgument;
+import net.minecraft.command.arguments.Vec3ArgumentType;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -27,9 +28,9 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLocate
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<ServerCommandSource> registerSubCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("locate").executes(c -> printHelp(c.getSource())).build();
+        LiteralCommandNode<ServerCommandSource> subCommandRootNode = CommandManager.literal("locate").executes(c -> printHelp(c.getSource())).build();
 
         subCommandRootNode.addChild(createNodes(LocateType.BLOCK));
         subCommandRootNode.addChild(createNodes(LocateType.ENTITY));
@@ -38,7 +39,7 @@ public class SubCommandLocate
         return subCommandRootNode;
     }
 
-    private static int printHelp(CommandSource source)
+    private static int printHelp(ServerCommandSource source)
     {
         CommandUtils.sendMessage(source, "Locates Blocks or TileEntities or Entities in the current dimension");
         CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | te> <to-chat | to-console | to-file> <ascii | csv> all-loaded-chunks <name> [name name ...]");
@@ -48,32 +49,32 @@ public class SubCommandLocate
         return 1;
     }
 
-    private static LiteralCommandNode<CommandSource> createNodes(LocateType type)
+    private static LiteralCommandNode<ServerCommandSource> createNodes(LocateType type)
     {
-        LiteralCommandNode<CommandSource> argTarget = Commands.literal(type.getArgument()).build();
+        LiteralCommandNode<ServerCommandSource> argTarget = CommandManager.literal(type.getArgument()).build();
 
-        ArgumentCommandNode<CommandSource, CommandUtils.OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create()).build();
-        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create()).build();
+        ArgumentCommandNode<ServerCommandSource, CommandUtils.OutputType> argOutputType = CommandManager.argument("output_type", OutputTypeArgument.create()).build();
+        ArgumentCommandNode<ServerCommandSource, DataDump.Format> argOutputFormat = CommandManager.argument("output_format", OutputFormatArgument.create()).build();
 
-        LiteralCommandNode<CommandSource> argAreaTypeAllLoaded = Commands.literal("all-loaded-chunks").build();
-        LiteralCommandNode<CommandSource> argAreaTypeBox = Commands.literal("box").build();
-        LiteralCommandNode<CommandSource> argAreaTypeChunkRadius = Commands.literal("chunk-radius").build();
+        LiteralCommandNode<ServerCommandSource> argAreaTypeAllLoaded = CommandManager.literal("all-loaded-chunks").build();
+        LiteralCommandNode<ServerCommandSource> argAreaTypeBox = CommandManager.literal("box").build();
+        LiteralCommandNode<ServerCommandSource> argAreaTypeChunkRadius = CommandManager.literal("chunk-radius").build();
 
-        ArgumentCommandNode<CommandSource, Integer> argChunkRadius = Commands.argument("chunk_radius", IntegerArgumentType.integer(1, 64)).build();
+        ArgumentCommandNode<ServerCommandSource, Integer> argChunkRadius = CommandManager.argument("chunk_radius", IntegerArgumentType.integer(1, 64)).build();
 
-        ArgumentCommandNode<CommandSource, ILocationArgument> argAreaCorner1 = Commands.argument("start_corner", Vec3Argument.vec3()).build();
-        ArgumentCommandNode<CommandSource, ILocationArgument> argAreaCorner2 = Commands.argument("end_corner", Vec3Argument.vec3()).build();
+        ArgumentCommandNode<ServerCommandSource, PosArgument> argAreaCorner1 = CommandManager.argument("start_corner", Vec3ArgumentType.vec3()).build();
+        ArgumentCommandNode<ServerCommandSource, PosArgument> argAreaCorner2 = CommandManager.argument("end_corner", Vec3ArgumentType.vec3()).build();
 
-        ArgumentCommandNode<CommandSource, List<String>> argNamesAllLoaded = Commands.argument(type.getPlural(),
-                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+        ArgumentCommandNode<ServerCommandSource, List<String>> argNamesAllLoaded = CommandManager.argument(type.getPlural(),
+                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.ALL_LOADED, ctx)).build();
 
-        ArgumentCommandNode<CommandSource, List<String>> argNamesBox = Commands.argument(type.getPlural(),
-                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+        ArgumentCommandNode<ServerCommandSource, List<String>> argNamesBox = CommandManager.argument(type.getPlural(),
+                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.BOX, ctx)).build();
 
-        ArgumentCommandNode<CommandSource, List<String>> argNamesChunkRadius = Commands.argument(type.getPlural(),
-                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+        ArgumentCommandNode<ServerCommandSource, List<String>> argNamesChunkRadius = CommandManager.argument(type.getPlural(),
+                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.CHUNK_RADIUS, ctx)).build();
 
         argTarget.addChild(argOutputType);
@@ -94,14 +95,14 @@ public class SubCommandLocate
         return argTarget;
     }
 
-    private static int locate(LocateType locateType, AreaType areaType, CommandContext<CommandSource> ctx) throws CommandSyntaxException
+    private static int locate(LocateType locateType, AreaType areaType, CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException
     {
         CommandUtils.OutputType outputType = ctx.getArgument("output_type", CommandUtils.OutputType.class);
         DataDump.Format outputFormat = ctx.getArgument("output_format", DataDump.Format.class);
         @SuppressWarnings("unchecked")
         List<String> filters = ctx.getArgument(locateType.getPlural(), List.class);
-        CommandSource source = ctx.getSource();
-        World world = TellMe.dataProvider.getWorld(source.getServer(), CommandUtils.getDimensionFromSource(source));
+        ServerCommandSource source = ctx.getSource();
+        World world = TellMe.dataProvider.getWorld(source.getMinecraftServer(), CommandUtils.getDimensionFromSource(source));
 
         Locate locate = Locate.create(locateType, outputFormat, filters);
 

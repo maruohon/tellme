@@ -15,11 +15,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.argument.FileArgument;
-import fi.dy.masa.tellme.config.Configs;
+import fi.dy.masa.tellme.reference.Reference;
 
 public class SubCommandBatchRun
 {
@@ -28,11 +28,11 @@ public class SubCommandBatchRun
         return "Runs commands from files inside config/tellme/batch_commands/";
     }
 
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<ServerCommandSource> registerSubCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("batch-run").build();
+        LiteralCommandNode<ServerCommandSource> subCommandRootNode = CommandManager.literal("batch-run").build();
 
-        ArgumentCommandNode<CommandSource, File> fileNameNode = Commands.argument("file_name", FileArgument.getFor(getBatchDirectory(), true))
+        ArgumentCommandNode<ServerCommandSource, File> fileNameNode = CommandManager.argument("file_name", FileArgument.getFor(getBatchDirectory(), true))
                 .executes(c -> execute(dispatcher, c, c.getArgument("file_name", File.class))).build();
 
         subCommandRootNode.addChild(fileNameNode);
@@ -40,7 +40,7 @@ public class SubCommandBatchRun
         return subCommandRootNode;
     }
 
-    private static int execute(CommandDispatcher<CommandSource> dispatcher, CommandContext<CommandSource> ctx, File file) throws CommandSyntaxException
+    private static int execute(CommandDispatcher<ServerCommandSource> dispatcher, CommandContext<ServerCommandSource> ctx, File file) throws CommandSyntaxException
     {
         if (file != null && file.exists() && file.canRead())
         {
@@ -54,7 +54,7 @@ public class SubCommandBatchRun
         return 1;
     }
 
-    private static void runBatchCommands(CommandDispatcher<CommandSource> dispatcher, CommandSource source, File batchFile) throws CommandSyntaxException
+    private static void runBatchCommands(CommandDispatcher<ServerCommandSource> dispatcher, ServerCommandSource source, File batchFile) throws CommandSyntaxException
     {
         List<String> commands = getCommands(batchFile);
 
@@ -67,7 +67,7 @@ public class SubCommandBatchRun
 
     private static List<String> getCommands(File batchFile)
     {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
 
         try
         {
@@ -95,8 +95,7 @@ public class SubCommandBatchRun
 
     private static File getBatchDirectory()
     {
-        File cfgDir = Configs.dumpOutputDir;
-        return new File(cfgDir, "batch_commands");
+        return new File(new File(TellMe.dataProvider.getConfigDirectory(), Reference.MOD_ID), "batch_commands");
     }
 
     @Nullable

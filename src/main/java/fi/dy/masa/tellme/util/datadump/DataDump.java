@@ -7,12 +7,13 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.config.Configs;
+import fi.dy.masa.tellme.reference.Reference;
 
 public class DataDump
 {
@@ -29,14 +30,14 @@ public class DataDump
 
     protected Row title;
     protected boolean centerTitle;
-    protected boolean repeatTitleAtBottom = true;
+    protected boolean repeatTitleAtBottom;
     protected boolean useColumnSeparator = true;
     protected boolean sort = true;
     protected boolean sortReverse;
     protected int maxCombinedDataLength;
     protected int maxTotalLineLength;
     protected int sortColumn = -1;
-    protected Format format = Format.ASCII;
+    protected Format format;
 
     public DataDump(int columns)
     {
@@ -292,11 +293,11 @@ public class DataDump
         {
             if (this.sortReverse)
             {
-                this.lines.sort((r1, r2) -> r2.compareTo(r1));
+                this.lines.sort(Comparator.reverseOrder());
             }
             else
             {
-                this.lines.sort((r1, r2) -> r1.compareTo(r2));
+                this.lines.sort(Row::compareTo);
             }
         }
 
@@ -325,8 +326,8 @@ public class DataDump
     @Nullable
     public static File dumpDataToFile(String fileNameBase, String fileNameExtension, List<String> lines)
     {
-        File outFile = null;
-        File outputDir = Configs.dumpOutputDir;
+        File outFile;
+        File outputDir = new File(TellMe.dataProvider.getConfigDirectory(), Reference.MOD_ID);
 
         if (outputDir.exists() == false)
         {

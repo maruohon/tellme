@@ -1,15 +1,14 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Tickable;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class TileEntityDump
 {
@@ -19,13 +18,12 @@ public class TileEntityDump
 
         try
         {
-            for (Map.Entry<ResourceLocation, TileEntityType<?>> entry : ForgeRegistries.TILE_ENTITIES.getEntries())
+            for (Identifier id : Registry.BLOCK_ENTITY.getIds())
             {
-                String id = entry.getKey().toString();
-                TileEntityType<?> type = entry.getValue();
-                TileEntity te = type.create();
-                Class <? extends TileEntity> clazz = te.getClass();
-                tileEntityDump.addData(id, clazz.getName(), ITickableTileEntity.class.isAssignableFrom(clazz) ? "yes" : "-");
+                BlockEntityType<?> type = Registry.BLOCK_ENTITY.get(id);
+                BlockEntity be = type.instantiate();
+                Class <? extends BlockEntity> clazz = be.getClass();
+                tileEntityDump.addData(id.toString(), clazz.getName(), Tickable.class.isAssignableFrom(clazz) ? "yes" : "-");
             }
 
             tileEntityDump.addTitle("Registry name", "Class", "Ticking?");

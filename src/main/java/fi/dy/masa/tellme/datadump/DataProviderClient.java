@@ -1,7 +1,6 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -9,48 +8,53 @@ import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancement.Advancement;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.MusicTicker.MusicType;
-import net.minecraft.client.multiplayer.ClientChunkProvider;
-import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.sound.MusicTracker;
+import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.INetHandler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class DataProviderClient extends DataProviderBase
 {
-    //private static final Field field_ClientChunkProvider_array = ObfuscationReflectionHelper.findField(ClientChunkProvider.class, "field_217256_d");
-    //private static final Field field_ChunkArray_chunks = ObfuscationReflectionHelper.findField(ClientChunkProvider.ChunkArray.class, "field_217195_b");
+    /*
+    @Override
+    public File getConfigDirectory()
+    {
+        return new File(MinecraftClient.getInstance().runDirectory, "config");
+    }
+    */
 
     @Override
     public World getWorld(MinecraftServer server, DimensionType dimensionType) throws CommandSyntaxException
     {
-        Minecraft mc = Minecraft.getInstance();
+        MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (mc.isSingleplayer())
+        if (mc.isIntegratedServerRunning())
         {
             return super.getWorld(server, dimensionType);
         }
@@ -59,32 +63,32 @@ public class DataProviderClient extends DataProviderBase
             return mc.world;
         }
 
-        throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(dimensionType.getRegistryName().toString());
+        throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(Registry.DIMENSION.getId(dimensionType).toString());
     }
 
     @Override
-    public Collection<Chunk> getLoadedChunks(World world)
+    public Collection<WorldChunk> getLoadedChunks(World world)
     {
-        if (world.isRemote == false)
+        if (world.isClient == false)
         {
             return super.getLoadedChunks(world);
         }
 
-        Minecraft mc = Minecraft.getInstance();
+        MinecraftClient mc = MinecraftClient.getInstance();
 
         if (world instanceof ClientWorld && mc.player != null)
         {
-            ClientChunkProvider provider = ((ClientWorld) world).getChunkProvider();
-            Vec3d vec = mc.player.getPositionVector();
-            ChunkPos center = new ChunkPos(((int) Math.floor(vec.x)) >> 4, ((int) Math.floor(vec.z)) >> 4);
-            ArrayList<Chunk> list = new ArrayList<>();
-            final int renderDistance = mc.gameSettings.renderDistanceChunks;
+            ArrayList<WorldChunk> list = new ArrayList<>();
+            ClientChunkManager chunkManager = ((ClientWorld) world).method_2935();
+            Vec3d vec = mc.player.getPos();
+            ChunkPos center = new ChunkPos(MathHelper.floor(vec.x) >> 4, MathHelper.floor(vec.z) >> 4);
+            final int renderDistance = mc.options.viewDistance;
 
             for (int chunkZ = center.z - renderDistance; chunkZ <= center.z + renderDistance; ++chunkZ)
             {
                 for (int chunkX = center.x - renderDistance; chunkX <= center.x + renderDistance; ++chunkX)
                 {
-                    Chunk chunk = provider.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
+                    WorldChunk chunk = chunkManager.method_2857(chunkX, chunkZ, ChunkStatus.FULL, false);
 
                     if (chunk != null)
                     {
@@ -92,25 +96,6 @@ public class DataProviderClient extends DataProviderBase
                     }
                 }
             }
-
-            /*
-            try
-            {
-                Object array = field_ClientChunkProvider_array.get(provider);
-                @SuppressWarnings("unchecked")
-                AtomicReferenceArray<Chunk> chunks = (AtomicReferenceArray<Chunk>) field_ChunkArray_chunks.get(array);
-                final int size = chunks.length();
-
-                for (int i = 0; i < size; ++i)
-                {
-                    list.add(chunks.get(i));
-                }
-            }
-            catch (Exception e)
-            {
-                TellMe.logger.warn("Failed to get the loaded chunks on the client", e);
-            }
-            */
 
             return list;
         }
@@ -120,59 +105,53 @@ public class DataProviderClient extends DataProviderBase
 
     @Override
     @Nullable
-    public Collection<Advancement> getAdvacements()
+    public Collection<Advancement> getAdvancements(MinecraftServer server)
     {
-        Minecraft mc = Minecraft.getInstance();
+        MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (mc.isSingleplayer() && mc.player != null)
+        if (mc.isIntegratedServerRunning() && mc.player != null)
         {
-            MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-            return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
+            server = mc.getServer();
+            return server != null ? server.getAdvancementManager().getAdvancements() : null;
         }
         else
         {
-            INetHandler nh = mc.getConnection();
-
-            if (nh instanceof ClientPlayNetHandler)
-            {
-                return ((ClientPlayNetHandler) nh).getAdvancementManager().getAdvancementList().getAll();
-            }
+            ClientPlayNetworkHandler nh = mc.getNetworkHandler();
+            return nh != null ? nh.getAdvancementHandler().getManager().getAdvancements() : null;
         }
-
-        return null;
     }
 
     @Override
     public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
     {
-        BlockPos pos = entity.getPosition();
-        String pre = TextFormatting.GREEN.toString();
-        String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
+        BlockPos pos = entity.getBlockPos();
+        String pre = Formatting.GREEN.toString();
+        String rst = Formatting.RESET.toString() + Formatting.WHITE.toString();
 
         // These are client-side only:
-        int color = biome.getGrassColor(pos);
-        entity.sendMessage(new StringTextComponent(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+        int color = biome.getGrassColorAt(pos);
+        entity.sendMessage(new LiteralText(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
 
-        color = biome.getFoliageColor(pos);
-        entity.sendMessage(new StringTextComponent(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+        color = biome.getFoliageColorAt(pos);
+        entity.sendMessage(new LiteralText(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
     }
 
     @Override
     public int getFoliageColor(Biome biome, BlockPos pos)
     {
-        return biome.getFoliageColor(pos);
+        return biome.getFoliageColorAt(pos);
     }
 
     @Override
     public int getGrassColor(Biome biome, BlockPos pos)
     {
-        return biome.getGrassColor(pos);
+        return biome.getGrassColorAt(pos);
     }
 
     @Override
     public String getBiomeName(Biome biome)
     {
-        return biome.getDisplayName().getString();
+        return biome.getName().getString();
     }
 
     public void getExtendedBlockStateInfo(World world, BlockState state, BlockPos pos, List<String> lines)
@@ -211,10 +190,10 @@ public class DataProviderClient extends DataProviderBase
     }
 
     @Override
-    public void addCommandDumpData(DataDump dump)
+    public void addCommandDumpData(DataDump dump, MinecraftServer server)
     {
         // TODO 1.14
-        super.addCommandDumpData(dump);
+        super.addCommandDumpData(dump, server);
     }
 
     @Override
@@ -225,7 +204,7 @@ public class DataProviderClient extends DataProviderBase
             if (group != null)
             {
                 String index = String.valueOf(group.getIndex());
-                String name = group.getTabLabel();
+                String name = group.getName();
                 String key = group.getTranslationKey();
                 ItemStack stack = group.createIcon();
 
@@ -247,7 +226,7 @@ public class DataProviderClient extends DataProviderBase
                     continue;
                 }
 
-                String translatedName = I18n.format(key);
+                String translatedName = I18n.translate(key);
                 String iconItem = ItemDump.getStackInfoBasic(stack);
 
                 dump.addData(index, name, translatedName, iconItem);
@@ -258,30 +237,24 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupNames(JsonObject obj, Item item)
     {
-        String[] names = new String[ItemGroup.GROUPS.length];
-        int i = 0;
+        ItemGroup group = item.getGroup();
 
-        for (ItemGroup group : item.getCreativeTabs())
+        if (group != null)
         {
-            if (group != null)
-            {
-                names[i++] = I18n.format(group.getTranslationKey());
-            }
+            String name = I18n.translate(group.getTranslationKey());
+            obj.add("CreativeTabs", new JsonPrimitive(name));
         }
-
-        names = Arrays.copyOf(names, i);
-        obj.add("CreativeTabs", new JsonPrimitive(String.join(",", names)));
     }
 
     @Override
     public void addMusicTypeData(DataDump dump)
     {
-        for (MusicType music : MusicType.values())
+        for (MusicTracker.MusicType music : MusicTracker.MusicType.values())
         {
             SoundEvent sound = music.getSound();
             String minDelay = String.valueOf(music.getMinDelay());
             String maxDelay = String.valueOf(music.getMaxDelay());
-            ResourceLocation regName = sound.getRegistryName();
+            Identifier regName = Registry.SOUND_EVENT.getId(sound);
 
             dump.addData(music.name().toLowerCase(), regName != null ? regName.toString() : "<null>", minDelay, maxDelay);
         }

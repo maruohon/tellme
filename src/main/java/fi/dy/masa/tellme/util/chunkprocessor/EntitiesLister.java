@@ -2,8 +2,8 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.util.TypeFilterableList;
+import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
@@ -27,20 +27,20 @@ public class EntitiesLister extends ChunkProcessorBase
     }
 
     @Override
-    public void processChunk(Chunk chunk)
+    public void processChunk(WorldChunk chunk)
     {
-        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
+        TypeFilterableList<Entity>[] entityLists = chunk.getEntitySectionArray();
         int total = 0;
 
         for (int i = 0; i < entityLists.length; i++)
         {
-            ClassInheritanceMultiMap<Entity> map = entityLists[i];
+            TypeFilterableList<Entity> map = entityLists[i];
 
             for (Entity entity : map)
             {
-                double x = entity.posX;
-                double y = entity.posY;
-                double z = entity.posZ;
+                double x = entity.x;
+                double y = entity.y;
+                double z = entity.z;
                 int ix = (int) Math.floor(x);
                 int iz = (int) Math.floor(z);
 

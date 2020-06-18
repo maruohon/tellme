@@ -10,10 +10,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.datadump.BlockDump;
@@ -23,13 +23,13 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandDumpJson
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<ServerCommandSource> registerSubCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("dump-json").build();
+        LiteralCommandNode<ServerCommandSource> subCommandRootNode = CommandManager.literal("dump-json").build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> dumpTypesNode =
-                Commands.argument("dump_types",
+        ArgumentCommandNode<ServerCommandSource, List<String>> dumpTypesNode =
+                CommandManager.argument("dump_types",
                         StringCollectionArgument.create(() -> ImmutableList.of("blocks", "items-with-props"), "No dump types given"))
                 .executes(c -> execute(c, (List<String>) c.getArgument("dump_types", List.class))).build();
 
@@ -38,20 +38,23 @@ public class SubCommandDumpJson
         return subCommandRootNode;
     }
 
-    private static int execute(CommandContext<CommandSource> ctx, List<String> types) throws CommandSyntaxException
+    private static int execute(CommandContext<ServerCommandSource> ctx, List<String> types) throws CommandSyntaxException
     {
         @Nullable Entity entity = ctx.getSource().getEntity();
 
-        for (String type : types)
+        if (entity != null)
         {
-            String lines = getData(type, entity);
-
-            if (lines == null)
+            for (String type : types)
             {
-                CommandUtils.throwException("Unrecognized type: '" + type + "'");;
-            }
+                String lines = getData(type, entity);
 
-            OutputUtils.printOutput(Arrays.asList(lines), OutputType.FILE, DataDump.Format.ASCII, type, entity);
+                if (lines == null)
+                {
+                    CommandUtils.throwException("Unrecognized type: '" + type + "'");
+                }
+
+                OutputUtils.printOutput(Arrays.asList(lines), OutputType.FILE, DataDump.Format.ASCII, type, entity);
+            }
         }
 
         return 1;
