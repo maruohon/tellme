@@ -23,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -275,7 +276,7 @@ public class BlockInfo
             BlockState state = world.getBlockState(pos);
             Block block = state.getBlock();
 
-            ItemStack stack = block.getPickStack(world, pos, state);
+            ItemStack stack = new ItemStack(block.asItem());
             Identifier rl = Registry.BLOCK.getId(block);
             String registryName = rl != null ? rl.toString() : "<null>";
             String displayName;
@@ -287,7 +288,7 @@ public class BlockInfo
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = block.getName().getString();
+                displayName = (new TranslatableText(block.getTranslationKey())).getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));

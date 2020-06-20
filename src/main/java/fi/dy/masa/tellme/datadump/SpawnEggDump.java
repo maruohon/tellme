@@ -4,6 +4,7 @@ import java.util.List;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.mixin.IMixinSpawnEggItem;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SpawnEggDump
@@ -18,8 +19,8 @@ public class SpawnEggDump
             {
                 String id = Registry.ITEM.getId(egg).toString();
                 String entityId = Registry.ENTITY_TYPE.getId(egg.getEntityType(null)).toString();
-                int primaryColor = egg.getColor(0);
-                int secondaryColor = egg.getColor(1);
+                int primaryColor = ((IMixinSpawnEggItem) egg).getPrimaryColor();
+                int secondaryColor = ((IMixinSpawnEggItem) egg).getSecondaryColor();
                 String colorPrimary = String.format("0x%08X (%10d)", primaryColor, primaryColor);
                 String colorSecondary = String.format("0x%08X (%10d)", secondaryColor, secondaryColor);
 

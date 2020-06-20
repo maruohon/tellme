@@ -6,6 +6,8 @@
     "mixins": [
         "IMixinFluidTags",
         "IMixinServerWorld",
+        "IMixinSpawnEggItem",
+        "IMixinStatusEffect",
         "IMixinThreadedAnvilChunkStorage",
         "IMixinWeightedPickerEntry",
         "MixinCommandManager"

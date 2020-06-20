@@ -8,6 +8,7 @@ import net.minecraft.entity.effect.StatusEffectType;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import fi.dy.masa.tellme.mixin.IMixinStatusEffect;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
@@ -35,8 +36,8 @@ public class PotionDump
 
     public static String getEffectInfo(StatusEffect effect)
     {
-        String isBad = String.valueOf(effect.getType() == StatusEffectType.HARMFUL);
-        String isBeneficial = String.valueOf(effect.method_5573());
+        String isBad = String.valueOf(((IMixinStatusEffect) effect).getEffectType() == StatusEffectType.HARMFUL);
+        String isBeneficial = String.valueOf(((IMixinStatusEffect) effect).getEffectType() == StatusEffectType.BENEFICIAL);
         String regName = Registry.STATUS_EFFECT.getId(effect).toString();
 
         return "Potion:[reg:" + regName + ",name:" + effect.getTranslationKey() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
