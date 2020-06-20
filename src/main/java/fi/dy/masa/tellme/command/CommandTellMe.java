@@ -6,7 +6,6 @@ import net.minecraft.command.arguments.ArgumentTypes;
 import net.minecraft.command.arguments.serialize.ConstantArgumentSerializer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import fi.dy.masa.tellme.command.argument.BiomeArgument;
 import fi.dy.masa.tellme.command.argument.FileArgument;
 import fi.dy.masa.tellme.command.argument.GroupingArgument;
@@ -36,12 +35,11 @@ public class CommandTellMe
         ArgumentTypes.register("tellme:string_collection", StringCollectionArgument.class, new ConstantArgumentSerializer<>(() -> StringCollectionArgument.create(() -> Collections.emptyList(), "")));
     }
 
-    protected static void register(CommandDispatcher<ServerCommandSource> dispatcher, String baseCommandName, int permissionLevel)
+    protected static void register(CommandDispatcher<ServerCommandSource> dispatcher, String baseCommandName, final int permissionLevel)
     {
         dispatcher.register(
                 CommandManager.literal(baseCommandName)
                     .requires((src) -> src.hasPermissionLevel(permissionLevel))
-                    .executes(c -> { c.getSource().sendFeedback(new LiteralText("/tellme help"), false); return 0; })
                     .then(SubCommandBatchRun.registerSubCommand(dispatcher))
                     .then(SubCommandBiome.registerSubCommand(dispatcher))
                     .then(SubCommandBiomeLocate.registerSubCommand(dispatcher))
