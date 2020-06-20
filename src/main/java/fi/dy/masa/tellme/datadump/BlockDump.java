@@ -29,30 +29,30 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
 public class BlockDump
 {
-    public static List<String> getFormattedBlockDump(DataDump.Format format, boolean dumpNBT)
+    public static List<String> getFormattedBlockDump(DataDump.Format format, boolean tags)
     {
-        DataDump blockDump = new DataDump(dumpNBT ? 6 : 5, format);
+        DataDump blockDump = new DataDump(tags ? 5 : 4, format);
         ArrayListMultimap<Block, Identifier> tagMap = createBlockTagMap();
 
         for (Identifier id : Registry.BLOCK.getIds())
         {
             Block block = Registry.BLOCK.get(id);
-            addDataToDump(blockDump, id, block, new ItemStack(block), dumpNBT, tagMap);
+            addDataToDump(blockDump, id, block, new ItemStack(block), tags, tagMap);
         }
 
-        if (dumpNBT)
+        if (tags)
         {
-            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags", "NBT");
+            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
         }
         else
         {
-            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
+            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name");
         }
 
         return blockDump.getLines();
     }
 
-    private static void addDataToDump(DataDump dump, Identifier id, Block block, ItemStack stack, boolean dumpNBT, ArrayListMultimap<Block, Identifier> tagMap)
+    private static void addDataToDump(DataDump dump, Identifier id, Block block, ItemStack stack, boolean tags, ArrayListMultimap<Block, Identifier> tagMap)
     {
         String modName = ModNameUtils.getModName(id);
         String registryName = id.toString();
@@ -62,14 +62,13 @@ public class BlockDump
         Identifier itemIdRl = item != Items.AIR ? Registry.ITEM.getId(item) : null;
         String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
 
-        if (dumpNBT)
+        if (tags)
         {
-            String nbt = stack.isEmpty() == false && stack.getTag() != null ? stack.getTag().toString() : DataDump.EMPTY_STRING;
-            dump.addData(modName, registryName, itemId, displayName, getTagNamesJoined(block, tagMap), nbt);
+            dump.addData(modName, registryName, itemId, displayName, getTagNamesJoined(block, tagMap));
         }
         else
         {
-            dump.addData(modName, registryName, itemId, displayName, getTagNamesJoined(block, tagMap));
+            dump.addData(modName, registryName, itemId, displayName);
         }
     }
 

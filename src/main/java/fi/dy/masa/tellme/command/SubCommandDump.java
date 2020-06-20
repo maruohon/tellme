@@ -144,7 +144,7 @@ public class SubCommandDump
         dumpProviders.put("biomes-id-to-name",          (ctx) -> BiomeDump.getBiomeDumpIdToName(ctx.format));
         dumpProviders.put("block-props",                (ctx) -> BlockDump.getFormattedBlockPropertiesDump(ctx.format));
         dumpProviders.put("blocks",                     (ctx) -> BlockDump.getFormattedBlockDump(ctx.format, false));
-        dumpProviders.put("blocks-with-nbt",            (ctx) -> BlockDump.getFormattedBlockDump(ctx.format, true));
+        dumpProviders.put("blocks-with-tags",           (ctx) -> BlockDump.getFormattedBlockDump(ctx.format, true));
         dumpProviders.put("blockstates-by-block",       (ctx) -> BlockStatesDump.getFormattedBlockStatesDumpByBlock());
         dumpProviders.put("blockstates-by-state",       (ctx) -> BlockStatesDump.getFormattedBlockStatesDumpByState(ctx.format));
         dumpProviders.put("chunk-generator-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.CHUNK_GENERATOR_TYPE));
@@ -164,7 +164,7 @@ public class SubCommandDump
         dumpProviders.put("items",                      (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_BASIC));
         dumpProviders.put("items-craftable",            (ctx) -> ItemDump.getFormattedCraftableItemsDump(ctx.format, ctx.server));
         dumpProviders.put("items-plantable",            (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_PLANTABLES));
-        dumpProviders.put("items-with-nbt",             (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_NBT));
+        dumpProviders.put("items-with-tags",            (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_TAGS));
         dumpProviders.put("level-generator-types",      (ctx) -> LevelGeneratorTypeDump.getFormattedWorldTypeDump(ctx.format));
         dumpProviders.put("memory-module-types",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.MEMORY_MODULE_TYPE));
         dumpProviders.put("mod-list",                   (ctx) -> ModListDump.getFormattedModListDump(ctx.format));
