@@ -3,7 +3,7 @@
     "package": "fi.dy.masa.tellme.mixin",
     "minVersion": "0.7",
     "compatibilityLevel": "JAVA_8",
-    "client": [
+    "mixins": [
         "IMixinFluidTags",
         "IMixinServerWorld",
         "IMixinThreadedAnvilChunkStorage",
