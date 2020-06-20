@@ -31,28 +31,28 @@ public class BlockDump
     public static final Field field_blockHardness = ObfuscationReflectionHelper.findField(Block.class, "field_149782_v"); // blockHardness
     public static final Field field_blockResistance = ObfuscationReflectionHelper.findField(Block.class, "field_149781_w"); // blockResistance
 
-    public static List<String> getFormattedBlockDump(DataDump.Format format, boolean dumpNBT)
+    public static List<String> getFormattedBlockDump(DataDump.Format format, boolean tags)
     {
-        DataDump blockDump = new DataDump(dumpNBT ? 7 : 6, format);
+        DataDump blockDump = new DataDump(tags ? 6 : 5, format);
 
         for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
-            addDataToDump(blockDump, entry.getKey(), entry.getValue(), new ItemStack(entry.getValue()), dumpNBT);
+            addDataToDump(blockDump, entry.getKey(), entry.getValue(), new ItemStack(entry.getValue()), tags);
         }
 
-        if (dumpNBT)
+        if (tags)
         {
-            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Exists", "Tags", "NBT");
+            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Exists", "Tags");
         }
         else
         {
-            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Exists", "Tags");
+            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Exists");
         }
 
         return blockDump.getLines();
     }
 
-    private static void addDataToDump(DataDump dump, ResourceLocation id, Block block, ItemStack stack, boolean dumpNBT)
+    private static void addDataToDump(DataDump dump, ResourceLocation id, Block block, ItemStack stack, boolean tags)
     {
         String modName = ModNameUtils.getModName(id);
         String registryName = id.toString();
@@ -63,14 +63,13 @@ public class BlockDump
         String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
         String exists = RegistryUtils.isDummied(ForgeRegistries.BLOCKS, id) ? "false" : "true";
 
-        if (dumpNBT)
+        if (tags)
         {
-            String nbt = stack.isEmpty() == false && stack.getTag() != null ? stack.getTag().toString() : DataDump.EMPTY_STRING;
-            dump.addData(modName, registryName, itemId, displayName, exists, getTagNamesJoined(block), nbt);
+            dump.addData(modName, registryName, itemId, displayName, exists, getTagNamesJoined(block));
         }
         else
         {
-            dump.addData(modName, registryName, itemId, displayName, exists, getTagNamesJoined(block));
+            dump.addData(modName, registryName, itemId, displayName, exists);
         }
     }
 

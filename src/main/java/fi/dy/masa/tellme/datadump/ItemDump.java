@@ -51,8 +51,8 @@ public class ItemDump
 {
     public static final String[] HARVEST_LEVEL_NAMES = new String[] { "Wood/Gold", "Stone", "Iron", "Diamond" };
 
-    public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic();
-    public static final ItemInfoProviderBase INFO_NBT = new ItemInfoProviderNBT();
+    public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic(false);
+    public static final ItemInfoProviderBase INFO_TAGS = new ItemInfoProviderBasic(true);
     public static final ItemInfoProviderBase INFO_PLANTABLES = new ItemInfoProviderPlantables();
     public static final ItemInfoProviderBase INFO_TOOL_CLASS = new ItemInfoProviderToolClasses();
     public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
@@ -338,52 +338,50 @@ public class ItemDump
 
     public static class ItemInfoProviderBasic extends ItemInfoProviderBase
     {
+        private final boolean tags;
+
+        public ItemInfoProviderBasic(boolean tags)
+        {
+            this.tags = tags;
+        }
+
         @Override
         public int getColumnCount()
         {
-            return 5;
+            return this.tags ? 5 : 4;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
+            if (this.tags)
+            {
+                dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
+            }
+            else
+            {
+                dump.addTitle("Mod name", "Registry name", "Item ID", "Display name");
+            }
         }
 
         @Override
         public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
         {
-            dump.addData(this.getModName(id),
-                         this.getRegistryName(id),
-                         this.getItemId(stack),
-                         this.getDisplayName(stack),
-                         getTagNamesJoined(stack.getItem()));
-        }
-    }
-
-    public static class ItemInfoProviderNBT extends ItemInfoProviderBase
-    {
-        @Override
-        public int getColumnCount()
-        {
-            return 6;
-        }
-
-        @Override
-        public void addTitle(DataDump dump)
-        {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags", "NBT");
-        }
-
-        @Override
-        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
-        {
-            dump.addData(this.getModName(id),
-                         this.getRegistryName(id),
-                         this.getItemId(stack),
-                         this.getDisplayName(stack),
-                         getTagNamesJoined(stack.getItem()),
-                         this.getNBTString(stack));
+            if (this.tags)
+            {
+                dump.addData(this.getModName(id),
+                             this.getRegistryName(id),
+                             this.getItemId(stack),
+                             this.getDisplayName(stack),
+                             getTagNamesJoined(stack.getItem()));
+            }
+            else
+            {
+                dump.addData(this.getModName(id),
+                             this.getRegistryName(id),
+                             this.getItemId(stack),
+                             this.getDisplayName(stack));
+            }
         }
     }
 
