@@ -44,7 +44,7 @@ public class SubCommandBatchRun
     {
         if (file != null && file.exists() && file.canRead())
         {
-            runBatchCommands(null, ctx.getSource(), file);
+            runBatchCommands(dispatcher, ctx.getSource(), file);
         }
         else
         {
