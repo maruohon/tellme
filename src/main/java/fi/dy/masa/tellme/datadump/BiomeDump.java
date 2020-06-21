@@ -26,85 +26,23 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class BiomeDump
 {
-    public static List<String> getFormattedBiomeDump(Format format, boolean outputColors, @Nullable World world)
+    public static final BiomeInfoProviderBase BASIC = new BiomeInfoProviderBasic();
+    public static final BiomeInfoProviderBase COLORS = new BiomeInfoProviderColors();
+    public static final BiomeInfoProviderBase VALIDITY = new BiomeInfoProviderValidity();
+
+    public static List<String> getFormattedBiomeDump(Format format, @Nullable World world, BiomeInfoProviderBase provider)
     {
-        final boolean isClient = TellMe.isClient();
-        int columns = 8;
-
-        if (outputColors)
-        {
-            columns += (isClient ? 3 : 1);
-        }
-
-        DataDump biomeDump = new DataDump(columns, format);
+        BiomeDumpContext ctx = new BiomeDumpContext(world);
+        DataDump biomeDump = new DataDump(provider.getColumnCount(), format);
 
         for (Identifier id : Registry.BIOME.getIds())
         {
             Biome biome = Registry.BIOME.get(id);
-            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
-            String regName = id.toString();
-            String name = TellMe.dataProvider.getBiomeName(biome);
-            String validFor = world != null ? getValidForString(biome, world.getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
-            String temp = String.format("%5.2f", biome.getTemperature());
-            String tempCat = biome.getTemperatureGroup().toString();
-            Biome.Precipitation rainType = biome.getPrecipitation();
-            String rain = rainType != Biome.Precipitation.NONE ? rainType.getName() : "-";
-            String downfall = String.format("%.2f", biome.getRainfall());
-            int waterColor = biome.getWaterColor();
-
-            if (isClient)
-            {
-                if (outputColors)
-                {
-                    int foliageColor = TellMe.dataProvider.getFoliageColor(biome, BlockPos.ORIGIN);
-                    int grassColor = TellMe.dataProvider.getGrassColor(biome, BlockPos.ORIGIN);
-                    String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
-                    String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
-                    String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
-
-                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor,
-                                        waterColorStr, grassColorStr, foliageColorStr);
-                }
-                else
-                {
-                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor);
-                }
-            }
-            else
-            {
-                if (outputColors)
-                {
-                    String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
-                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor, waterColorStr);
-                }
-                else
-                {
-                    biomeDump.addData(intId, regName, name, temp, tempCat, rain, downfall, validFor);
-                }
-            }
+            provider.addLine(biomeDump, biome, id, ctx);
         }
 
-        if (isClient && outputColors)
-        {
-            biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
-                                "RainType", "Downfall", "Valid for",
-                                "waterColorMultiplier", "grassColorMultiplier", "foliageColorMultiplier");
-        }
-        else if (outputColors)
-        {
-            biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
-                               "RainType", "Downfall", "Valid for", "waterColorMultiplier");
-        }
-        else
-        {
-            biomeDump.addTitle("ID", "Registry name", "Biome name", "temp.", "temp cat",
-                               "RainType", "Downfall", "Valid for");
-        }
-
+        provider.addTitle(biomeDump);
         biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
-        biomeDump.setColumnProperties(3, Alignment.RIGHT, true); // temperature
-        biomeDump.setColumnProperties(5, Alignment.RIGHT, true); // raintype
-        biomeDump.setColumnAlignment(6, Alignment.RIGHT); // downfall
 
         return biomeDump.getLines();
     }
@@ -168,7 +106,7 @@ public class BiomeDump
         entity.sendMessage(new LiteralText("------------- Current biome info ------------"));
         entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, rst));
         entity.sendMessage(new LiteralText(String.format("RainType: %s%s%s, downfall: %s%f%s, snows: %s%s",
-                pre, rainType.getName(), rst, pre, biome.getRainfall(), rst, snowing, rst)));
+                                                         pre, rainType.getName(), rst, pre, biome.getRainfall(), rst, snowing, rst)));
 
         if (StringUtils.isBlank(validFor) == false)
         {
@@ -176,9 +114,9 @@ public class BiomeDump
         }
 
         entity.sendMessage(new LiteralText(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
-                pre, waterColor, waterColor, rst)));
+                                                         pre, waterColor, waterColor, rst)));
         entity.sendMessage(new LiteralText(String.format("temperature: %s%f%s, temp. category: %s%s%s",
-                pre, biome.getTemperature(pos), rst, pre, biome.getTemperatureGroup(), rst)));
+                                                         pre, biome.getTemperature(pos), rst, pre, biome.getTemperatureGroup(), rst)));
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
@@ -275,6 +213,132 @@ public class BiomeDump
             }
 
             return 0;
+        }
+    }
+
+    public static class BiomeDumpContext
+    {
+        @Nullable
+        public final World world;
+
+        public BiomeDumpContext(World world)
+        {
+            this.world = world;
+        }
+    }
+
+    private static abstract class BiomeInfoProviderBase
+    {
+        public abstract int getColumnCount();
+
+        public abstract void addTitle(DataDump dump);
+
+        public abstract void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx);
+    }
+
+    public static class BiomeInfoProviderBasic extends BiomeInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 7;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("ID", "Registry name", "Biome name", "Temp.", "Temp Cat.", "RainType", "Downfall");
+
+            dump.setColumnProperties(3, Alignment.RIGHT, true); // temperature
+            dump.setColumnProperties(5, Alignment.RIGHT, true); // raintype
+            dump.setColumnAlignment(6, Alignment.RIGHT); // downfall
+        }
+
+        @Override
+        public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
+        {
+            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            String regName = id.toString();
+            String name = TellMe.dataProvider.getBiomeName(biome);
+            String temp = String.format("%5.2f", biome.getTemperature());
+            String tempCat = biome.getTemperatureGroup().toString();
+            Biome.Precipitation precipitation = biome.getPrecipitation();
+            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.getName() : "-";
+            String downfall = String.format("%.2f", biome.getRainfall());
+
+            dump.addData(intId, regName, name, temp, tempCat, precStr, downfall);
+        }
+    }
+
+    public static class BiomeInfoProviderColors extends BiomeInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return TellMe.isClient() ? 6 : 4;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            if (TellMe.isClient())
+            {
+                dump.addTitle("ID", "Registry name", "Biome name", "waterColorMultiplier", "grassColorMultiplier", "foliageColorMultiplier");
+            }
+            else
+            {
+                dump.addTitle("ID", "Registry name", "Biome name","waterColorMultiplier");
+            }
+        }
+
+        @Override
+        public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
+        {
+            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            String regName = id.toString();
+            String name = TellMe.dataProvider.getBiomeName(biome);
+            int waterColor = biome.getWaterColor();
+            String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
+
+            if (TellMe.isClient())
+            {
+                int foliageColor = TellMe.dataProvider.getFoliageColor(biome, BlockPos.ORIGIN);
+                int grassColor = TellMe.dataProvider.getGrassColor(biome, BlockPos.ORIGIN);
+                String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
+                String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
+
+                dump.addData(intId, regName, name, waterColorStr, grassColorStr, foliageColorStr);
+            }
+            else
+            {
+                dump.addData(intId, regName, name, waterColorStr);
+            }
+        }
+    }
+
+    public static class BiomeInfoProviderValidity extends BiomeInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 4;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("ID", "Registry name", "Biome name", "Valid for");
+        }
+
+        @Override
+        public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
+        {
+            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            String regName = id.toString();
+            String name = TellMe.dataProvider.getBiomeName(biome);
+            String validFor = ctx.world != null ? getValidForString(biome, ctx.world.getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
+
+            dump.addData(intId, regName, name, validFor);
         }
     }
 }
