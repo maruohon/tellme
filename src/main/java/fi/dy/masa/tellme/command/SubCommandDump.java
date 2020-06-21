@@ -140,8 +140,9 @@ public class SubCommandDump
         dumpProviders.put("activities",                 (ctx) -> ActivityDump.getFormattedDump(ctx.format));
         dumpProviders.put("advancements-simple",        (ctx) -> AdvancementDump.getFormattedAdvancementDumpSimple(ctx.format, ctx.server));
         dumpProviders.put("biome-provider-types",       (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.BIOME_PROVIDER_TYPES));
-        dumpProviders.put("biomes",                     (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, false));
-        dumpProviders.put("biomes-with-colors",         (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, true));
+        dumpProviders.put("biomes-basic",               (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.BASIC));
+        dumpProviders.put("biomes-with-colors",         (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.COLORS));
+        dumpProviders.put("biomes-with-feature-valid",  (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.VALIDITY));
         dumpProviders.put("biomes-with-mob-spawns",     (ctx) -> BiomeDump.getFormattedBiomeDumpWithMobSpawns(ctx.format));
         dumpProviders.put("biomes-id-to-name",          (ctx) -> BiomeDump.getBiomeDumpIdToName(ctx.format));
         dumpProviders.put("block-props",                (ctx) -> BlockDump.getFormattedBlockPropertiesDump(ctx.format));
