@@ -244,8 +244,8 @@ public class SubCommandBlockStats
     private static int countBlocksBox(CommandSource source, Vec3d corner1, Vec3d corner2,
             IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        BlockPos minPos = new BlockPos(corner1);
-        BlockPos maxPos = new BlockPos(corner2);
+        BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
+        BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
 
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
