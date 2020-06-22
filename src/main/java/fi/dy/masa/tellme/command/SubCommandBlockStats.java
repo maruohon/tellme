@@ -19,22 +19,24 @@ import net.minecraft.command.arguments.ILocationArgument;
 import net.minecraft.command.arguments.Vec2Argument;
 import net.minecraft.command.arguments.Vec3Argument;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.AreaType;
 import fi.dy.masa.tellme.command.CommandUtils.IDimensionRetriever;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.BlockStats;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class SubCommandBlockStats
 {
@@ -69,54 +71,65 @@ public class SubCommandBlockStats
     {
         LiteralCommandNode<CommandSource> actionNodeOutputData = Commands.literal("output-data").build();
 
-        ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
-                .executes(c -> outputData(c.getSource(),
-                        c.getArgument("output_type", OutputType.class),
-                        DataDump.Format.ASCII,
-                        false))
-                .build();
+        ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create()).build();
 
-        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
+        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create()).build();
+
+        ArgumentCommandNode<CommandSource, CommandUtils.BlockStateGrouping> argDataGrouping = Commands.argument("result_grouping", BlockStateCountGroupingArgument.create())
                 .executes(c -> outputData(c.getSource(),
-                        c.getArgument("output_type", OutputType.class),
-                        c.getArgument("output_format", DataDump.Format.class),
-                        false))
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          false))
                 .build();
 
         LiteralCommandNode<CommandSource> argSortByCount = Commands.literal("sort-by-count")
                 .executes(c -> outputData(c.getSource(),
-                        c.getArgument("output_type", OutputType.class),
-                        c.getArgument("output_format", DataDump.Format.class),
-                        true))
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          true))
+                .build();
+
+        LiteralCommandNode<CommandSource> argSortByName = Commands.literal("sort-by-name")
+                .executes(c -> outputData(c.getSource(),
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          false))
                 .build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersNoSort = Commands.argument("block_filters",
-                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
-                .executes(ctx -> outputData(ctx.getSource(),
-                        ctx.getArgument("output_type", OutputType.class),
-                        ctx.getArgument("output_format", DataDump.Format.class),
-                        false,
-                        ctx.getArgument("block_filters", List.class)))
+        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersSortByCount = Commands.argument("block_filters",
+                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
+                .executes(c -> outputData(c.getSource(),
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          true,
+                                          c.getArgument("block_filters", List.class)))
                 .build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersSort = Commands.argument("block_filters",
-                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
-                .executes(ctx -> outputData(ctx.getSource(),
-                        ctx.getArgument("output_type", OutputType.class),
-                        ctx.getArgument("output_format", DataDump.Format.class),
-                        true,
-                        ctx.getArgument("block_filters", List.class)))
+        ArgumentCommandNode<CommandSource, List<String>> argBlockFiltersSortByName = Commands.argument("block_filters",
+                StringCollectionArgument.create(() -> ForgeRegistries.BLOCKS.getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
+                .executes(c -> outputData(c.getSource(),
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          false,
+                                          c.getArgument("block_filters", List.class)))
                 .build();
 
         actionNodeOutputData.addChild(argOutputType);
         argOutputType.addChild(argOutputFormat);
+        argOutputFormat.addChild(argDataGrouping);
 
-        argOutputFormat.addChild(argSortByCount);
-        argOutputFormat.addChild(argBlockFiltersNoSort);
+        argDataGrouping.addChild(argSortByCount);
+        argSortByCount.addChild(argBlockFiltersSortByCount);
 
-        argSortByCount.addChild(argBlockFiltersSort);
+        argDataGrouping.addChild(argSortByName);
+        argSortByName.addChild(argBlockFiltersSortByName);
 
         return actionNodeOutputData;
     }
@@ -294,12 +307,12 @@ public class SubCommandBlockStats
         return 1;
     }
 
-    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount) throws CommandSyntaxException
+    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, CommandUtils.BlockStateGrouping grouping, boolean sortByCount) throws CommandSyntaxException
     {
-        return outputData(source, outputType, format, sortByCount, null);
+        return outputData(source, outputType, format, grouping, sortByCount, null);
     }
 
-    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
+    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, CommandUtils.BlockStateGrouping grouping, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
     {
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
         List<String> lines;
@@ -307,11 +320,11 @@ public class SubCommandBlockStats
         // We have some filters specified
         if (filters != null && filters.isEmpty() == false)
         {
-            lines = blockStats.query(format, filters, sortByCount);
+            lines = blockStats.query(format, grouping, sortByCount, filters);
         }
         else
         {
-            lines = blockStats.queryAll(format, sortByCount);
+            lines = blockStats.queryAll(format, grouping, sortByCount);
         }
 
         OutputUtils.printOutput(lines, outputType, format, "block_stats", source);

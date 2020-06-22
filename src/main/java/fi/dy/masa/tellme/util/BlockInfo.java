@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
-import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
@@ -30,7 +31,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
@@ -102,7 +102,7 @@ public class BlockInfo
         return state;
     }
 
-    public static <T extends Comparable<T>> List<BlockState> getFilteredStates(Collection<BlockState> initialStates, String propName, String propValue)
+    public static List<BlockState> getFilteredStates(Collection<BlockState> initialStates, String propName, String propValue)
     {
         List<BlockState> list = new ArrayList<>();
 
@@ -138,9 +138,9 @@ public class BlockInfo
             String[] propParts = propStr.split(",");
             Pattern patternProp = Pattern.compile("(?<prop>[a-zA-Z0-9\\._-]+)=(?<value>[a-zA-Z0-9\\._-]+)");
 
-            for (int i = 0; i < propParts.length; i++)
+            for (String propPart : propParts)
             {
-                Matcher matcherProp = patternProp.matcher(propParts[i]);
+                Matcher matcherProp = patternProp.matcher(propPart);
 
                 if (matcherProp.matches())
                 {
@@ -148,7 +148,7 @@ public class BlockInfo
                 }
                 else
                 {
-                    TellMe.logger.warn("Invalid block property '{}'", propParts[i]);
+                    TellMe.logger.warn("Invalid block property '{}'", propPart);
                 }
             }
 
@@ -162,7 +162,7 @@ public class BlockInfo
 
     private static String getTileInfo(World world, BlockPos pos)
     {
-        String teInfo = "";
+        String teInfo;
         BlockState state = world.getBlockState(pos);
         boolean teInWorld = world.getTileEntity(pos) != null;
         boolean shouldHaveTE = state.getBlock().hasTileEntity(state);
@@ -204,11 +204,8 @@ public class BlockInfo
         {
             lines.add("BlockState properties:");
 
-            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> iter = state.getValues().entrySet().iterator();
-
-            while (iter.hasNext())
+            for (Entry<IProperty<?>, Comparable<?>> entry : state.getValues().entrySet())
             {
-                Entry<IProperty<?>, Comparable<?>> entry = iter.next();
                 lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
             }
         }
@@ -216,8 +213,6 @@ public class BlockInfo
         {
             lines.add("BlockState properties: <none>");
         }
-
-        getExtendedBlockStateInfo(world, state, pos, lines);
 
         TileEntity te = world.getTileEntity(pos);
 
@@ -232,41 +227,6 @@ public class BlockInfo
         }
 
         return lines;
-    }
-
-    private static void getExtendedBlockStateInfo(IBlockReader world, BlockState state, BlockPos pos, List<String> lines)
-    {
-        try
-        {
-            state = state.getExtendedState(world, pos);
-
-            /*
-            if (state instanceof IExtendedBlockState)
-            {
-                IExtendedBlockState extendedState = (IExtendedBlockState) state;
-
-                if (extendedState.getUnlistedProperties().size() > 0)
-                {
-                    lines.add("IExtendedBlockState properties:");
-
-                    UnmodifiableIterator<Entry<IUnlistedProperty<?>, Optional<?>>> iterExt = extendedState.getUnlistedProperties().entrySet().iterator();
-
-                    while (iterExt.hasNext())
-                    {
-                        Entry<IUnlistedProperty<?>, Optional<?>> entry = iterExt.next();
-                        lines.add(MoreObjects.toStringHelper(entry.getKey())
-                                .add("name", entry.getKey().getName())
-                                .add("clazz", entry.getKey().getType())
-                                .add("value", entry.getValue().toString()).toString());
-                    }
-                }
-            }
-            */
-        }
-        catch (Exception e)
-        {
-            TellMe.logger.error("getFullBlockInfo(): Exception while calling getExtendedState() on the block {}", state);
-        }
     }
 
     public static String getMaterialName(Material material)
@@ -293,6 +253,58 @@ public class BlockInfo
         }
 
         return null;
+    }
+
+    public static String blockStateToString(BlockState state)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ForgeRegistries.BLOCKS.getKey(state.getBlock()).toString());
+
+        if (state.getValues().isEmpty() == false)
+        {
+            sb.append('[');
+            sb.append(state.getValues().entrySet().stream().map(PROPERTY_MAP_PRINTER).collect(Collectors.joining(",")));
+            sb.append(']');
+        }
+
+        return sb.toString();
+    }
+
+    public static final Function<Entry<IProperty<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<Map.Entry<IProperty<?>, Comparable<?>>, String>()
+    {
+        @Override
+        public String apply(@Nullable Map.Entry<IProperty<?>, Comparable<?>> entry)
+        {
+            if (entry == null)
+            {
+                return "<NULL>";
+            }
+            else
+            {
+                IProperty<?> property = entry.getKey();
+                return property.getName() + "=" + this.valueToString(property, entry.getValue());
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private <T extends Comparable<T>> String valueToString(IProperty<T> property, Object value)
+        {
+            return property.getName((T) value);
+        }
+    };
+
+    public static boolean statePassesFilter(BlockState state, Map<IProperty<?>, Comparable<?>> filterProperties)
+    {
+        for (IProperty<?> prop : state.getProperties())
+        {
+            if (filterProperties.containsKey(prop) &&
+                filterProperties.get(prop).equals(state.get(prop)) == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static class BlockData

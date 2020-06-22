@@ -248,4 +248,36 @@ public class CommandUtils
             return null;
         }
     }
+
+    public enum BlockStateGrouping
+    {
+        BY_BLOCK("by-block"),
+        BY_STATE("by-state");
+
+        private final String arg;
+
+        BlockStateGrouping(String arg)
+        {
+            this.arg = arg;
+        }
+
+        public String getArgument()
+        {
+            return this.arg;
+        }
+
+        @Nullable
+        public static BlockStateGrouping fromArg(String arg)
+        {
+            for (BlockStateGrouping type : BlockStateGrouping.values())
+            {
+                if (type.arg.equals(arg))
+                {
+                    return type;
+                }
+            }
+
+            return null;
+        }
+    }
 }
