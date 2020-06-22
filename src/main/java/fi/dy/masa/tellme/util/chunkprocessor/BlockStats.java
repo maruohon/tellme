@@ -47,14 +47,12 @@ public class BlockStats extends ChunkProcessorAllChunks
     }
 
     @Override
-    public void processChunks(Collection<WorldChunk> chunks, BlockPos pos1, BlockPos pos2)
+    public void processChunks(Collection<WorldChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         final long timeBefore = System.nanoTime();
         Object2LongOpenHashMap<BlockState> counts = new Object2LongOpenHashMap<>();
         BlockPos.Mutable pos = new BlockPos.Mutable(0, 0, 0);
         final BlockState air = Blocks.AIR.getDefaultState();
-        BlockPos posMin = getMinCorner(pos1, pos2);
-        BlockPos posMax = getMaxCorner(pos1, pos2);
         int count = 0;
 
         for (Chunk chunk : chunks)

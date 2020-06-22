@@ -38,29 +38,8 @@ public abstract class ChunkProcessorAllChunks
         return true;
     }
 
-    public static BlockPos getMinCorner(BlockPos pos1, BlockPos pos2)
+    public void processChunks(World world, BlockPos posMin, BlockPos posMax) throws CommandSyntaxException
     {
-        return new BlockPos(Math.min(pos1.getX(), pos2.getX()), Math.min(pos1.getY(), pos2.getY()), Math.min(pos1.getZ(), pos2.getZ()));
-    }
-
-    public static BlockPos getMaxCorner(BlockPos pos1, BlockPos pos2)
-    {
-        return new BlockPos(Math.max(pos1.getX(), pos2.getX()), Math.max(pos1.getY(), pos2.getY()), Math.max(pos1.getZ(), pos2.getZ()));
-    }
-
-    public void processChunks(World world, BlockPos playerPos, int rangeX, int rangeY, int rangeZ) throws CommandSyntaxException
-    {
-        BlockPos pos1 = playerPos.add(-rangeX, -rangeY, -rangeZ);
-        BlockPos pos2 = playerPos.add( rangeX,  rangeY,  rangeZ);
-
-        this.processChunks(world, pos1, pos2);
-    }
-
-    public void processChunks(World world, BlockPos pos1, BlockPos pos2) throws CommandSyntaxException
-    {
-        BlockPos posMin = getMinCorner(pos1, pos2);
-        BlockPos posMax = getMaxCorner(pos1, pos2);
-
         if (this.areCoordinatesValid(posMin, posMax) == false)
         {
             throw (new SimpleCommandExceptionType(new TranslatableText("Invalid coordinate(s) in the range, aborting"))).create();
