@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.UnmodifiableIterator;
@@ -100,7 +102,7 @@ public class BlockInfo
         return state;
     }
 
-    public static <T extends Comparable<T>> List<BlockState> getFilteredStates(Collection<BlockState> initialStates, String propName, String propValue)
+    public static List<BlockState> getFilteredStates(Collection<BlockState> initialStates, String propName, String propValue)
     {
         List<BlockState> list = new ArrayList<>();
 
@@ -254,6 +256,56 @@ public class BlockInfo
         }
 
         return null;
+    }
+
+    public static String blockStateToString(BlockState state)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(Registry.BLOCK.getId(state.getBlock()).toString());
+
+        if (state.getEntries().isEmpty() == false)
+        {
+            sb.append('[');
+            sb.append(state.getEntries().entrySet().stream().map(PROPERTY_MAP_PRINTER).collect(Collectors.joining(",")));
+            sb.append(']');
+        }
+
+        return sb.toString();
+    }
+
+    public static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<Map.Entry<Property<?>, Comparable<?>>, String>()
+    {
+        public String apply(@Nullable Map.Entry<Property<?>, Comparable<?>> entry)
+        {
+            if (entry == null)
+            {
+                return "<NULL>";
+            }
+            else
+            {
+                Property<?> property = entry.getKey();
+                return property.getName() + "=" + this.valueToString(property, entry.getValue());
+            }
+        }
+
+        private <T extends Comparable<T>> String valueToString(Property<T> property, Object value)
+        {
+            return property.getName((T) value);
+        }
+    };
+
+    public static boolean statePassesFilter(BlockState state, Map<Property<?>, Comparable<?>> filterProperties)
+    {
+        for (Property<?> prop : state.getProperties())
+        {
+            if (filterProperties.containsKey(prop) &&
+                filterProperties.get(prop).equals(state.get(prop)) == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static class BlockData

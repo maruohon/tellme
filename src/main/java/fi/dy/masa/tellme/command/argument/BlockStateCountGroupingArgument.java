@@ -13,20 +13,19 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.text.LiteralText;
 import fi.dy.masa.tellme.command.CommandUtils;
-import fi.dy.masa.tellme.util.datadump.DataDump;
 
-public class OutputFormatArgument implements ArgumentType<DataDump.Format>
+public class BlockStateCountGroupingArgument implements ArgumentType<CommandUtils.BlockStateGrouping>
 {
     private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new LiteralText("No output format given"));
-    private static final ImmutableList<String> SUGGESTIONS = ImmutableList.copyOf(Stream.of(DataDump.Format.values()).map(DataDump.Format::getArgument).collect(Collectors.toList()));
+    private static final ImmutableList<String> SUGGESTIONS = ImmutableList.copyOf(Stream.of(CommandUtils.BlockStateGrouping.values()).map(CommandUtils.BlockStateGrouping::getArgument).collect(Collectors.toList()));
 
-    public static OutputFormatArgument create()
+    public static BlockStateCountGroupingArgument create()
     {
-        return new OutputFormatArgument();
+        return new BlockStateCountGroupingArgument();
     }
 
     @Override
-    public DataDump.Format parse(StringReader reader) throws CommandSyntaxException
+    public CommandUtils.BlockStateGrouping parse(StringReader reader) throws CommandSyntaxException
     {
         final int startPos = reader.getCursor();
 
@@ -42,7 +41,7 @@ public class OutputFormatArgument implements ArgumentType<DataDump.Format>
             throw EMPTY_TYPE.create();
         }
 
-        return DataDump.Format.fromArg(type);
+        return CommandUtils.BlockStateGrouping.fromArg(type);
     }
 
     @Override

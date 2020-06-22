@@ -7,6 +7,7 @@ import net.minecraft.command.arguments.serialize.ConstantArgumentSerializer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import fi.dy.masa.tellme.command.argument.BiomeArgument;
+import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
 import fi.dy.masa.tellme.command.argument.FileArgument;
 import fi.dy.masa.tellme.command.argument.GroupingArgument;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
@@ -28,6 +29,7 @@ public class CommandTellMe
     public static void registerArgumentTypes()
     {
         ArgumentTypes.register("tellme:biome", BiomeArgument.class, new ConstantArgumentSerializer<>(BiomeArgument::create));
+        ArgumentTypes.register("tellme:block_grouping", BlockStateCountGroupingArgument.class, new ConstantArgumentSerializer<>(BlockStateCountGroupingArgument::create));
         ArgumentTypes.register("tellme:file", FileArgument.class, new ConstantArgumentSerializer<>(FileArgument::createEmpty));
         ArgumentTypes.register("tellme:grouping", GroupingArgument.class, new ConstantArgumentSerializer<>(GroupingArgument::create));
         ArgumentTypes.register("tellme:output_format", OutputFormatArgument.class, new ConstantArgumentSerializer<>(OutputFormatArgument::create));

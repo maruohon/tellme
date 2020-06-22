@@ -30,6 +30,7 @@ import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.AreaType;
 import fi.dy.masa.tellme.command.CommandUtils.IDimensionRetriever;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
+import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
@@ -70,54 +71,65 @@ public class SubCommandBlockStats
     {
         LiteralCommandNode<ServerCommandSource> actionNodeOutputData = CommandManager.literal("output-data").build();
 
-        ArgumentCommandNode<ServerCommandSource, OutputType> argOutputType = CommandManager.argument("output_type", OutputTypeArgument.create())
-                .executes(c -> outputData(c.getSource(),
-                        c.getArgument("output_type", OutputType.class),
-                        DataDump.Format.ASCII,
-                        false))
-                .build();
+        ArgumentCommandNode<ServerCommandSource, OutputType> argOutputType = CommandManager.argument("output_type", OutputTypeArgument.create()).build();
 
-        ArgumentCommandNode<ServerCommandSource, DataDump.Format> argOutputFormat = CommandManager.argument("output_format", OutputFormatArgument.create())
+        ArgumentCommandNode<ServerCommandSource, DataDump.Format> argOutputFormat = CommandManager.argument("output_format", OutputFormatArgument.create()).build();
+
+        ArgumentCommandNode<ServerCommandSource, CommandUtils.BlockStateGrouping> argDataGrouping = CommandManager.argument("result_grouping", BlockStateCountGroupingArgument.create())
                 .executes(c -> outputData(c.getSource(),
-                        c.getArgument("output_type", OutputType.class),
-                        c.getArgument("output_format", DataDump.Format.class),
-                        false))
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          false))
                 .build();
 
         LiteralCommandNode<ServerCommandSource> argSortByCount = CommandManager.literal("sort-by-count")
                 .executes(c -> outputData(c.getSource(),
-                        c.getArgument("output_type", OutputType.class),
-                        c.getArgument("output_format", DataDump.Format.class),
-                        true))
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          true))
+                .build();
+
+        LiteralCommandNode<ServerCommandSource> argSortByName = CommandManager.literal("sort-by-name")
+                .executes(c -> outputData(c.getSource(),
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          false))
                 .build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersNoSort = CommandManager.argument("block_filters",
+        ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersSortByCount = CommandManager.argument("block_filters",
                 StringCollectionArgument.create(() -> Registry.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
-                .executes(ctx -> outputData(ctx.getSource(),
-                        ctx.getArgument("output_type", OutputType.class),
-                        ctx.getArgument("output_format", DataDump.Format.class),
-                        false,
-                        ctx.getArgument("block_filters", List.class)))
+                .executes(c -> outputData(c.getSource(),
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          true,
+                                          c.getArgument("block_filters", List.class)))
                 .build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersSort = CommandManager.argument("block_filters",
+        ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersSortByName = CommandManager.argument("block_filters",
                 StringCollectionArgument.create(() -> Registry.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
-                .executes(ctx -> outputData(ctx.getSource(),
-                        ctx.getArgument("output_type", OutputType.class),
-                        ctx.getArgument("output_format", DataDump.Format.class),
-                        true,
-                        ctx.getArgument("block_filters", List.class)))
+                .executes(c -> outputData(c.getSource(),
+                                          c.getArgument("output_type", OutputType.class),
+                                          c.getArgument("output_format", DataDump.Format.class),
+                                          c.getArgument("result_grouping", CommandUtils.BlockStateGrouping.class),
+                                          false,
+                                          c.getArgument("block_filters", List.class)))
                 .build();
 
         actionNodeOutputData.addChild(argOutputType);
         argOutputType.addChild(argOutputFormat);
+        argOutputFormat.addChild(argDataGrouping);
 
-        argOutputFormat.addChild(argSortByCount);
-        argOutputFormat.addChild(argBlockFiltersNoSort);
+        argDataGrouping.addChild(argSortByCount);
+        argSortByCount.addChild(argBlockFiltersSortByCount);
 
-        argSortByCount.addChild(argBlockFiltersSort);
+        argDataGrouping.addChild(argSortByName);
+        argSortByName.addChild(argBlockFiltersSortByName);
 
         return actionNodeOutputData;
     }
@@ -295,12 +307,12 @@ public class SubCommandBlockStats
         return 1;
     }
 
-    private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount) throws CommandSyntaxException
+    private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format, CommandUtils.BlockStateGrouping grouping, boolean sortByCount) throws CommandSyntaxException
     {
-        return outputData(source, outputType, format, sortByCount, null);
+        return outputData(source, outputType, format, grouping, sortByCount, null);
     }
 
-    private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
+    private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format, CommandUtils.BlockStateGrouping grouping, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
     {
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
         List<String> lines;
@@ -308,11 +320,11 @@ public class SubCommandBlockStats
         // We have some filters specified
         if (filters != null && filters.isEmpty() == false)
         {
-            lines = blockStats.query(format, filters, sortByCount);
+            lines = blockStats.query(format, grouping, sortByCount, filters);
         }
         else
         {
-            lines = blockStats.queryAll(format, sortByCount);
+            lines = blockStats.queryAll(format, grouping, sortByCount);
         }
 
         OutputUtils.printOutput(lines, outputType, format, "block_stats", source);
