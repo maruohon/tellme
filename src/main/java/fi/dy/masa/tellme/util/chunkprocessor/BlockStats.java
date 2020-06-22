@@ -226,6 +226,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         }
 
         list.sort(sortByCount ? BlockStateCount.getCountComparator() : BlockStateCount.getAlphabeticComparator());
+        long total = 0L;
 
         for (BlockStateCount info : list)
         {
@@ -237,10 +238,16 @@ public class BlockStats extends ChunkProcessorAllChunks
             {
                 dump.addData(info.registryName, info.displayName, String.valueOf(info.count));
             }
+
+            if (info.state.isAir() == false)
+            {
+                total += info.count;
+            }
         }
 
         dump.addTitle("Registry name", "Display name", "Count");
         dump.addFooter(String.format("Block stats from an area touching %d chunks", this.chunkCount));
+        dump.addFooter(String.format("The listed output contains %d non-air blocks", total));
 
         dump.setColumnProperties(2, Alignment.RIGHT, true); // count
         dump.setSort(sortByCount == false);
