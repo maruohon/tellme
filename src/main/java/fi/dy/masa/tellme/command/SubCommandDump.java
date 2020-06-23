@@ -137,7 +137,7 @@ public class SubCommandDump
 
         dumpProviders.put("activities",                 (ctx) -> ActivityDump.getFormattedDump(ctx.format));
         dumpProviders.put("advancements-simple",        (ctx) -> AdvancementDump.getFormattedAdvancementDumpSimple(ctx.format, ctx.server));
-        dumpProviders.put("biome-provider-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BIOME_SOURCE_TYPE));
+        dumpProviders.put("biome-source-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BIOME_SOURCE_TYPE));
         dumpProviders.put("biomes-basic",               (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.BASIC));
         dumpProviders.put("biomes-with-colors",         (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.COLORS));
         dumpProviders.put("biomes-with-feature-valid",  (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.VALIDITY));
@@ -159,7 +159,8 @@ public class SubCommandDump
         dumpProviders.put("enchantments",               (ctx) -> EnchantmentDump.getFormattedEnchantmentDump(ctx.format));
         dumpProviders.put("entities",                   (ctx) -> EntityDump.getFormattedEntityDump(null, ctx.format, false));
         dumpProviders.put("entities-with-class",        (ctx) -> EntityDump.getFormattedEntityDump(ctx.world, ctx.format, true));
-        dumpProviders.put("features",                   (ctx) -> FeatureDump.getFormattedDump(ctx.format));
+        dumpProviders.put("features",                   (ctx) -> FeatureDump.getFormattedDump(ctx.format, false));
+        dumpProviders.put("features-with-spawns",       (ctx) -> FeatureDump.getFormattedDump(ctx.format, true));
         dumpProviders.put("fluids",                     (ctx) -> FluidRegistryDump.getFormattedFluidRegistryDump(ctx.format));
         dumpProviders.put("food-items",                 (ctx) -> FoodItemDump.getFormattedFoodItemDump(ctx.format));
         dumpProviders.put("items",                      (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_BASIC));
@@ -185,6 +186,8 @@ public class SubCommandDump
         dumpProviders.put("spawn-eggs",                 (ctx) -> SpawnEggDump.getFormattedSpawnEggDump(ctx.format));
         dumpProviders.put("stat-types",                 (ctx) -> StatTypesDump.getFormattedDump(ctx.format));
         dumpProviders.put("status-effects",             (ctx) -> StatusEffectDump.getFormattedPotionDump(ctx.format));
+        dumpProviders.put("structure-features",         (ctx) -> StructureFeatureDump.getFormattedDump(ctx.format, false));
+        dumpProviders.put("structure-features-with-spawns", (ctx) -> StructureFeatureDump.getFormattedDump(ctx.format, true));
         dumpProviders.put("structure-pieces",           (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PIECE));
         dumpProviders.put("structure-pool-element",     (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_POOL_ELEMENT));
         dumpProviders.put("structure-processor-types",  (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PROCESSOR));
