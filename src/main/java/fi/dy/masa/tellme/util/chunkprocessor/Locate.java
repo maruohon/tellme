@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.tileentity.TileEntity;
@@ -22,15 +22,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
 
 public class Locate extends ChunkProcessorAllChunks
 {
@@ -65,27 +66,22 @@ public class Locate extends ChunkProcessorAllChunks
         return this;
     }
 
-    public LocateType getLocateType()
-    {
-        return this.locateType;
-    }
-
     private Set<BlockState> generateBlockStateFilters()
     {
         Set<BlockState> filters = Sets.newIdentityHashSet();
-        ResourceLocation air = new ResourceLocation("minecraft:air");
 
         for (String str : this.filters)
         {
             int index = str.indexOf('[');
             String name = index > 0 ? str.substring(0, index) : str;
             ResourceLocation key = new ResourceLocation(name);
-            Block block = ForgeRegistries.BLOCKS.getValue(key);
+            @SuppressWarnings("deprecation")
+            Optional<Block> block = Registry.BLOCK.getValue(key);
 
-            if (block != null && (block != Blocks.AIR || key.equals(air)))
+            if (block.isPresent())
             {
                 // First get all valid states for this block
-                Collection<BlockState> states = block.getStateContainer().getValidStates();
+                Collection<BlockState> states = block.get().getStateContainer().getValidStates();
                 // Then get the list of properties and their values in the given name (if any)
                 List<Pair<String, String>> props = BlockInfo.getProperties(str);
 
@@ -98,10 +94,7 @@ public class Locate extends ChunkProcessorAllChunks
                     }
                 }
 
-                for (BlockState state : states)
-                {
-                    filters.add(state);
-                }
+                filters.addAll(states);
             }
             else
             {
@@ -121,15 +114,12 @@ public class Locate extends ChunkProcessorAllChunks
             try
             {
                 ResourceLocation key = new ResourceLocation(name);
+                @SuppressWarnings("deprecation")
+                Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getValue(key);
 
-                if (ForgeRegistries.ENTITIES.containsKey(key))
+                if (type.isPresent())
                 {
-                    EntityType<?> type = ForgeRegistries.ENTITIES.getValue(key);
-
-                    if (type != null)
-                    {
-                        set.add(type);
-                    }
+                    set.add(type.get());
                 }
             }
             catch (Exception e)
@@ -149,12 +139,10 @@ public class Locate extends ChunkProcessorAllChunks
         {
             try
             {
-                TileEntityType<?> type = ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(name));
-
-                if (type != null)
-                {
-                    set.add(type);
-                }
+                ResourceLocation key = new ResourceLocation(name);
+                @SuppressWarnings("deprecation")
+                Optional<TileEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getValue(key);
+                type.ifPresent(set::add);
             }
             catch (Exception e)
             {
@@ -185,7 +173,7 @@ public class Locate extends ChunkProcessorAllChunks
 
     private void locateBlocks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, Set<BlockState> filters)
     {
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
@@ -305,7 +293,7 @@ public class Locate extends ChunkProcessorAllChunks
                 if (filters.contains(type) && box.isVecInside(pos))
                 {
                     String name = BlockInfo.getBlockEntityNameFor(type);
-                    this.data.add(LocationData.of(name.toString(), dim, new Vec3d(pos)));
+                    this.data.add(LocationData.of(name, dim, new Vec3d(pos)));
                     count++;
                 }
             }
@@ -327,9 +315,8 @@ public class Locate extends ChunkProcessorAllChunks
 
         DataDump dump = new DataDump(columnCount, this.format);
 
-        for (int i = 0; i < this.data.size(); i++)
+        for (LocationData entry : this.data)
         {
-            LocationData entry = this.data.get(i);
             this.addLine(dump, entry, this.printDimension, this.format);
         }
 
@@ -393,20 +380,17 @@ public class Locate extends ChunkProcessorAllChunks
             String fmtChunk = format == Format.ASCII ? FMT_CHUNK_5 : FMT_CHUNK;
             String fmtPos = format == Format.ASCII ? FMT_COORDS_8 : FMT_COORDS;
 
+            String strPos = String.format(fmtPos, pos.x, pos.y, pos.z);
+            String strRegion = String.format(fmtRegion, rx, rz);
+            String strChunk = String.format(fmtChunk, cx, cz);
+
             if (addDimension)
             {
-                dump.addData(data.name,
-                             data.dimension,
-                             String.format(fmtRegion, rx, rz),
-                             String.format(fmtChunk, cx, cz),
-                             String.format(fmtPos, pos.x, pos.y, pos.z));
+                dump.addData(data.name, data.dimension, strRegion, strChunk, strPos);
             }
             else
             {
-                dump.addData(data.name,
-                             String.format(fmtRegion, rx, rz),
-                             String.format(fmtChunk, cx, cz),
-                             String.format(fmtPos, pos.x, pos.y, pos.z));
+                dump.addData(data.name, strRegion, strChunk, strPos);
             }
         }
     }
