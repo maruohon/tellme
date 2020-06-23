@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
@@ -72,19 +72,18 @@ public class Locate extends ChunkProcessorAllChunks
     private Set<BlockState> generateBlockStateFilters()
     {
         Set<BlockState> filters = Sets.newIdentityHashSet();
-        Identifier air = new Identifier("minecraft:air");
 
         for (String str : this.filters)
         {
             int index = str.indexOf('[');
             String name = index > 0 ? str.substring(0, index) : str;
             Identifier key = new Identifier(name);
-            Block block = Registry.BLOCK.get(key);
+            Optional<Block> block = Registry.BLOCK.getOrEmpty(key);
 
-            if (block != null && (block != Blocks.AIR || key.equals(air)))
+            if (block.isPresent())
             {
                 // First get all valid states for this block
-                Collection<BlockState> states = block.getStateFactory().getStates();
+                Collection<BlockState> states = block.get().getStateFactory().getStates();
                 // Then get the list of properties and their values in the given name (if any)
                 List<Pair<String, String>> props = BlockInfo.getProperties(str);
 
@@ -117,15 +116,11 @@ public class Locate extends ChunkProcessorAllChunks
             try
             {
                 Identifier key = new Identifier(name);
+                Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(key);
 
-                if (Registry.ENTITY_TYPE.containsId(key))
+                if (type.isPresent())
                 {
-                    EntityType<?> type = Registry.ENTITY_TYPE.get(key);
-
-                    if (type != null)
-                    {
-                        set.add(type);
-                    }
+                    set.add(type.get());
                 }
             }
             catch (Exception e)
@@ -145,11 +140,12 @@ public class Locate extends ChunkProcessorAllChunks
         {
             try
             {
-                BlockEntityType<?> type = Registry.BLOCK_ENTITY.get(new Identifier(name));
+                Identifier key = new Identifier(name);
+                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY.getOrEmpty(key);
 
-                if (type != null)
+                if (type.isPresent())
                 {
-                    set.add(type);
+                    set.add(type.get());
                 }
             }
             catch (Exception e)
@@ -181,7 +177,7 @@ public class Locate extends ChunkProcessorAllChunks
 
     private void locateBlocks(Collection<WorldChunk> chunks, BlockPos posMin, BlockPos posMax, Set<BlockState> filters)
     {
-        BlockPos.Mutable pos = new BlockPos.Mutable(0, 0, 0);
+        BlockPos.Mutable pos = new BlockPos.Mutable();
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
@@ -389,20 +385,17 @@ public class Locate extends ChunkProcessorAllChunks
             String fmtChunk = format == Format.ASCII ? FMT_CHUNK_5 : FMT_CHUNK;
             String fmtPos = format == Format.ASCII ? FMT_COORDS_8 : FMT_COORDS;
 
+            String strPos = String.format(fmtPos, pos.x, pos.y, pos.z);
+            String strRegion = String.format(fmtRegion, rx, rz);
+            String strChunk = String.format(fmtChunk, cx, cz);
+
             if (addDimension)
             {
-                dump.addData(data.name,
-                             data.dimension,
-                             String.format(fmtRegion, rx, rz),
-                             String.format(fmtChunk, cx, cz),
-                             String.format(fmtPos, pos.x, pos.y, pos.z));
+                dump.addData(data.name, data.dimension, strRegion, strChunk, strPos);
             }
             else
             {
-                dump.addData(data.name,
-                             String.format(fmtRegion, rx, rz),
-                             String.format(fmtChunk, cx, cz),
-                             String.format(fmtPos, pos.x, pos.y, pos.z));
+                dump.addData(data.name, strRegion, strChunk, strPos);
             }
         }
     }
