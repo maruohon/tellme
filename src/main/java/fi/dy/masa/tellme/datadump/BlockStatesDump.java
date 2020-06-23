@@ -51,7 +51,7 @@ public class BlockStatesDump
             Block block = Registry.BLOCK.get(id);
             String regName = id.toString();
 
-            ImmutableList<BlockState> validStates = block.getStateFactory().getStates();
+            ImmutableList<BlockState> validStates = block.getStateManager().getStates();
 
             for (BlockState state : validStates)
             {

@@ -18,9 +18,9 @@ public class TileEntityDump
 
         try
         {
-            for (Identifier id : Registry.BLOCK_ENTITY.getIds())
+            for (Identifier id : Registry.BLOCK_ENTITY_TYPE.getIds())
             {
-                BlockEntityType<?> type = Registry.BLOCK_ENTITY.get(id);
+                BlockEntityType<?> type = Registry.BLOCK_ENTITY_TYPE.get(id);
                 BlockEntity be = type.instantiate();
                 Class <? extends BlockEntity> clazz = be.getClass();
                 tileEntityDump.addData(id.toString(), clazz.getName(), Tickable.class.isAssignableFrom(clazz) ? "yes" : "-");

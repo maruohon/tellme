@@ -122,7 +122,7 @@ public class EntityInfo
             for (PlayerEntity player : server.getPlayerManager().getPlayerList())
             {
                 String name = player.getName().getString();
-                String dim = Registry.DIMENSION.getId(player.getEntityWorld().dimension.getType()).toString();
+                String dim = Registry.DIMENSION_TYPE.getId(player.getEntityWorld().dimension.getType()).toString();
                 String health = String.format("%.2f", player.getHealth());
                 BlockPos pos = new BlockPos(player);
                 int x = pos.getX();

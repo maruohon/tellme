@@ -38,9 +38,9 @@ public class EntitiesLister extends ChunkProcessorBase
 
             for (Entity entity : map)
             {
-                double x = entity.x;
-                double y = entity.y;
-                double z = entity.z;
+                double x = entity.getX();
+                double y = entity.getY();
+                double z = entity.getZ();
                 int ix = (int) Math.floor(x);
                 int iz = (int) Math.floor(z);
 

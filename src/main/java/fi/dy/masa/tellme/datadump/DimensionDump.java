@@ -24,9 +24,9 @@ public class DimensionDump
         {
             World overworld = server.getWorld(DimensionType.OVERWORLD);
 
-            for (DimensionType dim : Registry.DIMENSION)
+            for (DimensionType dim : Registry.DIMENSION_TYPE)
             {
-                String dimId = Registry.DIMENSION.getId(dim).toString();
+                String dimId = Registry.DIMENSION_TYPE.getId(dim).toString();
                 String typeId = String.valueOf(dim.getRawId());
                 String hasSkylight = String.valueOf(dim.hasSkyLight());
 
@@ -67,9 +67,9 @@ public class DimensionDump
 
         if (server != null)
         {
-            for (DimensionType dim : Registry.DIMENSION)
+            for (DimensionType dim : Registry.DIMENSION_TYPE)
             {
-                String dimId = Registry.DIMENSION.getId(dim).toString();
+                String dimId = Registry.DIMENSION_TYPE.getId(dim).toString();
                 String typeId = String.valueOf(dim.getRawId());
 
                 ServerWorld world = server.getWorld(dim);

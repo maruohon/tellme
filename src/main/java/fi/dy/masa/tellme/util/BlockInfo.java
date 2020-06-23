@@ -92,7 +92,7 @@ public class BlockInfo
 
     public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, Property<T> prop, String valueStr)
     {
-        Optional<T> value = prop.getValue(valueStr);
+        Optional<T> value = prop.parse(valueStr);
 
         if (value.isPresent())
         {
@@ -108,11 +108,11 @@ public class BlockInfo
 
         for (BlockState state : initialStates)
         {
-            Property<?> prop = state.getBlock().getStateFactory().getProperty(propName);
+            Property<?> prop = state.getBlock().getStateManager().getProperty(propName);
 
             if (prop != null)
             {
-                Optional<?> value = prop.getValue(propValue);
+                Optional<?> value = prop.parse(propValue);
 
                 if (value.isPresent() && state.get(prop).equals(value.get()))
                 {
@@ -290,7 +290,7 @@ public class BlockInfo
 
         private <T extends Comparable<T>> String valueToString(Property<T> property, Object value)
         {
-            return property.getName((T) value);
+            return property.name((T) value);
         }
     };
 

@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCategory;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -97,7 +98,7 @@ public class BiomeDump
 
         String name = TellMe.dataProvider.getBiomeName(biome);
         String regName = Registry.BIOME.getId(biome).toString();
-        String validFor = getValidForString(biome, world.getChunkManager().getChunkGenerator().getBiomeSource());
+        String validFor = world instanceof ServerWorld ? getValidForString(biome, ((ServerWorld) world).getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
         String snowing = biome.canSetSnow(world, pos) ? pre + "true" : Formatting.RED.toString() + "false";
         Text textPre = new LiteralText("Name: ")
                                .append(new LiteralText(name).formatted(green))
@@ -346,7 +347,7 @@ public class BiomeDump
             String intId = String.valueOf(Registry.BIOME.getRawId(biome));
             String regName = id.toString();
             String name = TellMe.dataProvider.getBiomeName(biome);
-            String validFor = ctx.world != null ? getValidForString(biome, ctx.world.getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
+            String validFor = ctx.world instanceof ServerWorld ? getValidForString(biome, ((ServerWorld) ctx.world).getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
 
             dump.addData(intId, regName, name, validFor);
         }

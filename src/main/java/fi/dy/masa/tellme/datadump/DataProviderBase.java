@@ -44,7 +44,7 @@ public class DataProviderBase
     @Nullable
     public Collection<Advancement> getAdvancements(MinecraftServer server)
     {
-        return server != null ? server.getAdvancementManager().getAdvancements() : null;
+        return server != null ? server.getAdvancementLoader().getAdvancements() : null;
     }
 
     public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
@@ -53,7 +53,7 @@ public class DataProviderBase
 
     public World getWorld(@Nullable MinecraftServer server, DimensionType dimensionType) throws CommandSyntaxException
     {
-        String name = Registry.DIMENSION.getId(dimensionType).toString();
+        String name = Registry.DIMENSION_TYPE.getId(dimensionType).toString();
 
         if (server == null)
         {
@@ -93,7 +93,7 @@ public class DataProviderBase
 
             try
             {
-                Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) serverWorld.method_14178().threadedAnvilChunkStorage).getChunkHolders();
+                Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) serverWorld.getChunkManager().threadedAnvilChunkStorage).getChunkHolders();
 
                 for (ChunkHolder holder : chunkHolders.values())
                 {

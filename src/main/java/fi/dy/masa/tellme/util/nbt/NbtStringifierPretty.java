@@ -63,7 +63,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
     @Override
     protected void appendPrimitive(String tagName, Tag tag)
     {
-        String tagType = Tag.idToString(tag.getType());
+        String tagType = tag.getReader().getCommandFeedbackName();
         String value = this.getFormattedPrimitiveString(tag);
         String name = this.getFormattedTagName(tagName);
 
@@ -76,7 +76,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
         List<String> keys = Lists.newArrayList(compound.getKeys());
         Collections.sort(keys);
 
-        String tagType = Tag.idToString(compound.getType());
+        String tagType = compound.getReader().getCommandFeedbackName();
         String name = this.getFormattedTagName(tagName);
         this.addIndentedLine(String.format("[%s (%d values)] %s", tagType, keys.size(), name));
 
@@ -85,7 +85,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
         for (String key : keys)
         {
-            Tag tag = compound.getTag(key);
+            Tag tag = compound.get(key);
             this.appendTag(key, tag);
         }
 
@@ -98,9 +98,8 @@ public class NbtStringifierPretty extends NbtStringifierBase
     {
         final int size = list.size();
 
-        String tagType = Tag.idToString(list.getType());
-        int containedId = list.getListType();
-        String containedTypeName = containedId > 0 ? Tag.idToString(containedId) : "?";
+        String tagType = list.getReader().getCommandFeedbackName();
+        String containedTypeName = size > 0 ? list.get(0).getReader().getCommandFeedbackName() : "?";
         String name = this.getFormattedTagName(tagName);
         this.addIndentedLine(String.format("[%s (%d values of type %s)] %s", tagType, size, containedTypeName, name));
 
@@ -117,9 +116,8 @@ public class NbtStringifierPretty extends NbtStringifierBase
         this.addIndentedLine("]");
     }
 
-    protected void appendNumericArrayStart(String tagName, int tagId, int arraySize)
+    protected void appendNumericArrayStart(String tagName, String tagType, int arraySize)
     {
-        String tagType = Tag.idToString(tagId);
         String name = this.getFormattedTagName(tagName);
         this.addIndentedLine(String.format("[%s (%d entries)] %s", tagType, arraySize, name));
 
@@ -134,7 +132,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
         String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(tagId) : null;
         final int size = arr.length;
 
-        this.appendNumericArrayStart(tagName, tagId, size);
+        this.appendNumericArrayStart(tagName, "TAG_Byte_Array", size);
         this.setIndentationLevel(this.indentationLevel + 1);
 
         // For short arrays, print one value per line, it is easier to read
@@ -187,7 +185,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
         String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(tagId) : null;
         final int size = arr.length;
 
-        this.appendNumericArrayStart(tagName, tagId, size);
+        this.appendNumericArrayStart(tagName, "TAG_Int_Array", size);
         this.setIndentationLevel(this.indentationLevel + 1);
 
         // For short arrays, print one value per line, it is easier to read
@@ -240,7 +238,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
         String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(tagId) : null;
         final int size = arr.length;
 
-        this.appendNumericArrayStart(tagName, tagId, size);
+        this.appendNumericArrayStart(tagName, "TAG_Long_Array", size);
         this.setIndentationLevel(this.indentationLevel + 1);
 
         // For short arrays, print one value per line, it is easier to read

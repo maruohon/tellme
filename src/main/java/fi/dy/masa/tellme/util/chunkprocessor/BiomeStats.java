@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.source.BiomeSource;
+import net.minecraft.world.biome.source.BiomeAccess;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.BiomeLocator;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -27,38 +27,26 @@ public class BiomeStats
         this.append = append;
     }
 
-    public void getFullBiomeDistribution(BiomeSource biomeProvider, BlockPos posMin, BlockPos posMax)
+    public void getFullBiomeDistribution(BiomeAccess biomeAccess, BlockPos posMin, BlockPos posMax)
     {
         Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<>();
+        BlockPos.Mutable posMutable = new BlockPos.Mutable();
         final long timeBefore = System.nanoTime();
-        final int chunkMinX = posMin.getX() >> 4;
-        final int chunkMinZ = posMin.getZ() >> 4;
-        final int chunkMaxX = posMax.getX() >> 4;
-        final int chunkMaxZ = posMax.getZ() >> 4;
-        long count = 0;
+        final int xMin = posMin.getX();
+        final int zMin = posMin.getZ();
+        final int xMax = posMax.getX();
+        final int zMax = posMax.getZ();
+        final int width = xMax - xMin + 1;
+        final int length = zMax - zMin + 1;
+        final long count = width * length;
 
-        for (int chunkZ = chunkMinZ; chunkZ <= chunkMaxZ; chunkZ++)
+        for (int x = xMin; x <= xMax; ++x)
         {
-            for (int chunkX = chunkMinX; chunkX <= chunkMaxX; chunkX++)
+            for (int z = zMin; z <= zMax; ++z)
             {
-                final int xMin = Math.max(chunkX << 4, posMin.getX());
-                final int zMin = Math.max(chunkZ << 4, posMin.getZ());
-                final int xMax = Math.min((chunkX << 4) + 15, posMax.getX());
-                final int zMax = Math.min((chunkZ << 4) + 15, posMax.getZ());
-                final int width = xMax - xMin + 1;
-                final int length = zMax - zMin + 1;
-
-                Biome[] biomes = biomeProvider.sampleBiomes(xMin, zMin, width, length, false);
-
-                for (int x = 0; x < width; x++)
-                {
-                    for (int z = 0; z < length; z++)
-                    {
-                        counts.addTo(biomes[x * length + z], 1);
-                    }
-                }
-
-                count += width * length;
+                posMutable.set(x, 0, z);
+                Biome biome = biomeAccess.getBiome(posMutable);
+                counts.addTo(biome, 1);
             }
         }
 
@@ -68,9 +56,10 @@ public class BiomeStats
         this.addData(counts, count);
     }
 
-    public void getSampledBiomeDistribution(BiomeSource biomeProvider, int centerX, int centerZ, int sampleInterval, int sampleRadius)
+    public void getSampledBiomeDistribution(BiomeAccess biomeAccess, int centerX, int centerZ, int sampleInterval, int sampleRadius)
     {
         Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<>();
+        BlockPos.Mutable posMutable = new BlockPos.Mutable();
         final long timeBefore = System.nanoTime();
         final int endX = centerX + sampleRadius * sampleInterval;
         final int endZ = centerZ + sampleRadius * sampleInterval;
@@ -80,8 +69,9 @@ public class BiomeStats
         {
             for (int x = centerX - sampleRadius * sampleInterval; x <= endX; x += sampleInterval)
             {
-                Biome[] biomes = biomeProvider.sampleBiomes(x, z, 1, 1, false);
-                counts.addTo(biomes[0], 1);
+                posMutable.set(x, 0, z);
+                Biome biome = biomeAccess.getBiome(posMutable);
+                counts.addTo(biome, 1);
                 ++count;
             }
         }

@@ -17,10 +17,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilterableList;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MutableIntBoundingBox;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.WorldChunk;
@@ -83,7 +83,7 @@ public class Locate extends ChunkProcessorAllChunks
             if (block.isPresent())
             {
                 // First get all valid states for this block
-                Collection<BlockState> states = block.get().getStateFactory().getStates();
+                Collection<BlockState> states = block.get().getStateManager().getStates();
                 // Then get the list of properties and their values in the given name (if any)
                 List<Pair<String, String>> props = BlockInfo.getProperties(str);
 
@@ -141,7 +141,7 @@ public class Locate extends ChunkProcessorAllChunks
             try
             {
                 Identifier key = new Identifier(name);
-                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY.getOrEmpty(key);
+                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOrEmpty(key);
 
                 if (type.isPresent())
                 {
@@ -286,7 +286,7 @@ public class Locate extends ChunkProcessorAllChunks
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
-            MutableIntBoundingBox box = MutableIntBoundingBox.create(xMin, yMin, zMin, xMax, yMax, zMax);
+            BlockBox box = BlockBox.create(xMin, yMin, zMin, xMax, yMax, zMax);
 
             for (BlockEntity te : chunk.getBlockEntities().values())
             {
@@ -423,7 +423,7 @@ public class Locate extends ChunkProcessorAllChunks
     {
         BLOCK       ("block",       "blocks",           () -> Registry.BLOCK),
         ENTITY      ("entity",      "entities",         () -> Registry.ENTITY_TYPE),
-        TILE_ENTITY ("tile-entity", "tile_entities",    () -> Registry.BLOCK_ENTITY);
+        TILE_ENTITY ("tile-entity", "tile_entities",    () -> Registry.BLOCK_ENTITY_TYPE);
 
         private final String argument;
         private final String plural;

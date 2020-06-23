@@ -63,7 +63,7 @@ public class DataProviderClient extends DataProviderBase
             return mc.world;
         }
 
-        throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(Registry.DIMENSION.getId(dimensionType).toString());
+        throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(Registry.DIMENSION_TYPE.getId(dimensionType).toString());
     }
 
     @Override
@@ -79,7 +79,7 @@ public class DataProviderClient extends DataProviderBase
         if (world instanceof ClientWorld && mc.player != null)
         {
             ArrayList<WorldChunk> list = new ArrayList<>();
-            ClientChunkManager chunkManager = ((ClientWorld) world).method_2935();
+            ClientChunkManager chunkManager = ((ClientWorld) world).getChunkManager();
             Vec3d vec = mc.player.getPos();
             ChunkPos center = new ChunkPos(MathHelper.floor(vec.x) >> 4, MathHelper.floor(vec.z) >> 4);
             final int renderDistance = mc.options.viewDistance;
@@ -88,7 +88,7 @@ public class DataProviderClient extends DataProviderBase
             {
                 for (int chunkX = center.x - renderDistance; chunkX <= center.x + renderDistance; ++chunkX)
                 {
-                    WorldChunk chunk = chunkManager.method_2857(chunkX, chunkZ, ChunkStatus.FULL, false);
+                    WorldChunk chunk = chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
 
                     if (chunk != null)
                     {
@@ -112,7 +112,7 @@ public class DataProviderClient extends DataProviderBase
         if (mc.isIntegratedServerRunning() && mc.player != null)
         {
             server = mc.getServer();
-            return server != null ? server.getAdvancementManager().getAdvancements() : null;
+            return server != null ? server.getAdvancementLoader().getAdvancements() : null;
         }
         else
         {
@@ -129,23 +129,23 @@ public class DataProviderClient extends DataProviderBase
         String rst = Formatting.RESET.toString() + Formatting.WHITE.toString();
 
         // These are client-side only:
-        int color = biome.getGrassColorAt(pos);
+        int color = this.getGrassColor(biome, pos);
         entity.sendMessage(new LiteralText(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
 
-        color = biome.getFoliageColorAt(pos);
+        color = this.getFoliageColor(biome, pos);
         entity.sendMessage(new LiteralText(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
     }
 
     @Override
     public int getFoliageColor(Biome biome, BlockPos pos)
     {
-        return biome.getFoliageColorAt(pos);
+        return biome.getFoliageColor();
     }
 
     @Override
     public int getGrassColor(Biome biome, BlockPos pos)
     {
-        return biome.getGrassColorAt(pos);
+        return biome.getGrassColorAt(pos.getX(), pos.getZ());
     }
 
     @Override

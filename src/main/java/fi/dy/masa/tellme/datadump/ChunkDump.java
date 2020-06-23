@@ -24,7 +24,6 @@ public class ChunkDump
         return getFormattedChunkDump(format, server, dimension, null, null);
     }
 
-    @SuppressWarnings("deprecation")
     public static List<String> getFormattedChunkDump(Format format, @Nullable MinecraftServer server, @Nullable DimensionType dimension, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
     {
         DataDump chunkDump = new DataDump(4, format);
@@ -39,7 +38,7 @@ public class ChunkDump
             }
             else
             {
-                for (DimensionType dim : Registry.DIMENSION)
+                for (DimensionType dim : Registry.DIMENSION_TYPE)
                 {
                     dims.add(dim);
                 }
@@ -57,7 +56,7 @@ public class ChunkDump
 
                 if (world != null)
                 {
-                    String dimId = Registry.DIMENSION.getId(dim).toString();
+                    String dimId = Registry.DIMENSION_TYPE.getId(dim).toString();
                     Collection<WorldChunk> chunks = TellMe.dataProvider.getLoadedChunks(world);
 
                     for (WorldChunk chunk : chunks)

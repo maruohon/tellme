@@ -20,7 +20,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.source.BiomeSource;
+import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
@@ -112,7 +112,7 @@ public class SubCommandBiomeLocate
     private static int search(ServerCommandSource source, boolean append, int sampleInterval, int sampleRadius) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
-        Vec2f center = entity != null ? new Vec2f((float) entity.x, (float) entity.z) : Vec2f.ZERO;
+        Vec2f center = entity != null ? new Vec2f((float) entity.getX(), (float) entity.getZ()) : Vec2f.ZERO;
         return search(source, append, sampleInterval, sampleRadius, center);
     }
 
@@ -133,12 +133,12 @@ public class SubCommandBiomeLocate
         Entity entity = source.getEntity();
         BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
         World world = TellMe.dataProvider.getWorld(source.getMinecraftServer(), dimension);
-        BiomeSource biomeProvider = world.getChunkManager().getChunkGenerator().getBiomeSource();
+        BiomeAccess biomeAccess = world.getBiomeAccess();
 
         CommandUtils.sendMessage(source, "Finding closest biome locations...");
 
         biomeLocator.setAppend(append);
-        biomeLocator.findClosestBiomePositions(biomeProvider, new BlockPos(center.x, 0, center.y), sampleInterval, sampleRadius);
+        biomeLocator.findClosestBiomePositions(biomeAccess, new BlockPos(center.x, 0, center.y), sampleInterval, sampleRadius);
 
         CommandUtils.sendMessage(source, "Done");
 
