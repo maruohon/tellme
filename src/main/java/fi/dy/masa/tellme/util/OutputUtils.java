@@ -18,17 +18,18 @@ public class OutputUtils
 {
     public static Text getClipboardCopiableMessage(String textPre, String textToCopy, String textPost)
     {
-        LiteralText componentCopy = new LiteralText(textToCopy);
-        componentCopy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + textToCopy));
-        componentCopy.getStyle().setUnderline(Boolean.TRUE);
+        return getClipboardCopiableMessage(new LiteralText(textPre), new LiteralText(textToCopy), new LiteralText(textPost));
+    }
 
-        LiteralText hoverText = new LiteralText(String.format("Copy the string '%s' to clipboard", textToCopy));
-        componentCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+    public static Text getClipboardCopiableMessage(Text textPre, Text textToCopy, Text textPost)
+    {
+        textToCopy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + textToCopy.getString()));
+        textToCopy.getStyle().setUnderline(Boolean.TRUE);
 
-        LiteralText full = new LiteralText(textPre);
-        full.append(componentCopy).append(textPost);
+        LiteralText hoverText = new LiteralText(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
+        textToCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
-        return full;
+        return textPre.append(textToCopy).append(textPost);
     }
 
     public static void sendClickableLinkMessage(Entity entity, String messageKey, File file)

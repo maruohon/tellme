@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCategory;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -90,33 +91,42 @@ public class BiomeDump
         BlockPos pos = entity.getBlockPos();
         Biome biome = world.getBiome(pos);
 
-        int intId = Registry.BIOME.getRawId(biome);
+        String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+        Formatting green = Formatting.GREEN;
         String pre = Formatting.GREEN.toString();
-        String preAqua = Formatting.AQUA.toString();
-        String rst = Formatting.RESET.toString() + Formatting.WHITE.toString();
 
         String name = TellMe.dataProvider.getBiomeName(biome);
         String regName = Registry.BIOME.getId(biome).toString();
         String validFor = getValidForString(biome, world.getChunkManager().getChunkGenerator().getBiomeSource());
         String snowing = biome.canSetSnow(world, pos) ? pre + "true" : Formatting.RED.toString() + "false";
-        String textPre = String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s", pre, name, rst, pre, intId, rst, pre);
+        Text textPre = new LiteralText("Name: ")
+                               .append(new LiteralText(name).formatted(green))
+                               .append(" - ID: ")
+                               .append(new LiteralText(intId).formatted(green))
+                               .append(" - Registry name: ");
         Biome.Precipitation rainType = biome.getPrecipitation();
         int waterColor = biome.getWaterColor();
 
         entity.sendMessage(new LiteralText("------------- Current biome info ------------"));
-        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, rst));
-        entity.sendMessage(new LiteralText(String.format("RainType: %s%s%s, downfall: %s%f%s, snows: %s%s",
-                                                         pre, rainType.getName(), rst, pre, biome.getRainfall(), rst, snowing, rst)));
+        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, new LiteralText(regName).formatted(green), new LiteralText("")));
+        entity.sendMessage(new LiteralText("RainType: ")
+                                   .append(new LiteralText(rainType.getName()).formatted(green))
+                                   .append(", downfall: ")
+                                   .append(new LiteralText(String.valueOf(biome.getRainfall())).formatted(green))
+                                   .append(", snows: ")
+                                   .append(new LiteralText(snowing).formatted(green)));
 
         if (StringUtils.isBlank(validFor) == false)
         {
-            entity.sendMessage(new LiteralText(String.format("Valid for: %s%s%s", preAqua, validFor, rst)));
+            entity.sendMessage(new LiteralText("Valid for: ").append(new LiteralText(validFor).formatted(Formatting.AQUA)));
         }
 
-        entity.sendMessage(new LiteralText(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
-                                                         pre, waterColor, waterColor, rst)));
-        entity.sendMessage(new LiteralText(String.format("temperature: %s%f%s, temp. category: %s%s%s",
-                                                         pre, biome.getTemperature(pos), rst, pre, biome.getTemperatureGroup(), rst)));
+        entity.sendMessage(new LiteralText("waterColorMultiplier: ")
+                                   .append(new LiteralText(String.format("0x%08X (%d)", waterColor, waterColor)).formatted(green)));
+        entity.sendMessage(new LiteralText("temperature: ")
+                .append(new LiteralText(String.valueOf(biome.getTemperature())).formatted(green))
+                .append(", temp. category: ")
+                .append(new LiteralText(biome.getTemperatureGroup().toString()).formatted(green)));
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
