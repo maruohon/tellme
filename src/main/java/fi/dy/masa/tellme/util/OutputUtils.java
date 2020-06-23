@@ -18,17 +18,18 @@ public class OutputUtils
 {
     public static ITextComponent getClipboardCopiableMessage(String textPre, String textToCopy, String textPost)
     {
-        StringTextComponent componentCopy = new StringTextComponent(textToCopy);
-        componentCopy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + textToCopy));
-        componentCopy.getStyle().setUnderlined(Boolean.TRUE);
+        return getClipboardCopiableMessage(new StringTextComponent(textPre), new StringTextComponent(textToCopy), new StringTextComponent(textPost));
+    }
 
-        StringTextComponent hoverText = new StringTextComponent(String.format("Copy the string '%s' to clipboard", textToCopy));
-        componentCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+    public static ITextComponent getClipboardCopiableMessage(ITextComponent textPre, ITextComponent textToCopy, ITextComponent textPost)
+    {
+        textToCopy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + textToCopy.getString()));
+        textToCopy.getStyle().setUnderlined(Boolean.TRUE);
 
-        StringTextComponent full = new StringTextComponent(textPre);
-        full.appendSibling(componentCopy).appendText(textPost);
+        StringTextComponent hoverText = new StringTextComponent(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
+        textToCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
-        return full;
+        return textPre.appendSibling(textToCopy).appendSibling(textPost);
     }
 
     public static void sendClickableLinkMessage(Entity entity, String messageKey, File file)
@@ -38,7 +39,7 @@ public class OutputUtils
         if (TellMe.isClient())
         {
             name.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
-            name.getStyle().setUnderlined(Boolean.valueOf(true));
+            name.getStyle().setUnderlined(Boolean.TRUE);
         }
 
         entity.sendMessage(new TranslationTextComponent(messageKey, name));

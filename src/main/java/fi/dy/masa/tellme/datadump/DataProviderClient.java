@@ -21,7 +21,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.INetHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -129,11 +128,11 @@ public class DataProviderClient extends DataProviderBase
         }
         else
         {
-            INetHandler nh = mc.getConnection();
+            ClientPlayNetHandler nh = mc.getConnection();
 
-            if (nh instanceof ClientPlayNetHandler)
+            if (nh != null)
             {
-                return ((ClientPlayNetHandler) nh).getAdvancementManager().getAdvancementList().getAll();
+                return nh.getAdvancementManager().getAdvancementList().getAll();
             }
         }
 
@@ -144,15 +143,16 @@ public class DataProviderClient extends DataProviderBase
     public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
     {
         BlockPos pos = entity.getPosition();
-        String pre = TextFormatting.GREEN.toString();
-        String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
+        TextFormatting green = TextFormatting.GREEN;
 
         // These are client-side only:
-        int color = biome.getGrassColor(pos);
-        entity.sendMessage(new StringTextComponent(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+        int color = this.getGrassColor(biome, pos);
+        entity.sendMessage(new StringTextComponent("Grass color: ")
+                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", color, color)).applyTextStyle(green)));
 
-        color = biome.getFoliageColor(pos);
-        entity.sendMessage(new StringTextComponent(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+        color = this.getFoliageColor(biome, pos);
+        entity.sendMessage(new StringTextComponent("Foliage color: ")
+                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", color, color)).applyTextStyle(green)));
     }
 
     @Override

@@ -14,6 +14,7 @@ import net.minecraft.entity.EntityClassification;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -102,43 +103,52 @@ public class BiomeDump
         Biome biome = world.getBiome(pos);
 
         @SuppressWarnings("deprecation")
-        int id = Registry.BIOME.getId(biome);
-        String green = TextFormatting.GREEN.toString();
-        String red = TextFormatting.RED.toString();
-        String preAqua = TextFormatting.AQUA.toString();
-        String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
+        String intId = String.valueOf(Registry.BIOME.getId(biome));
+        TextFormatting green = TextFormatting.GREEN;
+        TextFormatting red = TextFormatting.RED;
 
         String name = TellMe.dataProvider.getBiomeName(biome);
-        String regName = biome.getRegistryName().toString();
+        String regName = ForgeRegistries.BIOMES.getKey(biome).toString();
         String biomeTypes = getBiomeTypesForBiome(biome);
         String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
-        String temp = String.format("%5.2f", biome.getDefaultTemperature());
-        String tempCat = biome.getTempCategory().toString();
         boolean isOceanic = BiomeManager.oceanBiomes.contains(biome);
+        boolean snowing = biome.doesSnowGenerate(world, pos);
         String validFor = getValidForString(biome);
-        String snowing = biome.doesSnowGenerate(world, pos) ? green + "true" : red + "false";
-        String textPre = String.format("Name: %s%s%s - ID: %s%d%s - Registry name: %s", green, name, rst, green, id, rst, green);
+        ITextComponent textPre = new StringTextComponent("Name: ")
+                               .appendSibling(new StringTextComponent(name).applyTextStyle(green))
+                               .appendText(" - ID: ")
+                               .appendSibling(new StringTextComponent(intId).applyTextStyle(green))
+                               .appendText(" - Registry name: ");
         Biome.RainType rainType = biome.getPrecipitation();
-        String downfall = String.format("%.2f", biome.getDownfall());
         int waterColor = biome.getWaterColor();
 
         entity.sendMessage(new StringTextComponent("------------- Current biome info ------------"));
-        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, rst));
-        entity.sendMessage(new StringTextComponent(String.format("RainType: %s%s%s, downfall: %s%s%s, snows: %s%s",
-                                                         green, rainType.getName(), rst, green, downfall, rst, snowing, rst)));
-        entity.sendMessage(new StringTextComponent(String.format("BiomeType: %s%s%s", preAqua, biomeTypes, rst)));
-        entity.sendMessage(new StringTextComponent(String.format("BiomeDictionary.Type: %s%s%s", preAqua, biomeDictionaryTypes, rst)));
-        entity.sendMessage(new StringTextComponent(String.format("Oceanic: %s%s%s", isOceanic ? green : red, isOceanic, rst)));
+        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, new StringTextComponent(regName).applyTextStyle(green), new StringTextComponent("")));
+        entity.sendMessage(new StringTextComponent("RainType: ")
+                                   .appendSibling(new StringTextComponent(rainType.getName()).applyTextStyle(green))
+                                   .appendText(", Downfall: ")
+                                   .appendSibling(new StringTextComponent(String.valueOf(biome.getDownfall())).applyTextStyle(green))
+                                   .appendText(", Snows: ")
+                                   .appendSibling(new StringTextComponent(snowing ? "yes" : "no").applyTextStyle(snowing ? green : red))
+                                   .appendText(", Oceanic: ")
+                                   .appendSibling(new StringTextComponent(isOceanic ? "yes" : "no").applyTextStyle(isOceanic ? green : red)));
+
+        entity.sendMessage(new StringTextComponent("Temperature: ")
+                                   .appendSibling(new StringTextComponent(String.valueOf(biome.getTemperature(pos))).applyTextStyle(green))
+                                   .appendText(", Temp. category: ")
+                                   .appendSibling(new StringTextComponent(biome.getTempCategory().toString()).applyTextStyle(green)));
+        entity.sendMessage(new StringTextComponent("Biome types: ")
+                                   .appendSibling(new StringTextComponent(biomeTypes).applyTextStyle(green)));
+        entity.sendMessage(new StringTextComponent("Biome dictionary types: ")
+                                   .appendSibling(new StringTextComponent(biomeDictionaryTypes).applyTextStyle(green)));
 
         if (StringUtils.isBlank(validFor) == false)
         {
-            entity.sendMessage(new StringTextComponent(String.format("Valid for: %s%s%s", preAqua, validFor, rst)));
+            entity.sendMessage(new StringTextComponent("Valid for: ").appendSibling(new StringTextComponent(validFor).applyTextStyle(TextFormatting.AQUA)));
         }
 
-        entity.sendMessage(new StringTextComponent(String.format("waterColorMultiplier: %s0x%08X (%d)%s",
-                                                         green, waterColor, waterColor, rst)));
-        entity.sendMessage(new StringTextComponent(String.format("temperature: %s%s%s, temp. category: %s%s%s",
-                                                         green, temp, rst, green, tempCat, rst)));
+        entity.sendMessage(new StringTextComponent("Water Color Multiplier: ")
+                .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", waterColor, waterColor)).applyTextStyle(green)));
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
