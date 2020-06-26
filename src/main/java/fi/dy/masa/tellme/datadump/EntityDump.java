@@ -5,12 +5,13 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class EntityDump
 {
@@ -59,5 +60,27 @@ public class EntityDump
         }
 
         return entityDump.getLines();
+    }
+
+    public static List<String> getFormattedEntityAttributeDump(DataDump.Format format)
+    {
+        DataDump dump = new DataDump(4, format);
+
+        for (ResourceLocation id : ForgeRegistries.ATTRIBUTES.getKeys())
+        {
+            String idStr = id.toString();
+            Attribute attr = ForgeRegistries.ATTRIBUTES.getValue(id);
+            String translationKey = attr.func_233754_c_();
+            String defaultValue = String.valueOf(attr.getDefaultValue());
+            String tracked = String.valueOf(attr.getShouldWatch());
+
+            dump.addData(idStr, translationKey, defaultValue, tracked);
+        }
+
+        dump.addTitle("Registry name", "Translation key", "Default", "Tracked");
+        dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // default
+        dump.setColumnAlignment(3, DataDump.Alignment.RIGHT); // tracked
+
+        return dump.getLines();
     }
 }
