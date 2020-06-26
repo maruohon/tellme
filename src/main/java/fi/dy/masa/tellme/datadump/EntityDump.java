@@ -4,6 +4,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -55,5 +56,27 @@ public class EntityDump
         }
 
         return entityDump.getLines();
+    }
+
+    public static List<String> getFormattedEntityAttributeDump(DataDump.Format format)
+    {
+        DataDump dump = new DataDump(4, format);
+
+        for (Identifier id : Registry.ATTRIBUTE.getIds())
+        {
+            String idStr = id.toString();
+            EntityAttribute attr = Registry.ATTRIBUTE.get(id);
+            String translationKey = attr.getTranslationKey();
+            String defaultValue = String.valueOf(attr.getDefaultValue());
+            String tracked = String.valueOf(attr.isTracked());
+
+            dump.addData(idStr, translationKey, defaultValue, tracked);
+        }
+
+        dump.addTitle("Registry name", "Translation key", "Default", "Tracked");
+        dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // default
+        dump.setColumnAlignment(3, DataDump.Alignment.RIGHT); // tracked
+
+        return dump.getLines();
     }
 }
