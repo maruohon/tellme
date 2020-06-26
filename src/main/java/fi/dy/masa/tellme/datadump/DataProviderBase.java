@@ -9,12 +9,11 @@ import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.advancement.Advancement;
 import net.minecraft.client.color.world.FoliageColors;
 import net.minecraft.client.color.world.GrassColors;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -23,13 +22,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.mixin.IMixinThreadedAnvilChunkStorage;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -47,27 +43,8 @@ public class DataProviderBase
         return server != null ? server.getAdvancementLoader().getAdvancements() : null;
     }
 
-    public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
+    public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
     {
-    }
-
-    public World getWorld(@Nullable MinecraftServer server, DimensionType dimensionType) throws CommandSyntaxException
-    {
-        String name = Registry.DIMENSION_TYPE.getId(dimensionType).toString();
-
-        if (server == null)
-        {
-            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(name);
-        }
-
-        World world = server.getWorld(dimensionType);
-
-        if (world == null)
-        {
-            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(name);
-        }
-
-        return world;
     }
 
     public int getFoliageColor(Biome biome, BlockPos pos)
@@ -97,7 +74,7 @@ public class DataProviderBase
 
                 for (ChunkHolder holder : chunkHolders.values())
                 {
-                    Optional<WorldChunk> optional = holder.method_20725().getNow(ChunkHolder.UNLOADED_WORLD_CHUNK).left();
+                    Optional<WorldChunk> optional = holder.getBorderFuture().getNow(ChunkHolder.UNLOADED_WORLD_CHUNK).left();
 
                     if (optional.isPresent())
                     {
@@ -142,10 +119,6 @@ public class DataProviderBase
     }
 
     public void addItemGroupNames(JsonObject obj, Item item)
-    {
-    }
-
-    public void addMusicTypeData(DataDump dump)
     {
     }
 }

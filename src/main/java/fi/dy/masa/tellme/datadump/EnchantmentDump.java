@@ -21,10 +21,11 @@ public class EnchantmentDump
                 String regName = key.toString();
                 String name = ench.getTranslationKey() != null ? ench.getTranslationKey() : "<null>";
                 String type = ench.type != null ? ench.type.toString() : "<null>";
-                String rarity = ench.getWeight() != null ? ench.getWeight().toString() : "<null>";
+                Enchantment.Rarity rarity = ench.getRarity();
+                String rarityStr = rarity != null ? String.format("%s (%d)", rarity.toString(), rarity.getWeight()) : "<null>";
                 int intId = Registry.ENCHANTMENT.getRawId(ench);
 
-                enchantmentDump.addData(regName, name, type, rarity, String.valueOf(intId));
+                enchantmentDump.addData(regName, name, type, rarityStr, String.valueOf(intId));
             }
         }
 

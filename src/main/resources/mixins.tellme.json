@@ -4,7 +4,7 @@
     "minVersion": "0.7",
     "compatibilityLevel": "JAVA_8",
     "mixins": [
-        "IMixinFluidTags",
+        "IMixinAbstractFireBlock",
         "IMixinServerWorld",
         "IMixinSpawnEggItem",
         "IMixinStatusEffect",

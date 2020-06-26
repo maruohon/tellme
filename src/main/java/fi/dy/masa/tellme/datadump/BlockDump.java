@@ -83,7 +83,7 @@ public class BlockDump
                 String modName = ModNameUtils.getModName(id);
                 String registryName = id.toString();
                 Block block = Registry.BLOCK.get(id);
-                String hardness = String.format("%.2f", block.getHardness(block.getDefaultState(), null, BlockPos.ORIGIN));
+                String hardness = String.format("%.2f", block.getDefaultState().getHardness(null, BlockPos.ORIGIN));
                 String resistance = String.format("%.2f", block.getBlastResistance());
                 blockDump.addData(modName, registryName, hardness, resistance);
             }
@@ -185,7 +185,7 @@ public class BlockDump
         for (Map.Entry<Identifier, Tag<Block>> entry : tagMapIn.entrySet())
         {
             final Tag<Block> tag = entry.getValue();
-            final Identifier id = tag.getId();
+            final Identifier id = entry.getKey();
             tag.values().forEach((block) -> tagMapOut.put(block, id));
         }
 

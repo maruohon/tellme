@@ -2,7 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
@@ -30,7 +30,7 @@ public class FoodItemDump
         String isFastEat = String.valueOf(food.isAlwaysEdible());
         List<Pair<StatusEffectInstance, Float>> effects = food.getStatusEffects();
         String effectsStr = effects.stream()
-                .map((pair) -> "{[" + pair.getLeft().toString() + "], Propability: " + pair.getRight() + "}")
+                .map((pair) -> "{[" + pair.getFirst().toString() + "], Propability: " + pair.getSecond() + "}")
                 .collect(Collectors.joining(", "));
 
         dump.addData(registryName, displayName, hunger, saturation, isMeat, isFastEat, ItemDump.getTagNamesJoined(item, ctx.tagMap), effectsStr);

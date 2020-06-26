@@ -10,11 +10,11 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.EntityTypeTags;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.tag.ItemTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import fi.dy.masa.tellme.mixin.IMixinFluidTags;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class TagDump
@@ -53,7 +53,7 @@ public class TagDump
 
             case FLUID:
             {
-                Map<Identifier, Tag<Fluid>> tagMap = IMixinFluidTags.getContainer().getEntries();
+                Map<Identifier, Tag<Fluid>> tagMap = FluidTags.getContainer().getEntries();
 
                 for (Map.Entry<Identifier, Tag<Fluid>> entry : tagMap.entrySet())
                 {

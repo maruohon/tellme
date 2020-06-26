@@ -2,16 +2,13 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -19,28 +16,28 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class ChunkDump
 {
-    public static List<String> getFormattedChunkDump(Format format, MinecraftServer server, @Nullable DimensionType dimension)
+    public static List<String> getFormattedChunkDump(Format format, MinecraftServer server, @Nullable World worldIn)
     {
-        return getFormattedChunkDump(format, server, dimension, null, null);
+        return getFormattedChunkDump(format, server, worldIn, null, null);
     }
 
-    public static List<String> getFormattedChunkDump(Format format, @Nullable MinecraftServer server, @Nullable DimensionType dimension, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
+    public static List<String> getFormattedChunkDump(Format format, @Nullable MinecraftServer server, @Nullable World worldIn, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
     {
         DataDump chunkDump = new DataDump(4, format);
 
         if (server != null)
         {
-            List<DimensionType> dims = new ArrayList<>();
+            List<World> worlds = new ArrayList<>();
 
-            if (dimension != null)
+            if (worldIn != null)
             {
-                dims.add(dimension);
+                worlds.add(worldIn);
             }
             else
             {
-                for (DimensionType dim : Registry.DIMENSION_TYPE)
+                for (World world : server.getWorlds())
                 {
-                    dims.add(dim);
+                    worlds.add(world);
                 }
             }
 
@@ -50,13 +47,11 @@ public class ChunkDump
             final int maxCZ = maxPos != null ? maxPos.getZ() >> 4 : Integer.MAX_VALUE;
             int chunkCount = 0;
 
-            for (DimensionType dim : dims)
+            for (World world : worlds)
             {
-                World world = server.getWorld(dim);
-
                 if (world != null)
                 {
-                    String dimId = Registry.DIMENSION_TYPE.getId(dim).toString();
+                    String dimId = world.getDimensionRegistryKey().getValue().toString();
                     Collection<WorldChunk> chunks = TellMe.dataProvider.getLoadedChunks(world);
 
                     for (WorldChunk chunk : chunks)

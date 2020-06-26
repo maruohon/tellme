@@ -97,7 +97,7 @@ public class EntityInfo
         String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
         String textPost = String.format("] (entityId: %d)", target.getEntityId());
 
-        player.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost));
+        player.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost), false);
     }
 
     public static void printFullEntityInfoToConsole(PlayerEntity player, Entity target)
@@ -122,9 +122,9 @@ public class EntityInfo
             for (PlayerEntity player : server.getPlayerManager().getPlayerList())
             {
                 String name = player.getName().getString();
-                String dim = Registry.DIMENSION_TYPE.getId(player.getEntityWorld().dimension.getType()).toString();
+                String dim = WorldUtils.getDimensionId(player.getEntityWorld());
                 String health = String.format("%.2f", player.getHealth());
-                BlockPos pos = new BlockPos(player);
+                BlockPos pos = player.getBlockPos();
                 int x = pos.getX();
                 int y = pos.getY();
                 int z = pos.getZ();

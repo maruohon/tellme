@@ -20,7 +20,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.state.property.Property;
@@ -44,8 +44,8 @@ public class BlockInfo
     {
         Map<Material, String> names = new HashMap<>();
 
+        names.put(Material.AGGREGATE, "AGGREGATE");
         names.put(Material.AIR, "AIR");
-        names.put(Material.ANVIL, "ANVIL");
         names.put(Material.BAMBOO, "BAMBOO");
         names.put(Material.BAMBOO_SAPLING, "BAMBOO_SAPLING");
         names.put(Material.BARRIER, "BARRIER");
@@ -53,33 +53,34 @@ public class BlockInfo
         names.put(Material.CACTUS, "CACTUS");
         names.put(Material.CAKE, "CAKE");
         names.put(Material.CARPET, "CARPET");
-        names.put(Material.CLAY, "CLAY");
         names.put(Material.COBWEB, "COBWEB");
-        names.put(Material.EARTH, "EARTH");
+        names.put(Material.DENSE_ICE, "DENSE_ICE");
         names.put(Material.EGG, "EGG");
         names.put(Material.FIRE, "FIRE");
         names.put(Material.GLASS, "GLASS");
+        names.put(Material.GOURD, "GOURD");
         names.put(Material.ICE, "ICE");
         names.put(Material.LAVA, "LAVA");
         names.put(Material.LEAVES, "LEAVES");
         names.put(Material.METAL, "METAL");
-        names.put(Material.ORGANIC, "ORGANIC");
-        names.put(Material.PACKED_ICE, "PACKED_ICE");
-        names.put(Material.PART, "PART");
+        names.put(Material.NETHER_WOOD, "NETHER_WOOD");
+        names.put(Material.ORGANIC_PRODUCT, "ORGANIC_PRODUCT");
         names.put(Material.PISTON, "PISTON");
         names.put(Material.PLANT, "PLANT");
         names.put(Material.PORTAL, "PORTAL");
-        names.put(Material.PUMPKIN, "PUMPKIN");
         names.put(Material.REDSTONE_LAMP, "REDSTONE_LAMP");
+        names.put(Material.REPAIR_STATION, "REPAIR_STATION");
         names.put(Material.REPLACEABLE_PLANT, "REPLACEABLE_PLANT");
-        names.put(Material.SAND, "SAND");
-        names.put(Material.SEAGRASS, "SEAGRASS");
+        names.put(Material.REPLACEABLE_UNDERWATER_PLANT, "REPLACEABLE_UNDERWATER_PLANT");
         names.put(Material.SHULKER_BOX, "SHULKER_BOX");
-        names.put(Material.SNOW, "SNOW");
         names.put(Material.SNOW_BLOCK, "SNOW_BLOCK");
+        names.put(Material.SNOW_LAYER, "SNOW_LAYER");
+        names.put(Material.SOIL, "SOIL");
+        names.put(Material.SOLID_ORGANIC, "SOLID_ORGANIC");
         names.put(Material.SPONGE, "SPONGE");
         names.put(Material.STONE, "STONE");
         names.put(Material.STRUCTURE_VOID, "STRUCTURE_VOID");
+        names.put(Material.SUPPORTED, "SUPPORTED");
         names.put(Material.TNT, "TNT");
         names.put(Material.UNDERWATER_PLANT, "UNDERWATER_PLANT");
         names.put(Material.UNUSED_PLANT, "UNUSED_PLANT");
@@ -237,13 +238,13 @@ public class BlockInfo
         return MATERIAL_NAMES.getOrDefault(material, "<unknown>");
     }
 
-    public static void printBasicBlockInfoToChat(Entity entity, World world, BlockPos pos)
+    public static void printBasicBlockInfoToChat(PlayerEntity entity, World world, BlockPos pos)
     {
-        entity.sendMessage(BlockData.getFor(world, pos).toChatMessage());
+        entity.sendMessage(BlockData.getFor(world, pos).toChatMessage(), false);
     }
 
     @Nullable
-    public static List<String> getBlockInfoFromRayTracedTarget(World world, Entity entity, HitResult trace, boolean adjacent, boolean targetIsChat)
+    public static List<String> getBlockInfoFromRayTracedTarget(World world, PlayerEntity entity, HitResult trace, boolean adjacent, boolean targetIsChat)
     {
         // Ray traced to a block
         if (trace.getType() == HitResult.Type.BLOCK)

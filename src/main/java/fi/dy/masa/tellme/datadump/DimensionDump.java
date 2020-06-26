@@ -1,10 +1,9 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryTracker;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.mixin.IMixinServerWorld;
@@ -15,83 +14,85 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class DimensionDump
 {
-    @SuppressWarnings("deprecation")
-    public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server)
+    public static List<String> getFormattedDimensionDump(Format format, boolean verbose)
     {
-        DataDump dimensionDump = new DataDump(5, format);
+        DataDump dump = new DataDump(verbose ? 12 : 2, format);
 
-        if (server != null)
+        Registry<DimensionType> registry = RegistryTracker.create().getDimensionTypeRegistry();
+
+        for (DimensionType dim : registry)
         {
-            World overworld = server.getWorld(DimensionType.OVERWORLD);
+            String dimId = registry.getId(dim).toString();
+            String natural = String.valueOf(dim.isNatural());
 
-            for (DimensionType dim : Registry.DIMENSION_TYPE)
+            if (verbose)
             {
-                String dimId = Registry.DIMENSION_TYPE.getId(dim).toString();
-                String typeId = String.valueOf(dim.getRawId());
-                String hasSkylight = String.valueOf(dim.hasSkyLight());
+                String bedWorks = String.valueOf(dim.isBedWorking());
+                String ceiling = String.valueOf(dim.hasCeiling());
+                String dragon = String.valueOf(dim.hasEnderDragonFight());
+                String raids = String.valueOf(dim.hasRaids());
+                String skyLight = String.valueOf(dim.hasSkyLight());
+                String logicalHeight = String.valueOf(dim.getLogicalHeight());
+                String piglinSafe = String.valueOf(dim.isPiglinSafe());
+                String respawnAnchor = String.valueOf(dim.isRespawnAnchorWorking());
+                String shrunk = String.valueOf(dim.isShrunk());
+                String ultrawarm = String.valueOf(dim.isUltrawarm());
 
-                World world = server.getWorld(dim);
-                boolean loaded = false;
-                String dimensionClass;
-
-                if (world != null)
-                {
-                    loaded = true;
-                    dimensionClass = world.getDimension().getClass().getName();
-                }
-                else
-                {
-                    dimensionClass = dim.create(overworld).getClass().getName();
-                }
-
-                String currentlyLoaded = String.valueOf(loaded);
-
-                dimensionDump.addData(dimId, typeId, hasSkylight, currentlyLoaded, dimensionClass);
+                dump.addData(dimId, natural, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, shrunk, skyLight, ultrawarm);
+            }
+            else
+            {
+                dump.addData(dimId, natural);
             }
         }
 
-        dimensionDump.addTitle("ID", "Raw ID", "Has Sky Light", "Loaded?", "Dimension class");
-        dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // type ID
-        dimensionDump.setColumnAlignment(2, Alignment.RIGHT); // has sky light
-        dimensionDump.setColumnAlignment(3, Alignment.RIGHT); // is vanilla
-        dimensionDump.setColumnAlignment(4, Alignment.RIGHT); // loaded?
-        dimensionDump.setSort(false);
+        if (verbose)
+        {
+            dump.addTitle("ID", "Natural", "Bed works", "Ceiling", "Dragon", "Height", "Piglin safe", "Raids", "Resp. Anchor", "Shrunk", "Sky Light", "Ultra Warm");
+            dump.setColumnAlignment(1, Alignment.RIGHT); // natural
+            dump.setColumnAlignment(2, Alignment.RIGHT); // bed
+            dump.setColumnAlignment(3, Alignment.RIGHT); // ceiling
+            dump.setColumnAlignment(4, Alignment.RIGHT); // dragon
+            dump.setColumnProperties(5, Alignment.RIGHT, true); // height
+            dump.setColumnAlignment(6, Alignment.RIGHT); // piglin
+            dump.setColumnAlignment(7, Alignment.RIGHT); // raids
+            dump.setColumnAlignment(8, Alignment.RIGHT); // respawn anchor
+            dump.setColumnAlignment(9, Alignment.RIGHT); // shrunk
+            dump.setColumnAlignment(10, Alignment.RIGHT); // sky light
+            dump.setColumnAlignment(11, Alignment.RIGHT); // ultra warm
+        }
+        else
+        {
+            dump.addTitle("ID", "Natural");
+        }
 
-        return dimensionDump.getLines();
+        dump.setSort(false);
+
+        return dump.getLines();
     }
 
     public static List<String> getLoadedDimensions(Format format, MinecraftServer server)
     {
-        DataDump dimensionDump = new DataDump(6, format);
+        DataDump dimensionDump = new DataDump(4, format);
         dimensionDump.setSort(false);
 
         if (server != null)
         {
-            for (DimensionType dim : Registry.DIMENSION_TYPE)
+            for (World world : server.getWorlds())
             {
-                String dimId = Registry.DIMENSION_TYPE.getId(dim).toString();
-                String typeId = String.valueOf(dim.getRawId());
+                String dimId = world.getDimensionRegistryKey().getValue().toString();
+                String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
+                String entityCount = String.valueOf(((IMixinServerWorld) world).getEntitiesByIdMap().size());
+                String playerCount = String.valueOf(world.getPlayers().size());
 
-                ServerWorld world = server.getWorld(dim);
-                String dimensionClass;
-
-                if (world != null)
-                {
-                    String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
-                    String entityCount = String.valueOf(((IMixinServerWorld) world).getEntitiesByIdMap().size());
-                    String playerCount = String.valueOf(world.getPlayers().size());
-                    dimensionClass = world.getDimension().getClass().getName();
-
-                    dimensionDump.addData(dimId, typeId, dimensionClass, loadedChunks, entityCount, playerCount);
-                }
+                dimensionDump.addData(dimId, loadedChunks, entityCount, playerCount);
             }
         }
 
-        dimensionDump.addTitle("ID", "Raw ID", "Dimension class", "Loaded Chunks", "Entities", "Players");
-        dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // type ID
-        dimensionDump.setColumnProperties(3, Alignment.RIGHT, true); // loaded chunks
-        dimensionDump.setColumnProperties(4, Alignment.RIGHT, true); // entity count
-        dimensionDump.setColumnProperties(5, Alignment.RIGHT, true); // players
+        dimensionDump.addTitle("ID", "Loaded Chunks", "Entities", "Players");
+        dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // loaded chunks
+        dimensionDump.setColumnProperties(2, Alignment.RIGHT, true); // entity count
+        dimensionDump.setColumnProperties(3, Alignment.RIGHT, true); // players
 
         return dimensionDump.getLines();
     }

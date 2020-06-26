@@ -4,12 +4,15 @@ import java.io.File;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -21,10 +24,11 @@ public class OutputUtils
         return getClipboardCopiableMessage(new LiteralText(textPre), new LiteralText(textToCopy), new LiteralText(textPost));
     }
 
-    public static Text getClipboardCopiableMessage(Text textPre, Text textToCopy, Text textPost)
+    public static MutableText getClipboardCopiableMessage(MutableText textPre, MutableText textToCopy, MutableText textPost)
     {
-        textToCopy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + textToCopy.getString()));
-        textToCopy.getStyle().setUnderline(Boolean.TRUE);
+        final String copyString = textToCopy.getString();
+        textToCopy.styled((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
+        textToCopy.formatted(Formatting.UNDERLINE);
 
         LiteralText hoverText = new LiteralText(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
         textToCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
@@ -32,24 +36,24 @@ public class OutputUtils
         return textPre.append(textToCopy).append(textPost);
     }
 
-    public static void sendClickableLinkMessage(Entity entity, String messageKey, File file)
+    public static void sendClickableLinkMessage(PlayerEntity player, String messageKey, final File file)
     {
-        Text name = new LiteralText(file.getName());
+        LiteralText name = new LiteralText(file.getName());
 
         if (TellMe.isClient())
         {
-            name.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
-            name.getStyle().setUnderline(Boolean.TRUE);
+            name.styled((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
+            name.formatted(Formatting.UNDERLINE);
         }
 
-        entity.sendMessage(new TranslatableText(messageKey, name));
+        player.sendMessage(new TranslatableText(messageKey, name), false);
     }
 
-    public static void printOutputToChat(List<String> lines, Entity entity)
+    public static void printOutputToChat(List<String> lines, PlayerEntity entity)
     {
         for (String line : lines)
         {
-            entity.sendMessage(new LiteralText(line));
+            entity.sendMessage(new LiteralText(line), false);
         }
     }
 
@@ -81,23 +85,23 @@ public class OutputUtils
             return;
         }
 
-        @Nullable Entity entity = source.getEntity();
+        @Nullable PlayerEntity player = source.getEntity() instanceof PlayerEntity ? (PlayerEntity) source.getEntity() : null;
 
         switch (outputType)
         {
             case CHAT:
-                if (entity != null)
+                if (player != null)
                 {
-                    printOutputToChat(lines, entity);
+                    printOutputToChat(lines, player);
                 }
                 break;
 
             case CONSOLE:
                 printOutputToConsole(lines);
 
-                if (entity != null)
+                if (player != null)
                 {
-                    entity.sendMessage(new LiteralText("Output printed to console"));
+                    player.sendMessage(new LiteralText("Output printed to console"), false);
                 }
                 break;
 
@@ -106,9 +110,9 @@ public class OutputUtils
 
                 if (file != null)
                 {
-                    if (entity != null)
+                    if (player != null)
                     {
-                        OutputUtils.sendClickableLinkMessage(entity, "Output written to file %s", file);
+                        OutputUtils.sendClickableLinkMessage(player, "Output written to file %s", file);
                     }
                     else
                     {

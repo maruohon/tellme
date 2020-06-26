@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCategory;
+import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -17,7 +17,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeSource;
-import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.StructureFeature;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.mixin.IMixinWeightedPickerEntry;
@@ -61,7 +60,7 @@ public class BiomeDump
             String name = TellMe.dataProvider.getBiomeName(biome);
             List<String> spawns = new ArrayList<>();
 
-            for (EntityCategory type : EntityCategory.values())
+            for (SpawnGroup type : SpawnGroup.values())
             {
                 List<String> tmpList = new ArrayList<>();
 
@@ -86,7 +85,7 @@ public class BiomeDump
         return biomeDump.getLines();
     }
 
-    public static void printCurrentBiomeInfoToChat(Entity entity)
+    public static void printCurrentBiomeInfoToChat(PlayerEntity entity)
     {
         World world = entity.getEntityWorld();
         BlockPos pos = entity.getBlockPos();
@@ -100,7 +99,7 @@ public class BiomeDump
         String regName = Registry.BIOME.getId(biome).toString();
         String validFor = world instanceof ServerWorld ? getValidForString(biome, ((ServerWorld) world).getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
         String snowing = biome.canSetSnow(world, pos) ? pre + "true" : Formatting.RED.toString() + "false";
-        Text textPre = new LiteralText("Name: ")
+        MutableText textPre = new LiteralText("Name: ")
                                .append(new LiteralText(name).formatted(green))
                                .append(" - ID: ")
                                .append(new LiteralText(intId).formatted(green))
@@ -108,26 +107,26 @@ public class BiomeDump
         Biome.Precipitation rainType = biome.getPrecipitation();
         int waterColor = biome.getWaterColor();
 
-        entity.sendMessage(new LiteralText("------------- Current biome info ------------"));
-        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, new LiteralText(regName).formatted(green), new LiteralText("")));
+        entity.sendMessage(new LiteralText("------------- Current biome info ------------"), false);
+        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, new LiteralText(regName).formatted(green), new LiteralText("")), false);
         entity.sendMessage(new LiteralText("RainType: ")
                                    .append(new LiteralText(rainType.getName()).formatted(green))
                                    .append(", downfall: ")
                                    .append(new LiteralText(String.valueOf(biome.getRainfall())).formatted(green))
                                    .append(", snows: ")
-                                   .append(new LiteralText(snowing).formatted(green)));
+                                   .append(new LiteralText(snowing).formatted(green)), false);
 
         if (StringUtils.isBlank(validFor) == false)
         {
-            entity.sendMessage(new LiteralText("Valid for: ").append(new LiteralText(validFor).formatted(Formatting.AQUA)));
+            entity.sendMessage(new LiteralText("Valid for: ").append(new LiteralText(validFor).formatted(Formatting.AQUA)), false);
         }
 
         entity.sendMessage(new LiteralText("waterColorMultiplier: ")
-                                   .append(new LiteralText(String.format("0x%08X (%d)", waterColor, waterColor)).formatted(green)));
+                                   .append(new LiteralText(String.format("0x%08X (%d)", waterColor, waterColor)).formatted(green)), false);
         entity.sendMessage(new LiteralText("temperature: ")
                 .append(new LiteralText(String.valueOf(biome.getTemperature())).formatted(green))
                 .append(", temp. category: ")
-                .append(new LiteralText(biome.getTemperatureGroup().toString()).formatted(green)));
+                .append(new LiteralText(biome.getTemperatureGroup().toString()).formatted(green)), false);
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
@@ -174,11 +173,11 @@ public class BiomeDump
             strings.add("spawn");
         }
 
-        for (StructureFeature<?> feature : Feature.STRUCTURES.values())
+        for (StructureFeature<?> feature : StructureFeature.STRUCTURES.values())
         {
             if (biome.hasStructureFeature(feature))
             {
-                Identifier id = Registry.FEATURE.getId(feature);
+                Identifier id = Registry.STRUCTURE_FEATURE.getId(feature);
 
                 if (id != null)
                 {

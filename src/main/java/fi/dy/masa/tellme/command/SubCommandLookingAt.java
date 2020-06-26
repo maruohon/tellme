@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
@@ -42,25 +42,25 @@ public class SubCommandLookingAt
 
     private static int execute(OutputType outputType, ServerCommandSource source, boolean adjacent) throws CommandSyntaxException
     {
-        if (source.getEntity() == null)
+        if ((source.getEntity() instanceof PlayerEntity) == false)
         {
-            throw CommandUtils.NOT_AN_ENTITY_EXCEPTION.create();
+            throw CommandUtils.NOT_A_PLAYER_EXCEPTION.create();
         }
 
-        handleLookedAtObject(source.getEntity(), outputType, adjacent);
+        handleLookedAtObject((PlayerEntity) source.getEntity(), outputType, adjacent);
         return 1;
     }
 
-    private static void handleLookedAtObject(Entity entity, OutputType outputType, boolean adjacent)
+    private static void handleLookedAtObject(PlayerEntity player, OutputType outputType, boolean adjacent)
     {
-        World world = entity.getEntityWorld();
-        HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, entity, true, 10d);
+        World world = player.getEntityWorld();
+        HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, player, true, 10d);
         List<String> lines = null;
         String fileName = "looking_at_";
 
         if (trace.getType() == HitResult.Type.BLOCK)
         {
-            lines = BlockInfo.getBlockInfoFromRayTracedTarget(world, entity, trace, adjacent, outputType == OutputType.CHAT);
+            lines = BlockInfo.getBlockInfoFromRayTracedTarget(world, player, trace, adjacent, outputType == OutputType.CHAT);
             fileName += "block";
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
@@ -71,11 +71,11 @@ public class SubCommandLookingAt
 
         if (lines != null && lines.isEmpty() == false)
         {
-            OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, fileName, entity);
+            OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, fileName, player);
         }
         else
         {
-            entity.sendMessage(new LiteralText("Not currently looking at anything within range"));
+            player.sendMessage(new LiteralText("Not currently looking at anything within range"), false);
         }
     }
 }

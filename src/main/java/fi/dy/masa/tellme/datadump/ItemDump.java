@@ -21,6 +21,7 @@ import net.minecraft.block.FallingBlock;
 import net.minecraft.block.Fertilizable;
 import net.minecraft.block.FireBlock;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -38,6 +39,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.mixin.IMixinAbstractFireBlock;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -202,7 +204,7 @@ public class ItemDump
                 String resistance = String.format("%.2f", block.getBlastResistance());
                 boolean fallingBlock = block instanceof FallingBlock;
                 int light = state.getLuminance();
-                boolean flammable = ((FireBlock) Blocks.FIRE).isFlammable(state);
+                boolean flammable = ((IMixinAbstractFireBlock) Blocks.FIRE).invokeIsFlammable(state);
                 int opacity = state.getOpacity(world, pos);
 
                 obj.add("Type", new JsonPrimitive("block"));
@@ -229,23 +231,23 @@ public class ItemDump
         {
             obj.add("Type", new JsonPrimitive("generic"));
 
-            Multimap<String, EntityAttributeModifier> attributes = item.getModifiers(EquipmentSlot.MAINHAND);
+            Multimap<EntityAttribute, EntityAttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlot.MAINHAND);
 
             if (attributes.isEmpty() == false)
             {
                 JsonArray attributeArr = new JsonArray();
 
-                for (Map.Entry<String, EntityAttributeModifier> entry : attributes.entries())
+                for (Map.Entry<EntityAttribute, EntityAttributeModifier> entry : attributes.entries())
                 {
                     JsonObject o1 = new JsonObject();
                     JsonObject o2 = new JsonObject();
-                    o1.add("Type", new JsonPrimitive(entry.getKey()));
+                    o1.add("Type", new JsonPrimitive(entry.getKey().getTranslationKey()));
                     o1.add("Value", o2);
 
                     EntityAttributeModifier att = entry.getValue();
                     o2.add("Name", new JsonPrimitive(att.getName()));
                     o2.add("Operation", new JsonPrimitive(att.getOperation().name()));
-                    o2.add("Amount", new JsonPrimitive(att.getAmount()));
+                    o2.add("Amount", new JsonPrimitive(att.getValue()));
 
                     attributeArr.add(o1);
                 }
@@ -430,7 +432,7 @@ public class ItemDump
         for (Map.Entry<Identifier, Tag<Item>> entry : tagMapIn.entrySet())
         {
             final Tag<Item> tag = entry.getValue();
-            final Identifier id = tag.getId();
+            final Identifier id = entry.getKey();
             tag.values().forEach((item) -> tagMapOut.put(item, id));
         }
 

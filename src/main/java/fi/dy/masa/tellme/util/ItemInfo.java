@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -59,12 +60,12 @@ public class ItemInfo
         return lines;
     }
 
-    public static void printBasicItemInfoToChat(LivingEntity entity, @Nonnull ItemStack stack)
+    public static void printBasicItemInfoToChat(PlayerEntity entity, @Nonnull ItemStack stack)
     {
-        entity.sendMessage(ItemData.getFor(stack).toChatMessage());
+        entity.sendMessage(ItemData.getFor(stack).toChatMessage(), false);
     }
 
-    public static void printItemInfo(LivingEntity entity, @Nonnull ItemStack stack, OutputType outputType)
+    public static void printItemInfo(PlayerEntity entity, @Nonnull ItemStack stack, OutputType outputType)
     {
         printBasicItemInfoToChat(entity, stack);
 
@@ -72,7 +73,7 @@ public class ItemInfo
 
         if (outputType == OutputType.CHAT && stack.hasTag())
         {
-            entity.sendMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""));
+            entity.sendMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""), false);
             lines = getPrettyNbtForChat(stack);
         }
         else

@@ -16,7 +16,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypeFilterableList;
+import net.minecraft.util.collection.TypeFilterableList;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -297,7 +297,7 @@ public class Locate extends ChunkProcessorAllChunks
                 if (filters.contains(type) && box.contains(pos))
                 {
                     String name = BlockInfo.getBlockEntityNameFor(type);
-                    this.data.add(LocationData.of(name, dim, new Vec3d(pos)));
+                    this.data.add(LocationData.of(name, dim, new Vec3d(pos.getX(), pos.getY(), pos.getZ())));
                     count++;
                 }
             }

@@ -10,8 +10,8 @@ import fi.dy.masa.tellme.command.CommandTellMe;
 @Mixin(CommandManager.class)
 public class MixinCommandManager
 {
-    @Inject(method = "<init>(Z)V", at = @At("RETURN"))
-    private void onInit(boolean isDedicatedServer, CallbackInfo ci)
+    @Inject(method = "<init>(Lnet/minecraft/server/command/CommandManager$RegistrationEnvironment;)V", at = @At("RETURN"))
+    private void onInit(CommandManager.RegistrationEnvironment environment, CallbackInfo ci)
     {
         CommandTellMe.registerServerCommand(((CommandManager) (Object) this).getDispatcher());
     }

@@ -17,12 +17,11 @@ import net.minecraft.command.arguments.Vec2ArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.dimension.DimensionType;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
@@ -79,7 +78,7 @@ public class SubCommandBiomeLocate
                         IntegerArgumentType.getInteger(c, "sample_radius"),
                         Vec2ArgumentType.getVec2(c, "center")))
                 .build();
-        ArgumentCommandNode<ServerCommandSource, DimensionType> argDimension = CommandManager.argument("dimension", DimensionArgumentType.dimension())
+        ArgumentCommandNode<ServerCommandSource, Identifier> argDimension = CommandManager.argument("dimension", DimensionArgumentType.dimension())
                 .executes(c -> search(c.getSource(), isAppend,
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius"),
@@ -125,14 +124,13 @@ public class SubCommandBiomeLocate
             throw CommandUtils.NO_DIMENSION_EXCEPTION.create();
         }
 
-        return search(source, append, sampleInterval, sampleRadius, center, entity.dimension);
+        return search(source, append, sampleInterval, sampleRadius, center, entity.getEntityWorld());
     }
 
-    private static int search(ServerCommandSource source, boolean append, int sampleInterval, int sampleRadius, Vec2f center, DimensionType dimension) throws CommandSyntaxException
+    private static int search(ServerCommandSource source, boolean append, int sampleInterval, int sampleRadius, Vec2f center, World world)
     {
         Entity entity = source.getEntity();
         BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
-        World world = TellMe.dataProvider.getWorld(source.getMinecraftServer(), dimension);
         BiomeAccess biomeAccess = world.getBiomeAccess();
 
         CommandUtils.sendMessage(source, "Finding closest biome locations...");

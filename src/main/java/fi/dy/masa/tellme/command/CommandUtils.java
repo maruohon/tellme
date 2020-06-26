@@ -25,14 +25,14 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.World;
 
 public class CommandUtils
 {
     public static final FilenameFilter FILTER_FILES = (pathName, fileName) -> { return (new File(pathName, fileName)).isFile(); };
     public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(new LiteralText("This command must either be executed by an entity, or the dimension must be specified"));
     public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> new LiteralText("The dimension \"" + type + "\" was not loaded"));
-    public static final SimpleCommandExceptionType NOT_AN_ENTITY_EXCEPTION = new SimpleCommandExceptionType(new LiteralText("This command must be executed by an entity"));
+    public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(new LiteralText("This command must be executed by a player"));
     public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> new LiteralText("Invalid output type: " + type));
 
     public static BlockPos getMinCorner(Vec2f pos1, Vec2f pos2)
@@ -163,7 +163,7 @@ public class CommandUtils
         return Vec3ArgumentType.getVec3(ctx, argName);
     }
 
-    public static DimensionType getDimensionFromSource(ServerCommandSource source) throws CommandSyntaxException
+    public static World getWorldFromCommandSource(ServerCommandSource source) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
 
@@ -172,12 +172,12 @@ public class CommandUtils
             throw NO_DIMENSION_EXCEPTION.create();
         }
 
-        return entity.dimension;
+        return entity.getEntityWorld();
     }
 
-    public interface IDimensionRetriever
+    public interface IWorldRetriever
     {
-        DimensionType getDimensionFromSource(ServerCommandSource source) throws CommandSyntaxException;
+        World getWorldFromSource(ServerCommandSource source) throws CommandSyntaxException;
     }
 
     public enum OutputType

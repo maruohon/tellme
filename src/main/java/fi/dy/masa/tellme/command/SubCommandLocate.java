@@ -102,7 +102,7 @@ public class SubCommandLocate
         @SuppressWarnings("unchecked")
         List<String> filters = ctx.getArgument(locateType.getPlural(), List.class);
         ServerCommandSource source = ctx.getSource();
-        World world = TellMe.dataProvider.getWorld(source.getMinecraftServer(), CommandUtils.getDimensionFromSource(source));
+        World world = CommandUtils.getWorldFromCommandSource(source);
 
         Locate locate = Locate.create(locateType, outputFormat, filters);
 
