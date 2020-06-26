@@ -94,7 +94,7 @@ public class LocateEntities extends LocateBase
                     if (filters.contains(type) && entity.getBoundingBox().intersects(bb))
                     {
                         String name = EntityInfo.getEntityNameFor(type);
-                        this.data.add(LocationData.of(name, dim, entity.getPositionVector()));
+                        this.data.add(LocationData.of(name, dim, entity.getPositionVec()));
                         count++;
                     }
                 }

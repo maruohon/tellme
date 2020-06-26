@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -81,7 +81,7 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
 
     protected void addLine(DataDump dump, LocationData data)
     {
-        Vec3d pos = data.pos;
+        Vector3d pos = data.pos;
         int rx = ((int) pos.x) >> 9;
         int rz = ((int) pos.z) >> 9;
         int cx = ((int) pos.x) >> 4;
@@ -132,16 +132,16 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
     {
         private final String name;
         private final String dimension;
-        private final Vec3d pos;
+        private final Vector3d pos;
 
-        private LocationData(String name, String dimension, Vec3d pos)
+        private LocationData(String name, String dimension, Vector3d pos)
         {
             this.name = name;
             this.dimension = dimension;
             this.pos = pos;
         }
 
-        protected static LocationData of(String name, String dimension, Vec3d pos)
+        protected static LocationData of(String name, String dimension, Vector3d pos)
         {
             return new LocationData(name, dimension, pos);
         }

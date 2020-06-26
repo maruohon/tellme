@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class ItemInfo
 {
@@ -59,12 +59,12 @@ public class ItemInfo
         return lines;
     }
 
-    public static void printBasicItemInfoToChat(LivingEntity entity, @Nonnull ItemStack stack)
+    public static void printBasicItemInfoToChat(PlayerEntity entity, @Nonnull ItemStack stack)
     {
-        entity.sendMessage(ItemData.getFor(stack).toChatMessage());
+        entity.sendStatusMessage(ItemData.getFor(stack).toChatMessage(), false);
     }
 
-    public static void printItemInfo(LivingEntity entity, @Nonnull ItemStack stack, OutputType outputType)
+    public static void printItemInfo(PlayerEntity entity, @Nonnull ItemStack stack, OutputType outputType)
     {
         printBasicItemInfoToChat(entity, stack);
 
@@ -72,7 +72,7 @@ public class ItemInfo
 
         if (outputType == OutputType.CHAT && stack.hasTag())
         {
-            entity.sendMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""));
+            entity.sendStatusMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""), false);
             lines = getPrettyNbtForChat(stack);
         }
         else

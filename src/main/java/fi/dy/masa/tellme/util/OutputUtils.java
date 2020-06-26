@@ -5,8 +5,11 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
@@ -21,35 +24,36 @@ public class OutputUtils
         return getClipboardCopiableMessage(new StringTextComponent(textPre), new StringTextComponent(textToCopy), new StringTextComponent(textPost));
     }
 
-    public static ITextComponent getClipboardCopiableMessage(ITextComponent textPre, ITextComponent textToCopy, ITextComponent textPost)
+    public static IFormattableTextComponent getClipboardCopiableMessage(IFormattableTextComponent textPre, IFormattableTextComponent textToCopy, IFormattableTextComponent textPost)
     {
-        textToCopy.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + textToCopy.getString()));
-        textToCopy.getStyle().setUnderlined(Boolean.TRUE);
+        final String copyString = textToCopy.getString();
+        textToCopy.func_240700_a_((style) -> style.func_240715_a_(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
+        textToCopy.func_240699_a_(TextFormatting.UNDERLINE);
 
         StringTextComponent hoverText = new StringTextComponent(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
-        textToCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+        textToCopy.getStyle().func_240716_a_(new HoverEvent(HoverEvent.Action.field_230550_a_, hoverText)); // SHOW_TEXT
 
-        return textPre.appendSibling(textToCopy).appendSibling(textPost);
+        return textPre.func_230529_a_(textToCopy).func_230529_a_(textPost);
     }
 
-    public static void sendClickableLinkMessage(Entity entity, String messageKey, File file)
+    public static void sendClickableLinkMessage(PlayerEntity player, String messageKey, final File file)
     {
-        ITextComponent name = new StringTextComponent(file.getName());
+        StringTextComponent name = new StringTextComponent(file.getName());
 
         if (TellMe.isClient())
         {
-            name.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
-            name.getStyle().setUnderlined(Boolean.TRUE);
+            name.func_240700_a_((style) -> style.func_240715_a_(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
+            name.func_240699_a_(TextFormatting.UNDERLINE);
         }
 
-        entity.sendMessage(new TranslationTextComponent(messageKey, name));
+        player.sendStatusMessage(new TranslationTextComponent(messageKey, name), false);
     }
 
-    public static void printOutputToChat(List<String> lines, Entity entity)
+    public static void printOutputToChat(List<String> lines, PlayerEntity entity)
     {
         for (String line : lines)
         {
-            entity.sendMessage(new StringTextComponent(line));
+            entity.sendStatusMessage(new StringTextComponent(line), false);
         }
     }
 
@@ -81,20 +85,24 @@ public class OutputUtils
             return;
         }
 
-        @Nullable Entity entity = source.getEntity();
+        @Nullable PlayerEntity player = source.getEntity() instanceof PlayerEntity ? (PlayerEntity) source.getEntity() : null;
 
         switch (outputType)
         {
             case CHAT:
-                if (entity != null)
+                if (player != null)
                 {
-                    printOutputToChat(lines, entity);
+                    printOutputToChat(lines, player);
                 }
                 break;
 
             case CONSOLE:
                 printOutputToConsole(lines);
-                entity.sendMessage(new StringTextComponent("Output printed to console"));
+
+                if (player != null)
+                {
+                    player.sendStatusMessage(new StringTextComponent("Output printed to console"), false);
+                }
                 break;
 
             case FILE:
@@ -102,9 +110,9 @@ public class OutputUtils
 
                 if (file != null)
                 {
-                    if (entity != null)
+                    if (player != null)
                     {
-                        OutputUtils.sendClickableLinkMessage(entity, "Output written to file %s", file);
+                        OutputUtils.sendClickableLinkMessage(player, "Output written to file %s", file);
                     }
                     else
                     {

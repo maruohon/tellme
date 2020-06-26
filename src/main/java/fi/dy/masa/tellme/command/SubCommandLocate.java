@@ -14,7 +14,7 @@ import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.ILocationArgument;
 import net.minecraft.command.arguments.Vec3Argument;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
@@ -101,7 +101,7 @@ public class SubCommandLocate
         @SuppressWarnings("unchecked")
         List<String> filters = ctx.getArgument(locateType.getPlural(), List.class);
         CommandSource source = ctx.getSource();
-        World world = TellMe.dataProvider.getWorld(source.getServer(), CommandUtils.getDimensionFromSource(source));
+        World world = CommandUtils.getWorldFromCommandSource(source);
 
         LocateBase locate = locateType.createChunkProcessor(outputFormat, filters);
 
@@ -113,8 +113,8 @@ public class SubCommandLocate
 
             case BOX:
             {
-                Vec3d vecStart = CommandUtils.getVec3dFromArg(ctx, "start_corner");
-                Vec3d vecEnd = CommandUtils.getVec3dFromArg(ctx, "end_corner");
+                Vector3d vecStart = CommandUtils.getVec3dFromArg(ctx, "start_corner");
+                Vector3d vecEnd = CommandUtils.getVec3dFromArg(ctx, "end_corner");
                 BlockPos minPos = CommandUtils.getMinCorner(vecStart, vecEnd);
                 BlockPos maxPos = CommandUtils.getMaxCorner(vecStart, vecEnd);
                 locate.processChunks(world, minPos, maxPos);

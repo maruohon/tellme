@@ -6,6 +6,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import fi.dy.masa.tellme.datadump.BiomeDump;
 
 public class SubCommandBiome
@@ -19,12 +20,12 @@ public class SubCommandBiome
     {
         Entity entity = source.getEntity();
 
-        if (entity != null)
+        if (entity instanceof PlayerEntity)
         {
-            BiomeDump.printCurrentBiomeInfoToChat(entity);
+            BiomeDump.printCurrentBiomeInfoToChat((PlayerEntity) entity);
             return 1;
         }
 
-        throw CommandUtils.NOT_AN_ENTITY_EXCEPTION.create();
+        throw CommandUtils.NOT_A_PLAYER_EXCEPTION.create();
     }
 }

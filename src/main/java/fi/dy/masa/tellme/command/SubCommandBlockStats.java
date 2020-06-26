@@ -21,14 +21,13 @@ import net.minecraft.command.arguments.Vec3Argument;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.AreaType;
-import fi.dy.masa.tellme.command.CommandUtils.IDimensionRetriever;
+import fi.dy.masa.tellme.command.CommandUtils.IWorldRetriever;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
@@ -138,9 +137,9 @@ public class SubCommandBlockStats
     {
         LiteralCommandNode<CommandSource> argAreaType = Commands.literal(AreaType.LOADED.getArgument())
                 .executes(c -> countBlocksLoadedChunks(c.getSource(),
-                          CommandUtils::getDimensionFromSource, isAppend)).build();
+                                                       CommandUtils::getWorldFromCommandSource, isAppend)).build();
 
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
                 .executes(c -> countBlocksLoadedChunks(c.getSource(),
                           (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
                 .build();
@@ -159,9 +158,9 @@ public class SubCommandBlockStats
                 .executes(c -> countBlocksArea(c.getSource(),
                         Vec2Argument.getVec2f(c, "start_corner"),
                         Vec2Argument.getVec2f(c, "end_corner"),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                        CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
                 .executes(c -> countBlocksArea(c.getSource(),
                         Vec2Argument.getVec2f(c, "start_corner"),
                         Vec2Argument.getVec2f(c, "end_corner"),
@@ -184,10 +183,10 @@ public class SubCommandBlockStats
                 .executes(c -> countBlocksBox(c.getSource(),
                         Vec3Argument.getVec3(c, "start_corner"),
                         Vec3Argument.getVec3(c, "end_corner"),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                        CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
 
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
                 .executes(c -> countBlocksBox(c.getSource(),
                         Vec3Argument.getVec3(c, "start_corner"),
                         Vec3Argument.getVec3(c, "end_corner"),
@@ -209,15 +208,15 @@ public class SubCommandBlockStats
                 .executes(c -> countBlocksRange(c.getSource(),
                         IntegerArgumentType.getInteger(c, "block_range"),
                         CommandUtils.getVec3dFromSource(c.getSource()),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                        CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
         ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec3Argument.vec3())
                 .executes(c -> countBlocksRange(c.getSource(),
                         IntegerArgumentType.getInteger(c, "block_range"),
                         CommandUtils.getVec3dFromArg(c, "center"),
-                        CommandUtils::getDimensionFromSource, isAppend))
+                        CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
                 .executes(c -> countBlocksRange(c.getSource(),
                         IntegerArgumentType.getInteger(c, "block_range"),
                         CommandUtils.getVec3dFromArg(c, "center"),
@@ -231,8 +230,8 @@ public class SubCommandBlockStats
         return argAreaType;
     }
 
-    private static int countBlocksRange(CommandSource source, int range, Vec3d center,
-            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    private static int countBlocksRange(CommandSource source, int range, Vector3d center,
+                                        IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         BlockPos centerPos = new BlockPos(center);
         BlockPos minPos = new BlockPos(centerPos.getX() - range, Math.max(  0, centerPos.getY() - range), centerPos.getZ() - range);
@@ -241,8 +240,8 @@ public class SubCommandBlockStats
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
 
-    private static int countBlocksBox(CommandSource source, Vec3d corner1, Vec3d corner2,
-            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    private static int countBlocksBox(CommandSource source, Vector3d corner1, Vector3d corner2,
+                                      IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
         BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
@@ -250,8 +249,8 @@ public class SubCommandBlockStats
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
 
-    private static int countBlocksArea(CommandSource source, Vec2f corner1, Vec2f corner2,
-            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    private static int countBlocksArea(CommandSource source, Vector2f corner1, Vector2f corner2,
+                                       IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
         BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
@@ -260,9 +259,9 @@ public class SubCommandBlockStats
     }
 
     private static int countBlocksBox(CommandSource source, BlockPos minPos, BlockPos maxPos,
-            IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+                                      IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        World world = dimensionGetter.getWorldFromSource(source);
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
 
         CommandUtils.sendMessage(source, "Counting blocks...");
@@ -275,9 +274,9 @@ public class SubCommandBlockStats
         return 1;
     }
 
-    private static int countBlocksLoadedChunks(CommandSource source, IDimensionRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
+    private static int countBlocksLoadedChunks(CommandSource source, IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        World world = TellMe.dataProvider.getWorld(source.getServer(), dimensionGetter.getDimensionFromSource(source));
+        World world = dimensionGetter.getWorldFromSource(source);
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
 
         CommandUtils.sendMessage(source, "Counting blocks...");

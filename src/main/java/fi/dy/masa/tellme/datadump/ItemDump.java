@@ -19,6 +19,7 @@ import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FallingBlock;
+import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -35,10 +36,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.ToolType;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -207,8 +206,9 @@ public class ItemDump
                 BlockPos pos = BlockPos.ZERO;
                 Block block = ((BlockItem) item).getBlock();
                 BlockState state = block.getDefaultState();
-                String hardness = String.format("%.2f", BlockDump.field_blockHardness.get(block));
-                String resistance = String.format("%.2f", BlockDump.field_blockResistance.get(block));
+                String hardness = String.format("%.2f", block.getDefaultState().getBlockHardness(null, BlockPos.ZERO));
+                @SuppressWarnings("deprecation")
+                String resistance = String.format("%.2f", block.getExplosionResistance());
                 String tool = block.getHarvestTool(state).getName();
                 int harvestLevel = block.getHarvestLevel(state);
                 String harvestLevelName = (harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length) ? HARVEST_LEVEL_NAMES[harvestLevel] : "Unknown";
@@ -263,17 +263,17 @@ public class ItemDump
                 }
             }
 
-            Multimap<String, AttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlotType.MAINHAND, stack);
+            Multimap<Attribute, AttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlotType.MAINHAND, stack);
 
             if (attributes.isEmpty() == false)
             {
                 JsonArray attributeArr = new JsonArray();
 
-                for (Entry<String, AttributeModifier> entry : attributes.entries())
+                for (Entry<Attribute, AttributeModifier> entry : attributes.entries())
                 {
                     JsonObject o1 = new JsonObject();
                     JsonObject o2 = new JsonObject();
-                    o1.add("Type", new JsonPrimitive(entry.getKey()));
+                    o1.add("Type", new JsonPrimitive(entry.getKey().func_233754_c_()));
                     o1.add("Value", o2);
 
                     AttributeModifier att = entry.getValue();
@@ -455,24 +455,20 @@ public class ItemDump
         {
             if (stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock() instanceof IPlantable)
             {
-                World world = null;
-
                 try
-                {
-                    world = TellMe.dataProvider.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.OVERWORLD);
-                }
-                catch (Exception ignore) {}
-
-                if (world != null)
                 {
                     Block block = ((BlockItem) stack.getItem()).getBlock();
 
                     dump.addData(this.getModName(id),
-                            this.getRegistryName(id),
-                            this.getItemId(stack),
-                            this.getDisplayName(stack),
-                            ((IPlantable) block).getPlantType(world, BlockPos.ZERO).name(),
-                            getTagNamesJoined(stack.getItem()));
+                                 this.getRegistryName(id),
+                                 this.getItemId(stack),
+                                 this.getDisplayName(stack),
+                                 ((IPlantable) block).getPlantType(null, BlockPos.ZERO).getName(),
+                                 getTagNamesJoined(stack.getItem()));
+                }
+                catch (Exception ignore)
+                {
+                    TellMe.logger.warn("Exception while trying to get plant type for '{}'", this.getRegistryName(id));
                 }
             }
         }

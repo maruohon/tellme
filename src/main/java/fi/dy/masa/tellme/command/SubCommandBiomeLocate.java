@@ -17,12 +17,11 @@ import net.minecraft.command.arguments.DimensionArgument;
 import net.minecraft.command.arguments.ILocationArgument;
 import net.minecraft.command.arguments.Vec2Argument;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeManager;
-import net.minecraft.world.dimension.DimensionType;
-import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
@@ -79,7 +78,7 @@ public class SubCommandBiomeLocate
                         IntegerArgumentType.getInteger(c, "sample_radius"),
                         Vec2Argument.getVec2f(c, "center")))
                 .build();
-        ArgumentCommandNode<CommandSource, DimensionType> argDimension = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.getDimension())
                 .executes(c -> search(c.getSource(), isAppend,
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius"),
@@ -112,11 +111,11 @@ public class SubCommandBiomeLocate
     private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
-        Vec2f center = entity != null ? new Vec2f((float) entity.getPosX(), (float) entity.getPosZ()) : Vec2f.ZERO;
+        Vector2f center = entity != null ? new Vector2f((float) entity.getPosX(), (float) entity.getPosZ()) : Vector2f.ZERO;
         return search(source, append, sampleInterval, sampleRadius, center);
     }
 
-    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vec2f center) throws CommandSyntaxException
+    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vector2f center) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
 
@@ -125,14 +124,13 @@ public class SubCommandBiomeLocate
             throw CommandUtils.NO_DIMENSION_EXCEPTION.create();
         }
 
-        return search(source, append, sampleInterval, sampleRadius, center, entity.dimension);
+        return search(source, append, sampleInterval, sampleRadius, center, entity.getEntityWorld());
     }
 
-    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vec2f center, DimensionType dimension) throws CommandSyntaxException
+    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vector2f center, World world)
     {
         Entity entity = source.getEntity();
         BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
-        World world = TellMe.dataProvider.getWorld(source.getServer(), dimension);
         BiomeManager biomeManager = world.getBiomeManager();
 
         CommandUtils.sendMessage(source, "Finding closest biome locations...");

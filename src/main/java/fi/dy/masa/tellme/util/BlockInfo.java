@@ -17,10 +17,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.state.IProperty;
+import net.minecraft.state.Property;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
@@ -57,6 +57,7 @@ public class BlockInfo
         names.put(Material.CORAL, "CORAL");
         names.put(Material.DRAGON_EGG, "DRAGON_EGG");
         names.put(Material.EARTH, "EARTH");
+        names.put(Material.field_237214_y_, "field_237214_y_");
         names.put(Material.FIRE, "FIRE");
         names.put(Material.GLASS, "GLASS");
         names.put(Material.GOURD, "GOURD");
@@ -90,7 +91,7 @@ public class BlockInfo
         return names;
     }
 
-    public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, IProperty<T> prop, String valueStr)
+    public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, Property<T> prop, String valueStr)
     {
         Optional<T> value = prop.parseValue(valueStr);
 
@@ -108,7 +109,7 @@ public class BlockInfo
 
         for (BlockState state : initialStates)
         {
-            IProperty<?> prop = state.getBlock().getStateContainer().getProperty(propName);
+            Property<?> prop = state.getBlock().getStateContainer().getProperty(propName);
 
             if (prop != null)
             {
@@ -196,15 +197,15 @@ public class BlockInfo
         lines.add(String.format("Full block state: %s", state));
         lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
-                state.getBlock().getExplosionResistance(state, world, pos, null, new Explosion(world, null, pos.getX(), pos.getY(), pos.getZ(), 2, false, Explosion.Mode.NONE)),
+                state.getBlock().getExplosionResistance(state, world, pos, new Explosion(world, null, pos.getX(), pos.getY(), pos.getZ(), 2, false, Explosion.Mode.NONE)),
                 getMaterialName(state.getMaterial())));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 
-        if (state.getProperties().size() > 0)
+        if (state.getValues().size() > 0)
         {
             lines.add("BlockState properties:");
 
-            for (Entry<IProperty<?>, Comparable<?>> entry : state.getValues().entrySet())
+            for (Entry<Property<?>, Comparable<?>> entry : state.getValues().entrySet())
             {
                 lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
             }
@@ -234,13 +235,13 @@ public class BlockInfo
         return MATERIAL_NAMES.getOrDefault(material, "<unknown>");
     }
 
-    public static void printBasicBlockInfoToChat(Entity entity, World world, BlockPos pos)
+    public static void printBasicBlockInfoToChat(PlayerEntity entity, World world, BlockPos pos)
     {
-        entity.sendMessage(BlockData.getFor(world, pos).toChatMessage());
+        entity.sendStatusMessage(BlockData.getFor(world, pos).toChatMessage(), false);
     }
 
     @Nullable
-    public static List<String> getBlockInfoFromRayTracedTarget(World world, Entity entity, RayTraceResult trace, boolean adjacent, boolean targetIsChat)
+    public static List<String> getBlockInfoFromRayTracedTarget(World world, PlayerEntity entity, RayTraceResult trace, boolean adjacent, boolean targetIsChat)
     {
         // Ray traced to a block
         if (trace.getType() == RayTraceResult.Type.BLOCK)
@@ -270,10 +271,10 @@ public class BlockInfo
         return sb.toString();
     }
 
-    public static final Function<Entry<IProperty<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<Map.Entry<IProperty<?>, Comparable<?>>, String>()
+    public static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<Map.Entry<Property<?>, Comparable<?>>, String>()
     {
         @Override
-        public String apply(@Nullable Map.Entry<IProperty<?>, Comparable<?>> entry)
+        public String apply(@Nullable Map.Entry<Property<?>, Comparable<?>> entry)
         {
             if (entry == null)
             {
@@ -281,21 +282,21 @@ public class BlockInfo
             }
             else
             {
-                IProperty<?> property = entry.getKey();
+                Property<?> property = entry.getKey();
                 return property.getName() + "=" + this.valueToString(property, entry.getValue());
             }
         }
 
         @SuppressWarnings("unchecked")
-        private <T extends Comparable<T>> String valueToString(IProperty<T> property, Object value)
+        private <T extends Comparable<T>> String valueToString(Property<T> property, Object value)
         {
             return property.getName((T) value);
         }
     };
 
-    public static boolean statePassesFilter(BlockState state, Map<IProperty<?>, Comparable<?>> filterProperties)
+    public static boolean statePassesFilter(BlockState state, Map<Property<?>, Comparable<?>> filterProperties)
     {
-        for (IProperty<?> prop : state.getProperties())
+        for (Property<?> prop : state.func_235904_r_())
         {
             if (filterProperties.containsKey(prop) &&
                 filterProperties.get(prop).equals(state.get(prop)) == false)

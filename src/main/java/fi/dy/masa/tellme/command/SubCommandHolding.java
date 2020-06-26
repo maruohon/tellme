@@ -8,7 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
@@ -31,22 +31,22 @@ public class SubCommandHolding
     {
         Entity entity = source.getEntity();
 
-        if (entity instanceof LivingEntity)
+        if (entity instanceof PlayerEntity)
         {
-            handleHeldObject((LivingEntity) entity, outputType);
+            handleHeldObject((PlayerEntity) entity, outputType);
             return 1;
         }
 
-        throw CommandUtils.NOT_AN_ENTITY_EXCEPTION.create();
+        throw CommandUtils.NOT_A_PLAYER_EXCEPTION.create();
     }
 
-    private static void handleHeldObject(LivingEntity entity, OutputType outputType)
+    private static void handleHeldObject(PlayerEntity player, OutputType outputType)
     {
-        ItemStack stack = entity.getHeldItemMainhand();
+        ItemStack stack = player.getHeldItemMainhand();
 
         if (stack.isEmpty() == false)
         {
-            ItemInfo.printItemInfo(entity, stack, outputType);
+            ItemInfo.printItemInfo(player, stack, outputType);
         }
     }
 }

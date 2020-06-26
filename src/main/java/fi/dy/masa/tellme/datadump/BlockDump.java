@@ -1,6 +1,5 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -16,21 +15,18 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockDump
 {
-    public static final Field field_blockHardness = ObfuscationReflectionHelper.findField(Block.class, "field_149782_v"); // blockHardness
-    public static final Field field_blockResistance = ObfuscationReflectionHelper.findField(Block.class, "field_149781_w"); // blockResistance
-
     public static List<String> getFormattedBlockDump(DataDump.Format format, boolean tags)
     {
         DataDump blockDump = new DataDump(tags ? 6 : 5, format);
@@ -77,36 +73,36 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(4, format);
 
-        try
+        for (ResourceLocation id : ForgeRegistries.BLOCKS.getKeys())
         {
-            for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+            try
             {
-                ResourceLocation rl = entry.getKey();
-                String modName = ModNameUtils.getModName(rl);
-                String registryName = rl.toString();
-                Block block = entry.getValue();
-                String hardness = String.format("%.2f", field_blockHardness.get(block));
-                String resistance = String.format("%.2f", field_blockResistance.get(block));
+                String modName = ModNameUtils.getModName(id);
+                String registryName = id.toString();
+                Block block = ForgeRegistries.BLOCKS.getValue(id);
+                String hardness = String.format("%.2f", block.getDefaultState().getBlockHardness(null, BlockPos.ZERO));
+                @SuppressWarnings("deprecation")
+                String resistance = String.format("%.2f", block.getExplosionResistance());
                 blockDump.addData(modName, registryName, hardness, resistance);
             }
-
-            blockDump.addTitle("Mod name", "Registry name", "Hardness", "Resistance");
-
-            blockDump.setColumnProperties(2, Alignment.RIGHT, true); // Hardness
-            blockDump.setColumnProperties(3, Alignment.RIGHT, true); // Resistance
-
-            blockDump.addHeader("NOTE: The Hardness and Resistance values are the raw base values in the fields");
-            blockDump.addHeader("of the Block class in question. The actual final values may be different");
-            blockDump.addHeader("for different states of the block, or they may depend on a TileEntity etc.");
-
-            blockDump.addFooter("NOTE: The Hardness and Resistance values are the raw base values in the fields");
-            blockDump.addFooter("of the Block class in question. The actual final values may be different");
-            blockDump.addFooter("for different states of the block, or they may depend on a TileEntity etc.");
+            catch (Exception e)
+            {
+                TellMe.logger.warn("Exception while trying to get block-props dump for '{}'", id);
+            }
         }
-        catch (Exception e)
-        {
-            TellMe.logger.warn("Exception while trying to get block-props dump", e);
-        }
+
+        blockDump.addTitle("Mod name", "Registry name", "Hardness", "Resistance");
+
+        blockDump.setColumnProperties(2, Alignment.RIGHT, true); // Hardness
+        blockDump.setColumnProperties(3, Alignment.RIGHT, true); // Resistance
+
+        blockDump.addHeader("NOTE: The Hardness and Resistance values are the raw base values in the fields");
+        blockDump.addHeader("of the Block class in question. The actual final values may be different");
+        blockDump.addHeader("for different states of the block, or they may depend on a TileEntity etc.");
+
+        blockDump.addFooter("NOTE: The Hardness and Resistance values are the raw base values in the fields");
+        blockDump.addFooter("of the Block class in question. The actual final values may be different");
+        blockDump.addFooter("for different states of the block, or they may depend on a TileEntity etc.");
 
         return blockDump.getLines();
     }

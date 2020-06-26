@@ -9,19 +9,18 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.biome.provider.BiomeProvider;
-import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
@@ -96,10 +95,10 @@ public class BiomeDump
         return biomeDump.getLines();
     }
 
-    public static void printCurrentBiomeInfoToChat(Entity entity)
+    public static void printCurrentBiomeInfoToChat(PlayerEntity entity)
     {
         World world = entity.getEntityWorld();
-        BlockPos pos = entity.getPosition();
+        BlockPos pos = entity.func_233580_cy_();
         Biome biome = world.getBiome(pos);
 
         @SuppressWarnings("deprecation")
@@ -114,41 +113,42 @@ public class BiomeDump
         boolean isOceanic = BiomeManager.oceanBiomes.contains(biome);
         boolean snowing = biome.doesSnowGenerate(world, pos);
         String validFor = getValidForString(biome);
-        ITextComponent textPre = new StringTextComponent("Name: ")
-                               .appendSibling(new StringTextComponent(name).applyTextStyle(green))
-                               .appendText(" - ID: ")
-                               .appendSibling(new StringTextComponent(intId).applyTextStyle(green))
-                               .appendText(" - Registry name: ");
+        IFormattableTextComponent textPre = new StringTextComponent("Name: ")
+                               .func_230529_a_(new StringTextComponent(name).func_240699_a_(green))
+                               .func_240702_b_(" - ID: ")
+                               .func_230529_a_(new StringTextComponent(intId).func_240699_a_(green))
+                               .func_240702_b_(" - Registry name: ");
         Biome.RainType rainType = biome.getPrecipitation();
         int waterColor = biome.getWaterColor();
 
-        entity.sendMessage(new StringTextComponent("------------- Current biome info ------------"));
-        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, new StringTextComponent(regName).applyTextStyle(green), new StringTextComponent("")));
-        entity.sendMessage(new StringTextComponent("RainType: ")
-                                   .appendSibling(new StringTextComponent(rainType.getName()).applyTextStyle(green))
-                                   .appendText(", Downfall: ")
-                                   .appendSibling(new StringTextComponent(String.valueOf(biome.getDownfall())).applyTextStyle(green))
-                                   .appendText(", Snows: ")
-                                   .appendSibling(new StringTextComponent(snowing ? "yes" : "no").applyTextStyle(snowing ? green : red))
-                                   .appendText(", Oceanic: ")
-                                   .appendSibling(new StringTextComponent(isOceanic ? "yes" : "no").applyTextStyle(isOceanic ? green : red)));
+        entity.sendStatusMessage(new StringTextComponent("------------- Current biome info ------------"), false);
+        entity.sendStatusMessage(OutputUtils.getClipboardCopiableMessage(textPre, new StringTextComponent(regName).func_240699_a_(green), new StringTextComponent("")), false);
+        entity.sendStatusMessage(new StringTextComponent("RainType: ")
+                                   .func_230529_a_(new StringTextComponent(rainType.getName()).func_240699_a_(green))
+                                   .func_240702_b_(", Downfall: ")
+                                   .func_230529_a_(new StringTextComponent(String.valueOf(biome.getDownfall())).func_240699_a_(green))
+                                   .func_240702_b_(", Snows: ")
+                                   .func_230529_a_(new StringTextComponent(snowing ? "yes" : "no").func_240699_a_(snowing ? green : red))
+                                   .func_240702_b_(", Oceanic: ")
+                                   .func_230529_a_(new StringTextComponent(isOceanic ? "yes" : "no").func_240699_a_(isOceanic ? green : red)), false);
 
-        entity.sendMessage(new StringTextComponent("Temperature: ")
-                                   .appendSibling(new StringTextComponent(String.valueOf(biome.getTemperature(pos))).applyTextStyle(green))
-                                   .appendText(", Temp. category: ")
-                                   .appendSibling(new StringTextComponent(biome.getTempCategory().toString()).applyTextStyle(green)));
-        entity.sendMessage(new StringTextComponent("Biome types: ")
-                                   .appendSibling(new StringTextComponent(biomeTypes).applyTextStyle(green)));
-        entity.sendMessage(new StringTextComponent("Biome dictionary types: ")
-                                   .appendSibling(new StringTextComponent(biomeDictionaryTypes).applyTextStyle(green)));
+        entity.sendStatusMessage(new StringTextComponent("Temperature: ")
+                                   .func_230529_a_(new StringTextComponent(String.valueOf(biome.getTemperature(pos))).func_240699_a_(green))
+                                   .func_240702_b_(", Temp. category: ")
+                                   .func_230529_a_(new StringTextComponent(biome.getTempCategory().toString()).func_240699_a_(green)), false);
+        entity.sendStatusMessage(new StringTextComponent("Biome types: ")
+                                   .func_230529_a_(new StringTextComponent(biomeTypes).func_240699_a_(green)), false);
+        entity.sendStatusMessage(new StringTextComponent("Biome dictionary types: ")
+                                   .func_230529_a_(new StringTextComponent(biomeDictionaryTypes).func_240699_a_(green)), false);
 
         if (StringUtils.isBlank(validFor) == false)
         {
-            entity.sendMessage(new StringTextComponent("Valid for: ").appendSibling(new StringTextComponent(validFor).applyTextStyle(TextFormatting.AQUA)));
+            entity.sendStatusMessage(new StringTextComponent("Valid for: ")
+                                       .func_230529_a_(new StringTextComponent(validFor).func_240699_a_(TextFormatting.AQUA)), false);
         }
 
-        entity.sendMessage(new StringTextComponent("Water Color Multiplier: ")
-                .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", waterColor, waterColor)).applyTextStyle(green)));
+        entity.sendStatusMessage(new StringTextComponent("Water Color Multiplier: ")
+                .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", waterColor, waterColor)).func_240699_a_(green)), false);
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
@@ -242,7 +242,7 @@ public class BiomeDump
             strings.add("spawn");
         }
 
-        for (Structure<?> structure : Feature.STRUCTURES.values())
+        for (Structure<?> structure : Structure.field_236365_a_.values())
         {
             if (biome.hasStructure(structure))
             {
@@ -332,6 +332,7 @@ public class BiomeDump
         @Override
         public void addLine(DataDump dump, Biome biome, ResourceLocation id, BiomeDumpContext ctx)
         {
+            @SuppressWarnings("deprecation")
             String intId = String.valueOf(Registry.BIOME.getId(biome));
             String regName = id.toString();
             String name = TellMe.dataProvider.getBiomeName(biome);
@@ -371,6 +372,7 @@ public class BiomeDump
         @Override
         public void addLine(DataDump dump, Biome biome, ResourceLocation id, BiomeDumpContext ctx)
         {
+            @SuppressWarnings("deprecation")
             String intId = String.valueOf(Registry.BIOME.getId(biome));
             String regName = id.toString();
             String name = TellMe.dataProvider.getBiomeName(biome);
@@ -411,6 +413,7 @@ public class BiomeDump
         @Override
         public void addLine(DataDump dump, Biome biome, ResourceLocation id, BiomeDumpContext ctx)
         {
+            @SuppressWarnings("deprecation")
             String intId = String.valueOf(Registry.BIOME.getId(biome));
             String regName = id.toString();
             String name = TellMe.dataProvider.getBiomeName(biome);

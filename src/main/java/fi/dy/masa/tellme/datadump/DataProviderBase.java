@@ -10,12 +10,11 @@ import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.block.BlockState;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -26,14 +25,11 @@ import net.minecraft.world.GrassColors;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ChunkManager;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 
@@ -47,25 +43,8 @@ public class DataProviderBase
         return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
     }
 
-    public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
+    public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
     {
-    }
-
-    public World getWorld(@Nullable MinecraftServer server, DimensionType dimensionType) throws CommandSyntaxException
-    {
-        if (server == null)
-        {
-            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(dimensionType.getRegistryName().toString());
-        }
-
-        World world = DimensionManager.getWorld(server, dimensionType, false, false);
-
-        if (world == null)
-        {
-            throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(dimensionType.getRegistryName().toString());
-        }
-
-        return world;
     }
 
     public int getFoliageColor(Biome biome, BlockPos pos)
@@ -95,7 +74,7 @@ public class DataProviderBase
 
                 for (ChunkHolder holder : immutableLoadedChunks.values())
                 {
-                    Optional<Chunk> optional = holder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                    Optional<Chunk> optional = holder.getBorderFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
 
                     if (optional.isPresent())
                     {
@@ -144,10 +123,6 @@ public class DataProviderBase
     }
 
     public void addItemGroupNames(JsonObject obj, Item item)
-    {
-    }
-
-    public void addMusicTypeData(DataDump dump)
     {
     }
 }

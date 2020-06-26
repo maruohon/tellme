@@ -10,10 +10,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.state.IProperty;
+import net.minecraft.state.Property;
 import net.minecraft.util.ResourceLocation;
-import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.registries.ForgeRegistries;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class BlockStatesDump
 {
@@ -28,7 +28,7 @@ public class BlockStatesDump
             Block block = entry.getValue();
 
             List<String> lines = new ArrayList<String>();
-            UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = block.getDefaultState().getValues().entrySet().iterator();
+            UnmodifiableIterator<Entry<Property<?>, Comparable<?>>> propIter = block.getDefaultState().getValues().entrySet().iterator();
 
             while (propIter.hasNext())
             {
@@ -61,12 +61,12 @@ public class BlockStatesDump
 
             for (BlockState state : validStates)
             {
-                List<String> lines = new ArrayList<String>();
-                UnmodifiableIterator<Entry<IProperty<?>, Comparable<?>>> propIter = state.getValues().entrySet().iterator();
+                List<String> lines = new ArrayList<>();
+                UnmodifiableIterator<Entry<Property<?>, Comparable<?>>> propIter = state.getValues().entrySet().iterator();
 
                 while (propIter.hasNext())
                 {
-                    Entry<IProperty<?>, Comparable<?>> propEntry = propIter.next();
+                    Entry<Property<?>, Comparable<?>> propEntry = propIter.next();
                     lines.add(propEntry.getKey().getName() + "=" + propEntry.getValue().toString());
                 }
 

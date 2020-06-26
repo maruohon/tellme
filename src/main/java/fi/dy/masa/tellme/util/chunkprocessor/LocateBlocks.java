@@ -13,7 +13,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.TellMe;
@@ -121,7 +121,7 @@ public class LocateBlocks extends LocateBase
                         if (filters.contains(state))
                         {
                             ResourceLocation name = state.getBlock().getRegistryName();
-                            this.data.add(LocationData.of(name.toString(), dim, new Vec3d(x, y, z)));
+                            this.data.add(LocationData.of(name.toString(), dim, new Vector3d(x, y, z)));
                             count++;
                         }
                     }

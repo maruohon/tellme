@@ -5,8 +5,8 @@ import java.util.Set;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
-import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.registries.ForgeRegistries;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class EnchantmentDump
 {
@@ -24,11 +24,12 @@ public class EnchantmentDump
                 String regName = key.toString();
                 String name = ench.getName() != null ? ench.getName() : "<null>";
                 String type = ench.type != null ? ench.type.toString() : "<null>";
-                String rarity = ench.getRarity() != null ? ench.getRarity().toString() : "<null>";
+                Enchantment.Rarity rarity = ench.getRarity();
+                String rarityStr = rarity != null ? String.format("%s (%d)", rarity.toString(), rarity.getWeight()) : "<null>";
                 @SuppressWarnings("deprecation")
-                int id = Registry.ENCHANTMENT.getId(ench);
+                int intId = Registry.ENCHANTMENT.getId(ench);
 
-                enchantmentDump.addData(regName, name, type, rarity, String.valueOf(id));
+                enchantmentDump.addData(regName, name, type, rarityStr, String.valueOf(intId));
             }
         }
 

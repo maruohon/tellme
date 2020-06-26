@@ -13,7 +13,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.TellMe;
@@ -99,7 +99,7 @@ public class LocateBlockEntities extends LocateBase
                 if (filters.contains(type) && box.isVecInside(pos))
                 {
                     String name = BlockInfo.getBlockEntityNameFor(type);
-                    this.data.add(LocationData.of(name, dim, new Vec3d(pos)));
+                    this.data.add(LocationData.of(name, dim, new Vector3d(pos.getX(), pos.getY(), pos.getZ())));
                     count++;
                 }
             }

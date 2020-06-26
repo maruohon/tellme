@@ -1,15 +1,11 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -17,80 +13,87 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class DimensionDump
 {
-    @SuppressWarnings("deprecation")
-    public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server)
+    public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server, boolean verbose)
     {
-        if (server == null)
+        DataDump dump = new DataDump(verbose ? 12 : 2, format);
+
+        if (server != null)
         {
-            return Collections.emptyList();
+            for (World world : server.getWorlds())
+            {
+                DimensionType dim = world.func_230315_m_();
+                String dimId = world.func_234922_V_().func_240901_a_().toString();
+                String natural = String.valueOf(dim.func_236043_f_());
+
+                if (verbose)
+                {
+                    String bedWorks = String.valueOf(dim.func_241510_j_());
+                    String ceiling = String.valueOf(dim.func_236037_d_());
+                    String dragon = String.valueOf(dim.func_236046_h_());
+                    String raids = String.valueOf(dim.func_241512_l_());
+                    String skyLight = String.valueOf(dim.hasSkyLight());
+                    String logicalHeight = String.valueOf(dim.func_241513_m_());
+                    String piglinSafe = String.valueOf(dim.func_241509_i_());
+                    String respawnAnchor = String.valueOf(dim.func_241511_k_());
+                    String shrunk = String.valueOf(dim.func_236045_g_());
+                    String ultrawarm = String.valueOf(dim.func_236040_e_());
+
+                    dump.addData(dimId, natural, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, shrunk, skyLight, ultrawarm);
+                }
+                else
+                {
+                    dump.addData(dimId, natural);
+                }
+            }
         }
 
-        DataDump dimensionDump = new DataDump(6, format);
-        dimensionDump.setSort(false);
-
-        World overworld = DimensionManager.getWorld(server, DimensionType.OVERWORLD, false, false);
-
-        for (DimensionType dim : Registry.DIMENSION_TYPE)
+        if (verbose)
         {
-            String dimId = dim.getRegistryName().toString();
-            String typeId = String.valueOf(dim.getId());
-            String hasSkylight = String.valueOf(dim.hasSkyLight());
-            String isVanilla = String.valueOf(dim.isVanilla());
-
-            World world = DimensionManager.getWorld(server, dim, false, false);
-            boolean loaded = false;
-            String dimensionClass;
-
-            if (world != null)
-            {
-                loaded = true;
-                dimensionClass = world.getDimension().getClass().getName();
-            }
-            else
-            {
-                dimensionClass = dim.create(overworld).getClass().getName();
-            }
-
-            String currentlyLoaded = String.valueOf(loaded);
-
-            dimensionDump.addData(dimId, typeId, hasSkylight, isVanilla, currentlyLoaded, dimensionClass);
+            dump.addTitle("ID", "Natural", "Bed works", "Ceiling", "Dragon", "Height", "Piglin safe", "Raids", "Resp. Anchor", "Shrunk", "Sky Light", "Ultra Warm");
+            dump.setColumnAlignment(1, Alignment.RIGHT); // natural
+            dump.setColumnAlignment(2, Alignment.RIGHT); // bed
+            dump.setColumnAlignment(3, Alignment.RIGHT); // ceiling
+            dump.setColumnAlignment(4, Alignment.RIGHT); // dragon
+            dump.setColumnProperties(5, Alignment.RIGHT, true); // height
+            dump.setColumnAlignment(6, Alignment.RIGHT); // piglin
+            dump.setColumnAlignment(7, Alignment.RIGHT); // raids
+            dump.setColumnAlignment(8, Alignment.RIGHT); // respawn anchor
+            dump.setColumnAlignment(9, Alignment.RIGHT); // shrunk
+            dump.setColumnAlignment(10, Alignment.RIGHT); // sky light
+            dump.setColumnAlignment(11, Alignment.RIGHT); // ultra warm
+        }
+        else
+        {
+            dump.addTitle("ID", "Natural");
         }
 
-        dimensionDump.addTitle("ID", "Raw ID", "Has Sky Light", "Is Vanilla", "Loaded?", "Dimension class");
-        dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // type ID
-        dimensionDump.setColumnAlignment(2, Alignment.RIGHT); // has sky light
-        dimensionDump.setColumnAlignment(3, Alignment.RIGHT); // is vanilla
-        dimensionDump.setColumnAlignment(4, Alignment.RIGHT); // loaded?
+        dump.setSort(false);
 
-        return dimensionDump.getLines();
+        return dump.getLines();
     }
 
-    @SuppressWarnings("deprecation")
     public static List<String> getLoadedDimensions(Format format, @Nullable MinecraftServer server)
     {
-        DataDump dimensionDump = new DataDump(6, format);
+        DataDump dimensionDump = new DataDump(4, format);
         dimensionDump.setSort(false);
 
-        for (Map.Entry<DimensionType, ServerWorld> entry : server.forgeGetWorldMap().entrySet())
+        if (server != null)
         {
-            DimensionType dim = entry.getKey();
-            ServerWorld world = entry.getValue();
-            String dimId = dim.getRegistryName().toString();
-            String typeId = String.valueOf(dim.getId());
-            String dimensionClass = world.getDimension().getClass().getName();
-            // TODO 1.14+: Reflect the map and use size() ?
-            String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
-            String entityCount = String.valueOf(world.getEntities().count());
-            String playerCount = String.valueOf(world.getPlayers().size());
+            for (ServerWorld world : server.getWorlds())
+            {
+                String dimId = world.func_234922_V_().func_240901_a_().toString();
+                String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
+                String entityCount = String.valueOf(world.getEntities().count());
+                String playerCount = String.valueOf(world.getPlayers().size());
 
-            dimensionDump.addData(dimId, typeId, dimensionClass, loadedChunks, entityCount, playerCount);
+                dimensionDump.addData(dimId, loadedChunks, entityCount, playerCount);
+            }
         }
 
-        dimensionDump.addTitle("ID", "Raw ID", "Dimension class", "Loaded Chunks", "Entities", "Players");
-        dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // type ID
-        dimensionDump.setColumnProperties(3, Alignment.RIGHT, true); // loaded chunks
-        dimensionDump.setColumnProperties(4, Alignment.RIGHT, true); // entity count
-        dimensionDump.setColumnProperties(5, Alignment.RIGHT, true); // players
+        dimensionDump.addTitle("ID", "Loaded Chunks", "Entities", "Players");
+        dimensionDump.setColumnProperties(1, Alignment.RIGHT, true); // loaded chunks
+        dimensionDump.setColumnProperties(2, Alignment.RIGHT, true); // entity count
+        dimensionDump.setColumnProperties(3, Alignment.RIGHT, true); // players
 
         return dimensionDump.getLines();
     }

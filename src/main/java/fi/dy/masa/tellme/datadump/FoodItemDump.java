@@ -3,17 +3,17 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class FoodItemDump
 {
@@ -31,7 +31,7 @@ public class FoodItemDump
         String isFastEat = String.valueOf(food.isFastEating());
         List<Pair<EffectInstance, Float>> effects = food.getEffects();
         String effectsStr = effects.stream()
-                .map((pair) -> "{[" + pair.getLeft().toString() + "], Propability: " + pair.getRight() + "}")
+                .map((pair) -> "{[" + pair.getFirst().toString() + "], Propability: " + pair.getSecond() + "}")
                 .collect(Collectors.joining(", "));
 
         dump.addData(registryName, displayName, hunger, saturation, isMeat, isFastEat, ItemDump.getTagNamesJoined(item), effectsStr);

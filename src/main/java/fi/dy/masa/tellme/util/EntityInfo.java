@@ -96,7 +96,7 @@ public class EntityInfo
         String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
         String textPost = String.format("] (entityId: %d)", target.getEntityId());
 
-        player.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost));
+        player.sendStatusMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost), false);
     }
 
     public static void printFullEntityInfoToConsole(PlayerEntity player, Entity target)
@@ -114,27 +114,25 @@ public class EntityInfo
 
     public static List<String> getPlayerList(DataDump.Format format, @Nullable MinecraftServer server)
     {
-        if (server == null)
-        {
-            return Collections.emptyList();
-        }
-
         DataDump dump = new DataDump(6, format);
 
-        for (PlayerEntity player : server.getPlayerList().getPlayers())
+        if (server != null)
         {
-            String name = player.getName().getString();
-            String dim = player.getEntityWorld().dimension.getType().getRegistryName().toString();
-            String health = String.format("%.2f", player.getHealth());
-            BlockPos pos = new BlockPos(player);
-            int x = pos.getX();
-            int y = pos.getY();
-            int z = pos.getZ();
-            String blockPos = String.format("x: %d, y: %d, z: %d", x, y, z);
-            String chunkPos = String.format("cx: %d, cy: %d, cz: %d", x >> 4, y >> 4, z >> 4);
-            String regionPos = String.format("r.%d.%d", x >> 9, z >> 9);
+            for (PlayerEntity player : server.getPlayerList().getPlayers())
+            {
+                String name = player.getName().getString();
+                String dim = WorldUtils.getDimensionId(player.getEntityWorld());
+                String health = String.format("%.2f", player.getHealth());
+                BlockPos pos = player.func_233580_cy_();
+                int x = pos.getX();
+                int y = pos.getY();
+                int z = pos.getZ();
+                String blockPos = String.format("x: %d, y: %d, z: %d", x, y, z);
+                String chunkPos = String.format("cx: %d, cy: %d, cz: %d", x >> 4, y >> 4, z >> 4);
+                String regionPos = String.format("r.%d.%d", x >> 9, z >> 9);
 
-            dump.addData(name, health, dim, blockPos, chunkPos, regionPos);
+                dump.addData(name, health, dim, blockPos, chunkPos, regionPos);
+            }
         }
 
         dump.addTitle("Name", "Health", "Dimension", "Position", "Chunk", "Region");

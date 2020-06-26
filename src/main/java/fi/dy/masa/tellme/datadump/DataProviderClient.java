@@ -4,61 +4,36 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.MusicTicker.MusicType;
 import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.client.network.play.ClientPlayNetHandler;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class DataProviderClient extends DataProviderBase
 {
     //private static final Field field_ClientChunkProvider_array = ObfuscationReflectionHelper.findField(ClientChunkProvider.class, "field_217256_d");
     //private static final Field field_ChunkArray_chunks = ObfuscationReflectionHelper.findField(ClientChunkProvider.ChunkArray.class, "field_217195_b");
-
-    @Override
-    public World getWorld(MinecraftServer server, DimensionType dimensionType) throws CommandSyntaxException
-    {
-        Minecraft mc = Minecraft.getInstance();
-
-        if (mc.isSingleplayer())
-        {
-            return super.getWorld(server, dimensionType);
-        }
-        else if (mc.world != null && mc.world.getDimension().getType() == dimensionType)
-        {
-            return mc.world;
-        }
-
-        throw CommandUtils.DIMENSION_NOT_LOADED_EXCEPTION.create(dimensionType.getRegistryName().toString());
-    }
 
     @Override
     public Collection<Chunk> getLoadedChunks(World world)
@@ -73,7 +48,7 @@ public class DataProviderClient extends DataProviderBase
         if (world instanceof ClientWorld && mc.player != null)
         {
             ClientChunkProvider provider = ((ClientWorld) world).getChunkProvider();
-            Vec3d vec = mc.player.getPositionVector();
+            Vector3d vec = mc.player.getPositionVec();
             ChunkPos center = new ChunkPos(((int) Math.floor(vec.x)) >> 4, ((int) Math.floor(vec.z)) >> 4);
             ArrayList<Chunk> list = new ArrayList<>();
             final int renderDistance = mc.gameSettings.renderDistanceChunks;
@@ -140,19 +115,19 @@ public class DataProviderClient extends DataProviderBase
     }
 
     @Override
-    public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
+    public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
     {
-        BlockPos pos = entity.getPosition();
+        BlockPos pos = entity.func_233580_cy_();
         TextFormatting green = TextFormatting.GREEN;
 
         // These are client-side only:
         int color = this.getGrassColor(biome, pos);
-        entity.sendMessage(new StringTextComponent("Grass color: ")
-                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", color, color)).applyTextStyle(green)));
+        entity.sendStatusMessage(new StringTextComponent("Grass color: ")
+                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", color, color)).func_240699_a_(green)), false);
 
         color = this.getFoliageColor(biome, pos);
-        entity.sendMessage(new StringTextComponent("Foliage color: ")
-                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", color, color)).applyTextStyle(green)));
+        entity.sendStatusMessage(new StringTextComponent("Foliage color: ")
+                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", color, color)).func_240699_a_(green)), false);
     }
 
     @Override
@@ -171,41 +146,6 @@ public class DataProviderClient extends DataProviderBase
     public String getBiomeName(Biome biome)
     {
         return biome.getDisplayName().getString();
-    }
-
-    public void getExtendedBlockStateInfo(World world, BlockState state, BlockPos pos, List<String> lines)
-    {
-        /*
-        try
-        {
-            state = state.getBlock().getExtendedState(state, world, pos);
-        }
-        catch (Exception e)
-        {
-            TellMe.logger.error("getFullBlockInfo(): Exception while calling getExtendedState() on the block");
-        }
-
-        if (state instanceof IExtendedBlockState)
-        {
-            IExtendedBlockState extendedState = (IExtendedBlockState) state;
-
-            if (extendedState.getUnlistedProperties().size() > 0)
-            {
-                lines.add("IExtendedBlockState properties:");
-
-                UnmodifiableIterator<Entry<IUnlistedProperty<?>, Optional<?>>> iterExt = extendedState.getUnlistedProperties().entrySet().iterator();
-
-                while (iterExt.hasNext())
-                {
-                    Entry<IUnlistedProperty<?>, Optional<?>> entry = iterExt.next();
-                    lines.add(MoreObjects.toStringHelper(entry.getKey())
-                            .add("name", entry.getKey().getName())
-                            .add("clazz", entry.getKey().getType())
-                            .add("value", entry.getValue().toString()).toString());
-                }
-            }
-        }
-        */
     }
 
     @Override
@@ -269,19 +209,5 @@ public class DataProviderClient extends DataProviderBase
 
         names = Arrays.copyOf(names, i);
         obj.add("CreativeTabs", new JsonPrimitive(String.join(",", names)));
-    }
-
-    @Override
-    public void addMusicTypeData(DataDump dump)
-    {
-        for (MusicType music : MusicType.values())
-        {
-            SoundEvent sound = music.getSound();
-            String minDelay = String.valueOf(music.getMinDelay());
-            String maxDelay = String.valueOf(music.getMaxDelay());
-            ResourceLocation regName = sound.getRegistryName();
-
-            dump.addData(music.name().toLowerCase(), regName != null ? regName.toString() : "<null>", minDelay, maxDelay);
-        }
     }
 }

@@ -18,7 +18,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.item.ItemStack;
-import net.minecraft.state.IProperty;
+import net.minecraft.state.Property;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -156,7 +156,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             }
 
             Block block = state.getBlock();
-            Map<IProperty<?>, Comparable<?>> parsedProperties = parser.getProperties();
+            Map<Property<?>, Comparable<?>> parsedProperties = parser.getProperties();
 
             // No block state properties specified, get all states for this block
             if (parsedProperties.size() == 0)
@@ -164,7 +164,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 list.addAll(infoByBlock.get(block));
             }
             // Exact state specified, only add that state
-            else if (parsedProperties.size() == state.getProperties().size())
+            else if (parsedProperties.size() == state.getValues().size())
             {
                 BlockStateCount info = this.blockStats.get(state);
 
