@@ -9,5 +9,5 @@ import net.minecraft.entity.effect.StatusEffectType;
 public interface IMixinStatusEffect
 {
     @Accessor("type")
-    StatusEffectType getEffectType();
+    StatusEffectType tellmeGetEffectType();
 }

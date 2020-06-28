@@ -8,5 +8,5 @@ import net.minecraft.util.collection.WeightedPicker;
 public interface IMixinWeightedPickerEntry
 {
     @Accessor("weight")
-    int getWeight();
+    int tellmeGetWeight();
 }

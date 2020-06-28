@@ -10,5 +10,5 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 public interface IMixinServerWorld
 {
     @Accessor("entitiesById")
-    Int2ObjectMap<Entity> getEntitiesByIdMap();
+    Int2ObjectMap<Entity> tellmeGetEntitiesByIdMap();
 }

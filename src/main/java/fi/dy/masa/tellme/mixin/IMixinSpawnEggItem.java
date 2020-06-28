@@ -8,8 +8,8 @@ import net.minecraft.item.SpawnEggItem;
 public interface IMixinSpawnEggItem
 {
     @Accessor("primaryColor")
-    int getPrimaryColor();
+    int tellmeGetPrimaryColor();
 
     @Accessor("secondaryColor")
-    int getSecondaryColor();
+    int tellmeGetSecondaryColor();
 }

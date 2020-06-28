@@ -5,6 +5,11 @@
     "compatibilityLevel": "JAVA_8",
     "mixins": [
         "IMixinAbstractFireBlock",
+        "IMixinBiome",
+        "IMixinBiomeAdditionsSound",
+        "IMixinBiomeEffects",
+        "IMixinBiomeMoodSound",
+        "IMixinMusicSound",
         "IMixinServerWorld",
         "IMixinSpawnEggItem",
         "IMixinStatusEffect",

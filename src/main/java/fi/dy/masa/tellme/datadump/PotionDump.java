@@ -36,8 +36,8 @@ public class PotionDump
 
     public static String getEffectInfo(StatusEffect effect)
     {
-        String isBad = String.valueOf(((IMixinStatusEffect) effect).getEffectType() == StatusEffectType.HARMFUL);
-        String isBeneficial = String.valueOf(((IMixinStatusEffect) effect).getEffectType() == StatusEffectType.BENEFICIAL);
+        String isBad = String.valueOf(((IMixinStatusEffect) effect).tellmeGetEffectType() == StatusEffectType.HARMFUL);
+        String isBeneficial = String.valueOf(((IMixinStatusEffect) effect).tellmeGetEffectType() == StatusEffectType.BENEFICIAL);
         String regName = Registry.STATUS_EFFECT.getId(effect).toString();
 
         return "Potion:[reg:" + regName + ",name:" + effect.getTranslationKey() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";

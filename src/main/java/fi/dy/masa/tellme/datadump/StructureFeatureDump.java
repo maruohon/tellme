@@ -53,7 +53,7 @@ public class StructureFeatureDump
         {
             Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
             String entName = erl != null ? erl.toString() : "<null>";
-            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, ((IMixinWeightedPickerEntry) spawn).getWeight(), spawn.minGroupSize, spawn.maxGroupSize));
+            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, ((IMixinWeightedPickerEntry) spawn).tellmeGetWeight(), spawn.minGroupSize, spawn.maxGroupSize));
         }
 
         Collections.sort(spawns);

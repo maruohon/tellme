@@ -82,7 +82,7 @@ public class DimensionDump
             {
                 String dimId = world.getDimensionRegistryKey().getValue().toString();
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
-                String entityCount = String.valueOf(((IMixinServerWorld) world).getEntitiesByIdMap().size());
+                String entityCount = String.valueOf(((IMixinServerWorld) world).tellmeGetEntitiesByIdMap().size());
                 String playerCount = String.valueOf(world.getPlayers().size());
 
                 dimensionDump.addData(dimId, loadedChunks, entityCount, playerCount);

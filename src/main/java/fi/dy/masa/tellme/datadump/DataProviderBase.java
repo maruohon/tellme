@@ -70,7 +70,7 @@ public class DataProviderBase
 
             try
             {
-                Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) serverWorld.getChunkManager().threadedAnvilChunkStorage).getChunkHolders();
+                Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) serverWorld.getChunkManager().threadedAnvilChunkStorage).tellmeGetChunkHolders();
 
                 for (ChunkHolder holder : chunkHolders.values())
                 {

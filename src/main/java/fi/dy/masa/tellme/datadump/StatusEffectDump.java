@@ -24,8 +24,8 @@ public class StatusEffectDump
             String intId = String.valueOf(Registry.STATUS_EFFECT.getRawId(effect));
             String name = effect.getTranslationKey();
             String color = String.format("0x%08X (%10d)", effect.getColor(), effect.getColor());
-            String isBad = String.valueOf(((IMixinStatusEffect) effect).getEffectType() == StatusEffectType.HARMFUL);
-            String isBeneficial = String.valueOf(((IMixinStatusEffect) effect).getEffectType() == StatusEffectType.BENEFICIAL);
+            String isBad = String.valueOf(((IMixinStatusEffect) effect).tellmeGetEffectType() == StatusEffectType.HARMFUL);
+            String isBeneficial = String.valueOf(((IMixinStatusEffect) effect).tellmeGetEffectType() == StatusEffectType.BENEFICIAL);
 
             potionDump.addData(modName, regName, name, intId, color, isBad, isBeneficial);
         }
