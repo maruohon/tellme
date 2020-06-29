@@ -1,9 +1,8 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryTracker;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.mixin.IMixinServerWorld;
@@ -14,35 +13,37 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class DimensionDump
 {
-    public static List<String> getFormattedDimensionDump(Format format, boolean verbose)
+    public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server, boolean verbose)
     {
         DataDump dump = new DataDump(verbose ? 12 : 2, format);
 
-        Registry<DimensionType> registry = RegistryTracker.create().getDimensionTypeRegistry();
-
-        for (DimensionType dim : registry)
+        if (server != null)
         {
-            String dimId = registry.getId(dim).toString();
-            String natural = String.valueOf(dim.isNatural());
-
-            if (verbose)
+            for (World world : server.getWorlds())
             {
-                String bedWorks = String.valueOf(dim.isBedWorking());
-                String ceiling = String.valueOf(dim.hasCeiling());
-                String dragon = String.valueOf(dim.hasEnderDragonFight());
-                String raids = String.valueOf(dim.hasRaids());
-                String skyLight = String.valueOf(dim.hasSkyLight());
-                String logicalHeight = String.valueOf(dim.getLogicalHeight());
-                String piglinSafe = String.valueOf(dim.isPiglinSafe());
-                String respawnAnchor = String.valueOf(dim.isRespawnAnchorWorking());
-                String shrunk = String.valueOf(dim.isShrunk());
-                String ultrawarm = String.valueOf(dim.isUltrawarm());
+                DimensionType dim = world.getDimension();
+                String dimId = world.getDimensionRegistryKey().getValue().toString();
+                String natural = String.valueOf(dim.isNatural());
 
-                dump.addData(dimId, natural, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, shrunk, skyLight, ultrawarm);
-            }
-            else
-            {
-                dump.addData(dimId, natural);
+                if (verbose)
+                {
+                    String bedWorks = String.valueOf(dim.isBedWorking());
+                    String ceiling = String.valueOf(dim.hasCeiling());
+                    String dragon = String.valueOf(dim.hasEnderDragonFight());
+                    String raids = String.valueOf(dim.hasRaids());
+                    String skyLight = String.valueOf(dim.hasSkyLight());
+                    String logicalHeight = String.valueOf(dim.getLogicalHeight());
+                    String piglinSafe = String.valueOf(dim.isPiglinSafe());
+                    String respawnAnchor = String.valueOf(dim.isRespawnAnchorWorking());
+                    String shrunk = String.valueOf(dim.isShrunk());
+                    String ultrawarm = String.valueOf(dim.isUltrawarm());
+
+                    dump.addData(dimId, natural, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, shrunk, skyLight, ultrawarm);
+                }
+                else
+                {
+                    dump.addData(dimId, natural);
+                }
             }
         }
 
@@ -71,7 +72,7 @@ public class DimensionDump
         return dump.getLines();
     }
 
-    public static List<String> getLoadedDimensions(Format format, MinecraftServer server)
+    public static List<String> getLoadedDimensions(Format format, @Nullable MinecraftServer server)
     {
         DataDump dimensionDump = new DataDump(4, format);
         dimensionDump.setSort(false);

@@ -158,8 +158,8 @@ public class SubCommandDump
         dumpProviders.put("creative-tabs",              (ctx) -> ItemGroupDump.getFormattedCreativetabDump(ctx.format));
         dumpProviders.put("custom-stats",               (ctx) -> StatTypesDump.getFormattedDumpCustomStats(ctx.format));
         dumpProviders.put("decorators",                 (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.DECORATOR));
-        dumpProviders.put("dimensions",                 (ctx) -> DimensionDump.getFormattedDimensionDump(ctx.format, false));
-        dumpProviders.put("dimensions-verbose",         (ctx) -> DimensionDump.getFormattedDimensionDump(ctx.format, true));
+        dumpProviders.put("dimensions",                 (ctx) -> DimensionDump.getFormattedDimensionDump(ctx.format, ctx.server, false));
+        dumpProviders.put("dimensions-verbose",         (ctx) -> DimensionDump.getFormattedDimensionDump(ctx.format, ctx.server, true));
         dumpProviders.put("enchantments",               (ctx) -> EnchantmentDump.getFormattedEnchantmentDump(ctx.format));
         dumpProviders.put("entities",                   (ctx) -> EntityDump.getFormattedEntityDump(null, ctx.format, false));
         dumpProviders.put("entities-with-class",        (ctx) -> EntityDump.getFormattedEntityDump(ctx.world, ctx.format, true));
