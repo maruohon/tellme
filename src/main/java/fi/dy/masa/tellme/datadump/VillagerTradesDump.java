@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
@@ -22,7 +23,7 @@ public class VillagerTradesDump
         Random rand = new Random();
 
         ArrayList<VillagerProfession> professions = new ArrayList<>(VillagerTrades.VILLAGER_DEFAULT_TRADES.keySet());
-        professions.sort((v1, v2) -> v1.getRegistryName().toString().compareTo(v2.getRegistryName().toString()));
+        professions.sort(Comparator.comparing(v -> v.getRegistryName().toString()));
 
         for (VillagerProfession profession : professions)
         {

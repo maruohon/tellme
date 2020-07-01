@@ -28,12 +28,13 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockInfo
 {
@@ -327,7 +328,7 @@ public class BlockInfo
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = block.getNameTextComponent().getString();
+                displayName = (new TranslationTextComponent(block.getTranslationKey())).getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));
