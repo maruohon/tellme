@@ -1,16 +1,18 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+import javax.annotation.Nullable;
+import net.minecraft.server.MinecraftServer;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class CommandDump
 {
-    public static List<String> getFormattedCommandDump(DataDump.Format format)
+    public static List<String> getFormattedCommandDump(DataDump.Format format, @Nullable MinecraftServer server)
     {
         DataDump dump = new DataDump(2, format);
 
-        TellMe.dataProvider.addCommandDumpData(dump);
+        TellMe.dataProvider.addCommandDumpData(dump, server);
 
         dump.addTitle("Command", "Class");
 

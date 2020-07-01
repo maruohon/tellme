@@ -2,10 +2,12 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -29,22 +31,21 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.RecipeManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.ToolType;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.common.IPlantable;
-import net.minecraftforge.common.ToolType;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class ItemDump
 {
@@ -71,11 +72,10 @@ public class ItemDump
         return itemDump.getLines();
     }
 
-    public static List<String> getFormattedCraftableItemsDump(Format format)
+    public static List<String> getFormattedCraftableItemsDump(Format format, @Nullable MinecraftServer server)
     {
         ItemInfoProviderBase provider = INFO_CRAFTABLES;
         DataDump dump = new DataDump(provider.getColumnCount(), format);
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 
         if (server != null)
         {
@@ -100,7 +100,7 @@ public class ItemDump
 
     public static String getTagNamesJoined(Item item)
     {
-        return item.getTags().stream().map((id) -> id.toString()).sorted().collect(Collectors.joining(", "));
+        return item.getTags().stream().map(ResourceLocation::toString).sorted().collect(Collectors.joining(", "));
     }
 
     public static String getStackInfoBasic(ItemStack stack)
@@ -229,7 +229,7 @@ public class ItemDump
                 obj.add("HarvestLevelName", new JsonPrimitive(harvestLevelName));
                 obj.add("FallingBlock", new JsonPrimitive(fallingBlock));
             }
-            catch (Exception e) {}
+            catch (Exception ignored) {}
         }
         else if (item.isFood())
         {
@@ -291,18 +291,6 @@ public class ItemDump
         obj.add("Tags", new JsonPrimitive(tags));
 
         arr.add(obj);
-    }
-
-    public static void setHeldItemWithoutEquipSound(PlayerEntity player, Hand hand, ItemStack stack)
-    {
-        if (hand == Hand.MAIN_HAND)
-        {
-            player.inventory.mainInventory.set(player.inventory.currentItem, stack);
-        }
-        else if (hand == Hand.OFF_HAND)
-        {
-            player.inventory.offHandInventory.set(0, stack);
-        }
     }
 
     private static abstract class ItemInfoProviderBase
@@ -422,7 +410,7 @@ public class ItemDump
             {
                 List<ToolType> toolTypes = new ArrayList<>(item.getToolTypes(stack));
 
-                Collections.sort(toolTypes, (t1, t2) -> t1.getName().compareTo(t2.getName()));
+                Collections.sort(toolTypes, Comparator.comparing(ToolType::getName));
 
                 List<String> strings = new ArrayList<>();
                 toolTypes.forEach((c) -> strings.add(c.getName()));

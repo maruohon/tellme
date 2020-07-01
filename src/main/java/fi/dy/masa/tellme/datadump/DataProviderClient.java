@@ -38,7 +38,6 @@ import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class DataProviderClient extends DataProviderBase
 {
@@ -120,13 +119,12 @@ public class DataProviderClient extends DataProviderBase
 
     @Override
     @Nullable
-    public Collection<Advancement> getAdvacements()
+    public Collection<Advancement> getAdvacements(@Nullable MinecraftServer server)
     {
         Minecraft mc = Minecraft.getInstance();
 
         if (mc.isSingleplayer() && mc.player != null)
         {
-            MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
             return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
         }
         else
@@ -211,10 +209,10 @@ public class DataProviderClient extends DataProviderBase
     }
 
     @Override
-    public void addCommandDumpData(DataDump dump)
+    public void addCommandDumpData(DataDump dump, @Nullable MinecraftServer server)
     {
         // TODO 1.14
-        super.addCommandDumpData(dump);
+        super.addCommandDumpData(dump, server);
     }
 
     @Override

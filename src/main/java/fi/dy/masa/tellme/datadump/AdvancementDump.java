@@ -2,18 +2,20 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
+import net.minecraft.server.MinecraftServer;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class AdvancementDump
 {
-    public static List<String> getFormattedAdvancementDumpSimple(Format format)
+    public static List<String> getFormattedAdvancementDumpSimple(Format format, @Nullable MinecraftServer server)
     {
         DataDump advancementDump = new DataDump(4, format);
-        Iterable<Advancement> iterable = TellMe.dataProvider.getAdvacements();
+        Iterable<Advancement> iterable = TellMe.dataProvider.getAdvacements(server);
 
         if (iterable == null)
         {

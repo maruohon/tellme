@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
@@ -11,23 +12,27 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class ChunkDump
 {
-    public static List<String> getFormattedChunkDump(Format format, @Nullable DimensionType dimension)
+    public static List<String> getFormattedChunkDump(Format format, @Nullable DimensionType dimension, @Nullable MinecraftServer server)
     {
-        return getFormattedChunkDump(format, dimension, null, null);
+        return getFormattedChunkDump(format, dimension, server, null, null);
     }
 
     @SuppressWarnings("deprecation")
-    public static List<String> getFormattedChunkDump(Format format, @Nullable DimensionType dimension, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
+    public static List<String> getFormattedChunkDump(Format format, @Nullable DimensionType dimension, @Nullable MinecraftServer server, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
     {
+        if (server == null)
+        {
+            return Collections.emptyList();
+        }
+
         List<DimensionType> dims = new ArrayList<>();
 
         if (dimension != null)
@@ -42,7 +47,6 @@ public class ChunkDump
             }
         }
 
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         DataDump chunkDump = new DataDump(4, format);
         final int minCX = minPos != null ? minPos.getX() >> 4 : Integer.MIN_VALUE;
         final int minCZ = minPos != null ? minPos.getZ() >> 4 : Integer.MIN_VALUE;
