@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.village.PointOfInterestType;
+import net.minecraft.world.poi.PointOfInterestType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 

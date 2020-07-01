@@ -79,7 +79,7 @@ public class DataProviderClient extends DataProviderBase
         if (world instanceof ClientWorld && mc.player != null)
         {
             ArrayList<WorldChunk> list = new ArrayList<>();
-            ClientChunkManager chunkManager = ((ClientWorld) world).method_2935();
+            ClientChunkManager chunkManager = ((ClientWorld) world).getChunkManager();
             Vec3d vec = mc.player.getPos();
             ChunkPos center = new ChunkPos(MathHelper.floor(vec.x) >> 4, MathHelper.floor(vec.z) >> 4);
             final int renderDistance = mc.options.viewDistance;
@@ -88,7 +88,7 @@ public class DataProviderClient extends DataProviderBase
             {
                 for (int chunkX = center.x - renderDistance; chunkX <= center.x + renderDistance; ++chunkX)
                 {
-                    WorldChunk chunk = chunkManager.method_2857(chunkX, chunkZ, ChunkStatus.FULL, false);
+                    WorldChunk chunk = chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
 
                     if (chunk != null)
                     {

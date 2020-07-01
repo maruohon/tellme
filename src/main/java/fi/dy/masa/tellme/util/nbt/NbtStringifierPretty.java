@@ -85,7 +85,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
         for (String key : keys)
         {
-            Tag tag = compound.getTag(key);
+            Tag tag = compound.get(key);
             this.appendTag(key, tag);
         }
 
@@ -99,7 +99,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
         final int size = list.size();
 
         String tagType = Tag.idToString(list.getType());
-        int containedId = list.getListType();
+        int containedId = list.getElementType();
         String containedTypeName = containedId > 0 ? Tag.idToString(containedId) : "?";
         String name = this.getFormattedTagName(tagName);
         this.addIndentedLine(String.format("[%s (%d values of type %s)] %s", tagType, size, containedTypeName, name));

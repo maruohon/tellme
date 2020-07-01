@@ -25,7 +25,7 @@ public class WorldUtils
         {
             for (int cX = posMin.x; cX <= posMax.x; cX++)
             {
-                chunks.add(world.method_8497(cX, cZ));
+                chunks.add(world.getChunk(cX, cZ));
             }
         }
 

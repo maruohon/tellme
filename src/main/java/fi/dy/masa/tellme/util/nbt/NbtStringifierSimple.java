@@ -56,7 +56,7 @@ public class NbtStringifierSimple extends NbtStringifierBase
 
             this.stringBuilder.append(this.getFormattedTagName(key));
             this.stringBuilder.append(':');
-            this.appendTag(key, tag.getTag(key));
+            this.appendTag(key, tag.get(key));
             first = false;
         }
 

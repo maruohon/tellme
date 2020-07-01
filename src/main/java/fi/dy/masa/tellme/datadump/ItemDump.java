@@ -203,7 +203,7 @@ public class ItemDump
                 boolean fallingBlock = block instanceof FallingBlock;
                 int light = state.getLuminance();
                 boolean flammable = ((FireBlock) Blocks.FIRE).isFlammable(state);
-                int opacity = state.getLightSubtracted(world, pos);
+                int opacity = state.getOpacity(world, pos);
 
                 obj.add("Type", new JsonPrimitive("block"));
                 obj.add("Hardness", new JsonPrimitive(hardness));

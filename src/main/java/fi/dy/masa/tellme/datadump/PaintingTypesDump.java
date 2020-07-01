@@ -13,9 +13,9 @@ public class PaintingTypesDump
     {
         DataDump dump = new DataDump(3, format);
 
-        for (Identifier id : Registry.MOTIVE.getIds())
+        for (Identifier id : Registry.PAINTING_MOTIVE.getIds())
         {
-            PaintingMotive type = Registry.MOTIVE.get(id);
+            PaintingMotive type = Registry.PAINTING_MOTIVE.get(id);
             dump.addData(id.toString(), String.valueOf(type.getWidth()), String.valueOf(type.getHeight()));
         }
 
