@@ -16,8 +16,12 @@ public class WorldUtils
 {
     public static int getLoadedChunkCount(World world)
     {
-        return world != null && world.getChunkProvider() instanceof ServerChunkProvider ?
-                ((ServerChunkProvider) world.getChunkProvider()).getLoadedChunkCount() : 0;
+        if (world != null && world.getChunkProvider() instanceof ServerChunkProvider)
+        {
+            return ((ServerChunkProvider) world.getChunkProvider()).chunkManager.func_219174_c();
+        }
+
+        return 0;
     }
 
     public static List<Chunk> loadAndGetChunks(World world, BlockPos centerPos, int radius)
