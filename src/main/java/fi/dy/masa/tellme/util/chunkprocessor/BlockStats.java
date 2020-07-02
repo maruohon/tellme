@@ -50,7 +50,7 @@ public class BlockStats extends ChunkProcessorAllChunks
     {
         final long timeBefore = System.nanoTime();
         Object2LongOpenHashMap<BlockState> counts = new Object2LongOpenHashMap<>();
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         final BlockState air = Blocks.AIR.getDefaultState();
         int count = 0;
 
@@ -65,11 +65,11 @@ public class BlockStats extends ChunkProcessorAllChunks
             final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
 
-            for (int z = zMin; z <= zMax; ++z)
+            for (int y = yMin; y <= yMax; ++y)
             {
-                for (int x = xMin; x <= xMax; ++x)
+                for (int z = zMin; z <= zMax; ++z)
                 {
-                    for (int y = yMin; y <= yMax; ++y)
+                    for (int x = xMin; x <= xMax; ++x)
                     {
                         pos.setPos(x, y, z);
                         BlockState state = chunk.getBlockState(pos);
@@ -83,7 +83,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             // Add the amount of air that would be in non-existing chunk sections within the given volume
             if (topY < posMax.getY())
             {
-                counts.addTo(air, (posMax.getY() - topY) * 256);
+                counts.addTo(air, (posMax.getY() - Math.max(topY, posMin.getY() - 1)) * (xMax - xMin + 1) * (zMax - zMin + 1));
             }
         }
 
