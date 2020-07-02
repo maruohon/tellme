@@ -22,13 +22,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class BiomeArgument implements ArgumentType<Biome>
 {
-    private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((biome) -> {
-        return ForgeRegistries.BIOMES.getKey(biome).toString();
-    }).collect(Collectors.toList());
-
-    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> {
-        return new StringTextComponent("Invalid biome name: \"" + val + "\"");
-    });
+    private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((biome) -> ForgeRegistries.BIOMES.getKey(biome).toString()).collect(Collectors.toList());
+    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> new StringTextComponent("Invalid biome name: \"" + val + "\""));
 
     public Biome parse(StringReader reader) throws CommandSyntaxException
     {
