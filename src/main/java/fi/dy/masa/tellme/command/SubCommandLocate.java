@@ -22,8 +22,8 @@ import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.util.OutputUtils;
-import fi.dy.masa.tellme.util.chunkprocessor.Locate;
-import fi.dy.masa.tellme.util.chunkprocessor.Locate.LocateType;
+import fi.dy.masa.tellme.util.chunkprocessor.LocateBase;
+import fi.dy.masa.tellme.util.chunkprocessor.LocateBase.LocateType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLocate
@@ -104,7 +104,7 @@ public class SubCommandLocate
         ServerCommandSource source = ctx.getSource();
         World world = TellMe.dataProvider.getWorld(source.getMinecraftServer(), CommandUtils.getDimensionFromSource(source));
 
-        Locate locate = Locate.create(locateType, outputFormat, filters);
+        LocateBase locate = locateType.createChunkProcessor(outputFormat, filters);
 
         switch (areaType)
         {
