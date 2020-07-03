@@ -1,9 +1,18 @@
 package fi.dy.masa.tellme.command;
 
+import java.util.Collections;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.command.arguments.ArgumentSerializer;
+import net.minecraft.command.arguments.ArgumentTypes;
+import fi.dy.masa.tellme.command.argument.BiomeArgument;
+import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
+import fi.dy.masa.tellme.command.argument.FileArgument;
+import fi.dy.masa.tellme.command.argument.GroupingArgument;
+import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
+import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
+import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 
 public class CommandTellMe
 {
@@ -17,12 +26,22 @@ public class CommandTellMe
         register(dispatcher, "ctellme", 0);
     }
 
-    protected static void register(CommandDispatcher<CommandSource> dispatcher, String baseCommandName, int permissionLevel)
+    public static void registerArgumentTypes()
+    {
+        ArgumentTypes.register("tellme:biome", BiomeArgument.class, new ArgumentSerializer<>(BiomeArgument::create));
+        ArgumentTypes.register("tellme:block_grouping", BlockStateCountGroupingArgument.class, new ArgumentSerializer<>(BlockStateCountGroupingArgument::create));
+        ArgumentTypes.register("tellme:file", FileArgument.class, new ArgumentSerializer<>(FileArgument::createEmpty));
+        ArgumentTypes.register("tellme:grouping", GroupingArgument.class, new ArgumentSerializer<>(GroupingArgument::create));
+        ArgumentTypes.register("tellme:output_format", OutputFormatArgument.class, new ArgumentSerializer<>(OutputFormatArgument::create));
+        ArgumentTypes.register("tellme:output_type", OutputTypeArgument.class, new ArgumentSerializer<>(OutputTypeArgument::create));
+        ArgumentTypes.register("tellme:string_collection", StringCollectionArgument.class, new ArgumentSerializer<>(() -> StringCollectionArgument.create(() -> Collections.emptyList(), "")));
+    }
+
+    protected static void register(CommandDispatcher<CommandSource> dispatcher, String baseCommandName, final int permissionLevel)
     {
         dispatcher.register(
                 Commands.literal(baseCommandName)
                     .requires((src) -> src.hasPermissionLevel(permissionLevel))
-                    .executes(c -> { c.getSource().sendFeedback(new StringTextComponent("/tellme help"), false); return 0; })
                     .then(SubCommandBatchRun.registerSubCommand(dispatcher))
                     .then(SubCommandBiome.registerSubCommand(dispatcher))
                     .then(SubCommandBiomeLocate.registerSubCommand(dispatcher))

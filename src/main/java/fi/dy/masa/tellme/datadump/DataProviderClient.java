@@ -21,7 +21,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.INetHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -38,7 +37,6 @@ import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class DataProviderClient extends DataProviderBase
 {
@@ -120,22 +118,21 @@ public class DataProviderClient extends DataProviderBase
 
     @Override
     @Nullable
-    public Collection<Advancement> getAdvacements()
+    public Collection<Advancement> getAdvacements(@Nullable MinecraftServer server)
     {
         Minecraft mc = Minecraft.getInstance();
 
         if (mc.isSingleplayer() && mc.player != null)
         {
-            MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
             return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
         }
         else
         {
-            INetHandler nh = mc.getConnection();
+            ClientPlayNetHandler nh = mc.getConnection();
 
-            if (nh instanceof ClientPlayNetHandler)
+            if (nh != null)
             {
-                return ((ClientPlayNetHandler) nh).getAdvancementManager().getAdvancementList().getAll();
+                return nh.getAdvancementManager().getAdvancementList().getAll();
             }
         }
 
@@ -146,15 +143,16 @@ public class DataProviderClient extends DataProviderBase
     public void getCurrentBiomeInfoClientSide(Entity entity, Biome biome)
     {
         BlockPos pos = entity.getPosition();
-        String pre = TextFormatting.GREEN.toString();
-        String rst = TextFormatting.RESET.toString() + TextFormatting.WHITE.toString();
+        TextFormatting green = TextFormatting.GREEN;
 
         // These are client-side only:
         int color = this.getGrassColor(biome, pos);
-        entity.sendMessage(new StringTextComponent(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+        entity.sendMessage(new StringTextComponent("Grass color: ")
+                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", color, color)).applyTextStyle(green)));
 
         color = this.getFoliageColor(biome, pos);
-        entity.sendMessage(new StringTextComponent(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)));
+        entity.sendMessage(new StringTextComponent("Foliage color: ")
+                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", color, color)).applyTextStyle(green)));
     }
 
     @Override
@@ -211,10 +209,10 @@ public class DataProviderClient extends DataProviderBase
     }
 
     @Override
-    public void addCommandDumpData(DataDump dump)
+    public void addCommandDumpData(DataDump dump, @Nullable MinecraftServer server)
     {
         // TODO 1.14
-        super.addCommandDumpData(dump);
+        super.addCommandDumpData(dump, server);
     }
 
     @Override

@@ -8,26 +8,40 @@ import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.gen.feature.Feature;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class FeatureDump
 {
-    public static List<String> getFormattedDump(Format format)
+    public static List<String> getFormattedDump(Format format, boolean spawns)
     {
-        DataDump dump = new DataDump(3, format);
+        DataDump dump = new DataDump(spawns ? 3 : 1, format);
 
         for (Map.Entry<ResourceLocation, Feature<?>> entry : ForgeRegistries.FEATURES.getEntries())
         {
-            Feature<?> type = entry.getValue();
-            String mobSpawns = getMobSpawnsString(type.getSpawnList());
-            String passiveSpawns = getMobSpawnsString(type.getCreatureSpawnList());
+            Feature<?> feature = entry.getValue();
 
-            dump.addData(type.getRegistryName().toString(), mobSpawns, passiveSpawns);
+            if (spawns)
+            {
+                String mobSpawns = getMobSpawnsString(feature.getSpawnList());
+                String passiveSpawns = getMobSpawnsString(feature.getCreatureSpawnList());
+                dump.addData(entry.getKey().toString(), mobSpawns, passiveSpawns);
+            }
+            else
+            {
+                dump.addData(entry.getKey().toString());
+            }
         }
 
-        dump.addTitle("Registry name", "Mob spawns", "Passive spawns");
+        if (spawns)
+        {
+            dump.addTitle("Registry name", "Mob spawns", "Passive spawns");
+        }
+        else
+        {
+            dump.addTitle("Registry name");
+        }
 
         return dump.getLines();
     }

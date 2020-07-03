@@ -7,6 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.util.BlockInfo;
@@ -15,8 +17,6 @@ import fi.dy.masa.tellme.util.ItemInfo;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.RayTraceUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class InteractEventHandler
 {
@@ -70,7 +70,7 @@ public class InteractEventHandler
         {
             if (event.getWorld().isRemote == false)
             {
-                if (player.isShiftKeyDown())
+                if (player.isSneaking())
                 {
                     EntityInfo.dumpFullEntityInfoToFile(player, entity);
                 }
@@ -100,7 +100,7 @@ public class InteractEventHandler
                 RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids);
                 boolean adjacent = ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand());
                 List<String> lines = BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player, trace, adjacent, false);
-                OutputType outputType = player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE;
+                OutputType outputType = player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE;
 
                 OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, "block_info_", player);
             }
@@ -131,7 +131,7 @@ public class InteractEventHandler
 
         if (stack.isEmpty() == false && stack.getItem() != null)
         {
-            ItemInfo.printItemInfo(player, stack, player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE);
+            ItemInfo.printItemInfo(player, stack, player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE);
         }
     }
 }

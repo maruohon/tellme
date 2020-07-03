@@ -30,22 +30,20 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ChunkManager;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class DataProviderBase
 {
     private static final Field field_ChunkManager_immutableLoadedChunks = ObfuscationReflectionHelper.findField(ChunkManager.class, "field_219252_f");
 
     @Nullable
-    public Collection<Advancement> getAdvacements()
+    public Collection<Advancement> getAdvacements(@Nullable MinecraftServer server)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
     }
 
@@ -125,10 +123,8 @@ public class DataProviderBase
     {
     }
 
-    public void addCommandDumpData(DataDump dump)
+    public void addCommandDumpData(DataDump dump, @Nullable MinecraftServer server)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-
         if (server != null)
         {
             CommandDispatcher<CommandSource> dispatcher = server.getCommandManager().getDispatcher();

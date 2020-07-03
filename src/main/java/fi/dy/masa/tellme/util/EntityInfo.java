@@ -5,18 +5,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class EntityInfo
 {
@@ -28,8 +29,13 @@ public class EntityInfo
         return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getEntityId());
     }
 
-    public static List<String> getFullEntityInfo(Entity target, boolean targetIsChat)
+    public static List<String> getFullEntityInfo(@Nullable Entity target, boolean targetIsChat)
     {
+        if (target == null)
+        {
+            return Collections.emptyList();
+        }
+
         List<String> lines = new ArrayList<>();
         lines.add(getBasicEntityInfo(target));
 
@@ -106,11 +112,16 @@ public class EntityInfo
         OutputUtils.sendClickableLinkMessage(player, "Output written to file %s", file);
     }
 
-    public static List<String> getPlayerList(DataDump.Format format)
+    public static List<String> getPlayerList(DataDump.Format format, @Nullable MinecraftServer server)
     {
+        if (server == null)
+        {
+            return Collections.emptyList();
+        }
+
         DataDump dump = new DataDump(6, format);
 
-        for (PlayerEntity player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers())
+        for (PlayerEntity player : server.getPlayerList().getPlayers())
         {
             String name = player.getName().getString();
             String dim = player.getEntityWorld().dimension.getType().getRegistryName().toString();

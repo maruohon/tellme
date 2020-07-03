@@ -1,7 +1,9 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -11,14 +13,27 @@ public class SpawnEggDump
     {
         DataDump spawnEggDump = new DataDump(4, format);
 
+        Field fieldPrimaryColor = null;
+        Field fieldSecondaryColor = null;
+
+        try
+        {
+            fieldPrimaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "field_195988_c");
+            fieldSecondaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "field_195989_d");
+        }
+        catch (Exception e)
+        {
+            TellMe.logger.warn("Exception while reflecting spawn egg color fields", e);
+        }
+
         for (SpawnEggItem egg : SpawnEggItem.getEggs())
         {
             try
             {
                 String id = egg.getRegistryName().toString();
 
-                int primaryColor = egg.getColor(0);
-                int secondaryColor = egg.getColor(1);
+                int primaryColor = (int) fieldPrimaryColor.get(egg);
+                int secondaryColor = (int) fieldSecondaryColor.get(egg);
                 String colorPrimary = String.format("0x%08X (%10d)", primaryColor, primaryColor);
                 String colorSecondary = String.format("0x%08X (%10d)", secondaryColor, secondaryColor);
 

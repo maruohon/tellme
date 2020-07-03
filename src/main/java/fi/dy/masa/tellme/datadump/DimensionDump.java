@@ -1,28 +1,33 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.DimensionManager;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class DimensionDump
 {
     @SuppressWarnings("deprecation")
-    public static List<String> getFormattedDimensionDump(Format format)
+    public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server)
     {
+        if (server == null)
+        {
+            return Collections.emptyList();
+        }
+
         DataDump dimensionDump = new DataDump(6, format);
         dimensionDump.setSort(false);
 
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         World overworld = DimensionManager.getWorld(server, DimensionType.OVERWORLD, false, false);
 
         for (DimensionType dim : Registry.DIMENSION_TYPE)
@@ -61,11 +66,10 @@ public class DimensionDump
     }
 
     @SuppressWarnings("deprecation")
-    public static List<String> getLoadedDimensions(Format format)
+    public static List<String> getLoadedDimensions(Format format, @Nullable MinecraftServer server)
     {
         DataDump dimensionDump = new DataDump(6, format);
         dimensionDump.setSort(false);
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 
         for (Map.Entry<DimensionType, ServerWorld> entry : server.forgeGetWorldMap().entrySet())
         {

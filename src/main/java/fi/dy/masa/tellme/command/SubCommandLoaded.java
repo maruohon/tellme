@@ -311,7 +311,7 @@ public class SubCommandLoaded
     private static int listLoadedChunksAll(CommandSource source, OutputType outputType,
             DataDump.Format format, IDimensionRetriever dimensionGetter) throws CommandSyntaxException
     {
-        List<String> lines = ChunkDump.getFormattedChunkDump(format, dimensionGetter.getDimensionFromSource(source));
+        List<String> lines = ChunkDump.getFormattedChunkDump(format, dimensionGetter.getDimensionFromSource(source), source.getServer());
 
         if (lines != null)
         {
@@ -326,7 +326,7 @@ public class SubCommandLoaded
     {
         BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
         BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
-        List<String> lines = ChunkDump.getFormattedChunkDump(format, dimensionGetter.getDimensionFromSource(source), minPos, maxPos);
+        List<String> lines = ChunkDump.getFormattedChunkDump(format, dimensionGetter.getDimensionFromSource(source), source.getServer(), minPos, maxPos);
 
         if (lines != null)
         {
@@ -338,7 +338,7 @@ public class SubCommandLoaded
 
     private static int listLoadedDimensions(CommandSource source, OutputType outputType, DataDump.Format format) throws CommandSyntaxException
     {
-        List<String> lines = DimensionDump.getLoadedDimensions(format);
+        List<String> lines = DimensionDump.getLoadedDimensions(format, source.getServer());
 
         if (lines != null)
         {
