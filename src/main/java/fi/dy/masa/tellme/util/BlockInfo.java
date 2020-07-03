@@ -289,6 +289,7 @@ public class BlockInfo
             }
         }
 
+        @SuppressWarnings("unchecked")
         private <T extends Comparable<T>> String valueToString(Property<T> property, Object value)
         {
             return property.name((T) value);
