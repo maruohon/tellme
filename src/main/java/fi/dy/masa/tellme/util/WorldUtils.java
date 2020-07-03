@@ -14,7 +14,7 @@ public class WorldUtils
     public static int getLoadedChunkCount(World world)
     {
         return world != null && world.getChunkManager() instanceof ServerChunkManager ?
-                ((ServerChunkManager) world.getChunkManager()).getLoadedChunkCount() : 0;
+                ((ServerChunkManager) world.getChunkManager()).getTotalChunksLoadedCount() : 0;
     }
 
     public static List<WorldChunk> loadAndGetChunks(World world, ChunkPos posMin, ChunkPos posMax)
