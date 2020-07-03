@@ -2,7 +2,6 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
@@ -24,7 +23,6 @@ public class ChunkDump
         return getFormattedChunkDump(format, server, dimension, null, null);
     }
 
-    @SuppressWarnings("deprecation")
     public static List<String> getFormattedChunkDump(Format format, @Nullable MinecraftServer server, @Nullable DimensionType dimension, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
     {
         DataDump chunkDump = new DataDump(4, format);
