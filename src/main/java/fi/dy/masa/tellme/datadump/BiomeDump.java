@@ -119,7 +119,6 @@ public class BiomeDump
                                .func_230529_a_(new StringTextComponent(intId).func_240699_a_(green))
                                .func_240702_b_(" - Registry name: ");
         Biome.RainType rainType = biome.getPrecipitation();
-        int waterColor = biome.getWaterColor();
 
         entity.sendStatusMessage(new StringTextComponent("------------- Current biome info ------------"), false);
         entity.sendStatusMessage(OutputUtils.getClipboardCopiableMessage(textPre, new StringTextComponent(regName).func_240699_a_(green), new StringTextComponent("")), false);
@@ -146,9 +145,6 @@ public class BiomeDump
             entity.sendStatusMessage(new StringTextComponent("Valid for: ")
                                        .func_230529_a_(new StringTextComponent(validFor).func_240699_a_(TextFormatting.AQUA)), false);
         }
-
-        entity.sendStatusMessage(new StringTextComponent("Water Color Multiplier: ")
-                .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", waterColor, waterColor)).func_240699_a_(green)), false);
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
@@ -351,7 +347,7 @@ public class BiomeDump
         @Override
         public int getColumnCount()
         {
-            return TellMe.isClient() ? 6 : 4;
+            return TellMe.isClient() ? 6 : 3;
         }
 
         @Override
@@ -363,7 +359,7 @@ public class BiomeDump
             }
             else
             {
-                dump.addTitle("ID", "Registry name", "Biome name","waterColorMultiplier");
+                dump.addTitle("ID", "Registry name", "Biome name");
             }
 
             dump.setColumnProperties(0, Alignment.RIGHT, true); // id
@@ -376,22 +372,8 @@ public class BiomeDump
             String intId = String.valueOf(Registry.BIOME.getId(biome));
             String regName = id.toString();
             String name = TellMe.dataProvider.getBiomeName(biome);
-            int waterColor = biome.getWaterColor();
-            String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
 
-            if (TellMe.isClient())
-            {
-                int foliageColor = TellMe.dataProvider.getFoliageColor(biome, BlockPos.ZERO);
-                int grassColor = TellMe.dataProvider.getGrassColor(biome, BlockPos.ZERO);
-                String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
-                String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
-
-                dump.addData(intId, regName, name, waterColorStr, grassColorStr, foliageColorStr);
-            }
-            else
-            {
-                dump.addData(intId, regName, name, waterColorStr);
-            }
+            TellMe.dataProvider.addBiomeInfoWithColors(dump, biome, intId, regName, name);
         }
     }
 

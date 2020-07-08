@@ -30,7 +30,6 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
@@ -197,7 +196,7 @@ public class BlockInfo
         lines.add(String.format("Full block state: %s", state));
         lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
-                state.getBlock().getExplosionResistance(state, world, pos, new Explosion(world, null, pos.getX(), pos.getY(), pos.getZ(), 2, false, Explosion.Mode.NONE)),
+                state.getBlock().getExplosionResistance(),
                 getMaterialName(state.getMaterial())));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 

@@ -121,31 +121,38 @@ public class DataProviderClient extends DataProviderBase
         TextFormatting green = TextFormatting.GREEN;
 
         // These are client-side only:
-        int color = this.getGrassColor(biome, pos);
+        int grassColor = biome.getGrassColor(pos.getX(), pos.getZ());
         entity.sendStatusMessage(new StringTextComponent("Grass color: ")
-                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", color, color)).func_240699_a_(green)), false);
+                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).func_240699_a_(green)), false);
 
-        color = this.getFoliageColor(biome, pos);
+        int foliageColor = biome.getFoliageColor();
         entity.sendStatusMessage(new StringTextComponent("Foliage color: ")
-                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", color, color)).func_240699_a_(green)), false);
+                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).func_240699_a_(green)), false);
+
+        int waterColor = biome.getWaterColor();
+        entity.sendStatusMessage(new StringTextComponent("Water Color Multiplier: ")
+                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", waterColor, waterColor)).func_240699_a_(green)), false);
     }
 
-    @Override
-    public int getFoliageColor(Biome biome, BlockPos pos)
-    {
-        return biome.getFoliageColor();
-    }
 
-    @Override
-    public int getGrassColor(Biome biome, BlockPos pos)
-    {
-        return biome.getGrassColor(pos.getX(), pos.getZ());
-    }
 
     @Override
     public String getBiomeName(Biome biome)
     {
         return biome.getDisplayName().getString();
+    }
+
+    @Override
+    public void addBiomeInfoWithColors(DataDump dump, Biome biome, String intId, String registryName, String name)
+    {
+        int grassColor = biome.getGrassColor(0, 0);
+        int foliageColor = biome.getFoliageColor();
+        int waterColor = biome.getWaterColor();
+        String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
+        String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
+        String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
+
+        dump.addData(intId, registryName, name, waterColorStr, grassColorStr, foliageColorStr);
     }
 
     @Override
