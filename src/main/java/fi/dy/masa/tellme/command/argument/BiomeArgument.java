@@ -17,32 +17,22 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.BuiltInBiomes;
 
-public class BiomeArgument implements ArgumentType<Biome>
+public class BiomeArgument implements ArgumentType<Identifier>
 {
-    private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((biome) -> Registry.BIOME.getId(biome).toString()).collect(Collectors.toList());
+    private static final Collection<String> EXAMPLES = Stream.of(BuiltInBiomes.PLAINS, BuiltInBiomes.OCEAN).map((regKey) -> regKey.getValue().toString()).collect(Collectors.toList());
 
-    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> {
-        return new LiteralText("Invalid biome name: \"" + val + "\"");
-    });
+    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> new LiteralText("Invalid biome name: \"" + val + "\""));
 
-    public Biome parse(StringReader reader) throws CommandSyntaxException
+    public Identifier parse(StringReader reader) throws CommandSyntaxException
     {
-        Identifier id = Identifier.fromCommandInput(reader);
-        Biome biome = Registry.BIOME.get(id);
-
-        if (biome != null)
-        {
-            return biome;
-        }
-
-        throw INVALID_BIOME_EXCEPTION.create(id);
+        return Identifier.fromCommandInput(reader);
     }
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> ctx, SuggestionsBuilder builder)
     {
-        return CommandSource.suggestIdentifiers(Registry.BIOME.getIds(), builder);
+        return CommandSource.suggestIdentifiers(((CommandSource) ctx.getSource()).getRegistryManager().get(Registry.BIOME_KEY).getIds(), builder);
     }
 
     @Override
@@ -56,8 +46,16 @@ public class BiomeArgument implements ArgumentType<Biome>
         return new BiomeArgument();
     }
 
-    public static Biome getBiomeArgument(CommandContext<ServerCommandSource> ctx, String name)
+    public static Biome getBiomeArgument(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException
     {
-        return ctx.getArgument(name, Biome.class);
+        Identifier id = ctx.getArgument(name, Identifier.class);
+        Biome biome = ctx.getSource().getRegistryManager().get(Registry.BIOME_KEY).get(id);
+
+        if (biome == null)
+        {
+            throw INVALID_BIOME_EXCEPTION.create(id);
+        }
+
+        return biome;
     }
 }

@@ -31,7 +31,7 @@ public class OutputUtils
         textToCopy.formatted(Formatting.UNDERLINE);
 
         LiteralText hoverText = new LiteralText(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
-        textToCopy.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+        textToCopy.getStyle().withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
         return textPre.append(textToCopy).append(textPost);
     }

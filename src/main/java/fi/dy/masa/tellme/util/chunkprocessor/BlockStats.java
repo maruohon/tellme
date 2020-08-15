@@ -16,7 +16,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.command.arguments.BlockArgumentParser;
+import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.LiteralText;

@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.gen.feature.StructureFeature;
 import fi.dy.masa.tellme.mixin.IMixinWeightedPickerEntry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -45,11 +45,11 @@ public class StructureFeatureDump
         return dump.getLines();
     }
 
-    public static String getMobSpawnsString(Collection<Biome.SpawnEntry> list)
+    public static String getMobSpawnsString(Collection<SpawnSettings.SpawnEntry> list)
     {
         List<String> spawns = new ArrayList<>();
 
-        for (Biome.SpawnEntry spawn : list)
+        for (SpawnSettings.SpawnEntry spawn : list)
         {
             Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
             String entName = erl != null ? erl.toString() : "<null>";

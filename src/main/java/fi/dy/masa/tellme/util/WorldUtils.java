@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.util;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
@@ -32,6 +33,7 @@ public class WorldUtils
 
     public static String getDimensionId(World world)
     {
-        return world.getDimensionRegistryKey().getValue().toString();
+        Identifier id = world.getRegistryManager().getDimensionTypes().getId(world.getDimension());
+        return id != null ? id.toString() : "?";
     }
 }

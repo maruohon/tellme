@@ -11,15 +11,16 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.arguments.DimensionArgumentType;
-import net.minecraft.command.arguments.PosArgument;
-import net.minecraft.command.arguments.Vec2ArgumentType;
+import net.minecraft.command.argument.DimensionArgumentType;
+import net.minecraft.command.argument.PosArgument;
+import net.minecraft.command.argument.Vec2ArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.source.BiomeAccess;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
@@ -32,7 +33,7 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 public class SubCommandBiomeLocate
 {
     private static final Map<UUID, BiomeLocator> BIOME_LOCATORS = Maps.newHashMap();
-    private static final BiomeLocator CONSOLE_BIOME_LOCATOR = new BiomeLocator();
+    private static BiomeLocator consoleBiomeLocator;
 
     public static CommandNode<ServerCommandSource> registerSubCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
@@ -130,7 +131,7 @@ public class SubCommandBiomeLocate
     private static int search(ServerCommandSource source, boolean append, int sampleInterval, int sampleRadius, Vec2f center, World world)
     {
         Entity entity = source.getEntity();
-        BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
+        BiomeLocator biomeLocator = getBiomeLocatorFor(source, entity);
         BiomeAccess biomeAccess = world.getBiomeAccess();
 
         CommandUtils.sendMessage(source, "Finding closest biome locations...");
@@ -146,7 +147,7 @@ public class SubCommandBiomeLocate
     private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format)
     {
         Entity entity = source.getEntity();
-        BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
+        BiomeLocator biomeLocator = getBiomeLocatorFor(source, entity);
         List<String> lines = biomeLocator.getClosestBiomePositions(format);
 
         OutputUtils.printOutput(lines, outputType, format, "biome_locate", source);
@@ -154,13 +155,18 @@ public class SubCommandBiomeLocate
         return 1;
     }
 
-    private static BiomeLocator getBiomeLocatorFor(@Nullable Entity entity)
+    private static BiomeLocator getBiomeLocatorFor(final ServerCommandSource source, @Nullable final Entity entity)
     {
         if (entity == null)
         {
-            return CONSOLE_BIOME_LOCATOR;
+            if (consoleBiomeLocator == null)
+            {
+                consoleBiomeLocator = new BiomeLocator(source.getRegistryManager().get(Registry.BIOME_KEY));
+            }
+
+            return consoleBiomeLocator;
         }
 
-        return BIOME_LOCATORS.computeIfAbsent(entity.getUuid(), (e) -> new BiomeLocator());
+        return BIOME_LOCATORS.computeIfAbsent(entity.getUuid(), (e) -> new BiomeLocator(source.getRegistryManager().get(Registry.BIOME_KEY)));
     }
 }

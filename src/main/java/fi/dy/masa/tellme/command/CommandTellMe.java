@@ -2,8 +2,8 @@ package fi.dy.masa.tellme.command;
 
 import java.util.Collections;
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.command.arguments.ArgumentTypes;
-import net.minecraft.command.arguments.serialize.ConstantArgumentSerializer;
+import net.minecraft.command.argument.ArgumentTypes;
+import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import fi.dy.masa.tellme.command.argument.BiomeArgument;

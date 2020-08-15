@@ -10,7 +10,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.util.BiomeLocator;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -18,9 +17,15 @@ import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 
 public class BiomeStats
 {
-    private final Object2LongOpenHashMap<Biome> biomeCounts = new Object2LongOpenHashMap<Biome>();
+    private final Object2LongOpenHashMap<Biome> biomeCounts = new Object2LongOpenHashMap<>();
+    private final Registry<Biome> registry;
     private int totalCount;
     private boolean append;
+
+    public BiomeStats(Registry<Biome> registry)
+    {
+        this.registry = registry;
+    }
 
     public void setAppend(boolean append)
     {
@@ -117,17 +122,16 @@ public class BiomeStats
             }
 
             Identifier key = null;
-            Biome biome = null;
 
             try
             {
                 key = new Identifier(filter);
             }
-            catch (Exception e)
+            catch (Exception ignore)
             {
             }
 
-            biome = key != null ? Registry.BIOME.get(key) : null;
+            Biome biome = key != null ? this.registry.get(key) : null;
 
             if (biome == null)
             {
@@ -139,12 +143,11 @@ public class BiomeStats
             {
                 if (entry.getKey() == biome)
                 {
-                    int id = Registry.BIOME.getRawId(biome);
+                    int id = this.registry.getRawId(biome);
                     long count = entry.getValue();
 
                     dump.addData(
                             key.toString(),
-                            BiomeLocator.getBiomeDisplayName(biome),
                             String.valueOf(id),
                             String.valueOf(count),
                             String.format("%.2f %%", (double) count * 100D / (double) this.totalCount));
@@ -161,7 +164,7 @@ public class BiomeStats
 
     public List<String> query(Format format, @Nullable List<String> filters)
     {
-        DataDump dump = new DataDump(5, format);
+        DataDump dump = new DataDump(4, format);
 
         if (filters != null)
         {
@@ -179,24 +182,23 @@ public class BiomeStats
                     continue;
                 }
 
-                Identifier key = Registry.BIOME.getId(biome);
-                int id = Registry.BIOME.getRawId(biome);
+                Identifier key = this.registry.getId(biome);
+                int id = this.registry.getRawId(biome);
                 long count = entry.getValue();
 
                 dump.addData(
                         key != null ? key.toString() : "<null>",
-                        BiomeLocator.getBiomeDisplayName(biome),
                         String.valueOf(id),
                         String.valueOf(count),
                         String.format("%.2f", (double) count * 100D / (double) this.totalCount));
             }
         }
 
-        dump.addTitle("Registry name", "Name", "ID", "Count", "%");
+        dump.addTitle("Registry name", "ID", "Count", "%");
 
-        dump.setColumnProperties(2, Alignment.RIGHT, true); // Biome ID
-        dump.setColumnProperties(3, Alignment.RIGHT, true); // count
-        dump.setColumnProperties(4, Alignment.RIGHT, true); // count %
+        dump.setColumnProperties(1, Alignment.RIGHT, true); // Biome ID
+        dump.setColumnProperties(2, Alignment.RIGHT, true); // count
+        dump.setColumnProperties(3, Alignment.RIGHT, true); // count %
 
         return dump.getLines();
     }

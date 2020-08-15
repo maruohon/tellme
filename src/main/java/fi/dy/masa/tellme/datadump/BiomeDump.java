@@ -22,10 +22,9 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeEffects;
-import net.minecraft.world.biome.source.BiomeSource;
+import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.gen.feature.StructureFeature;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.mixin.IMixinBiome;
 import fi.dy.masa.tellme.mixin.IMixinBiomeAdditionsSound;
 import fi.dy.masa.tellme.mixin.IMixinBiomeEffects;
 import fi.dy.masa.tellme.mixin.IMixinBiomeMoodSound;
@@ -44,12 +43,16 @@ public class BiomeDump
 
     public static List<String> getFormattedBiomeDump(Format format, @Nullable World world, BiomeInfoProviderBase provider)
     {
-        BiomeDumpContext ctx = new BiomeDumpContext(world);
         DataDump biomeDump = new DataDump(provider.getColumnCount(), format);
 
-        for (Identifier id : Registry.BIOME.getIds())
+        if (world == null) { return biomeDump.getLines(); }
+
+        BiomeDumpContext ctx = new BiomeDumpContext(world);
+        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
+
+        for (Identifier id : registry.getIds())
         {
-            Biome biome = Registry.BIOME.get(id);
+            Biome biome = registry.get(id);
             provider.addLine(biomeDump, biome, id, ctx);
         }
 
@@ -59,16 +62,19 @@ public class BiomeDump
         return biomeDump.getLines();
     }
 
-    public static List<String> getFormattedBiomeDumpWithMobSpawns(Format format)
+    public static List<String> getFormattedBiomeDumpWithMobSpawns(Format format, @Nullable World world)
     {
-        DataDump biomeDump = new DataDump(4, format);
+        DataDump biomeDump = new DataDump(3, format);
 
-        for (Identifier id : Registry.BIOME.getIds())
+        if (world == null) { return biomeDump.getLines(); }
+
+        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
+
+        for (Identifier id : registry.getIds())
         {
-            Biome biome = Registry.BIOME.get(id);
-            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            Biome biome = registry.get(id);
+            String intId = String.valueOf(registry.getRawId(biome));
             String regName = id.toString();
-            String name = TellMe.dataProvider.getBiomeName(biome);
             List<String> spawns = new ArrayList<>();
 
             for (SpawnGroup type : SpawnGroup.values())
@@ -76,7 +82,7 @@ public class BiomeDump
                 List<String> tmpList = new ArrayList<>();
 
                 // Add the spawns grouped by category and sorted alphabetically within each category
-                for (Biome.SpawnEntry spawn : biome.getEntitySpawnList(type))
+                for (SpawnSettings.SpawnEntry spawn : biome.getSpawnSettings().getSpawnEntry(type))
                 {
                     Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
                     String entName = erl.toString();
@@ -87,10 +93,10 @@ public class BiomeDump
                 spawns.addAll(tmpList);
             }
 
-            biomeDump.addData(intId, regName, name, String.join("; ", spawns));
+            biomeDump.addData(intId, regName, String.join("; ", spawns));
         }
 
-        biomeDump.addTitle("ID", "Registry name", "Biome name", "Spawns");
+        biomeDump.addTitle("ID", "Registry name", "Spawns");
         biomeDump.setColumnProperties(0, Alignment.RIGHT, true); // id
 
         return biomeDump.getLines();
@@ -101,48 +107,44 @@ public class BiomeDump
         World world = entity.getEntityWorld();
         BlockPos pos = entity.getBlockPos();
         Biome biome = world.getBiome(pos);
+        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
 
-        String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+        String intId = String.valueOf(registry.getRawId(biome));
         Formatting green = Formatting.GREEN;
 
-        String name = TellMe.dataProvider.getBiomeName(biome);
-        String regName = Registry.BIOME.getId(biome).toString();
+        String regName = registry.getId(biome).toString();
 
         Biome.Precipitation rainType = biome.getPrecipitation();
         BiomeEffects effects = biome.getEffects();
-        int skyColor = ((IMixinBiome) biome).tellmeGetSkyColor();
+        int skyColor = ((IMixinBiomeEffects) effects).tellmeGetSkyColor();
         int fogColor = ((IMixinBiomeEffects) effects).tellmeGetFogColor();
         int waterColor = ((IMixinBiomeEffects) effects).tellmeGetWaterColor();
         int waterFogColor = ((IMixinBiomeEffects) effects).tellmeGetWaterFogColor();
 
         String strDepth = String.valueOf(biome.getDepth());
-        String strMaxSpawnChance = String.valueOf(biome.getMaxSpawnChance());
+        String strMaxSpawnChance = String.valueOf(biome.getSpawnSettings().getCreatureSpawnProbability());
         String strRainType = rainType.getName();
-        String strRainfall = String.valueOf(biome.getRainfall());
+        String strRainfall = String.valueOf(biome.getDownfall());
         String strScale = String.valueOf(biome.getScale());
         String strTemperature = String.valueOf(biome.getTemperature());
-        String strTempGroup = biome.getTemperatureGroup().toString();
 
         String strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
         String strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
         String strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
         String strWaterFogColor = String.format("0x%08X (%d)", waterFogColor, waterFogColor);
 
-        String strValidFor = world instanceof ServerWorld ? getValidForString(biome, ((ServerWorld) world).getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
+        String strValidFor = world instanceof ServerWorld ? getValidForString(biome) : "?";
         boolean canSnow = biome.canSetSnow(world, pos);
         String strSnowing = canSnow ? "true" : "false";
 
-        MutableText textPre = new LiteralText("Name: ").append(new LiteralText(name).formatted(green))
-                               .append(" - ID: ").append(new LiteralText(intId).formatted(green))
+        MutableText textPre = new LiteralText("ID: ").append(new LiteralText(intId).formatted(green))
                                .append(" - Registry name: ");
 
         entity.sendMessage(new LiteralText("------------- Current biome info ------------"), false);
         entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, new LiteralText(regName).formatted(green), new LiteralText("")), false);
 
         entity.sendMessage(new LiteralText("Temperature: ")
-                                   .append(new LiteralText(strTemperature).formatted(green))
-                                   .append(", temp. group: ")
-                                   .append(new LiteralText(strTempGroup).formatted(green)), false);
+                                   .append(new LiteralText(strTemperature).formatted(green)), false);
         entity.sendMessage(new LiteralText("RainType: ").append(new LiteralText(strRainType).formatted(green))
                                    .append(", downfall: ").append(new LiteralText(strRainfall).formatted(green))
                                    .append(", snows: ").append(new LiteralText(strSnowing).formatted(canSnow ? green : Formatting.RED)), false);
@@ -247,15 +249,19 @@ public class BiomeDump
         return text.append(new LiteralText("-").formatted(Formatting.RED));
     }
 
-    public static List<String> getBiomeDumpIdToName(Format format)
+    public static List<String> getBiomeDumpIdToName(Format format, @Nullable World world)
     {
         List<IdToStringHolder> data = new ArrayList<>();
         List<String> lines = new ArrayList<>();
 
-        for (Identifier id : Registry.BIOME.getIds())
+        if (world == null) { return lines; }
+
+        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
+
+        for (Identifier id : registry.getIds())
         {
-            Biome biome = Registry.BIOME.get(id);
-            int intId = Registry.BIOME.getRawId(biome);
+            Biome biome = registry.get(id);
+            int intId = registry.getRawId(biome);
             data.add(new IdToStringHolder(intId, id.toString()));
         }
 
@@ -279,18 +285,18 @@ public class BiomeDump
         return lines;
     }
 
-    private static String getValidForString(Biome biome, BiomeSource biomeSource)
+    private static String getValidForString(Biome biome)
     {
         List<String> strings = new ArrayList<>();
 
-        if (biomeSource.getSpawnBiomes().contains(biome))
+        if (biome.getSpawnSettings().isPlayerSpawnFriendly())
         {
             strings.add("spawn");
         }
 
         for (StructureFeature<?> feature : StructureFeature.STRUCTURES.values())
         {
-            if (biome.hasStructureFeature(feature))
+            if (biome.getGenerationSettings().hasStructureFeature(feature))
             {
                 Identifier id = Registry.STRUCTURE_FEATURE.getId(feature);
 
@@ -366,32 +372,33 @@ public class BiomeDump
         @Override
         public int getColumnCount()
         {
-            return 7;
+            return 5;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("ID", "Registry name", "Biome name", "Temp.", "Temp Cat.", "RainType", "Downfall");
+            dump.addTitle("ID", "Registry name", "Temp.", "RainType", "Downfall");
 
-            dump.setColumnProperties(3, Alignment.RIGHT, true); // temperature
-            dump.setColumnProperties(5, Alignment.RIGHT, true); // raintype
-            dump.setColumnAlignment(6, Alignment.RIGHT); // downfall
+            dump.setColumnProperties(2, Alignment.RIGHT, true); // temperature
+            dump.setColumnProperties(3, Alignment.RIGHT, true); // raintype
+            dump.setColumnAlignment(4, Alignment.RIGHT); // downfall
         }
 
         @Override
         public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
         {
-            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            if (ctx.world == null) { return; }
+
+            Registry<Biome> registry = ctx.world.getRegistryManager().get(Registry.BIOME_KEY);
+            String intId = String.valueOf(registry.getRawId(biome));
             String regName = id.toString();
-            String name = TellMe.dataProvider.getBiomeName(biome);
             String temp = String.format("%5.2f", biome.getTemperature());
-            String tempCat = biome.getTemperatureGroup().toString();
             Biome.Precipitation precipitation = biome.getPrecipitation();
             String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.getName() : "-";
-            String downfall = String.format("%.2f", biome.getRainfall());
+            String downfall = String.format("%.2f", biome.getDownfall());
 
-            dump.addData(intId, regName, name, temp, tempCat, precStr, downfall);
+            dump.addData(intId, regName, temp, precStr, downfall);
         }
     }
 
@@ -400,7 +407,7 @@ public class BiomeDump
         @Override
         public int getColumnCount()
         {
-            return TellMe.isClient() ? 9 : 7;
+            return TellMe.isClient() ? 8 : 6;
         }
 
         @Override
@@ -408,22 +415,24 @@ public class BiomeDump
         {
             if (TellMe.isClient())
             {
-                dump.addTitle("ID", "Registry name", "Biome name", "Fog Color", "Sky Color", "Water Color", "Water Fog Color", "Grass Color", "Foliage Color");
+                dump.addTitle("ID", "Registry name", "Fog Color", "Sky Color", "Water Color", "Water Fog Color", "Grass Color", "Foliage Color");
             }
             else
             {
-                dump.addTitle("ID", "Registry name", "Biome name", "Fog Color", "Sky Color", "Water Color", "Water Fog Color");
+                dump.addTitle("ID", "Registry name", "Fog Color", "Sky Color", "Water Color", "Water Fog Color");
             }
         }
 
         @Override
         public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
         {
-            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
+            if (ctx.world == null) { return; }
+
+            Registry<Biome> registry = ctx.world.getRegistryManager().get(Registry.BIOME_KEY);
+            String intId = String.valueOf(registry.getRawId(biome));
             String regName = id.toString();
-            String name = TellMe.dataProvider.getBiomeName(biome);
             BiomeEffects effects = biome.getEffects();
-            int skyColor = ((IMixinBiome) biome).tellmeGetSkyColor();
+            int skyColor = ((IMixinBiomeEffects) effects).tellmeGetSkyColor();
             int fogColor = ((IMixinBiomeEffects) effects).tellmeGetFogColor();
             int waterColor = ((IMixinBiomeEffects) effects).tellmeGetWaterColor();
             int waterFogColor = ((IMixinBiomeEffects) effects).tellmeGetWaterFogColor();
@@ -439,11 +448,11 @@ public class BiomeDump
                 String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
                 String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
 
-                dump.addData(intId, regName, name, strFogColor, strSkyColor, strWaterColor, strWaterFogColor, grassColorStr, foliageColorStr);
+                dump.addData(intId, regName, strFogColor, strSkyColor, strWaterColor, strWaterFogColor, grassColorStr, foliageColorStr);
             }
             else
             {
-                dump.addData(intId, regName, name, strFogColor, strSkyColor, strWaterColor, strWaterFogColor);
+                dump.addData(intId, regName, strFogColor, strSkyColor, strWaterColor, strWaterFogColor);
             }
         }
     }
@@ -453,24 +462,26 @@ public class BiomeDump
         @Override
         public int getColumnCount()
         {
-            return 4;
+            return 3;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("ID", "Registry name", "Biome name", "Valid for");
+            dump.addTitle("ID", "Registry name", "Valid for");
         }
 
         @Override
         public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
         {
-            String intId = String.valueOf(Registry.BIOME.getRawId(biome));
-            String regName = id.toString();
-            String name = TellMe.dataProvider.getBiomeName(biome);
-            String validFor = ctx.world instanceof ServerWorld ? getValidForString(biome, ((ServerWorld) ctx.world).getChunkManager().getChunkGenerator().getBiomeSource()) : "?";
+            if (ctx.world == null) { return; }
 
-            dump.addData(intId, regName, name, validFor);
+            Registry<Biome> registry = ctx.world.getRegistryManager().get(Registry.BIOME_KEY);
+            String intId = String.valueOf(registry.getRawId(biome));
+            String regName = id.toString();
+            String validFor = ctx.world instanceof ServerWorld ? getValidForString(biome) : "?";
+
+            dump.addData(intId, regName, validFor);
         }
     }
 }

@@ -10,11 +10,11 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.EntityTypeTags;
-import net.minecraft.tag.FluidTags;
 import net.minecraft.tag.ItemTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import fi.dy.masa.tellme.mixin.IMixinFluidTags;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class TagDump
@@ -27,7 +27,7 @@ public class TagDump
         {
             case BLOCK:
             {
-                Map<Identifier, Tag<Block>> tagMap = BlockTags.getContainer().getEntries();
+                Map<Identifier, Tag<Block>> tagMap = BlockTags.getTagGroup().getTags();
 
                 for (Map.Entry<Identifier, Tag<Block>> entry : tagMap.entrySet())
                 {
@@ -40,7 +40,7 @@ public class TagDump
 
             case ITEM:
             {
-                Map<Identifier, Tag<Item>> tagMap = ItemTags.getContainer().getEntries();
+                Map<Identifier, Tag<Item>> tagMap = ItemTags.getTagGroup().getTags();
 
                 for (Map.Entry<Identifier, Tag<Item>> entry : tagMap.entrySet())
                 {
@@ -53,7 +53,7 @@ public class TagDump
 
             case FLUID:
             {
-                Map<Identifier, Tag<Fluid>> tagMap = FluidTags.getContainer().getEntries();
+                Map<Identifier, Tag<Fluid>> tagMap = IMixinFluidTags.tellme_getRequiredTags().getGroup().getTags();
 
                 for (Map.Entry<Identifier, Tag<Fluid>> entry : tagMap.entrySet())
                 {
@@ -66,7 +66,7 @@ public class TagDump
 
             case ENTITY_TYPE:
             {
-                Map<Identifier, Tag<EntityType<?>>> tagMap = EntityTypeTags.getContainer().getEntries();
+                Map<Identifier, Tag<EntityType<?>>> tagMap = EntityTypeTags.getTagGroup().getTags();
 
                 for (Map.Entry<Identifier, Tag<EntityType<?>>> entry : tagMap.entrySet())
                 {

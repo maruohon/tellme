@@ -123,12 +123,6 @@ public class DataProviderClient extends DataProviderBase
     }
 
     @Override
-    public String getBiomeName(Biome biome)
-    {
-        return biome.getName().getString();
-    }
-
-    @Override
     public void addCommandDumpData(DataDump dump, MinecraftServer server)
     {
         // TODO 1.14
@@ -144,7 +138,7 @@ public class DataProviderClient extends DataProviderBase
             {
                 String index = String.valueOf(group.getIndex());
                 String name = group.getName();
-                String key = group.getTranslationKey();
+                String key = group.getTranslationKey().getString();
                 ItemStack stack = group.createIcon();
 
                 if (key == null)
@@ -180,7 +174,7 @@ public class DataProviderClient extends DataProviderBase
 
         if (group != null)
         {
-            String name = I18n.translate(group.getTranslationKey());
+            String name = I18n.translate(group.getTranslationKey().getString());
             obj.add("CreativeTabs", new JsonPrimitive(name));
         }
     }

@@ -19,7 +19,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -50,14 +49,14 @@ public class DataProviderBase
     public int getFoliageColor(Biome biome, BlockPos pos)
     {
         double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
         return FoliageColors.getColor(temperature, humidity);
     }
 
     public int getGrassColor(Biome biome, BlockPos pos)
     {
         double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
         return GrassColors.getColor(temperature, humidity);
     }
 
@@ -74,7 +73,7 @@ public class DataProviderBase
 
                 for (ChunkHolder holder : chunkHolders.values())
                 {
-                    Optional<WorldChunk> optional = holder.getBorderFuture().getNow(ChunkHolder.UNLOADED_WORLD_CHUNK).left();
+                    Optional<WorldChunk> optional = holder.getAccessibleFuture().getNow(ChunkHolder.UNLOADED_WORLD_CHUNK).left();
 
                     if (optional.isPresent())
                     {
@@ -91,11 +90,6 @@ public class DataProviderBase
         }
 
         return Collections.emptyList();
-    }
-
-    public String getBiomeName(Biome biome)
-    {
-        return (new TranslatableText(biome.getTranslationKey())).getString();
     }
 
     public void addCommandDumpData(DataDump dump, MinecraftServer server)

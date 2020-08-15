@@ -8,13 +8,15 @@ import net.minecraft.sound.BiomeMoodSound;
 import net.minecraft.sound.MusicSound;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.biome.BiomeEffects;
-import net.minecraft.world.biome.BiomeParticleConfig;
 
 @Mixin(BiomeEffects.class)
 public interface IMixinBiomeEffects
 {
     @Accessor("fogColor")
     int tellmeGetFogColor();
+
+    @Accessor("skyColor")
+    int tellmeGetSkyColor();
 
     @Accessor("waterColor")
     int tellmeGetWaterColor();

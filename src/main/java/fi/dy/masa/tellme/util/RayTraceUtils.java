@@ -39,7 +39,7 @@ public class RayTraceUtils
         }
 
         Box bb = entityIn.getBoundingBox().expand(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expand(1d, 1d, 1d);
-        List<Entity> list = worldIn.getEntities(entityIn, bb);
+        List<Entity> list = worldIn.getOtherEntities(entityIn, bb);
 
         double closest = result.getType() == HitResult.Type.BLOCK ? eyesVec.distanceTo(result.getPos()) : Double.MAX_VALUE;
         Vec3d entityTraceHitPos = null;

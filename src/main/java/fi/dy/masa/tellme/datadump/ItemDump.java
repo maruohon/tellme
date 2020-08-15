@@ -426,7 +426,7 @@ public class ItemDump
     public static ArrayListMultimap<Item, Identifier> createItemTagMap()
     {
         ArrayListMultimap<Item, Identifier> tagMapOut = ArrayListMultimap.create();
-        Map<Identifier, Tag<Item>> tagMapIn = ItemTags.getContainer().getEntries();
+        Map<Identifier, Tag<Item>> tagMapIn = ItemTags.getTagGroup().getTags();
 
         for (Map.Entry<Identifier, Tag<Item>> entry : tagMapIn.entrySet())
         {

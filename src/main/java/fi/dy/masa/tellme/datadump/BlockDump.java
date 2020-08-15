@@ -180,7 +180,7 @@ public class BlockDump
     public static ArrayListMultimap<Block, Identifier> createBlockTagMap()
     {
         ArrayListMultimap<Block, Identifier> tagMapOut = ArrayListMultimap.create();
-        Map<Identifier, Tag<Block>> tagMapIn = BlockTags.getContainer().getEntries();
+        Map<Identifier, Tag<Block>> tagMapIn = BlockTags.getTagGroup().getTags();
 
         for (Map.Entry<Identifier, Tag<Block>> entry : tagMapIn.entrySet())
         {
