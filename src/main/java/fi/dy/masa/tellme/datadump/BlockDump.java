@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
+import net.minecraft.block.MaterialColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -22,6 +23,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -48,6 +50,27 @@ public class BlockDump
         {
             blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name");
         }
+
+        return blockDump.getLines();
+    }
+
+    public static List<String> getFormattedBlockToMapColorDump(DataDump.Format format, World world)
+    {
+        DataDump blockDump = new DataDump(3, format);
+
+        for (Identifier id : Registry.BLOCK.getIds())
+        {
+            try
+            {
+                Block block = Registry.BLOCK.get(id);
+                MaterialColor materialColor = block.getDefaultState().getTopMaterialColor(world, BlockPos.ORIGIN);
+                int color = materialColor != null ? materialColor.color : 0xFFFFFF;
+                blockDump.addData(id.toString(), String.format("#%06X", color), String.valueOf(color));
+            }
+            catch (Exception ignore) {}
+        }
+
+        blockDump.addTitle("Registry name", "Map color (hex)", "Map color (int)");
 
         return blockDump.getLines();
     }
