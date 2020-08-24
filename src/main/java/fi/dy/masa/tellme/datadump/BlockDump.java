@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -11,6 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.MaterialColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -18,6 +20,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -44,6 +47,28 @@ public class BlockDump
         {
             blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Exists");
         }
+
+        return blockDump.getLines();
+    }
+
+    public static List<String> getFormattedBlockToMapColorDump(DataDump.Format format, @Nullable World world)
+    {
+        DataDump blockDump = new DataDump(3, format);
+
+        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        {
+            try
+            {
+                ResourceLocation id = entry.getKey();
+                Block block = entry.getValue();
+                MaterialColor materialColor = block.getDefaultState().getMaterialColor(world, BlockPos.ZERO);
+                int color = materialColor != null ? materialColor.colorValue : 0xFFFFFF;
+                blockDump.addData(id.toString(), String.format("#%06X", color), String.valueOf(color));
+            }
+            catch (Exception ignore) {}
+        }
+
+        blockDump.addTitle("Registry name", "Map color (hex)", "Map color (int)");
 
         return blockDump.getLines();
     }
