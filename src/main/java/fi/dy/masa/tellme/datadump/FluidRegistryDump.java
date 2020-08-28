@@ -6,11 +6,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.util.ResourceLocation;
-import fi.dy.masa.tellme.util.datadump.DataDump;
-import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
+import net.minecraft.util.RegistryKey;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.registries.ForgeRegistries;
+import fi.dy.masa.tellme.util.datadump.DataDump;
+import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
 public class FluidRegistryDump
 {
@@ -18,10 +18,10 @@ public class FluidRegistryDump
     {
         DataDump fluidRegistryDump = new DataDump(8, format);
 
-        for (Map.Entry<ResourceLocation, Fluid> entry : ForgeRegistries.FLUIDS.getEntries())
+        for (Map.Entry<RegistryKey<Fluid>, Fluid> entry : ForgeRegistries.FLUIDS.getEntries())
         {
             Fluid fluid = entry.getValue();
-            String name = entry.getKey().toString();
+            String name = fluid.getRegistryName().toString();
 
             FluidAttributes attr = fluid.getAttributes();
             String density = String.valueOf(attr.getDensity());

@@ -2,11 +2,11 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import java.util.Map;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class ChunkStatusDump
 {
@@ -14,7 +14,7 @@ public class ChunkStatusDump
     {
         DataDump dump = new DataDump(4, format);
 
-        for (Map.Entry<ResourceLocation, ChunkStatus> entry : ForgeRegistries.CHUNK_STATUS.getEntries())
+        for (Map.Entry<RegistryKey<ChunkStatus>, ChunkStatus> entry : ForgeRegistries.CHUNK_STATUS.getEntries())
         {
             ChunkStatus val = entry.getValue();
             String ordinal = String.valueOf(val.ordinal());

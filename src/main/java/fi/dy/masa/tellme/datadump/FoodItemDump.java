@@ -8,6 +8,7 @@ import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -41,13 +42,13 @@ public class FoodItemDump
     {
         DataDump itemDump = new DataDump(8, format);
 
-        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        for (Map.Entry<RegistryKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
             Item item = entry.getValue();
 
             if (item.isFood())
             {
-                addData(itemDump, item, entry.getKey());
+                addData(itemDump, item, item.getRegistryName());
             }
         }
 

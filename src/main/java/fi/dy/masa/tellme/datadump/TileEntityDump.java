@@ -5,11 +5,11 @@ import java.util.Map;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.RegistryKey;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class TileEntityDump
 {
@@ -19,10 +19,10 @@ public class TileEntityDump
 
         try
         {
-            for (Map.Entry<ResourceLocation, TileEntityType<?>> entry : ForgeRegistries.TILE_ENTITIES.getEntries())
+            for (Map.Entry<RegistryKey<TileEntityType<?>>, TileEntityType<?>> entry : ForgeRegistries.TILE_ENTITIES.getEntries())
             {
-                String id = entry.getKey().toString();
                 TileEntityType<?> type = entry.getValue();
+                String id = type.getRegistryName().toString();
                 TileEntity te = type.create();
                 Class <? extends TileEntity> clazz = te.getClass();
                 tileEntityDump.addData(id, clazz.getName(), ITickableTileEntity.class.isAssignableFrom(clazz) ? "yes" : "-");

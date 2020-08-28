@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraft.world.gen.feature.structure.Structure;
@@ -17,10 +18,10 @@ public class StructureFeatureDump
     {
         DataDump dump = new DataDump(spawns ? 4 : 2, format);
 
-        for (Map.Entry<ResourceLocation, Structure<?>> entry : ForgeRegistries.STRUCTURE_FEATURES.getEntries())
+        for (Map.Entry<RegistryKey<Structure<?>>, Structure<?>> entry : ForgeRegistries.STRUCTURE_FEATURES.getEntries())
         {
-            ResourceLocation id = entry.getKey();
             Structure<?> feature = entry.getValue();
+            ResourceLocation id = feature.getRegistryName();
 
             if (spawns)
             {

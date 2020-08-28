@@ -7,11 +7,11 @@ import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.EffectType;
 import net.minecraft.potion.Potion;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.registry.Registry;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class PotionTypeDump
 {
@@ -19,10 +19,10 @@ public class PotionTypeDump
     {
         DataDump potionTypeDump = new DataDump(3, format);
 
-        for (Map.Entry<ResourceLocation, Potion> entry : ForgeRegistries.POTION_TYPES.getEntries())
+        for (Map.Entry<RegistryKey<Potion>, Potion> entry : ForgeRegistries.POTION_TYPES.getEntries())
         {
-            String regName = entry.getKey().toString();
             Potion potion = entry.getValue();
+            String regName = potion.getRegistryName().toString();
 
             @SuppressWarnings("deprecation")
             String id = String.valueOf(Registry.POTION.getId(potion));

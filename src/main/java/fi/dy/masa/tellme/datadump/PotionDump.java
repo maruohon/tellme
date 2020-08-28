@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectType;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class PotionDump
 {
@@ -17,10 +18,10 @@ public class PotionDump
     {
         DataDump potionDump = new DataDump(7, format);
 
-        for (Map.Entry<ResourceLocation, Effect> entry : ForgeRegistries.POTIONS.getEntries())
+        for (Map.Entry<RegistryKey<Effect>, Effect> entry : ForgeRegistries.POTIONS.getEntries())
         {
-            ResourceLocation rl = entry.getKey();
             Effect effect = entry.getValue();
+            ResourceLocation rl = effect.getRegistryName();
 
             @SuppressWarnings("deprecation")
             String id = String.valueOf(Registry.EFFECTS.getId(effect));

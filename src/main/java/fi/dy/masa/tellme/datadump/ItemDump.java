@@ -32,6 +32,7 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.RecipeManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
@@ -60,9 +61,10 @@ public class ItemDump
     {
         DataDump itemDump = new DataDump(provider.getColumnCount(), format);
 
-        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        for (Map.Entry<RegistryKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            provider.addLine(itemDump, new ItemStack(entry.getValue()), entry.getKey());
+            Item item = entry.getValue();
+            provider.addLine(itemDump, new ItemStack(item), item.getRegistryName());
         }
 
         provider.addTitle(itemDump);
@@ -138,9 +140,9 @@ public class ItemDump
         HashMultimap<String, ResourceLocation> map = HashMultimap.create(10000, 16);
 
         // Get a mapping of modName => collection-of-block-names
-        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        for (Map.Entry<RegistryKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            ResourceLocation key = entry.getKey();
+            ResourceLocation key = entry.getValue().getRegistryName();
             map.put(key.getNamespace(), key);
         }
 

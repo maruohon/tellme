@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.Attribute;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -19,10 +20,10 @@ public class EntityDump
     {
         DataDump entityDump = new DataDump(includeClassName ? 4 : 3, format);
 
-        for (Map.Entry<ResourceLocation, EntityType<?>> entry : ForgeRegistries.ENTITIES.getEntries())
+        for (Map.Entry<RegistryKey<EntityType<?>>, EntityType<?>> entry : ForgeRegistries.ENTITIES.getEntries())
         {
-            ResourceLocation id = entry.getKey();
             EntityType<?> type = entry.getValue();
+            ResourceLocation id = type.getRegistryName();
             String modName = ModNameUtils.getModName(id);
             @SuppressWarnings("deprecation")
             String entityId = String.valueOf(Registry.ENTITY_TYPE.getId(type));
@@ -38,7 +39,7 @@ public class EntityDump
                     entity.remove();
                     className = clazz.getName();
                 }
-                catch (Exception e) {}
+                catch (Exception ignore) {}
 
                 entityDump.addData(modName, id.toString(), className, entityId);
             }

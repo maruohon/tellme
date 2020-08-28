@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -17,7 +18,7 @@ public class StatTypesDump
     {
         DataDump dump = new DataDump(2, format);
 
-        for (Map.Entry<ResourceLocation, StatType<?>> entry : ForgeRegistries.STAT_TYPES.getEntries())
+        for (Map.Entry<RegistryKey<StatType<?>>, StatType<?>> entry : ForgeRegistries.STAT_TYPES.getEntries())
         {
             StatType<?> type = entry.getValue();
             String typeName = type.getRegistryName().toString();

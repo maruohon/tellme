@@ -16,6 +16,7 @@ import net.minecraft.block.material.MaterialColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
@@ -34,9 +35,10 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(tags ? 6 : 5, format);
 
-        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (Map.Entry<RegistryKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
-            addDataToDump(blockDump, entry.getKey(), entry.getValue(), new ItemStack(entry.getValue()), tags);
+            Block block = entry.getValue();
+            addDataToDump(blockDump, block.getRegistryName(), block, new ItemStack(entry.getValue()), tags);
         }
 
         if (tags)
@@ -55,12 +57,12 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(3, format);
 
-        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (Map.Entry<RegistryKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
             try
             {
-                ResourceLocation id = entry.getKey();
                 Block block = entry.getValue();
+                ResourceLocation id = block.getRegistryName();
                 MaterialColor materialColor = block.getDefaultState().getMaterialColor(world, BlockPos.ZERO);
                 int color = materialColor != null ? materialColor.colorValue : 0xFFFFFF;
                 blockDump.addData(id.toString(), String.format("#%06X", color), String.valueOf(color));
@@ -137,9 +139,9 @@ public class BlockDump
         HashMultimap<String, ResourceLocation> map = HashMultimap.create(400, 512);
 
         // Get a mapping of modName => collection-of-block-names
-        for (Map.Entry<ResourceLocation, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (Map.Entry<RegistryKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
-            ResourceLocation key = entry.getKey();
+            ResourceLocation key = entry.getValue().getRegistryName();
             map.put(key.getNamespace(), key);
         }
 
