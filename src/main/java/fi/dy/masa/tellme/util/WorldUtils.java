@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -36,6 +37,7 @@ public class WorldUtils
 
     public static String getDimensionId(World world)
     {
-        return world.func_234922_V_().func_240901_a_().toString();
+        ResourceLocation id = world.func_241828_r().func_230520_a_().getKey(world.func_230315_m_());
+        return id != null ? id.toString() : "?";
     }
 }

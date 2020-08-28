@@ -117,42 +117,29 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
     {
-        BlockPos pos = entity.func_233580_cy_();
+        BlockPos pos = entity.getPosition();
         TextFormatting green = TextFormatting.GREEN;
 
         // These are client-side only:
         int grassColor = biome.getGrassColor(pos.getX(), pos.getZ());
         entity.sendStatusMessage(new StringTextComponent("Grass color: ")
-                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).func_240699_a_(green)), false);
+                    .append(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).mergeStyle(green)), false);
 
         int foliageColor = biome.getFoliageColor();
         entity.sendStatusMessage(new StringTextComponent("Foliage color: ")
-                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).func_240699_a_(green)), false);
-
-        int waterColor = biome.getWaterColor();
-        entity.sendStatusMessage(new StringTextComponent("Water Color Multiplier: ")
-                    .func_230529_a_(new StringTextComponent(String.format("0x%08X (%d)", waterColor, waterColor)).func_240699_a_(green)), false);
-    }
-
-
-
-    @Override
-    public String getBiomeName(Biome biome)
-    {
-        return biome.getDisplayName().getString();
+                    .append(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).mergeStyle(green)), false);
     }
 
     @Override
-    public void addBiomeInfoWithColors(DataDump dump, Biome biome, String intId, String registryName, String name)
+    public int getFoliageColor(Biome biome, BlockPos pos)
     {
-        int grassColor = biome.getGrassColor(0, 0);
-        int foliageColor = biome.getFoliageColor();
-        int waterColor = biome.getWaterColor();
-        String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
-        String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
-        String waterColorStr = String.format("0x%08X (%10d)", waterColor, waterColor);
+        return biome.getFoliageColor();
+    }
 
-        dump.addData(intId, registryName, name, waterColorStr, grassColorStr, foliageColorStr);
+    @Override
+    public int getGrassColor(Biome biome, BlockPos pos)
+    {
+        return biome.getGrassColor(pos.getX(), pos.getZ());
     }
 
     @Override
@@ -170,8 +157,8 @@ public class DataProviderClient extends DataProviderBase
             if (group != null)
             {
                 String index = String.valueOf(group.getIndex());
-                String name = group.getTabLabel();
-                String key = group.getTranslationKey();
+                String name = group.getPath();
+                String key = group.func_242392_c().getString();
                 ItemStack stack = group.createIcon();
 
                 if (key == null)
@@ -210,7 +197,7 @@ public class DataProviderClient extends DataProviderBase
         {
             if (group != null)
             {
-                names[i++] = I18n.format(group.getTranslationKey());
+                names[i++] = I18n.format(group.func_242392_c().getString());
             }
         }
 

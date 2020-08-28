@@ -53,7 +53,7 @@ public class LocateBlocks extends LocateBase
             }
 
             @SuppressWarnings("deprecation")
-            Optional<Block> block = Registry.BLOCK.getValue(key);
+            Optional<Block> block = Registry.BLOCK.func_241873_b(key);
 
             if (block.isPresent())
             {

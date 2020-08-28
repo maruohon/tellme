@@ -56,7 +56,6 @@ public class BlockInfo
         names.put(Material.CORAL, "CORAL");
         names.put(Material.DRAGON_EGG, "DRAGON_EGG");
         names.put(Material.EARTH, "EARTH");
-        names.put(Material.field_237214_y_, "field_237214_y_");
         names.put(Material.FIRE, "FIRE");
         names.put(Material.GLASS, "GLASS");
         names.put(Material.GOURD, "GOURD");
@@ -65,6 +64,7 @@ public class BlockInfo
         names.put(Material.LAVA, "LAVA");
         names.put(Material.LEAVES, "LEAVES");
         names.put(Material.MISCELLANEOUS, "MISCELLANEOUS");
+        names.put(Material.NETHER_WOOD, "NETHER_WOOD");
         names.put(Material.OCEAN_PLANT, "OCEAN_PLANT");
         names.put(Material.ORGANIC, "ORGANIC");
         names.put(Material.PACKED_ICE, "PACKED_ICE");
@@ -295,7 +295,7 @@ public class BlockInfo
 
     public static boolean statePassesFilter(BlockState state, Map<Property<?>, Comparable<?>> filterProperties)
     {
-        for (Property<?> prop : state.func_235904_r_())
+        for (Property<?> prop : state.getProperties())
         {
             if (filterProperties.containsKey(prop) &&
                 filterProperties.get(prop).equals(state.get(prop)) == false)

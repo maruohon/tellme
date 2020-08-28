@@ -12,7 +12,13 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'java'
-apply plugin: 'maven-publish'
+
+repositories {
+    // gigaherz mappings
+    maven {
+        url 'https://www.dogforce-games.com/maven/'
+    }
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -26,25 +32,20 @@ configFile.withReader {
 }
 
 minecraft {
-    //mappings channel: 'stable', version: config.mappings_version
-    mappings = config.mappings_version
+    //mappings channel: 'snapshot', version: '20191019-1.14.3'
+    mappings channel: "${config.mcp_mappings_channel}", version: "${config.mcp_mappings_version}"
+    //mappings = config.mappings_version
 
     //makeObfSourceJar = false
 
     ext.mod_version = config.mod_version
 
-    if (config.mod_version.endsWith('-dev')) {
-        config.mod_version = config.mod_version + "." + new Date().format('yyyyMMdd.HHmmss')
+    if (mod_version.endsWith('-dev')) {
+        mod_version = mod_version + "." + new Date().format('yyyyMMdd.HHmmss')
     }
 
-    /*
-    replaceIn "reference/Reference.java"
-    replace "@MOD_VERSION@", mod_version
-
-    if (project.hasProperty("signJarKeyStore")) {
-        replace "@FINGERPRINT@", signJarFingerprint
-    }
-    */
+    //replaceIn "MaLiLibReference.java"
+    //replace "@MOD_VERSION@", mod_version
 }
 
 dependencies {
@@ -57,9 +58,17 @@ compileJava {
     options.encoding = 'UTF-8'
 }
 
+/*
+sourceSets {
+    main {
+        ext.refMap = 'mixins.' + config.mod_id + '.refmap.json'
+    }
+}
+*/
+
 group = config.group + "." + config.mod_id // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = config.mod_file_name + '-' + config.minecraft_version_out
-version = project.config.mod_version
+version = project.minecraft.mod_version
 
 /**
  * This section allows you to customise your generated jar (litemod) file. By
@@ -70,7 +79,7 @@ jar {
     // Remove the "-mc1.12" suffix from the file name
     //classifier = ""
     // Don't append a 'mod-' filename prefix >_>
-    //baseName = archivesBaseName
+    baseName = archivesBaseName
 
     manifest {
         attributes([
@@ -85,6 +94,13 @@ jar {
     }
 }
 
+/*
+mixin {
+    defaultObfuscationEnv notch
+    add sourceSets.main, 'mixins.' + config.mod_id + '.refmap.json'
+}
+*/
+
 processResources
 {
     // Exclude the GIMP image files
@@ -92,22 +108,19 @@ processResources
     exclude '**/xcf'
 
     // this will ensure that this task is redone when the versions change.
-    inputs.property "mod_version", project.config.mod_version
+    inputs.property "mod_version", project.minecraft.mod_version
     inputs.property "minecraft_version", project.config.minecraft_version
-}
 
-/*
-if (project.hasProperty("signJarKeyStore")) {
-    task signJar(type: SignJar, dependsOn: reobfJar) {
-        inputFile = jar.archivePath
-        outputFile = jar.archivePath
-
-        keyStore = signJarKeyStore
-        alias = signJarAlias
-        storePass = signJarStorePass
-        keyPass = signJarKeyPass
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'mod_version': project.minecraft.mod_version, 'minecraft_version': project.config.minecraft_version
     }
-
-    build.dependsOn signJar
+      
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
 }
-*/

@@ -5,22 +5,27 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeManager;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BiomeLocator
 {
     private final Object2ObjectOpenHashMap<Biome, BlockPos> biomePositions = new Object2ObjectOpenHashMap<>();
     private final BlockPos.Mutable posMutable = new BlockPos.Mutable();
+    private final MutableRegistry<Biome> registry;
     private BlockPos center = BlockPos.ZERO;
     private int count;
     private boolean append;
+
+    public BiomeLocator(MutableRegistry<Biome> registry)
+    {
+        this.registry = registry;
+    }
 
     public void setAppend(boolean append)
     {
@@ -30,7 +35,7 @@ public class BiomeLocator
     public void findClosestBiomePositions(BiomeManager biomeManager, BlockPos center, int sampleInterval, int maxRadius)
     {
         final long timeBefore = System.nanoTime();
-        final int totalBiomes = ForgeRegistries.BIOMES.getKeys().size();
+        final int totalBiomes = this.registry.keySet().size();
         this.count = 0;
         this.center = center;
 
@@ -109,10 +114,7 @@ public class BiomeLocator
         {
             this.biomePositions.put(biome, this.posMutable.toImmutable());
 
-            if (this.biomePositions.size() >= totalBiomes)
-            {
-                return true;
-            }
+            return this.biomePositions.size() >= totalBiomes;
         }
 
         return false;
@@ -120,7 +122,7 @@ public class BiomeLocator
 
     public List<String> getClosestBiomePositions(Format format)
     {
-        DataDump dump = new DataDump(4, format);
+        DataDump dump = new DataDump(3, format);
 
         for (Map.Entry<Biome, BlockPos> entry : this.biomePositions.entrySet())
         {
@@ -132,25 +134,19 @@ public class BiomeLocator
                 continue;
             }
 
-            ResourceLocation key = ForgeRegistries.BIOMES.getKey(biome);
+            ResourceLocation key = this.registry.getKey(biome);
 
             dump.addData(
                     key != null ? key.toString() : "<null>",
-                    getBiomeDisplayName(biome),
                     String.valueOf(entry.getValue().getX()), String.valueOf(entry.getValue().getZ()));
         }
 
-        dump.addTitle("Registry name", "Name", "X", "Z");
+        dump.addTitle("Registry name", "X", "Z");
         dump.addHeader(String.format("Closest found biome locations around the center point x = %d, z = %d", this.center.getX(), this.center.getZ()));
 
+        dump.setColumnProperties(1, DataDump.Alignment.RIGHT, true);
         dump.setColumnProperties(2, DataDump.Alignment.RIGHT, true);
-        dump.setColumnProperties(3, DataDump.Alignment.RIGHT, true);
 
         return dump.getLines();
-    }
-
-    public static String getBiomeDisplayName(Biome biome)
-    {
-        return (new TranslationTextComponent(biome.getTranslationKey())).getString();
     }
 }

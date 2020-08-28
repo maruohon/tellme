@@ -3,7 +3,6 @@ package fi.dy.masa.tellme.command;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import com.google.common.collect.Maps;
 import com.mojang.brigadier.CommandDispatcher;
@@ -22,15 +21,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeManager;
-import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.command.CommandUtils.AreaType;
 import fi.dy.masa.tellme.command.CommandUtils.IWorldRetriever;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
-import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.BiomeStats;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -38,7 +36,7 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 public class SubCommandBiomeStats
 {
     private static final Map<UUID, BiomeStats> BIOME_STATS = Maps.newHashMap();
-    private static final BiomeStats CONSOLE_BIOME_STATS = new BiomeStats();
+    private static BiomeStats consoleBiomeStats;
 
     public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
@@ -79,18 +77,8 @@ public class SubCommandBiomeStats
                         c.getArgument("output_format", DataDump.Format.class)))
                 .build();
 
-        @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> argBiomeFilters = Commands.argument("biome_filters",
-                StringCollectionArgument.create(() -> ForgeRegistries.BIOMES.getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
-                .executes(ctx -> outputData(ctx.getSource(),
-                        ctx.getArgument("output_type", OutputType.class),
-                        ctx.getArgument("output_format", DataDump.Format.class),
-                        ctx.getArgument("biome_filters", List.class)))
-                .build();
-
         actionNodeOutputData.addChild(argOutputType);
         argOutputType.addChild(argOutputFormat);
-        argOutputFormat.addChild(argBiomeFilters);
 
         return actionNodeOutputData;
     }
@@ -275,7 +263,7 @@ public class SubCommandBiomeStats
                                        IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         World world = dimensionGetter.getWorldFromSource(source);
-        BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
+        BiomeStats biomeStats = getBiomeStatsFor(source, source.getEntity());
         BiomeManager biomeManager = world.getBiomeManager();
 
         CommandUtils.sendMessage(source, "Counting biomes...");
@@ -292,7 +280,7 @@ public class SubCommandBiomeStats
                                           int sampleRadius, Vector2f center, IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         World world = dimensionGetter.getWorldFromSource(source);
-        BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
+        BiomeStats biomeStats = getBiomeStatsFor(source, source.getEntity());
         BiomeManager biomeManager = world.getBiomeManager();
 
         CommandUtils.sendMessage(source, "Counting biomes...");
@@ -307,36 +295,25 @@ public class SubCommandBiomeStats
 
     private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format)
     {
-        return outputData(source, outputType, format, null);
-    }
-
-    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format, @Nullable List<String> filters)
-    {
-        BiomeStats biomeStats = getBiomeStatsFor(source.getEntity());
-        List<String> lines;
-
-        // We have some filters specified
-        if (filters != null && filters.isEmpty() == false)
-        {
-            lines = biomeStats.query(format, filters);
-        }
-        else
-        {
-            lines = biomeStats.queryAll(format);
-        }
-
+        BiomeStats biomeStats = getBiomeStatsFor(source, source.getEntity());
+        List<String> lines = biomeStats.queryAll(format);
         OutputUtils.printOutput(lines, outputType, format, "biome_stats", source);
 
         return 1;
     }
 
-    private static BiomeStats getBiomeStatsFor(@Nullable Entity entity)
+    private static BiomeStats getBiomeStatsFor(final CommandSource source, @Nullable Entity entity)
     {
         if (entity == null)
         {
-            return CONSOLE_BIOME_STATS;
+            if (consoleBiomeStats == null)
+            {
+                consoleBiomeStats = new BiomeStats(source.func_241861_q().func_243612_b(Registry.BIOME_KEY));
+            }
+
+            return consoleBiomeStats;
         }
 
-        return BIOME_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeStats());
+        return BIOME_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeStats(source.func_241861_q().func_243612_b(Registry.BIOME_KEY)));
     }
 }

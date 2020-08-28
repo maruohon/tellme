@@ -15,15 +15,16 @@ public class DimensionDump
 {
     public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server, boolean verbose)
     {
-        DataDump dump = new DataDump(verbose ? 12 : 2, format);
+        DataDump dump = new DataDump(verbose ? 12 : 3, format);
 
         if (server != null)
         {
             for (World world : server.getWorlds())
             {
                 DimensionType dim = world.func_230315_m_();
-                String dimId = world.func_234922_V_().func_240901_a_().toString();
+                String dimId = WorldUtils.getDimensionId(world);
                 String natural = String.valueOf(dim.func_236043_f_());
+                String coordScale = String.valueOf(dim.func_242724_f());
 
                 if (verbose)
                 {
@@ -35,21 +36,20 @@ public class DimensionDump
                     String logicalHeight = String.valueOf(dim.func_241513_m_());
                     String piglinSafe = String.valueOf(dim.func_241509_i_());
                     String respawnAnchor = String.valueOf(dim.func_241511_k_());
-                    String shrunk = String.valueOf(dim.func_236045_g_());
                     String ultrawarm = String.valueOf(dim.func_236040_e_());
 
-                    dump.addData(dimId, natural, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, shrunk, skyLight, ultrawarm);
+                    dump.addData(dimId, natural, coordScale, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, skyLight, ultrawarm);
                 }
                 else
                 {
-                    dump.addData(dimId, natural);
+                    dump.addData(dimId, natural, coordScale);
                 }
             }
         }
 
         if (verbose)
         {
-            dump.addTitle("ID", "Natural", "Bed works", "Ceiling", "Dragon", "Height", "Piglin safe", "Raids", "Resp. Anchor", "Shrunk", "Sky Light", "Ultra Warm");
+            dump.addTitle("ID", "Natural", "Coord Scale", "Bed works", "Ceiling", "Dragon", "Height", "Piglin safe", "Raids", "Resp. Anchor", "Sky Light", "Ultra Warm");
             dump.setColumnAlignment(1, Alignment.RIGHT); // natural
             dump.setColumnAlignment(2, Alignment.RIGHT); // bed
             dump.setColumnAlignment(3, Alignment.RIGHT); // ceiling
@@ -64,7 +64,7 @@ public class DimensionDump
         }
         else
         {
-            dump.addTitle("ID", "Natural");
+            dump.addTitle("ID", "Natural", "Coord Scale");
         }
 
         dump.setSort(false);
@@ -81,7 +81,7 @@ public class DimensionDump
         {
             for (ServerWorld world : server.getWorlds())
             {
-                String dimId = world.func_234922_V_().func_240901_a_().toString();
+                String dimId = WorldUtils.getDimensionId(world);
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
                 String entityCount = String.valueOf(world.getEntities().count());
                 String playerCount = String.valueOf(world.getPlayers().size());

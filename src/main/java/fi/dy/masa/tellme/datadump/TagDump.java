@@ -26,12 +26,12 @@ public class TagDump
         {
             case BLOCK:
             {
-                Map<ResourceLocation, ITag<Block>> tagMap = BlockTags.getCollection().getTagMap();
+                Map<ResourceLocation, ITag<Block>> tagMap = BlockTags.getCollection().func_241833_a();
 
                 for (Map.Entry<ResourceLocation, ITag<Block>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().func_230236_b_().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;
@@ -39,12 +39,12 @@ public class TagDump
 
             case ITEM:
             {
-                Map<ResourceLocation, ITag<Item>> tagMap = ItemTags.getCollection().getTagMap();
+                Map<ResourceLocation, ITag<Item>> tagMap = ItemTags.getCollection().func_241833_a();
 
                 for (Map.Entry<ResourceLocation, ITag<Item>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().func_230236_b_().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;
@@ -52,12 +52,12 @@ public class TagDump
 
             case FLUID:
             {
-                Map<ResourceLocation, ITag<Fluid>> tagMap = FluidTags.getCollection().getTagMap();
+                Map<ResourceLocation, ITag<Fluid>> tagMap = FluidTags.getCollection().func_241833_a();
 
                 for (Map.Entry<ResourceLocation, ITag<Fluid>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().func_230236_b_().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;
@@ -65,12 +65,12 @@ public class TagDump
 
             case ENTITY_TYPE:
             {
-                Map<ResourceLocation, ITag<EntityType<?>>> tagMap = EntityTypeTags.getCollection().getTagMap();
+                Map<ResourceLocation, ITag<EntityType<?>>> tagMap = EntityTypeTags.getCollection().func_241833_a();
 
                 for (Map.Entry<ResourceLocation, ITag<EntityType<?>>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().func_230236_b_().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;

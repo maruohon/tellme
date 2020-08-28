@@ -3,5 +3,6 @@
 bin/
 build/
 eclipse/
+logs/
 .classpath
 .project

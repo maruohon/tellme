@@ -13,6 +13,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.util.text.event.HoverEvent.Action;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -27,13 +28,13 @@ public class OutputUtils
     public static IFormattableTextComponent getClipboardCopiableMessage(IFormattableTextComponent textPre, IFormattableTextComponent textToCopy, IFormattableTextComponent textPost)
     {
         final String copyString = textToCopy.getString();
-        textToCopy.func_240700_a_((style) -> style.func_240715_a_(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
-        textToCopy.func_240699_a_(TextFormatting.UNDERLINE);
+        textToCopy.modifyStyle((style) -> style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
+        textToCopy.mergeStyle(TextFormatting.UNDERLINE);
 
         StringTextComponent hoverText = new StringTextComponent(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
-        textToCopy.getStyle().func_240716_a_(new HoverEvent(HoverEvent.Action.field_230550_a_, hoverText)); // SHOW_TEXT
+        textToCopy.getStyle().setHoverEvent(new HoverEvent(Action.SHOW_TEXT, hoverText));
 
-        return textPre.func_230529_a_(textToCopy).func_230529_a_(textPost);
+        return textPre.append(textToCopy).append(textPost);
     }
 
     public static void sendClickableLinkMessage(PlayerEntity player, String messageKey, final File file)
@@ -42,8 +43,8 @@ public class OutputUtils
 
         if (TellMe.isClient())
         {
-            name.func_240700_a_((style) -> style.func_240715_a_(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
-            name.func_240699_a_(TextFormatting.UNDERLINE);
+            name.modifyStyle((style) -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
+            name.mergeStyle(TextFormatting.UNDERLINE);
         }
 
         player.sendStatusMessage(new TranslationTextComponent(messageKey, name), false);

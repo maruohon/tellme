@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -17,9 +17,10 @@ public class StructureFeatureDump
     {
         DataDump dump = new DataDump(spawns ? 4 : 2, format);
 
-        for (ResourceLocation id : Registry.STRUCTURE_FEATURE.keySet())
+        for (Map.Entry<ResourceLocation, Structure<?>> entry : ForgeRegistries.STRUCTURE_FEATURES.getEntries())
         {
-            Structure<?> feature = Registry.STRUCTURE_FEATURE.getOrDefault(id);
+            ResourceLocation id = entry.getKey();
+            Structure<?> feature = entry.getValue();
 
             if (spawns)
             {
@@ -45,15 +46,15 @@ public class StructureFeatureDump
         return dump.getLines();
     }
 
-    public static String getMobSpawnsString(Collection<Biome.SpawnListEntry> list)
+    public static String getMobSpawnsString(Collection<MobSpawnInfo.Spawners> list)
     {
         List<String> spawns = new ArrayList<>();
 
-        for (Biome.SpawnListEntry spawn : list)
+        for (MobSpawnInfo.Spawners spawn : list)
         {
-            ResourceLocation erl = ForgeRegistries.ENTITIES.getKey(spawn.entityType);
+            ResourceLocation erl = ForgeRegistries.ENTITIES.getKey(spawn.field_242588_c);
             String entName = erl != null ? erl.toString() : "<null>";
-            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.minGroupCount, spawn.maxGroupCount));
+            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.field_242589_d, spawn.field_242590_e));
         }
 
         Collections.sort(spawns);

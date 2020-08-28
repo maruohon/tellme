@@ -10,18 +10,22 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeManager;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.util.BiomeLocator;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class BiomeStats
 {
-    private final Object2LongOpenHashMap<Biome> biomeCounts = new Object2LongOpenHashMap<Biome>();
+    private final Object2LongOpenHashMap<Biome> biomeCounts = new Object2LongOpenHashMap<>();
+    private final Registry<Biome> registry;
     private int totalCount;
     private boolean append;
+
+    public BiomeStats(Registry<Biome> registry)
+    {
+        this.registry = registry;
+    }
 
     public void setAppend(boolean append)
     {
@@ -118,17 +122,16 @@ public class BiomeStats
             }
 
             ResourceLocation key = null;
-            Biome biome = null;
 
             try
             {
                 key = new ResourceLocation(filter);
             }
-            catch (Exception e)
+            catch (Exception ignore)
             {
             }
 
-            biome = key != null ? ForgeRegistries.BIOMES.getValue(key) : null;
+            Biome biome = key != null ? this.registry.getOrDefault(key) : null;
 
             if (biome == null)
             {
@@ -140,13 +143,11 @@ public class BiomeStats
             {
                 if (entry.getKey() == biome)
                 {
-                    @SuppressWarnings("deprecation")
-                    int id = Registry.BIOME.getId(biome);
+                    int id = this.registry.getId(biome);
                     long count = entry.getValue();
 
                     dump.addData(
                             key.toString(),
-                            BiomeLocator.getBiomeDisplayName(biome),
                             String.valueOf(id),
                             String.valueOf(count),
                             String.format("%.2f %%", (double) count * 100D / (double) this.totalCount));
@@ -163,7 +164,7 @@ public class BiomeStats
 
     public List<String> query(Format format, @Nullable List<String> filters)
     {
-        DataDump dump = new DataDump(5, format);
+        DataDump dump = new DataDump(4, format);
 
         if (filters != null)
         {
@@ -181,25 +182,23 @@ public class BiomeStats
                     continue;
                 }
 
-                ResourceLocation key = ForgeRegistries.BIOMES.getKey(biome);
-                @SuppressWarnings("deprecation")
-                int id = Registry.BIOME.getId(biome);
+                ResourceLocation key = this.registry.getKey(biome);
+                int id = this.registry.getId(biome);
                 long count = entry.getValue();
 
                 dump.addData(
                         key != null ? key.toString() : "<null>",
-                        BiomeLocator.getBiomeDisplayName(biome),
                         String.valueOf(id),
                         String.valueOf(count),
                         String.format("%.2f", (double) count * 100D / (double) this.totalCount));
             }
         }
 
-        dump.addTitle("Registry name", "Name", "ID", "Count", "%");
+        dump.addTitle("Registry name", "ID", "Count", "%");
 
-        dump.setColumnProperties(2, Alignment.RIGHT, true); // Biome ID
-        dump.setColumnProperties(3, Alignment.RIGHT, true); // count
-        dump.setColumnProperties(4, Alignment.RIGHT, true); // count %
+        dump.setColumnProperties(1, Alignment.RIGHT, true); // Biome ID
+        dump.setColumnProperties(2, Alignment.RIGHT, true); // count
+        dump.setColumnProperties(3, Alignment.RIGHT, true); // count %
 
         return dump.getLines();
     }

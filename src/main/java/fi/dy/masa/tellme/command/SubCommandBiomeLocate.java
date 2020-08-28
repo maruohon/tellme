@@ -20,6 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeManager;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
@@ -32,7 +33,7 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 public class SubCommandBiomeLocate
 {
     private static final Map<UUID, BiomeLocator> BIOME_LOCATORS = Maps.newHashMap();
-    private static final BiomeLocator CONSOLE_BIOME_LOCATOR = new BiomeLocator();
+    private static BiomeLocator consoleBiomeLocator;
 
     public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
     {
@@ -130,7 +131,7 @@ public class SubCommandBiomeLocate
     private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vector2f center, World world)
     {
         Entity entity = source.getEntity();
-        BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
+        BiomeLocator biomeLocator = getBiomeLocatorFor(source, entity);
         BiomeManager biomeManager = world.getBiomeManager();
 
         CommandUtils.sendMessage(source, "Finding closest biome locations...");
@@ -146,7 +147,7 @@ public class SubCommandBiomeLocate
     private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format)
     {
         Entity entity = source.getEntity();
-        BiomeLocator biomeLocator = getBiomeLocatorFor(entity);
+        BiomeLocator biomeLocator = getBiomeLocatorFor(source, entity);
         List<String> lines = biomeLocator.getClosestBiomePositions(format);
 
         OutputUtils.printOutput(lines, outputType, format, "biome_locate", source);
@@ -154,13 +155,18 @@ public class SubCommandBiomeLocate
         return 1;
     }
 
-    private static BiomeLocator getBiomeLocatorFor(@Nullable Entity entity)
+    private static BiomeLocator getBiomeLocatorFor(final CommandSource source, @Nullable final Entity entity)
     {
         if (entity == null)
         {
-            return CONSOLE_BIOME_LOCATOR;
+            if (consoleBiomeLocator == null)
+            {
+                consoleBiomeLocator = new BiomeLocator(source.func_241861_q().func_243612_b(Registry.BIOME_KEY));
+            }
+
+            return consoleBiomeLocator;
         }
 
-        return BIOME_LOCATORS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeLocator());
+        return BIOME_LOCATORS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeLocator(source.func_241861_q().func_243612_b(Registry.BIOME_KEY)));
     }
 }

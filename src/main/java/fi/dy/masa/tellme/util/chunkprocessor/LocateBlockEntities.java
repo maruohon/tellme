@@ -42,7 +42,7 @@ public class LocateBlockEntities extends LocateBase
             {
                 ResourceLocation key = new ResourceLocation(name);
                 @SuppressWarnings("deprecation")
-                Optional<TileEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getValue(key);
+                Optional<TileEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.func_241873_b(key);
 
                 if (type.isPresent())
                 {

@@ -1,10 +1,10 @@
 package fi.dy.masa.tellme.command.argument;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.google.common.collect.Streams;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -15,32 +15,25 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ISuggestionProvider;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
-import net.minecraftforge.registries.ForgeRegistries;
 
-public class BiomeArgument implements ArgumentType<Biome>
+public class BiomeArgument implements ArgumentType<ResourceLocation>
 {
-    private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((biome) -> ForgeRegistries.BIOMES.getKey(biome).toString()).collect(Collectors.toList());
+    private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((regKey) -> regKey.func_240901_a_().toString()).collect(Collectors.toList());
+
     public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> new StringTextComponent("Invalid biome name: \"" + val + "\""));
 
-    public Biome parse(StringReader reader) throws CommandSyntaxException
+    public ResourceLocation parse(StringReader reader) throws CommandSyntaxException
     {
-        ResourceLocation id = ResourceLocation.read(reader);
-        Biome biome = ForgeRegistries.BIOMES.getValue(id);
-
-        if (biome != null)
-        {
-            return biome;
-        }
-
-        throw INVALID_BIOME_EXCEPTION.create(id);
+        return ResourceLocation.read(reader);
     }
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> ctx, SuggestionsBuilder builder)
     {
-        return ISuggestionProvider.func_212476_a(Streams.stream(ForgeRegistries.BIOMES).map(Biome::getRegistryName), builder);
+        return ISuggestionProvider.suggestIterable(((CommandSource) ctx.getSource()).func_241861_q().func_243612_b(Registry.BIOME_KEY).keySet(), builder);
     }
 
     @Override
@@ -54,8 +47,16 @@ public class BiomeArgument implements ArgumentType<Biome>
         return new BiomeArgument();
     }
 
-    public static Biome getBiomeArgument(CommandContext<CommandSource> ctx, String name)
+    public static Biome getBiomeArgument(CommandContext<CommandSource> ctx, String name) throws CommandSyntaxException
     {
-        return ctx.getArgument(name, Biome.class);
+        ResourceLocation id = ctx.getArgument(name, ResourceLocation.class);
+        Optional<Biome> optional = ctx.getSource().func_241861_q().func_243612_b(Registry.BIOME_KEY).func_241873_b(id);
+
+        if (optional.isPresent() == false)
+        {
+            throw INVALID_BIOME_EXCEPTION.create(id);
+        }
+
+        return optional.get();
     }
 }

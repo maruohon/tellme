@@ -10,6 +10,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkDump
@@ -49,7 +50,7 @@ public class ChunkDump
             {
                 if (world != null)
                 {
-                    String dimId = world.func_234922_V_().func_240901_a_().toString();
+                    String dimId = WorldUtils.getDimensionId(world);
                     Collection<Chunk> chunks = TellMe.dataProvider.getLoadedChunks(world);
 
                     for (Chunk chunk : chunks)

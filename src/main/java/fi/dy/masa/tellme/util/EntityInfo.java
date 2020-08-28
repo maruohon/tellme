@@ -123,7 +123,7 @@ public class EntityInfo
                 String name = player.getName().getString();
                 String dim = WorldUtils.getDimensionId(player.getEntityWorld());
                 String health = String.format("%.2f", player.getHealth());
-                BlockPos pos = player.func_233580_cy_();
+                BlockPos pos = player.getPosition();
                 int x = pos.getX();
                 int y = pos.getY();
                 int z = pos.getZ();
