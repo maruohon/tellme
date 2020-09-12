@@ -190,7 +190,7 @@ public class BiomeDump
             return text.append(new LiteralText(name).formatted(green))
                        .append(", min delay: ").append(new LiteralText(String.valueOf(accessor.tellmeGetMinDelay())).formatted(green))
                        .append(", max delay: ").append(new LiteralText(String.valueOf(accessor.tellmeGetMaxDelay())).formatted(green))
-                       .append(", can stop: ").append(new LiteralText(String.valueOf(accessor.tellmeGetCanStop())).formatted(green));
+                       .append(", replace current: ").append(new LiteralText(String.valueOf(accessor.tellmeGetCanStop())).formatted(green));
         }
 
         return text.append(new LiteralText("-").formatted(Formatting.RED));

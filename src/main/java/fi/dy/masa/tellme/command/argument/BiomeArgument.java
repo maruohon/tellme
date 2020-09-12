@@ -17,11 +17,11 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BuiltInBiomes;
+import net.minecraft.world.biome.BiomeKeys;
 
 public class BiomeArgument implements ArgumentType<Identifier>
 {
-    private static final Collection<String> EXAMPLES = Stream.of(BuiltInBiomes.PLAINS, BuiltInBiomes.OCEAN).map((regKey) -> regKey.getValue().toString()).collect(Collectors.toList());
+    private static final Collection<String> EXAMPLES = Stream.of(BiomeKeys.PLAINS, BiomeKeys.OCEAN).map((regKey) -> regKey.getValue().toString()).collect(Collectors.toList());
 
     public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> new LiteralText("Invalid biome name: \"" + val + "\""));
 

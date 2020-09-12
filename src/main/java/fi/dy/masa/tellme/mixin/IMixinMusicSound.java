@@ -8,15 +8,15 @@ import net.minecraft.sound.SoundEvent;
 @Mixin(MusicSound.class)
 public interface IMixinMusicSound
 {
-    @Accessor("event")
+    @Accessor("sound")
     SoundEvent tellmeGetSound();
 
-    @Accessor("field_24058")
+    @Accessor("minDelay")
     int tellmeGetMinDelay();
 
-    @Accessor("field_24059")
+    @Accessor("maxDelay")
     int tellmeGetMaxDelay();
 
-    @Accessor("field_24060")
+    @Accessor("replaceCurrentMusic")
     boolean tellmeGetCanStop();
 }

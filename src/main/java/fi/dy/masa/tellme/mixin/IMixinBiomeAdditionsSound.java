@@ -8,7 +8,7 @@ import net.minecraft.sound.SoundEvent;
 @Mixin(BiomeAdditionsSound.class)
 public interface IMixinBiomeAdditionsSound
 {
-    @Accessor("event")
+    @Accessor("sound")
     SoundEvent tellmeGetSound();
 
     @Accessor("chance")

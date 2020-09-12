@@ -11,7 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RayTraceContext;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 public class RayTraceUtils
@@ -30,8 +30,8 @@ public class RayTraceUtils
         Vec3d rangedLookRot = entityIn.getRotationVec(1f).multiply(range);
         Vec3d lookVec = eyesVec.add(rangedLookRot);
 
-        RayTraceContext ctx = new RayTraceContext(eyesVec, lookVec, RayTraceContext.ShapeType.OUTLINE, RayTraceContext.FluidHandling.ANY, entityIn);
-        HitResult result = worldIn.rayTrace(ctx);
+        RaycastContext ctx = new RaycastContext(eyesVec, lookVec, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.ANY, entityIn);
+        HitResult result = worldIn.raycast(ctx);
 
         if (result == null)
         {
@@ -48,7 +48,7 @@ public class RayTraceUtils
         for (Entity entity : list)
         {
             bb = entity.getBoundingBox();
-            Optional<Vec3d> optional = bb.rayTrace(eyesVec, lookVec);
+            Optional<Vec3d> optional = bb.raycast(eyesVec, lookVec);
 
             if (optional.isPresent())
             {

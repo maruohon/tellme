@@ -8,7 +8,7 @@ import net.minecraft.sound.SoundEvent;
 @Mixin(BiomeMoodSound.class)
 public interface IMixinBiomeMoodSound
 {
-    @Accessor("event")
+    @Accessor("sound")
     SoundEvent tellmeGetSound();
 
     @Accessor("cultivationTicks")
