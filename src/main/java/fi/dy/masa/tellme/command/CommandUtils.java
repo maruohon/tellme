@@ -97,6 +97,38 @@ public class CommandUtils
                             Math.max(MathHelper.floor(pos1.y) >> 4, MathHelper.floor(pos2.y) >> 4));
     }
 
+    /**
+     * Takes in block coordinates, outputs chunk coordinates
+     */
+    public static ChunkPos getMinCornerChunkPos(Vec3d pos1, Vec3d pos2)
+    {
+        return new ChunkPos(Math.min(MathHelper.floor(pos1.x) >> 4, MathHelper.floor(pos2.x) >> 4),
+                            Math.min(MathHelper.floor(pos1.z) >> 4, MathHelper.floor(pos2.z) >> 4));
+    }
+
+    /**
+     * Takes in block coordinates, outputs chunk coordinates
+     */
+    public static ChunkPos getMaxCornerChunkPos(Vec3d pos1, Vec3d pos2)
+    {
+        return new ChunkPos(Math.max(MathHelper.floor(pos1.x) >> 4, MathHelper.floor(pos2.x) >> 4),
+                            Math.max(MathHelper.floor(pos1.z) >> 4, MathHelper.floor(pos2.z) >> 4));
+    }
+
+    public static Vec3d getMinCornerVec3d(Vec3d pos1, Vec3d pos2)
+    {
+        return new Vec3d(Math.min(pos1.x, pos2.x),
+                         Math.min(pos1.y, pos2.y),
+                         Math.min(pos1.z, pos2.z));
+    }
+
+    public static Vec3d getMaxCornerVec3d(Vec3d pos1, Vec3d pos2)
+    {
+        return new Vec3d(Math.max(pos1.x, pos2.x),
+                         Math.max(pos1.y, pos2.y),
+                         Math.max(pos1.z, pos2.z));
+    }
+
     public static CompletableFuture<Suggestions> suggestIterable(Iterable<String> iterable, SuggestionsBuilder builder)
     {
         String arg = builder.getRemaining().toLowerCase(Locale.ROOT);

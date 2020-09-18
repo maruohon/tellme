@@ -1,11 +1,14 @@
 package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.Collection;
+import javax.annotation.Nullable;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.WorldChunk;
+import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -13,6 +16,8 @@ public abstract class ChunkProcessorBase
 {
     protected final DataDump.Format format;
     protected int chunksWithZeroCount;
+    @Nullable protected Vec3d minPos;
+    @Nullable protected Vec3d maxPos;
     private int loadedChunks;
     private int unloadedChunks;
 
@@ -34,6 +39,12 @@ public abstract class ChunkProcessorBase
     public int getChunksWithZeroCount()
     {
         return this.chunksWithZeroCount;
+    }
+
+    public void setBoxCorners(Vec3d pos1, Vec3d pos2)
+    {
+        this.minPos = CommandUtils.getMinCornerVec3d(pos1, pos2);
+        this.maxPos = CommandUtils.getMaxCornerVec3d(pos1, pos2);
     }
 
     public void processChunks(Collection<WorldChunk> chunks)
