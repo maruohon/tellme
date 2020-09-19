@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,6 +43,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.ItemType;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class ItemDump
@@ -93,27 +95,46 @@ public class ItemDump
 
     private static void getDataForItemSubtypes(DataDump itemDump, Item item, ResourceLocation rl, ItemInfoProviderBase provider)
     {
+        CreativeTabs[] tabs = item.getCreativeTabs();
+
         if (item.getHasSubtypes())
         {
-            for (CreativeTabs tab : item.getCreativeTabs())
+            if (tabs == null || tabs.length == 0 || tabs[0] == null)
+            {
+                tabs = CreativeTabs.CREATIVE_TAB_ARRAY;
+            }
+
+            int count = 0;
+            HashSet<ItemType> addedItems = new HashSet<>();
+
+            for (CreativeTabs tab : tabs)
             {
                 if (tab != null)
                 {
-                    NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+                    NonNullList<ItemStack> stacks = NonNullList.create();
                     item.getSubItems(tab, stacks);
 
                     for (ItemStack stack : stacks)
                     {
-                        // FIXME: Ignore identical duplicate entries from different tabs...
-                        provider.addLine(itemDump, stack, rl);
+                        ItemType type = new ItemType(stack);
+
+                        if (addedItems.contains(type) == false)
+                        {
+                            provider.addLine(itemDump, stack, rl);
+                            addedItems.add(type);
+                            ++count;
+                        }
                     }
                 }
             }
+
+            if (count > 0)
+            {
+                return;
+            }
         }
-        else
-        {
-            provider.addLine(itemDump, new ItemStack(item, 1, 0), rl);
-        }
+
+        provider.addLine(itemDump, new ItemStack(item, 1, 0), rl);
     }
 
     public static String getJsonItemsWithPropsDump(EntityPlayer player)
