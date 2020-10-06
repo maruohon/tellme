@@ -35,9 +35,13 @@ public class EntityInfo
         }
 
         lines.add("Entity class: " + target.getClass().getName());
+        lines.add("Entity UUID: " + target.getUniqueID().toString());
         lines.add("");
 
         NBTFormatter.getPrettyFormattedNBT(lines, nbt);
+
+        lines.add("");
+        lines.add(nbt.toString());
 
         return lines;
     }
