@@ -2,9 +2,12 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -18,6 +21,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeAmbience;
 import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.OutputUtils;
@@ -141,7 +145,7 @@ public class BiomeDump
         boolean canSnow = biome.doesSnowGenerate(world, pos);
         String strSnowing = canSnow ? "yes" : "no";
 
-        //String biomeTypes = getBiomeTypesForBiome(biome);
+        String biomeTypes = getBiomeTypesForBiome(world, biome);
         //String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
         //boolean isOceanic = BiomeManager.oceanBiomes.contains(biome);
         IFormattableTextComponent textPre = new StringTextComponent("ID: ")
@@ -170,9 +174,10 @@ public class BiomeDump
         entity.sendStatusMessage(new StringTextComponent("Water Fog Color: ")
                                    .append(new StringTextComponent(strWaterFogColor).mergeStyle(green)), false);
 
-        /*
         entity.sendStatusMessage(new StringTextComponent("Biome types: ")
                                    .append(new StringTextComponent(biomeTypes).mergeStyle(green)), false);
+
+        /*
         entity.sendStatusMessage(new StringTextComponent("Biome dictionary types: ")
                                    .append(new StringTextComponent(biomeDictionaryTypes).mergeStyle(green)), false);
         */
@@ -223,18 +228,18 @@ public class BiomeDump
         return lines;
     }
 
-    /*
-    private static String getBiomeTypesForBiome(Biome biome)
+    private static String getBiomeTypesForBiome(World world, Biome biome)
     {
         Set<String> typeNames = new HashSet<>();
+        Registry<Biome> registry = getBiomeRegistry(world);
 
-        for (BiomeType type : BiomeType.values())
+        for (BiomeManager.BiomeType type : BiomeManager.BiomeType.values())
         {
-            ImmutableList<BiomeEntry> entries = BiomeManager.getBiomes(type);
+            ImmutableList<BiomeManager.BiomeEntry> entries = BiomeManager.getBiomes(type);
 
-            for (BiomeEntry entry : entries)
+            for (BiomeManager.BiomeEntry entry : entries)
             {
-                if (entry.biome == biome)
+                if (registry.getValueForKey(entry.getKey()) == biome)
                 {
                     typeNames.add(type.toString().toUpperCase());
                     break;
@@ -252,6 +257,7 @@ public class BiomeDump
         return "";
     }
 
+    /*
     private static String getBiomeDictionaryTypesForBiome(Biome biome)
     {
         List<String> typeStrings = new ArrayList<>();
@@ -354,13 +360,13 @@ public class BiomeDump
         @Override
         public int getColumnCount()
         {
-            return 5;
+            return 6;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("ID", "Registry name", "Temp.", "RainType", "Downfall");
+            dump.addTitle("ID", "Registry name", "Temp.", "RainType", "Downfall", "BiomeTypes");
 
             dump.setColumnProperties(0, Alignment.RIGHT, true); // id
             dump.setColumnProperties(2, Alignment.RIGHT, true); // temperature
@@ -380,8 +386,9 @@ public class BiomeDump
             Biome.RainType precipitation = biome.getPrecipitation();
             String precStr = precipitation != Biome.RainType.NONE ? precipitation.getName() : "-";
             String downfall = String.format("%.2f", biome.getDownfall());
+            String biomeTypes = getBiomeTypesForBiome(ctx.world, biome);
 
-            dump.addData(intId, regName, temp, precStr, downfall);
+            dump.addData(intId, regName, temp, precStr, downfall, biomeTypes);
         }
     }
 
