@@ -53,9 +53,9 @@ public class StructureFeatureDump
 
         for (MobSpawnInfo.Spawners spawn : list)
         {
-            ResourceLocation erl = ForgeRegistries.ENTITIES.getKey(spawn.field_242588_c);
+            ResourceLocation erl = ForgeRegistries.ENTITIES.getKey(spawn.type);
             String entName = erl != null ? erl.toString() : "<null>";
-            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.field_242589_d, spawn.field_242590_e));
+            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.minCount, spawn.maxCount));
         }
 
         Collections.sort(spawns);

@@ -37,7 +37,7 @@ public class WorldUtils
 
     public static String getDimensionId(World world)
     {
-        ResourceLocation id = world.func_241828_r().func_230520_a_().getKey(world.func_230315_m_());
+        ResourceLocation id = world.func_241828_r().func_230520_a_().getKey(world.getDimensionType());
         return id != null ? id.toString() : "?";
     }
 }

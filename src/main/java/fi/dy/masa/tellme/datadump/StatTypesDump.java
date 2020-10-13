@@ -41,7 +41,7 @@ public class StatTypesDump
         for (ResourceLocation key : Registry.CUSTOM_STAT.keySet())
         {
             String typeName = key.toString();
-            Optional<ResourceLocation> stat = Registry.CUSTOM_STAT.func_241873_b(key);
+            Optional<ResourceLocation> stat = Registry.CUSTOM_STAT.getOptional(key);
 
             if (stat.isPresent())
             {

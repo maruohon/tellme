@@ -158,7 +158,7 @@ public class DataProviderClient extends DataProviderBase
             {
                 String index = String.valueOf(group.getIndex());
                 String name = group.getPath();
-                String key = group.func_242392_c().getString();
+                String key = group.getGroupName().getString();
                 ItemStack stack = group.createIcon();
 
                 if (key == null)
@@ -197,7 +197,7 @@ public class DataProviderClient extends DataProviderBase
         {
             if (group != null)
             {
-                names[i++] = I18n.format(group.func_242392_c().getString());
+                names[i++] = I18n.format(group.getGroupName().getString());
             }
         }
 

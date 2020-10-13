@@ -42,7 +42,7 @@ public class LocateEntities extends LocateBase
             {
                 ResourceLocation key = new ResourceLocation(name);
                 @SuppressWarnings("deprecation")
-                Optional<EntityType<?>> type = Registry.ENTITY_TYPE.func_241873_b(key);
+                Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOptional(key);
 
                 if (type.isPresent())
                 {

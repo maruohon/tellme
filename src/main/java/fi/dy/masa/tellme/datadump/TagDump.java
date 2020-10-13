@@ -26,7 +26,7 @@ public class TagDump
         {
             case BLOCK:
             {
-                Map<ResourceLocation, ITag<Block>> tagMap = BlockTags.getCollection().func_241833_a();
+                Map<ResourceLocation, ITag<Block>> tagMap = BlockTags.getCollection().getIDTagMap();
 
                 for (Map.Entry<ResourceLocation, ITag<Block>> entry : tagMap.entrySet())
                 {
@@ -39,7 +39,7 @@ public class TagDump
 
             case ITEM:
             {
-                Map<ResourceLocation, ITag<Item>> tagMap = ItemTags.getCollection().func_241833_a();
+                Map<ResourceLocation, ITag<Item>> tagMap = ItemTags.getCollection().getIDTagMap();
 
                 for (Map.Entry<ResourceLocation, ITag<Item>> entry : tagMap.entrySet())
                 {
@@ -52,7 +52,7 @@ public class TagDump
 
             case FLUID:
             {
-                Map<ResourceLocation, ITag<Fluid>> tagMap = FluidTags.getCollection().func_241833_a();
+                Map<ResourceLocation, ITag<Fluid>> tagMap = FluidTags.getCollection().getIDTagMap();
 
                 for (Map.Entry<ResourceLocation, ITag<Fluid>> entry : tagMap.entrySet())
                 {
@@ -65,7 +65,7 @@ public class TagDump
 
             case ENTITY_TYPE:
             {
-                Map<ResourceLocation, ITag<EntityType<?>>> tagMap = EntityTypeTags.getCollection().func_241833_a();
+                Map<ResourceLocation, ITag<EntityType<?>>> tagMap = EntityTypeTags.getCollection().getIDTagMap();
 
                 for (Map.Entry<ResourceLocation, ITag<EntityType<?>>> entry : tagMap.entrySet())
                 {

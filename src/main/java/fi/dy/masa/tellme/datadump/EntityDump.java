@@ -71,7 +71,7 @@ public class EntityDump
         {
             String idStr = id.toString();
             Attribute attr = ForgeRegistries.ATTRIBUTES.getValue(id);
-            String translationKey = attr.func_233754_c_();
+            String translationKey = attr.getAttributeName();
             String defaultValue = String.valueOf(attr.getDefaultValue());
             String tracked = String.valueOf(attr.getShouldWatch());
 

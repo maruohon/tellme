@@ -161,12 +161,12 @@ public class SubCommandBiomeLocate
         {
             if (consoleBiomeLocator == null)
             {
-                consoleBiomeLocator = new BiomeLocator(source.func_241861_q().func_243612_b(Registry.BIOME_KEY));
+                consoleBiomeLocator = new BiomeLocator(source.func_241861_q().getRegistry(Registry.BIOME_KEY));
             }
 
             return consoleBiomeLocator;
         }
 
-        return BIOME_LOCATORS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeLocator(source.func_241861_q().func_243612_b(Registry.BIOME_KEY)));
+        return BIOME_LOCATORS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeLocator(source.func_241861_q().getRegistry(Registry.BIOME_KEY)));
     }
 }

@@ -275,7 +275,7 @@ public class ItemDump
                 {
                     JsonObject o1 = new JsonObject();
                     JsonObject o2 = new JsonObject();
-                    o1.add("Type", new JsonPrimitive(entry.getKey().func_233754_c_()));
+                    o1.add("Type", new JsonPrimitive(entry.getKey().getAttributeName()));
                     o1.add("Value", o2);
 
                     AttributeModifier att = entry.getValue();

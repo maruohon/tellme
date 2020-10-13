@@ -22,7 +22,7 @@ import net.minecraft.world.biome.Biomes;
 
 public class BiomeArgument implements ArgumentType<ResourceLocation>
 {
-    private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((regKey) -> regKey.func_240901_a_().toString()).collect(Collectors.toList());
+    private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((regKey) -> regKey.getLocation().toString()).collect(Collectors.toList());
 
     public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> new StringTextComponent("Invalid biome name: \"" + val + "\""));
 
@@ -33,7 +33,7 @@ public class BiomeArgument implements ArgumentType<ResourceLocation>
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> ctx, SuggestionsBuilder builder)
     {
-        return ISuggestionProvider.suggestIterable(((CommandSource) ctx.getSource()).func_241861_q().func_243612_b(Registry.BIOME_KEY).keySet(), builder);
+        return ISuggestionProvider.suggestIterable(((CommandSource) ctx.getSource()).func_241861_q().getRegistry(Registry.BIOME_KEY).keySet(), builder);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class BiomeArgument implements ArgumentType<ResourceLocation>
     public static Biome getBiomeArgument(CommandContext<CommandSource> ctx, String name) throws CommandSyntaxException
     {
         ResourceLocation id = ctx.getArgument(name, ResourceLocation.class);
-        Optional<Biome> optional = ctx.getSource().func_241861_q().func_243612_b(Registry.BIOME_KEY).func_241873_b(id);
+        Optional<Biome> optional = ctx.getSource().func_241861_q().getRegistry(Registry.BIOME_KEY).getOptional(id);
 
         if (optional.isPresent() == false)
         {

@@ -308,12 +308,12 @@ public class SubCommandBiomeStats
         {
             if (consoleBiomeStats == null)
             {
-                consoleBiomeStats = new BiomeStats(source.func_241861_q().func_243612_b(Registry.BIOME_KEY));
+                consoleBiomeStats = new BiomeStats(source.func_241861_q().getRegistry(Registry.BIOME_KEY));
             }
 
             return consoleBiomeStats;
         }
 
-        return BIOME_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeStats(source.func_241861_q().func_243612_b(Registry.BIOME_KEY)));
+        return BIOME_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeStats(source.func_241861_q().getRegistry(Registry.BIOME_KEY)));
     }
 }

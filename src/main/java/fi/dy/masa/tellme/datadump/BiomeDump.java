@@ -33,7 +33,7 @@ public class BiomeDump
 
     private static Registry<Biome> getBiomeRegistry(World world)
     {
-        return world.func_241828_r().func_243612_b(Registry.BIOME_KEY);
+        return world.func_241828_r().getRegistry(Registry.BIOME_KEY);
     }
 
     public static List<String> getFormattedBiomeDump(Format format, @Nullable World world, BiomeInfoProviderBase provider)
@@ -78,11 +78,11 @@ public class BiomeDump
                 List<String> tmpList = new ArrayList<>();
 
                 // Add the spawns grouped by category and sorted alphabetically within each category
-                for (MobSpawnInfo.Spawners spawn : biome.func_242433_b().func_242559_a(type))
+                for (MobSpawnInfo.Spawners spawn : biome.getMobSpawnInfo().getSpawners(type))
                 {
-                    ResourceLocation erl = spawn.field_242588_c.getRegistryName();
+                    ResourceLocation erl = spawn.type.getRegistryName();
                     String entName = erl != null ? erl.toString() : "<null>";
-                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.field_242589_d, spawn.field_242590_e));
+                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.itemWeight, spawn.minCount, spawn.maxCount));
                 }
 
                 Collections.sort(tmpList);
@@ -111,18 +111,18 @@ public class BiomeDump
         String regName = registry.getKey(biome).toString();
         Biome.RainType rainType = biome.getPrecipitation();
 
-        BiomeAmbience effects = biome.func_235089_q_();
+        BiomeAmbience effects = biome.getAmbience();
         String strFogColor = "?";
         String strSkyColor = "?";
         String strWaterColor = "?";
         String strWaterFogColor = "?";
 
         String strDepth = String.valueOf(biome.getDepth());
-        String strMaxSpawnChance = String.valueOf(biome.func_242433_b().func_242557_a());
+        String strMaxSpawnChance = String.valueOf(biome.getMobSpawnInfo().getCreatureSpawnProbability());
         String strRainType = rainType.getName();
         String strRainfall = String.valueOf(biome.getDownfall());
         String strScale = String.valueOf(biome.getScale());
-        String strTemperature = String.valueOf(biome.func_242445_k());
+        String strTemperature = String.valueOf(biome.getTemperature());
 
         try
         {
@@ -276,14 +276,14 @@ public class BiomeDump
     {
         List<String> strings = new ArrayList<>();
 
-        if (biome.func_242433_b().func_242562_b())
+        if (biome.getMobSpawnInfo().isValidSpawnBiomeForPlayer())
         {
             strings.add("spawn");
         }
 
         for (Structure<?> structure : Structure.field_236365_a_.values())
         {
-            if (biome.func_242440_e().func_242493_a(structure))
+            if (biome.getGenerationSettings().hasStructure(structure))
             {
                 strings.add(structure.getRegistryName().toString());
             }
@@ -376,7 +376,7 @@ public class BiomeDump
             Registry<Biome> registry = getBiomeRegistry(ctx.world);
             String intId = String.valueOf(registry.getId(biome));
             String regName = id.toString();
-            String temp = String.format("%5.2f", biome.func_242445_k());
+            String temp = String.format("%5.2f", biome.getTemperature());
             Biome.RainType precipitation = biome.getPrecipitation();
             String precStr = precipitation != Biome.RainType.NONE ? precipitation.getName() : "-";
             String downfall = String.format("%.2f", biome.getDownfall());
@@ -416,7 +416,7 @@ public class BiomeDump
             Registry<Biome> registry = getBiomeRegistry(ctx.world);
             String intId = String.valueOf(registry.getId(biome));
             String regName = id.toString();
-            BiomeAmbience effects = biome.func_235089_q_();
+            BiomeAmbience effects = biome.getAmbience();
 
             String strFogColor = "?";
             String strSkyColor = "?";

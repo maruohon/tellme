@@ -21,22 +21,22 @@ public class DimensionDump
         {
             for (World world : server.getWorlds())
             {
-                DimensionType dim = world.func_230315_m_();
+                DimensionType dim = world.getDimensionType();
                 String dimId = WorldUtils.getDimensionId(world);
-                String natural = String.valueOf(dim.func_236043_f_());
-                String coordScale = String.valueOf(dim.func_242724_f());
+                String natural = String.valueOf(dim.isNatural());
+                String coordScale = String.valueOf(dim.getCoordinateScale());
 
                 if (verbose)
                 {
-                    String bedWorks = String.valueOf(dim.func_241510_j_());
-                    String ceiling = String.valueOf(dim.func_236037_d_());
-                    String dragon = String.valueOf(dim.func_236046_h_());
-                    String raids = String.valueOf(dim.func_241512_l_());
+                    String bedWorks = String.valueOf(dim.doesBedWork());
+                    String ceiling = String.valueOf(dim.getHasCeiling());
+                    String dragon = String.valueOf(dim.doesHasDragonFight());
+                    String raids = String.valueOf(dim.isHasRaids());
                     String skyLight = String.valueOf(dim.hasSkyLight());
-                    String logicalHeight = String.valueOf(dim.func_241513_m_());
-                    String piglinSafe = String.valueOf(dim.func_241509_i_());
-                    String respawnAnchor = String.valueOf(dim.func_241511_k_());
-                    String ultrawarm = String.valueOf(dim.func_236040_e_());
+                    String logicalHeight = String.valueOf(dim.getLogicalHeight());
+                    String piglinSafe = String.valueOf(dim.isPiglinSafe());
+                    String respawnAnchor = String.valueOf(dim.doesRespawnAnchorWorks());
+                    String ultrawarm = String.valueOf(dim.isUltrawarm());
 
                     dump.addData(dimId, natural, coordScale, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, skyLight, ultrawarm);
                 }
