@@ -53,9 +53,10 @@ public class ItemDump
 
     public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic(false);
     public static final ItemInfoProviderBase INFO_TAGS = new ItemInfoProviderBasic(true);
+    public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
+    public static final ItemInfoProviderBase INFO_DAMAGEABLES = new ItemInfoProviderDamageables();
     public static final ItemInfoProviderBase INFO_PLANTABLES = new ItemInfoProviderPlantables();
     public static final ItemInfoProviderBase INFO_TOOL_CLASS = new ItemInfoProviderToolClasses();
-    public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
 
     public static List<String> getFormattedItemDump(Format format, ItemInfoProviderBase provider)
     {
@@ -472,6 +473,34 @@ public class ItemDump
                 {
                     TellMe.logger.warn("Exception while trying to get plant type for '{}'", this.getRegistryName(id));
                 }
+            }
+        }
+    }
+
+    public static class ItemInfoProviderDamageables extends ItemInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 5;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
+        {
+            if (stack.getItem().isDamageable())
+            {
+                dump.addData(this.getModName(id),
+                             this.getRegistryName(id),
+                             this.getItemId(stack),
+                             this.getDisplayName(stack),
+                             getTagNamesJoined(stack.getItem()));
             }
         }
     }
