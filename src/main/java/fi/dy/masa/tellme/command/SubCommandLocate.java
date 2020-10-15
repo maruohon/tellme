@@ -13,6 +13,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.ILocationArgument;
 import net.minecraft.command.arguments.Vec3Argument;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
@@ -65,15 +66,15 @@ public class SubCommandLocate
         ArgumentCommandNode<CommandSource, ILocationArgument> argAreaCorner2 = Commands.argument("end_corner", Vec3Argument.vec3()).build();
 
         ArgumentCommandNode<CommandSource, List<String>> argNamesAllLoaded = Commands.argument(type.getPlural(),
-                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.ALL_LOADED, ctx)).build();
 
         ArgumentCommandNode<CommandSource, List<String>> argNamesBox = Commands.argument(type.getPlural(),
-                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.BOX, ctx)).build();
 
         ArgumentCommandNode<CommandSource, List<String>> argNamesChunkRadius = Commands.argument(type.getPlural(),
-                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map((id) -> id.toString()).collect(Collectors.toList()), ""))
+                StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.CHUNK_RADIUS, ctx)).build();
 
         argTarget.addChild(argOutputType);
