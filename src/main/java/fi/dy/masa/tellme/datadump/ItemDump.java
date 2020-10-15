@@ -50,8 +50,9 @@ public class ItemDump
 
     public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic(false);
     public static final ItemInfoProviderBase INFO_TAGS = new ItemInfoProviderBasic(true);
-    public static final ItemInfoProviderBase INFO_PLANTABLES = new ItemInfoProviderPlantables();
     public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
+    public static final ItemInfoProviderBase INFO_DAMAGEABLES = new ItemInfoProviderDamageables();
+    public static final ItemInfoProviderBase INFO_PLANTABLES = new ItemInfoProviderPlantables();
 
     public static List<String> getFormattedItemDump(Format format, ItemInfoProviderBase provider)
     {
@@ -415,6 +416,38 @@ public class ItemDump
                          this.getDisplayName(stack),
                          this.getRegistryName(id),
                          getTagNamesJoined(stack.getItem(), ctx.tagMap));
+        }
+    }
+
+    public static class ItemInfoProviderDamageables extends ItemInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 6;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Durability", "Tags");
+            dump.setColumnProperties(4, Alignment.RIGHT, true); // durability
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, Identifier id, ItemDumpContext ctx)
+        {
+            Item item = stack.getItem();
+
+            if (item.isDamageable())
+            {
+                dump.addData(this.getModName(id),
+                             this.getRegistryName(id),
+                             this.getItemId(stack),
+                             this.getDisplayName(stack),
+                             String.valueOf(item.getMaxDamage()),
+                             getTagNamesJoined(item, ctx.tagMap));
+            }
         }
     }
 
