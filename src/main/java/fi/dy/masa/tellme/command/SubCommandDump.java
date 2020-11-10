@@ -173,6 +173,7 @@ public class SubCommandDump
         dumpProviders.put("biomes-with-colors",         (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.COLORS));
         dumpProviders.put("biomes-with-feature-valid",  (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.VALIDITY));
         dumpProviders.put("biomes-with-mob-spawns",     (ctx) -> BiomeDump.getFormattedBiomeDumpWithMobSpawns(ctx.format, ctx.world));
+        dumpProviders.put("biomes-with-types",          (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.TYPES));
         dumpProviders.put("biomes-id-to-name",          (ctx) -> BiomeDump.getBiomeDumpIdToName(ctx.format, ctx.world));
         dumpProviders.put("block-material-colors",      (ctx) -> BlockDump.getFormattedBlockToMapColorDump(ctx.format, ctx.world));
         dumpProviders.put("block-placer-types",         (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.BLOCK_PLACER_TYPES));
