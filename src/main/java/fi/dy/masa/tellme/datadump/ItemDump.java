@@ -51,6 +51,7 @@ public class ItemDump
 {
     public static final String[] HARVEST_LEVEL_NAMES = new String[] { "Wood/Gold", "Stone", "Iron", "Diamond" };
 
+    public static final ItemInfoProviderBase INFO_REGISTRY_NAME = new ItemInfoProviderRegistryNameOnly();
     public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic(false);
     public static final ItemInfoProviderBase INFO_TAGS = new ItemInfoProviderBasic(true);
     public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
@@ -337,6 +338,36 @@ public class ItemDump
         public abstract void addTitle(DataDump dump);
 
         public abstract void addLine(DataDump dump, ItemStack stack, ResourceLocation id);
+    }
+
+    public static class ItemInfoProviderRegistryNameOnly extends ItemInfoProviderBase
+    {
+        public ItemInfoProviderRegistryNameOnly()
+        {
+        }
+
+        @Override
+        public int getColumnCount()
+        {
+            return 1;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Registry name");
+        }
+
+        @Override
+        public void addHeaders(DataDump dump)
+        {
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
+        {
+            dump.addData(this.getRegistryName(id));
+        }
     }
 
     public static class ItemInfoProviderBasic extends ItemInfoProviderBase
