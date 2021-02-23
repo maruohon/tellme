@@ -18,7 +18,7 @@ public class CommandTellMe
 {
     public static void registerServerCommand(CommandDispatcher<ServerCommandSource> dispatcher)
     {
-        register(dispatcher, "tellme", 4);
+        register(dispatcher, "tellme", 2);
     }
 
     public static void registerClientCommand(CommandDispatcher<ServerCommandSource> dispatcher)
