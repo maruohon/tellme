@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import fi.dy.masa.tellme.mixin.IMixinServerWorld;
@@ -79,7 +80,7 @@ public class DimensionDump
 
         if (server != null)
         {
-            for (World world : server.getWorlds())
+            for (ServerWorld world : server.getWorlds())
             {
                 String dimId = WorldUtils.getDimensionId(world);
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));

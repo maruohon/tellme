@@ -2,18 +2,22 @@ package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import fi.dy.masa.tellme.mixin.IMixinThreadedAnvilChunkStorage;
+import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 
 public class WorldUtils
 {
-    public static int getLoadedChunkCount(World world)
+    public static int getLoadedChunkCount(ServerWorld world)
     {
-        return world != null && world.getChunkManager() instanceof ServerChunkManager ?
-                ((ServerChunkManager) world.getChunkManager()).getTotalChunksLoadedCount() : 0;
+        //return ((ServerChunkManager) world.getChunkManager()).getTotalChunksLoadedCount();
+        Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) world.getChunkManager().threadedAnvilChunkStorage).tellmeGetChunkHolders();
+        return chunkHolders.size();
     }
 
     public static List<WorldChunk> loadAndGetChunks(World world, ChunkPos posMin, ChunkPos posMax)
