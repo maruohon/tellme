@@ -17,7 +17,7 @@
     },
 
     "license": "LGPLv3",
-
+    "icon": "assets/tellme/icon.png",
     "environment": "*",
     "entrypoints": {
         "main": [
