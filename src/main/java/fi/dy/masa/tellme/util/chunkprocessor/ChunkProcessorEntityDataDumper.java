@@ -38,12 +38,9 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
             try
             {
                 ResourceLocation id = new ResourceLocation(str);
+                @SuppressWarnings("deprecation")
                 Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOptional(id);
-
-                if (type.isPresent())
-                {
-                    this.filters.add(type.get());
-                }
+                type.ifPresent(this.filters::add);
             }
             catch (Exception e)
             {
@@ -67,7 +64,6 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
         double maxX = max != null ? max.x : 0;
         double maxY = max != null ? max.y : 0;
         double maxZ = max != null ? max.z : 0;
-        int total = 0;
 
         for (ClassInheritanceMultiMap<Entity> entityList : entityLists)
         {
@@ -76,12 +72,12 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
                 Vector3d pos = entity.getPositionVec();
 
                 if (hasBox &&
-                            (pos.x < minX ||
-                                     pos.y < minY ||
-                                     pos.z < minZ ||
-                                     pos.x > maxX ||
-                                     pos.y > maxY ||
-                                     pos.z > maxZ))
+                    (pos.x < minX ||
+                     pos.y < minY ||
+                     pos.z < minZ ||
+                     pos.x > maxX ||
+                     pos.y > maxY ||
+                     pos.z > maxZ))
                 {
                     continue;
                 }
@@ -90,13 +86,13 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
 
                 if (noFilters || filters.contains(type))
                 {
+                    @SuppressWarnings("deprecation")
                     ResourceLocation id = Registry.ENTITY_TYPE.getKey(type);
                     CompoundNBT tag = new CompoundNBT();
 
                     if (entity.writeUnlessRemoved(tag))
                     {
                         this.data.add(new EntityDataEntry(pos, id.toString(), tag.toString()));
-                        ++total;
                     }
                 }
             }

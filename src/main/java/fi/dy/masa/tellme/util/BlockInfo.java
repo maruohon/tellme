@@ -193,10 +193,13 @@ public class BlockInfo
 
         BlockState state = data.state;
 
+        @SuppressWarnings("deprecation")
+        float explosionResistance = state.getBlock().getExplosionResistance();
+
         lines.add(String.format("Full block state: %s", state));
         lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
                 state.getBlockHardness(world, pos),
-                state.getBlock().getExplosionResistance(),
+                explosionResistance,
                 getMaterialName(state.getMaterial())));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 

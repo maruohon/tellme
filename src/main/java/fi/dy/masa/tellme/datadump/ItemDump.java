@@ -217,6 +217,7 @@ public class ItemDump
                 int harvestLevel = block.getHarvestLevel(state);
                 String harvestLevelName = (harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length) ? HARVEST_LEVEL_NAMES[harvestLevel] : "Unknown";
                 boolean fallingBlock = block instanceof FallingBlock;
+                @SuppressWarnings("deprecation")
                 int light = state.getLightValue();
                 // Ugly way to try to get the flammability...
                 boolean flammable = block.getFlammability(state, world, pos, Direction.UP) > 0;//Blocks.FIRE.getFlammability(block) > 0;

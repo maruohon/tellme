@@ -123,11 +123,11 @@ public class DataProviderClient extends DataProviderBase
         // These are client-side only:
         int grassColor = biome.getGrassColor(pos.getX(), pos.getZ());
         entity.sendStatusMessage(new StringTextComponent("Grass color: ")
-                    .append(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).mergeStyle(green)), false);
+                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).mergeStyle(green)), false);
 
         int foliageColor = biome.getFoliageColor();
         entity.sendStatusMessage(new StringTextComponent("Foliage color: ")
-                    .append(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).mergeStyle(green)), false);
+                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).mergeStyle(green)), false);
     }
 
     @Override

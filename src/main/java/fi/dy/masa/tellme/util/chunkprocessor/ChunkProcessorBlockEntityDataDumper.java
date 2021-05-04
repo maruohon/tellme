@@ -40,12 +40,9 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
             try
             {
                 ResourceLocation id = new ResourceLocation(str);
+                @SuppressWarnings("deprecation")
                 Optional<TileEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOptional(id);
-
-                if (type.isPresent())
-                {
-                    this.filters.add(type.get());
-                }
+                type.ifPresent(this.filters::add);
             }
             catch (Exception e)
             {
@@ -69,7 +66,6 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
         int maxX = max != null ? (int) Math.floor(max.x) : 0;
         int maxY = max != null ? (int) Math.floor(max.y) : 0;
         int maxZ = max != null ? (int) Math.floor(max.z) : 0;
-        int total = 0;
 
         for (TileEntity be : blockEntities.values())
         {
@@ -84,12 +80,12 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
                     BlockPos pos = be.getPos();
 
                     if (hasBox &&
-                                (pos.getX() < minX ||
-                                         pos.getY() < minY ||
-                                         pos.getZ() < minZ ||
-                                         pos.getX() > maxX ||
-                                         pos.getY() > maxY ||
-                                         pos.getZ() > maxZ))
+                        (pos.getX() < minX ||
+                         pos.getY() < minY ||
+                         pos.getZ() < minZ ||
+                         pos.getX() > maxX ||
+                         pos.getY() > maxY ||
+                         pos.getZ() > maxZ))
                     {
                         continue;
                     }
@@ -98,7 +94,6 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
                     {
                         CompoundNBT tag = be.write(new CompoundNBT());
                         this.data.add(new BlockEntityDataEntry(pos, id.toString(), tag.toString()));
-                        ++total;
                     }
                     catch (Exception e)
                     {

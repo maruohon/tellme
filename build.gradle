@@ -1,7 +1,7 @@
 
 buildscript {
     repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://maven.minecraftforge.net' }
         jcenter()
         mavenCentral()
     }
@@ -32,9 +32,7 @@ configFile.withReader {
 }
 
 minecraft {
-    //mappings channel: 'snapshot', version: '20191019-1.14.3'
-    mappings channel: "${config.mcp_mappings_channel}", version: "${config.mcp_mappings_version}"
-    //mappings = config.mappings_version
+    mappings channel: "${config.mappings_channel}", version: "${config.mappings_version}"
 
     //makeObfSourceJar = false
 

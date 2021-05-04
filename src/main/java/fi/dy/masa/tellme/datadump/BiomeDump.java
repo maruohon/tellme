@@ -157,41 +157,41 @@ public class BiomeDump
         String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(getBiomeKey(biome, world));
         //boolean isOceanic = BiomeManager.oceanBiomes.contains(biome);
         IFormattableTextComponent textPre = new StringTextComponent("ID: ")
-                                                    .append(new StringTextComponent(intId).mergeStyle(green))
+                                                    .appendSibling(new StringTextComponent(intId).mergeStyle(green))
                                                     .appendString(" - Registry name: ");
 
         entity.sendStatusMessage(new StringTextComponent("------------- Current biome info ------------"), false);
         entity.sendStatusMessage(OutputUtils.getClipboardCopiableMessage(textPre, new StringTextComponent(regName).mergeStyle(green), new StringTextComponent("")), false);
 
         entity.sendStatusMessage(new StringTextComponent("Temperature: ")
-                                   .append(new StringTextComponent(strTemperature).mergeStyle(green)), false);
-        entity.sendStatusMessage(new StringTextComponent("RainType: ").append(new StringTextComponent(strRainType).mergeStyle(green))
-                                   .appendString(", downfall: ").append(new StringTextComponent(strRainfall).mergeStyle(green))
-                                   .appendString(", snows: ").append(new StringTextComponent(strSnowing).mergeStyle(canSnow ? green : red)), false);
-        entity.sendStatusMessage(new StringTextComponent("Depth: ").append(new StringTextComponent(strDepth).mergeStyle(green))
-                                   .appendString(", scale: ").append(new StringTextComponent(strScale).mergeStyle(green))
-                                   .appendString(", max spawn chance: ").append(new StringTextComponent(strMaxSpawnChance).mergeStyle(green))
+                                   .appendSibling(new StringTextComponent(strTemperature).mergeStyle(green)), false);
+        entity.sendStatusMessage(new StringTextComponent("RainType: ").appendSibling(new StringTextComponent(strRainType).mergeStyle(green))
+                                   .appendString(", downfall: ").appendSibling(new StringTextComponent(strRainfall).mergeStyle(green))
+                                   .appendString(", snows: ").appendSibling(new StringTextComponent(strSnowing).mergeStyle(canSnow ? green : red)), false);
+        entity.sendStatusMessage(new StringTextComponent("Depth: ").appendSibling(new StringTextComponent(strDepth).mergeStyle(green))
+                                   .appendString(", scale: ").appendSibling(new StringTextComponent(strScale).mergeStyle(green))
+                                   .appendString(", max spawn chance: ").appendSibling(new StringTextComponent(strMaxSpawnChance).mergeStyle(green))
                 , false);
 
         entity.sendStatusMessage(new StringTextComponent("Fog Color: ")
-                                   .append(new StringTextComponent(strFogColor).mergeStyle(green)), false);
+                                   .appendSibling(new StringTextComponent(strFogColor).mergeStyle(green)), false);
         entity.sendStatusMessage(new StringTextComponent("Sky Color: ")
-                                   .append(new StringTextComponent(strSkyColor).mergeStyle(green)), false);
+                                   .appendSibling(new StringTextComponent(strSkyColor).mergeStyle(green)), false);
         entity.sendStatusMessage(new StringTextComponent("Water Color Multiplier: ")
-                                   .append(new StringTextComponent(strWaterColor).mergeStyle(green)), false);
+                                   .appendSibling(new StringTextComponent(strWaterColor).mergeStyle(green)), false);
         entity.sendStatusMessage(new StringTextComponent("Water Fog Color: ")
-                                   .append(new StringTextComponent(strWaterFogColor).mergeStyle(green)), false);
+                                   .appendSibling(new StringTextComponent(strWaterFogColor).mergeStyle(green)), false);
 
         entity.sendStatusMessage(new StringTextComponent("Biome types: ")
-                                   .append(new StringTextComponent(biomeTypes).mergeStyle(green)), false);
+                                   .appendSibling(new StringTextComponent(biomeTypes).mergeStyle(green)), false);
 
         entity.sendStatusMessage(new StringTextComponent("Biome dictionary types: ")
-                                   .append(new StringTextComponent(biomeDictionaryTypes).mergeStyle(green)), false);
+                                   .appendSibling(new StringTextComponent(biomeDictionaryTypes).mergeStyle(green)), false);
 
         if (StringUtils.isBlank(strValidFor) == false)
         {
             entity.sendStatusMessage(new StringTextComponent("Valid for: ")
-                                       .append(new StringTextComponent(strValidFor).mergeStyle(TextFormatting.AQUA)), false);
+                                       .appendSibling(new StringTextComponent(strValidFor).mergeStyle(TextFormatting.AQUA)), false);
         }
 
         // Get the grass and foliage colors, if called on the client side

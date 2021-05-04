@@ -34,7 +34,7 @@ public class OutputUtils
         StringTextComponent hoverText = new StringTextComponent(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
         textToCopy.getStyle().setHoverEvent(new HoverEvent(Action.SHOW_TEXT, hoverText));
 
-        return textPre.append(textToCopy).append(textPost);
+        return textPre.appendSibling(textToCopy).appendSibling(textPost);
     }
 
     public static void sendClickableLinkMessage(PlayerEntity player, String messageKey, final File file)

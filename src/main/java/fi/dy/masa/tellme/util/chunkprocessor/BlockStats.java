@@ -239,7 +239,10 @@ public class BlockStats extends ChunkProcessorAllChunks
                 dump.addData(info.registryName, info.displayName, String.valueOf(info.count));
             }
 
-            if (info.state.isAir() == false)
+            @SuppressWarnings("deprecation")
+            boolean isAir = info.state.isAir();
+
+            if (isAir == false)
             {
                 total += info.count;
             }
