@@ -1,6 +1,8 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorLoadedChunks;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesLister;
@@ -9,8 +11,6 @@ import fi.dy.masa.tellme.util.chunkprocessor.EntitiesPerTypeCounter;
 import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesLister;
 import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesPerChunkCounter;
 import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesPerTypeCounter;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 
 public class EntityCountDump extends DataDump
 {
@@ -49,7 +49,7 @@ public class EntityCountDump extends DataDump
         final int loadedChunks = processor.getLoadedChunkCount();
         final int zeroCount = processor.getChunksWithZeroCount();
 
-        dump.addHeader(0, String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), WorldUtils.getDimensionId(world)));
+        dump.addHeader(0, String.format("World '%s' (dim: %s)", world.provider.getDimensionType().getName(), WorldUtils.getDimensionAsString(world)));
         dump.addHeader(1, String.format("Loaded chunks: %d", loadedChunks));
 
         if (zeroCount != 0)
@@ -74,7 +74,7 @@ public class EntityCountDump extends DataDump
         final int unloadedChunks = processor.getUnloadedChunkCount();
         final int zeroCount = processor.getChunksWithZeroCount();
 
-        dump.addHeader(0, String.format("World '%s' (dim: %d)", world.provider.getDimensionType().getName(), WorldUtils.getDimensionId(world)));
+        dump.addHeader(0, String.format("World '%s' (dim: %s)", world.provider.getDimensionType().getName(), WorldUtils.getDimensionAsString(world)));
         dump.addHeader(1, String.format("The selected area contains %d loaded chunks", loadedChunks));
 
         if (pos1.equals(pos2))

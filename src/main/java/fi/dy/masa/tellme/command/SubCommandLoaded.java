@@ -3,13 +3,6 @@ package fi.dy.masa.tellme.command;
 import java.io.File;
 import java.util.List;
 import javax.annotation.Nullable;
-import fi.dy.masa.tellme.LiteModTellMe;
-import fi.dy.masa.tellme.datadump.ChunkDump;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.EntityCountDump;
-import fi.dy.masa.tellme.datadump.EntityCountDump.EntityListType;
-import fi.dy.masa.tellme.util.WorldUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -21,6 +14,13 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.datadump.ChunkDump;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.datadump.EntityCountDump;
+import fi.dy.masa.tellme.datadump.EntityCountDump.EntityListType;
+import fi.dy.masa.tellme.util.WorldUtils;
 
 public class SubCommandLoaded extends SubCommand
 {
@@ -102,8 +102,8 @@ public class SubCommandLoaded extends SubCommand
             {
                 if (world != null)
                 {
-                    LiteModTellMe.logger.info(String.format("DIM %4d: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
-                            fi.dy.masa.malilib.util.WorldUtils.getDimensionId(world), world.provider.getDimensionType().getName(),
+                    LiteModTellMe.logger.info(String.format("DIM %4s: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
+                            fi.dy.masa.malilib.util.WorldUtils.getDimensionAsString(world), world.provider.getDimensionType().getName(),
                             WorldUtils.getLoadedChunkCount(world),
                             world.loadedEntityList.size(), world.playerEntities.size()));
                 }

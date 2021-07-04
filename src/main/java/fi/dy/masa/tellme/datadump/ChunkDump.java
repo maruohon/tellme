@@ -3,12 +3,12 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.WorldUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.WorldUtils;
 
 public class ChunkDump
 {
@@ -20,7 +20,7 @@ public class ChunkDump
         {
             if (world != null)
             {
-                String dimId = String.valueOf(fi.dy.masa.malilib.util.WorldUtils.getDimensionId(world));
+                String dimId = fi.dy.masa.malilib.util.WorldUtils.getDimensionAsString(world);
                 Collection<Chunk> chunks = WorldUtils.getLoadedChunks(world);
 
                 for (Chunk chunk : chunks)
