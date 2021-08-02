@@ -13,6 +13,11 @@ public class ModNameUtils
 
     public static String getModName(ResourceLocation rl)
     {
+        return getModName(rl.getNamespace());
+    }
+
+    public static String getModName(String modId)
+    {
         if (MOD_IDS_TO_NAMES.isEmpty())
         {
             for (ModInfo modInfo : ModList.get().getMods())
@@ -22,7 +27,6 @@ public class ModNameUtils
             }
         }
 
-        String modId = rl.getNamespace();
         String modName = MOD_IDS_TO_NAMES.get(modId);
 
         if (modName == null)

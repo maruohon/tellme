@@ -50,6 +50,7 @@ public class CommandTellMe
                     .then(SubCommandCopyToClipboard.registerSubCommand(dispatcher))
                     .then(SubCommandDump.registerSubCommand(dispatcher))
                     .then(SubCommandDumpJson.registerSubCommand(dispatcher))
+                    .then(SubCommandDumpPackdevUtilsSnippet.registerSubCommand(dispatcher))
                     .then(SubCommandEntityData.registerSubCommand(dispatcher))
                     .then(SubCommandHolding.registerSubCommand(dispatcher))
                     .then(SubCommandLoaded.registerSubCommand(dispatcher))
