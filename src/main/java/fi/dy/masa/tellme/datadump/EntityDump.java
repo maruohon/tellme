@@ -18,7 +18,7 @@ public class EntityDump
 {
     public static List<String> getFormattedEntityDump(@Nullable World world, DataDump.Format format, boolean includeClassName)
     {
-        DataDump entityDump = new DataDump(includeClassName ? 4 : 3, format);
+        DataDump entityDump = new DataDump(includeClassName ? 5 : 4, format);
 
         for (Map.Entry<RegistryKey<EntityType<?>>, EntityType<?>> entry : ForgeRegistries.ENTITIES.getEntries())
         {
@@ -27,6 +27,7 @@ public class EntityDump
             String modName = ModNameUtils.getModName(id);
             @SuppressWarnings("deprecation")
             String entityId = String.valueOf(Registry.ENTITY_TYPE.getId(type));
+            String category = type.getClassification().getName();
 
             if (includeClassName && world != null)
             {
@@ -41,23 +42,23 @@ public class EntityDump
                 }
                 catch (Exception ignore) {}
 
-                entityDump.addData(modName, id.toString(), className, entityId);
+                entityDump.addData(modName, id.toString(), entityId, category, className);
             }
             else
             {
-                entityDump.addData(modName, id.toString(), entityId);
+                entityDump.addData(modName, id.toString(), entityId, category);
             }
         }
 
+        entityDump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // id
+
         if (includeClassName)
         {
-            entityDump.addTitle("Mod name", "Registry name", "Entity class name", "ID");
-            entityDump.setColumnProperties(3, DataDump.Alignment.RIGHT, true); // id
+            entityDump.addTitle("Mod name", "Registry name", "ID", "Category", "Entity class name");
         }
         else
         {
-            entityDump.addTitle("Mod name", "Registry name", "ID");
-            entityDump.setColumnProperties(2, DataDump.Alignment.RIGHT, true); // id
+            entityDump.addTitle("Mod name", "Registry name", "ID", "Category");
         }
 
         return entityDump.getLines();
