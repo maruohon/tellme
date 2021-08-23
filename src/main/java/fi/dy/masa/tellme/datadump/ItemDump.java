@@ -121,7 +121,7 @@ public class ItemDump
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = stack.getName().getString();
             displayName = Formatting.strip(displayName);
-            String nbt = stack.getTag() != null ? stack.getTag().toString() : "<no NBT>";
+            String nbt = stack.getNbt() != null ? stack.getNbt().toString() : "<no NBT>";
 
             return String.format("[%s - '%s' - %s]", regName, displayName, nbt);
         }
@@ -285,7 +285,7 @@ public class ItemDump
 
         protected String getNBTString(ItemStack stack)
         {
-            return stack.isEmpty() == false && stack.getTag() != null ? stack.getTag().toString() : DataDump.EMPTY_STRING;
+            return stack.isEmpty() == false && stack.getNbt() != null ? stack.getNbt().toString() : DataDump.EMPTY_STRING;
         }
 
         public void addHeaders(DataDump dump)

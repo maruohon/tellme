@@ -90,7 +90,7 @@ public class SubCommandDump
         ServerCommandSource source = ctx.getSource();
         @Nullable Entity entity = source.getEntity();
         @Nullable ServerWorld world = source.getWorld();
-        @Nullable MinecraftServer server = source.getMinecraftServer();
+        @Nullable MinecraftServer server = source.getServer();
         DumpContext dumpContext = new DumpContext(world, entity, server, format);
 
         // Don't bother outputting anything else a second time, if outputting everything once anyway

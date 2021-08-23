@@ -22,7 +22,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -46,6 +46,7 @@ public class BlockInfo
 
         names.put(Material.AGGREGATE, "AGGREGATE");
         names.put(Material.AIR, "AIR");
+        names.put(Material.AMETHYST, "AMETHYST");
         names.put(Material.BAMBOO, "BAMBOO");
         names.put(Material.BAMBOO_SAPLING, "BAMBOO_SAPLING");
         names.put(Material.BARRIER, "BARRIER");
@@ -54,6 +55,7 @@ public class BlockInfo
         names.put(Material.CAKE, "CAKE");
         names.put(Material.CARPET, "CARPET");
         names.put(Material.COBWEB, "COBWEB");
+        names.put(Material.DECORATION, "DECORATION");
         names.put(Material.DENSE_ICE, "DENSE_ICE");
         names.put(Material.EGG, "EGG");
         names.put(Material.FIRE, "FIRE");
@@ -63,15 +65,19 @@ public class BlockInfo
         names.put(Material.LAVA, "LAVA");
         names.put(Material.LEAVES, "LEAVES");
         names.put(Material.METAL, "METAL");
+        names.put(Material.MOSS_BLOCK, "MOSS_BLOCK");
+        names.put(Material.NETHER_SHOOTS, "NETHER_SHOOTS");
         names.put(Material.NETHER_WOOD, "NETHER_WOOD");
         names.put(Material.ORGANIC_PRODUCT, "ORGANIC_PRODUCT");
         names.put(Material.PISTON, "PISTON");
         names.put(Material.PLANT, "PLANT");
         names.put(Material.PORTAL, "PORTAL");
+        names.put(Material.POWDER_SNOW, "POWDER_SNOW");
         names.put(Material.REDSTONE_LAMP, "REDSTONE_LAMP");
         names.put(Material.REPAIR_STATION, "REPAIR_STATION");
         names.put(Material.REPLACEABLE_PLANT, "REPLACEABLE_PLANT");
         names.put(Material.REPLACEABLE_UNDERWATER_PLANT, "REPLACEABLE_UNDERWATER_PLANT");
+        names.put(Material.SCULK, "SCULK");
         names.put(Material.SHULKER_BOX, "SHULKER_BOX");
         names.put(Material.SNOW_BLOCK, "SNOW_BLOCK");
         names.put(Material.SNOW_LAYER, "SNOW_LAYER");
@@ -80,10 +86,8 @@ public class BlockInfo
         names.put(Material.SPONGE, "SPONGE");
         names.put(Material.STONE, "STONE");
         names.put(Material.STRUCTURE_VOID, "STRUCTURE_VOID");
-        names.put(Material.SUPPORTED, "SUPPORTED");
         names.put(Material.TNT, "TNT");
         names.put(Material.UNDERWATER_PLANT, "UNDERWATER_PLANT");
-        names.put(Material.UNUSED_PLANT, "UNUSED_PLANT");
         names.put(Material.WATER, "WATER");
         names.put(Material.WOOD, "WOOD");
         names.put(Material.WOOL, "WOOL");
@@ -163,10 +167,10 @@ public class BlockInfo
 
     private static String getTileInfo(World world, BlockPos pos)
     {
-        String teInfo = "";
+        String teInfo;
         BlockState state = world.getBlockState(pos);
         boolean teInWorld = world.getBlockEntity(pos) != null;
-        boolean shouldHaveTE = state.getBlock().hasBlockEntity();
+        boolean shouldHaveTE = state.hasBlockEntity();
 
         if (teInWorld == shouldHaveTE)
         {
@@ -222,8 +226,8 @@ public class BlockInfo
 
         if (te != null)
         {
-            CompoundTag nbt = new CompoundTag();
-            te.toTag(nbt);
+            NbtCompound nbt = new NbtCompound();
+            te.writeNbt(nbt);
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
             lines.add("BlockEntity NBT (from BlockEntity::write()):");

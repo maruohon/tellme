@@ -311,7 +311,7 @@ public class SubCommandLoaded
     private static int listLoadedChunksAll(ServerCommandSource source, OutputType outputType,
             DataDump.Format format, IWorldRetriever dimensionGetter) throws CommandSyntaxException
     {
-        List<String> lines = ChunkDump.getFormattedChunkDump(format, source.getMinecraftServer(), dimensionGetter.getWorldFromSource(source));
+        List<String> lines = ChunkDump.getFormattedChunkDump(format, source.getServer(), dimensionGetter.getWorldFromSource(source));
 
         if (lines != null)
         {
@@ -326,7 +326,7 @@ public class SubCommandLoaded
     {
         BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
         BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
-        List<String> lines = ChunkDump.getFormattedChunkDump(format, source.getMinecraftServer(), dimensionGetter.getWorldFromSource(source), minPos, maxPos);
+        List<String> lines = ChunkDump.getFormattedChunkDump(format, source.getServer(), dimensionGetter.getWorldFromSource(source), minPos, maxPos);
 
         if (lines != null)
         {
@@ -338,7 +338,7 @@ public class SubCommandLoaded
 
     private static int listLoadedDimensions(ServerCommandSource source, OutputType outputType, DataDump.Format format)
     {
-        List<String> lines = DimensionDump.getLoadedDimensions(format, source.getMinecraftServer());
+        List<String> lines = DimensionDump.getLoadedDimensions(format, source.getServer());
 
         if (lines != null)
         {

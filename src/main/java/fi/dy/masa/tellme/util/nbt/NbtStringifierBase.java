@@ -1,19 +1,18 @@
 package fi.dy.masa.tellme.util.nbt;
 
 import javax.annotation.Nullable;
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.IntArrayTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.LongArrayTag;
-import net.minecraft.nbt.LongTag;
-import net.minecraft.nbt.ShortTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtByte;
+import net.minecraft.nbt.NbtByteArray;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtDouble;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtFloat;
+import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.NbtIntArray;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtLong;
+import net.minecraft.nbt.NbtLongArray;
+import net.minecraft.nbt.NbtShort;
 import net.minecraft.util.Formatting;
 import fi.dy.masa.tellme.util.Constants;
 
@@ -68,17 +67,17 @@ public abstract class NbtStringifierBase
     }
 
     @Nullable
-    protected String getPrimitiveValue(Tag tag)
+    protected String getPrimitiveValue(NbtElement tag)
     {
         switch (tag.getType())
         {
-            case Constants.NBT.TAG_BYTE:    return String.valueOf(((ByteTag) tag).getByte());
-            case Constants.NBT.TAG_SHORT:   return String.valueOf(((ShortTag) tag).getShort());
-            case Constants.NBT.TAG_INT:     return String.valueOf(((IntTag) tag).getInt());
-            case Constants.NBT.TAG_LONG:    return String.valueOf(((LongTag) tag).getLong());
-            case Constants.NBT.TAG_FLOAT:   return String.valueOf(((FloatTag) tag).getFloat());
-            case Constants.NBT.TAG_DOUBLE:  return String.valueOf(((DoubleTag) tag).getDouble());
-            case Constants.NBT.TAG_STRING:  return ((StringTag) tag).asString();
+            case Constants.NBT.TAG_BYTE:    return String.valueOf(((NbtByte) tag).byteValue());
+            case Constants.NBT.TAG_SHORT:   return String.valueOf(((NbtShort) tag).shortValue());
+            case Constants.NBT.TAG_INT:     return String.valueOf(((NbtInt) tag).intValue());
+            case Constants.NBT.TAG_LONG:    return String.valueOf(((NbtLong) tag).longValue());
+            case Constants.NBT.TAG_FLOAT:   return String.valueOf(((NbtFloat) tag).floatValue());
+            case Constants.NBT.TAG_DOUBLE:  return String.valueOf(((NbtDouble) tag).doubleValue());
+            case Constants.NBT.TAG_STRING:  return tag.asString();
         }
 
         return null;
@@ -119,7 +118,7 @@ public abstract class NbtStringifierBase
         return null;
     }
 
-    protected String getFormattedPrimitiveString(Tag tag)
+    protected String getFormattedPrimitiveString(NbtElement tag)
     {
         String valueStr = this.getPrimitiveValue(tag);
         String valueColorStr = this.colored ? this.getPrimitiveColorCode(tag.getType()) : null;
@@ -173,28 +172,28 @@ public abstract class NbtStringifierBase
         return sb.toString();
     }
 
-    protected void appendTag(String tagName, Tag tag)
+    protected void appendTag(String tagName, NbtElement tag)
     {
         switch (tag.getType())
         {
             case Constants.NBT.TAG_COMPOUND:
-                this.appendCompound(tagName, (CompoundTag) tag);
+                this.appendCompound(tagName, (NbtCompound) tag);
                 break;
 
             case Constants.NBT.TAG_LIST:
-                this.appendList(tagName, (ListTag) tag);
+                this.appendList(tagName, (NbtList) tag);
                 break;
 
             case Constants.NBT.TAG_BYTE_ARRAY:
-                this.appendByteArray(tagName, ((ByteArrayTag) tag).getByteArray());
+                this.appendByteArray(tagName, ((NbtByteArray) tag).getByteArray());
                 break;
 
             case Constants.NBT.TAG_INT_ARRAY:
-                this.appendIntArray(tagName, ((IntArrayTag) tag).getIntArray());
+                this.appendIntArray(tagName, ((NbtIntArray) tag).getIntArray());
                 break;
 
             case Constants.NBT.TAG_LONG_ARRAY:
-                this.appendLongArray(tagName, ((LongArrayTag) tag).getLongArray());
+                this.appendLongArray(tagName, ((NbtLongArray) tag).getLongArray());
                 break;
 
             default:
@@ -202,9 +201,9 @@ public abstract class NbtStringifierBase
         }
     }
 
-    protected abstract void appendPrimitive(String tagName, Tag tag);
-    protected abstract void appendCompound(String tagName, CompoundTag tag);
-    protected abstract void appendList(String tagName, ListTag list);
+    protected abstract void appendPrimitive(String tagName, NbtElement tag);
+    protected abstract void appendCompound(String tagName, NbtCompound tag);
+    protected abstract void appendList(String tagName, NbtList list);
     protected abstract void appendByteArray(String tagName, byte[] arr);
     protected abstract void appendIntArray(String tagName, int[] arr);
     protected abstract void appendLongArray(String tagName, long[] arr);

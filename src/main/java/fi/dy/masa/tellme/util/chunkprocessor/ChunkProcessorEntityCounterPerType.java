@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.util.collection.TypeFilterableList;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.util.EntityInfo;
+import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class ChunkProcessorEntityCounterPerType extends ChunkProcessorBase
 {
-    private Object2IntOpenHashMap<EntityType<?>> perTypeCount = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<EntityType<?>> perTypeCount = new Object2IntOpenHashMap<>();
     private int totalCount;
 
     public ChunkProcessorEntityCounterPerType(DataDump.Format format)
@@ -25,20 +25,8 @@ public class ChunkProcessorEntityCounterPerType extends ChunkProcessorBase
     @Override
     public void processChunk(WorldChunk chunk)
     {
-        TypeFilterableList<Entity>[] entityLists = chunk.getEntitySectionArray();
-        int total = 0;
-
-        for (int i = 0; i < entityLists.length; i++)
-        {
-            TypeFilterableList<Entity> map = entityLists[i];
-
-            for (Entity entity : map)
-            {
-                this.perTypeCount.addTo(entity.getType(), 1);
-            }
-
-            total += map.size();
-        }
+        ChunkPos pos = chunk.getPos();
+        int total = WorldUtils.countEntitiesInChunk(chunk.getWorld(), pos.x, pos.z, this.perTypeCount);
 
         if (total > 0)
         {

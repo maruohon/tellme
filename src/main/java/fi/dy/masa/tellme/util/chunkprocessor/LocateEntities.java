@@ -10,13 +10,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.TypeFilterableList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.mixin.IMixinWorld;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -24,6 +25,8 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 public class LocateEntities extends LocateBase
 {
     protected final Set<EntityType<?>> filters;
+    protected String dimName = "";
+    protected int totalCount;
 
     public LocateEntities(DataDump.Format format, List<String> filterStrings) throws CommandSyntaxException
     {
@@ -67,41 +70,38 @@ public class LocateEntities extends LocateBase
     public void processChunks(Collection<WorldChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         final long timeBefore = System.nanoTime();
-        Set<EntityType<?>> filters = this.filters;
-        int count = 0;
 
         for (WorldChunk chunk : chunks)
         {
             ChunkPos chunkPos = chunk.getPos();
-            final String dim = WorldUtils.getDimensionId(chunk.getWorld());
+
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
             final int xMax = Math.min((chunkPos.x << 4) + 16, posMax.getX());
             final int yMax = Math.min(256, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 16, posMax.getZ());
+
+            this.dimName = WorldUtils.getDimensionId(chunk.getWorld());
             Box bb = new Box(xMin, yMin, zMin, xMax, yMax, zMax);
-
-            for (int i = 0; i < chunk.getEntitySectionArray().length; i++)
-            {
-                TypeFilterableList<Entity> map = chunk.getEntitySectionArray()[i];
-
-                for (Entity entity : map)
-                {
-                    EntityType<?> type = entity.getType();
-
-                    if (filters.contains(type) && entity.getBoundingBox().intersects(bb))
-                    {
-                        String name = EntityInfo.getEntityNameFor(type);
-                        this.data.add(LocationData.of(name, dim, entity.getPos()));
-                        count++;
-                    }
-                }
-            }
+            World world = chunk.getWorld();
+            ((IMixinWorld) world).tellme_invoke_getEntityLookup().forEachIntersects(bb, this::entityConsumer);
         }
 
         final long timeAfter = System.nanoTime();
         TellMe.logger.info(String.format(Locale.US, "Located %d Entities in %d chunks in %.3f seconds.",
-                                         count, chunks.size(), (timeAfter - timeBefore) / 1000000000D));
+                                         this.totalCount, chunks.size(), (timeAfter - timeBefore) / 1000000000D));
+    }
+
+    private void entityConsumer(Entity entity)
+    {
+        EntityType<?> type = entity.getType();
+
+        if (this.filters.contains(type))
+        {
+            String name = EntityInfo.getEntityNameFor(type);
+            this.data.add(LocationData.of(name, this.dimName, entity.getPos()));
+            ++this.totalCount;
+        }
     }
 }

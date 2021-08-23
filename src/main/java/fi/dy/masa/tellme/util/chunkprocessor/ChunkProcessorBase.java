@@ -134,15 +134,4 @@ public abstract class ChunkProcessorBase
             return this.count > other.count ? -1 : 1;
         }
     }
-
-    public static class TileEntityCountsPerChunkHolder extends CountsPerChunkHolder
-    {
-        public final int tickingCount;
-
-        public TileEntityCountsPerChunkHolder(ChunkPos pos, int totalCount, int tickingCount)
-        {
-            super(pos, totalCount);
-            this.tickingCount = tickingCount;
-        }
-    }
 }

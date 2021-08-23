@@ -29,7 +29,6 @@ import fi.dy.masa.tellme.mixin.IMixinBiomeAdditionsSound;
 import fi.dy.masa.tellme.mixin.IMixinBiomeEffects;
 import fi.dy.masa.tellme.mixin.IMixinBiomeMoodSound;
 import fi.dy.masa.tellme.mixin.IMixinMusicSound;
-import fi.dy.masa.tellme.mixin.IMixinWeightedPickerEntry;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -82,11 +81,12 @@ public class BiomeDump
                 List<String> tmpList = new ArrayList<>();
 
                 // Add the spawns grouped by category and sorted alphabetically within each category
-                for (SpawnSettings.SpawnEntry spawn : biome.getSpawnSettings().getSpawnEntry(type))
+                for (SpawnSettings.SpawnEntry spawn : biome.getSpawnSettings().getSpawnEntries(type).getEntries())
                 {
                     Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
                     String entName = erl.toString();
-                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, ((IMixinWeightedPickerEntry) spawn).tellmeGetWeight(), spawn.minGroupSize, spawn.maxGroupSize));
+                    int weight = spawn.getWeight().getValue();
+                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, weight, spawn.minGroupSize, spawn.maxGroupSize));
                 }
 
                 Collections.sort(tmpList);

@@ -5,10 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.collection.TypeFilterableList;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
+import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkProcessorEntityCounterPerChunk extends ChunkProcessorBase
@@ -24,13 +23,8 @@ public class ChunkProcessorEntityCounterPerChunk extends ChunkProcessorBase
     @Override
     public void processChunk(WorldChunk chunk)
     {
-        TypeFilterableList<Entity>[] entityLists = chunk.getEntitySectionArray();
-        int total = 0;
-
-        for (int i = 0; i < entityLists.length; i++)
-        {
-            total += entityLists[i].size();
-        }
+        ChunkPos pos = chunk.getPos();
+        int total = WorldUtils.getEntityCountInChunk(chunk.getWorld(), pos.x, pos.z);
 
         if (total > 0)
         {

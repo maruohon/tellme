@@ -2,8 +2,12 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.collection.TypeFilterableList;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import fi.dy.masa.tellme.mixin.IMixinWorld;
+import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
@@ -29,40 +33,33 @@ public class EntitiesLister extends ChunkProcessorBase
     @Override
     public void processChunk(WorldChunk chunk)
     {
-        TypeFilterableList<Entity>[] entityLists = chunk.getEntitySectionArray();
-        int total = 0;
+        int totalBefore = this.totalCount;
+        World world = chunk.getWorld();
+        ChunkPos pos = chunk.getPos();
+        Box box = WorldUtils.createEntityBoxForChunk(world, pos.x, pos.z);
+        ((IMixinWorld) world).tellme_invoke_getEntityLookup().forEachIntersects(box, this::entityConsumer);
 
-        for (int i = 0; i < entityLists.length; i++)
-        {
-            TypeFilterableList<Entity> map = entityLists[i];
-
-            for (Entity entity : map)
-            {
-                double x = entity.getX();
-                double y = entity.getY();
-                double z = entity.getZ();
-                int ix = (int) Math.floor(x);
-                int iz = (int) Math.floor(z);
-
-                this.dump.addData(
-                        entity.getName().getString(),
-                        entity instanceof LivingEntity ? String.format("%.2f", ((LivingEntity) entity).getHealth()) : "-",
-                        String.format("x = %8.2f, y = %8.2f, z = %8.2f", x, y, z),
-                        String.format("[%5d, %5d]", ix >> 4, iz >> 4),
-                        String.format("r.%d.%d", ix >> 9, iz >> 9));
-            }
-
-            total += entityLists[i].size();
-        }
-
-        if (total > 0)
-        {
-            this.totalCount += total;
-        }
-        else
+        if (totalBefore == this.totalCount)
         {
             ++this.chunksWithZeroCount;
         }
+    }
+
+    private void entityConsumer(Entity entity)
+    {
+        double x = entity.getX();
+        double y = entity.getY();
+        double z = entity.getZ();
+        int ix = (int) Math.floor(x);
+        int iz = (int) Math.floor(z);
+
+        ++this.totalCount;
+        this.dump.addData(
+                entity.getName().getString(),
+                entity instanceof LivingEntity ? String.format("%.2f", ((LivingEntity) entity).getHealth()) : "-",
+                String.format("x = %8.2f, y = %8.2f, z = %8.2f", x, y, z),
+                String.format("[%5d, %5d]", ix >> 4, iz >> 4),
+                String.format("r.%d.%d", ix >> 9, iz >> 9));
     }
 
     @Override

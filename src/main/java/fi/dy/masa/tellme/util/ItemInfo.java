@@ -23,12 +23,12 @@ public class ItemInfo
             return stack1.isEmpty() == stack2.isEmpty();
         }
 
-        return stack1.isItemEqual(stack2) && ItemStack.areTagsEqual(stack1, stack2);
+        return stack1.isItemEqual(stack2) && ItemStack.areNbtEqual(stack1, stack2);
     }
 
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)
     {
-        if (stack.hasTag() == false)
+        if (stack.hasNbt() == false)
         {
             return Collections.emptyList();
         }
@@ -37,24 +37,24 @@ public class ItemInfo
 
         lines.add(ItemData.getFor(stack).toString());
         lines.add("");
-        lines.add(stack.getTag().toString());
+        lines.add(stack.getNbt().toString());
         lines.add("");
 
-        lines.addAll((new NbtStringifierPretty(null)).getNbtLines(stack.getTag()));
+        lines.addAll((new NbtStringifierPretty(null)).getNbtLines(stack.getNbt()));
 
         return lines;
     }
 
     private static List<String> getPrettyNbtForChat(@Nonnull ItemStack stack)
     {
-        if (stack.hasTag() == false)
+        if (stack.hasNbt() == false)
         {
             return Collections.emptyList();
         }
 
         List<String> lines = new ArrayList<>();
         lines.add("");
-        lines.addAll((new NbtStringifierPretty(Formatting.GRAY.toString())).getNbtLines(stack.getTag()));
+        lines.addAll((new NbtStringifierPretty(Formatting.GRAY.toString())).getNbtLines(stack.getNbt()));
 
         return lines;
     }
@@ -70,9 +70,9 @@ public class ItemInfo
 
         List<String> lines;
 
-        if (outputType == OutputType.CHAT && stack.hasTag())
+        if (outputType == OutputType.CHAT && stack.hasNbt())
         {
-            entity.sendMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""), false);
+            entity.sendMessage(OutputUtils.getClipboardCopiableMessage("", stack.getNbt().toString(), ""), false);
             lines = getPrettyNbtForChat(stack);
         }
         else
@@ -103,7 +103,7 @@ public class ItemInfo
             String registryName = Registry.ITEM.getId(stack.getItem()).toString();
             String nbtInfo;
 
-            if (stack.hasTag())
+            if (stack.hasNbt())
             {
                 nbtInfo = "has NBT data";
             }

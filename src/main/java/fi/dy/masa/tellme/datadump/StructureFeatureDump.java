@@ -8,7 +8,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.gen.feature.StructureFeature;
-import fi.dy.masa.tellme.mixin.IMixinWeightedPickerEntry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class StructureFeatureDump
@@ -23,8 +22,8 @@ public class StructureFeatureDump
 
             if (spawns)
             {
-                String mobSpawns = getMobSpawnsString(feature.getMonsterSpawns());
-                String passiveSpawns = getMobSpawnsString(feature.getCreatureSpawns());
+                String mobSpawns = getMobSpawnsString(feature.getMonsterSpawns().getEntries());
+                String passiveSpawns = getMobSpawnsString(feature.getCreatureSpawns().getEntries());
                 dump.addData(id.toString(), feature.getName(), mobSpawns, passiveSpawns);
             }
             else
@@ -53,7 +52,8 @@ public class StructureFeatureDump
         {
             Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
             String entName = erl != null ? erl.toString() : "<null>";
-            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, ((IMixinWeightedPickerEntry) spawn).tellmeGetWeight(), spawn.minGroupSize, spawn.maxGroupSize));
+            int weight = spawn.getWeight().getValue();
+            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, weight, spawn.minGroupSize, spawn.maxGroupSize));
         }
 
         Collections.sort(spawns);

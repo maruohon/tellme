@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.Tickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.util.BlockInfo;
@@ -16,9 +14,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
 {
-    private Object2IntOpenHashMap<BlockEntityType<?>> perTypeCount = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<BlockEntityType<?>> perTypeCount = new Object2IntOpenHashMap<>();
     private int totalCount;
-    private int tickingCount;
 
     public ChunkProcessorTileEntityCounterPerType(DataDump.Format format)
     {
@@ -33,20 +30,12 @@ public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
 
         if (total > 0)
         {
-            int tickingCount = 0;
-
             for (BlockEntity te : map.values())
             {
                 this.perTypeCount.addTo(te.getType(), 1);
-
-                if (te instanceof Tickable)
-                {
-                    ++tickingCount;
-                }
             }
 
             this.totalCount += total;
-            this.tickingCount += tickingCount;
         }
         else
         {
@@ -62,33 +51,24 @@ public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
         for (Map.Entry<BlockEntityType<?>, Integer> entry : this.perTypeCount.object2IntEntrySet())
         {
             BlockEntityType<?> type = entry.getKey();
-            BlockEntity te = type.instantiate();
-            counts.add(new TileEntitiesPerTypeHolder(type, te != null ? te.getClass() : null, entry.getValue()));
+            counts.add(new TileEntitiesPerTypeHolder(type, entry.getValue()));
         }
 
         Collections.sort(counts);
 
-        DataDump dump = new DataDump(4, this.format);
+        DataDump dump = new DataDump(2, this.format);
 
         dump.setSort(true).setSortColumn(2).setSortReverse(true);
         dump.addHeader("Loaded TileEntities by type:");
-        dump.addTitle("TileEntity type", "Class", "Count", "Is ticking?");
+        dump.addTitle("TileEntity type", "Count");
 
         for (TileEntitiesPerTypeHolder holder : counts)
         {
-            Class<? extends BlockEntity> clazz = holder.clazz;
-            String ticking = clazz != null && Tickable.class.isAssignableFrom(clazz) ? "yes" : "no";
-
-            dump.addData(
-                    BlockInfo.getBlockEntityNameFor(holder.type),
-                    clazz != null ? clazz.getName() : "<null>",
-                    String.valueOf(holder.count),
-                    ticking);
+            dump.addData(BlockInfo.getBlockEntityNameFor(holder.type), String.valueOf(holder.count));
         }
 
-        dump.addFooter(String.format("In total there were %d loaded TileEntities", this.totalCount));
-        dump.addFooter(String.format("in %d chunks, of which %d are ticking.",
-                this.getLoadedChunkCount() - this.chunksWithZeroCount, this.tickingCount));
+        dump.addFooter(String.format("In total there were %d loaded TileEntities in %d chunks",
+                                     this.totalCount, this.getLoadedChunkCount() - this.chunksWithZeroCount));
 
         return dump;
     }
@@ -96,13 +76,11 @@ public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
     public static class TileEntitiesPerTypeHolder implements Comparable<TileEntitiesPerTypeHolder>
     {
         public final BlockEntityType<?> type;
-        @Nullable public final Class<? extends BlockEntity> clazz;
         public final int count;
 
-        public TileEntitiesPerTypeHolder(BlockEntityType<?> type, @Nullable Class<? extends BlockEntity> clazz, int count)
+        public TileEntitiesPerTypeHolder(BlockEntityType<?> type, int count)
         {
             this.type = type;
-            this.clazz = clazz;
             this.count = count;
         }
 

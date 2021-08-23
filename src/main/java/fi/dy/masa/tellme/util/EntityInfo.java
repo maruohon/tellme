@@ -11,7 +11,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -27,7 +27,7 @@ public class EntityInfo
         Identifier rl = Registry.ENTITY_TYPE.getId(target.getType());
         String regName = rl != null ? rl.toString() : "<null>";
 
-        return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getEntityId());
+        return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getId());
     }
 
     public static List<String> getFullEntityInfo(@Nullable Entity target, boolean targetIsChat)
@@ -40,11 +40,11 @@ public class EntityInfo
         List<String> lines = new ArrayList<>();
         lines.add(getBasicEntityInfo(target));
 
-        CompoundTag nbt = new CompoundTag();
+        NbtCompound nbt = new NbtCompound();
 
-        if (target.saveToTag(nbt) == false)
+        if (target.saveSelfNbt(nbt) == false)
         {
-            target.toTag(nbt);
+            target.writeNbt(nbt);
         }
 
         lines.add("Entity class: " + target.getClass().getName());
@@ -95,7 +95,7 @@ public class EntityInfo
         Identifier rl = Registry.ENTITY_TYPE.getId(target.getType());
         String regName = rl != null ? rl.toString() : "null";
         String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
-        String textPost = String.format("] (entityId: %d)", target.getEntityId());
+        String textPost = String.format("] (entityId: %d)", target.getId());
 
         player.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost), false);
     }

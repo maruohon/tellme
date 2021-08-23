@@ -87,7 +87,7 @@ public class LocateBlockEntities extends LocateBase
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
-            BlockBox box = BlockBox.create(xMin, yMin, zMin, xMax, yMax, zMax);
+            BlockBox box = new BlockBox(xMin, yMin, zMin, xMax, yMax, zMax);
 
             for (BlockEntity te : chunk.getBlockEntities().values())
             {

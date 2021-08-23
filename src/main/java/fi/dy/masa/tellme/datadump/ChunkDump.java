@@ -65,13 +65,7 @@ public class ChunkDump
                         }
 
                         ++chunkCount;
-                        int count = 0;
-
-                        for (int l = 0; l < chunk.getEntitySectionArray().length; l++)
-                        {
-                            count += chunk.getEntitySectionArray()[l].size();
-                        }
-
+                        int count = WorldUtils.getEntityCountInChunk(world, cp.x, cp.z);
                         String entityCount = String.valueOf(count);
 
                         chunkDump.addData(  dimId,

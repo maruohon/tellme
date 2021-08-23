@@ -12,7 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.MapColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -63,7 +63,7 @@ public class BlockDump
             try
             {
                 Block block = Registry.BLOCK.get(id);
-                MaterialColor materialColor = block.getDefaultState().getTopMaterialColor(world, BlockPos.ORIGIN);
+                MapColor materialColor = block.getDefaultState().getMapColor(world, BlockPos.ORIGIN);
                 int color = materialColor != null ? materialColor.color : 0xFFFFFF;
                 blockDump.addData(id.toString(), String.format("#%06X", color), String.valueOf(color));
             }

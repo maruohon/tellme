@@ -1,12 +1,13 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
-import fi.dy.masa.tellme.mixin.IMixinServerWorld;
+import fi.dy.masa.tellme.mixin.IMixinWorld;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -84,10 +85,11 @@ public class DimensionDump
             {
                 String dimId = WorldUtils.getDimensionId(world);
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
-                String entityCount = String.valueOf(((IMixinServerWorld) world).tellmeGetEntitiesByIdMap().size());
+                long entityCount = StreamSupport.stream(((IMixinWorld) world).tellme_invoke_getEntityLookup().iterate().spliterator(), false).count();
+                String entityCountStr = String.valueOf(entityCount);
                 String playerCount = String.valueOf(world.getPlayers().size());
 
-                dimensionDump.addData(dimId, loadedChunks, entityCount, playerCount);
+                dimensionDump.addData(dimId, loadedChunks, entityCountStr, playerCount);
             }
         }
 
