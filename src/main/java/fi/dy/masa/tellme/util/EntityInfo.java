@@ -11,7 +11,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -40,11 +40,11 @@ public class EntityInfo
         List<String> lines = new ArrayList<>();
         lines.add(getBasicEntityInfo(target));
 
-        CompoundTag nbt = new CompoundTag();
+        NbtCompound nbt = new NbtCompound();
 
-        if (target.saveToTag(nbt) == false)
+        if (target.saveNbt(nbt) == false)
         {
-            target.toTag(nbt);
+            target.writeNbt(nbt);
         }
 
         lines.add("Entity class: " + target.getClass().getName());

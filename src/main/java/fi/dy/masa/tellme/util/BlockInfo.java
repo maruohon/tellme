@@ -22,7 +22,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -80,10 +80,10 @@ public class BlockInfo
         names.put(Material.SPONGE, "SPONGE");
         names.put(Material.STONE, "STONE");
         names.put(Material.STRUCTURE_VOID, "STRUCTURE_VOID");
-        names.put(Material.SUPPORTED, "SUPPORTED");
+        names.put(Material.DECORATION, "DECORATION");
         names.put(Material.TNT, "TNT");
         names.put(Material.UNDERWATER_PLANT, "UNDERWATER_PLANT");
-        names.put(Material.UNUSED_PLANT, "UNUSED_PLANT");
+        names.put(Material.MOSS_BLOCK, "MOSS_BLOCK"); // in 1.16? was UNUSED_PLANT before
         names.put(Material.WATER, "WATER");
         names.put(Material.WOOD, "WOOD");
         names.put(Material.WOOL, "WOOL");
@@ -222,8 +222,8 @@ public class BlockInfo
 
         if (te != null)
         {
-            CompoundTag nbt = new CompoundTag();
-            te.toTag(nbt);
+            NbtCompound nbt = new NbtCompound();
+            te.writeNbt(nbt);
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
             lines.add("BlockEntity NBT (from BlockEntity::write()):");

@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -95,7 +95,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
                     try
                     {
-                        CompoundTag tag = be.toTag(new CompoundTag());
+                        NbtCompound tag = be.writeNbt(new NbtCompound());
                         this.data.add(new BlockEntityDataEntry(pos, id.toString(), tag.toString()));
                         ++total;
                     }

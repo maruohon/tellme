@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.TypeFilterableList;
 import net.minecraft.util.math.Vec3d;
@@ -91,9 +91,9 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
                 if (noFilters || filters.contains(type))
                 {
                     Identifier id = Registry.ENTITY_TYPE.getId(type);
-                    CompoundTag tag = new CompoundTag();
+                    NbtCompound tag = new NbtCompound();
 
-                    if (entity.saveSelfToTag(tag))
+                    if (entity.saveSelfNbt(tag))
                     {
                         this.data.add(new EntityDataEntry(pos, id.toString(), tag.toString()));
                         ++total;
