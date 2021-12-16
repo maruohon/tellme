@@ -84,7 +84,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             // Add the amount of air that would be in non-existing chunk sections within the given volume
             if (topY < posMax.getY())
             {
-                counts.addTo(air, (posMax.getY() - Math.max(topY, posMin.getY() - 1)) * (xMax - xMin + 1) * (zMax - zMin + 1));
+                counts.addTo(air, (long) (posMax.getY() - Math.max(topY, posMin.getY() - 1)) * (xMax - xMin + 1) * (zMax - zMin + 1));
             }
         }
 

@@ -30,10 +30,10 @@ import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorBase;
 import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorEntityCounterPerChunk;
 import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorEntityCounterPerType;
-import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorTileEntityCounterPerChunk;
-import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorTileEntityCounterPerType;
+import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorBlockEntityCounterPerChunk;
+import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorBlockEntityCounterPerType;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesLister;
-import fi.dy.masa.tellme.util.chunkprocessor.TileEntitiesLister;
+import fi.dy.masa.tellme.util.chunkprocessor.BlockEntitiesLister;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLoaded
@@ -45,20 +45,20 @@ public class SubCommandLoaded
         subCommandRootNode.addChild(createNodesChunks());
         subCommandRootNode.addChild(createNodesDimensions());
         subCommandRootNode.addChild(createNodesEntities(LoadedTarget.ENTITY));
-        subCommandRootNode.addChild(createNodesEntities(LoadedTarget.TILE_ENTITY));
+        subCommandRootNode.addChild(createNodesEntities(LoadedTarget.BLOCK_ENTITY));
 
         return subCommandRootNode;
     }
 
     private static int printHelp(ServerCommandSource source)
     {
-        CommandUtils.sendMessage(source, "Lists the loaded chunks, dimensions, entities or TileEntities");
+        CommandUtils.sendMessage(source, "Lists the loaded chunks, dimensions, entities or BlockEntities");
         CommandUtils.sendMessage(source, "Usage: /tellme loaded chunks all <to-chat | to-console | to-file> [ascii | csv] [dimension]");
         CommandUtils.sendMessage(source, "Usage: /tellme loaded chunks in-area <x1> <z1> <x2> <z2> <to-chat | to-console | to-file> [ascii | csv] [dimension]");
         CommandUtils.sendMessage(source, "Usage: /tellme loaded dimensions <to-chat | to-console | to-file> [ascii | csv]");
-        CommandUtils.sendMessage(source, "Usage: /tellme loaded <entities | tile-entities> <list-all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> all-loaded [dimension]");
-        CommandUtils.sendMessage(source, "Usage: /tellme loaded <entities | tile-entities> <list-all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-area <x1> <z1> <x2> <z2> [dimension]");
-        CommandUtils.sendMessage(source, "Usage: /tellme loaded <entities | tile-entities> <list-all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-chunk <chunkX> <chunkZ> [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme loaded <entities | block-entities> <list-all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> all-loaded [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme loaded <entities | block-entities> <list-all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-area <x1> <z1> <x2> <z2> [dimension]");
+        CommandUtils.sendMessage(source, "Usage: /tellme loaded <entities | block-entities> <list-all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-chunk <chunkX> <chunkZ> [dimension]");
 
         return 1;
     }
@@ -174,9 +174,9 @@ public class SubCommandLoaded
         ArgumentCommandNode<ServerCommandSource, OutputType> argOutputType = CommandManager.argument("output_type", OutputTypeArgument.create()).build();
         ArgumentCommandNode<ServerCommandSource, DataDump.Format> argOutputFormat = CommandManager.argument("output_format", OutputFormatArgument.create()).build();
 
-        // /tellme loaded <entities | tile-entities> <all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> all [dimension]
-        // /tellme loaded <entities | tile-entities> <all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-area <x1> <z1> <x2> <z2> [dimension]
-        // /tellme loaded <entities | tile-entities> <all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-chunk <chunkX> <chunkZ> [dimension]
+        // /tellme loaded <entities | block-entities> <all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> all [dimension]
+        // /tellme loaded <entities | block-entities> <all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-area <x1> <z1> <x2> <z2> [dimension]
+        // /tellme loaded <entities | block-entities> <all | by-chunk | by-type> <to-chat | to-console | to-file> <ascii | csv> in-chunk <chunkX> <chunkZ> [dimension]
 
         // all
         LiteralCommandNode<ServerCommandSource> argAreaTypeAll = CommandManager.literal(AreaType.ALL_LOADED.getArgument())
@@ -236,18 +236,18 @@ public class SubCommandLoaded
 
         ChunkProcessorBase processor = null;
 
-        if (target == LoadedTarget.TILE_ENTITY)
+        if (target == LoadedTarget.BLOCK_ENTITY)
         {
             switch (grouping)
             {
                 case LIST_ALL:
-                    processor = new TileEntitiesLister(outputFormat);
+                    processor = new BlockEntitiesLister(outputFormat);
                     break;
                 case BY_CHUNK:
-                    processor = new ChunkProcessorTileEntityCounterPerChunk(outputFormat);
+                    processor = new ChunkProcessorBlockEntityCounterPerChunk(outputFormat);
                     break;
                 case BY_TYPE:
-                    processor = new ChunkProcessorTileEntityCounterPerType(outputFormat);
+                    processor = new ChunkProcessorBlockEntityCounterPerType(outputFormat);
                     break;
             }
         }
@@ -351,7 +351,7 @@ public class SubCommandLoaded
     public enum LoadedTarget
     {
         ENTITY      ("entities"),
-        TILE_ENTITY ("tile-entities");
+        BLOCK_ENTITY("block-entities");
 
         private final String argument;
 

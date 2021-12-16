@@ -7,19 +7,19 @@ import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
-public class TileEntitiesLister extends ChunkProcessorBase
+public class BlockEntitiesLister extends ChunkProcessorBase
 {
     private final DataDump dump;
     private int totalCount;
 
-    public TileEntitiesLister(DataDump.Format format)
+    public BlockEntitiesLister(DataDump.Format format)
     {
         super(format);
 
         DataDump dump = new DataDump(6, format);
 
         dump.setSort(true);
-        dump.addHeader("Loaded TileEntities by chunk:");
+        dump.addHeader("Loaded BlockEntities by chunk:");
         dump.addTitle("Region", "Chunk", "Position", "Tile", "Class");
 
         this.dump = dump;
@@ -62,7 +62,7 @@ public class TileEntitiesLister extends ChunkProcessorBase
         DataDump dump = this.dump;
 
         dump.clearFooter();
-        dump.addFooter(String.format("In total there were %d loaded TileEntities in %d chunks",
+        dump.addFooter(String.format("In total there were %d loaded BlockEntities in %d chunks",
                                      this.totalCount, this.getLoadedChunkCount() - this.chunksWithZeroCount));
 
         return dump;

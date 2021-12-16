@@ -42,17 +42,17 @@ public class SubCommandEntityData
         LiteralCommandNode<ServerCommandSource> subCommandRootNode = CommandManager.literal("entity-data-dump").executes(c -> printHelp(c.getSource())).build();
 
         subCommandRootNode.addChild(createNodesEntities(LocateType.ENTITY));
-        subCommandRootNode.addChild(createNodesEntities(LocateType.TILE_ENTITY));
+        subCommandRootNode.addChild(createNodesEntities(LocateType.BLOCK_ENTITY));
 
         return subCommandRootNode;
     }
 
     private static int printHelp(ServerCommandSource source)
     {
-        CommandUtils.sendMessage(source, "Dumps the NBT data of entities or TileEntities");
-        CommandUtils.sendMessage(source, "Usage: /tellme entity-data-dump <entities | tile-entities> <to-chat | to-console | to-file> <ascii | csv> all-loaded [dimension] [name name ...]");
-        CommandUtils.sendMessage(source, "Usage: /tellme entity-data-dump <entities | tile-entities> <to-chat | to-console | to-file> <ascii | csv> in-box <x1> <y1> <z1> <x2> <y2> <z2> [dimension] [name name ...]");
-        CommandUtils.sendMessage(source, "Usage: /tellme entity-data-dump <entities | tile-entities> <to-chat | to-console | to-file> <ascii | csv> in-chunk <chunkX> <chunkZ> [dimension] [name name ...]");
+        CommandUtils.sendMessage(source, "Dumps the NBT data of entities or BlockEntities");
+        CommandUtils.sendMessage(source, "Usage: /tellme entity-data-dump <entities | block-entities> <to-chat | to-console | to-file> <ascii | csv> all-loaded [dimension] [name name ...]");
+        CommandUtils.sendMessage(source, "Usage: /tellme entity-data-dump <entities | block-entities> <to-chat | to-console | to-file> <ascii | csv> in-box <x1> <y1> <z1> <x2> <y2> <z2> [dimension] [name name ...]");
+        CommandUtils.sendMessage(source, "Usage: /tellme entity-data-dump <entities | block-entities> <to-chat | to-console | to-file> <ascii | csv> in-chunk <chunkX> <chunkZ> [dimension] [name name ...]");
 
         return 1;
     }
@@ -144,7 +144,7 @@ public class SubCommandEntityData
 
         ChunkProcessorBase processor = null;
 
-        if (target == LocateType.TILE_ENTITY)
+        if (target == LocateType.BLOCK_ENTITY)
         {
             processor = new ChunkProcessorBlockEntityDataDumper(outputFormat, filters);
         }

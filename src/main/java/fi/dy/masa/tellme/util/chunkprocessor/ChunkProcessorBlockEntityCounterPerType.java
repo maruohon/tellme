@@ -12,12 +12,12 @@ import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
+public class ChunkProcessorBlockEntityCounterPerType extends ChunkProcessorBase
 {
     private final Object2IntOpenHashMap<BlockEntityType<?>> perTypeCount = new Object2IntOpenHashMap<>();
     private int totalCount;
 
-    public ChunkProcessorTileEntityCounterPerType(DataDump.Format format)
+    public ChunkProcessorBlockEntityCounterPerType(DataDump.Format format)
     {
         super(format);
     }
@@ -46,12 +46,12 @@ public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
     @Override
     public DataDump getDump()
     {
-        List<TileEntitiesPerTypeHolder> counts = new ArrayList<>();
+        List<BlockEntitiesPerTypeHolder> counts = new ArrayList<>();
 
         for (Map.Entry<BlockEntityType<?>, Integer> entry : this.perTypeCount.object2IntEntrySet())
         {
             BlockEntityType<?> type = entry.getKey();
-            counts.add(new TileEntitiesPerTypeHolder(type, entry.getValue()));
+            counts.add(new BlockEntitiesPerTypeHolder(type, entry.getValue()));
         }
 
         Collections.sort(counts);
@@ -59,33 +59,33 @@ public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
         DataDump dump = new DataDump(2, this.format);
 
         dump.setSort(true).setSortColumn(2).setSortReverse(true);
-        dump.addHeader("Loaded TileEntities by type:");
-        dump.addTitle("TileEntity type", "Count");
+        dump.addHeader("Loaded BlockEntities by type:");
+        dump.addTitle("BlockEntity type", "Count");
 
-        for (TileEntitiesPerTypeHolder holder : counts)
+        for (BlockEntitiesPerTypeHolder holder : counts)
         {
             dump.addData(BlockInfo.getBlockEntityNameFor(holder.type), String.valueOf(holder.count));
         }
 
-        dump.addFooter(String.format("In total there were %d loaded TileEntities in %d chunks",
+        dump.addFooter(String.format("In total there were %d loaded BlockEntities in %d chunks",
                                      this.totalCount, this.getLoadedChunkCount() - this.chunksWithZeroCount));
 
         return dump;
     }
 
-    public static class TileEntitiesPerTypeHolder implements Comparable<TileEntitiesPerTypeHolder>
+    public static class BlockEntitiesPerTypeHolder implements Comparable<BlockEntitiesPerTypeHolder>
     {
         public final BlockEntityType<?> type;
         public final int count;
 
-        public TileEntitiesPerTypeHolder(BlockEntityType<?> type, int count)
+        public BlockEntitiesPerTypeHolder(BlockEntityType<?> type, int count)
         {
             this.type = type;
             this.count = count;
         }
 
         @Override
-        public int compareTo(TileEntitiesPerTypeHolder other)
+        public int compareTo(BlockEntitiesPerTypeHolder other)
         {
             if (this.count == other.count)
             {

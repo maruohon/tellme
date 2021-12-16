@@ -34,17 +34,17 @@ public class SubCommandLocate
 
         subCommandRootNode.addChild(createNodes(LocateType.BLOCK));
         subCommandRootNode.addChild(createNodes(LocateType.ENTITY));
-        subCommandRootNode.addChild(createNodes(LocateType.TILE_ENTITY));
+        subCommandRootNode.addChild(createNodes(LocateType.BLOCK_ENTITY));
 
         return subCommandRootNode;
     }
 
     private static int printHelp(ServerCommandSource source)
     {
-        CommandUtils.sendMessage(source, "Locates Blocks or TileEntities or Entities in the current dimension");
-        CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | te> <to-chat | to-console | to-file> <ascii | csv> all-loaded-chunks <name> [name name ...]");
-        CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | te> <to-chat | to-console | to-file> <ascii | csv> box <x1> <y1> <z1> <x2> <y2> <z2> <name> [name name ...]");
-        CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | te> <to-chat | to-console | to-file> <ascii | csv> chunk-radius <radius> <name> [name name ...]");
+        CommandUtils.sendMessage(source, "Locates Blocks, BlockEntities or Entities in the current dimension");
+        CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | block-entity> <to-chat | to-console | to-file> <ascii | csv> all-loaded-chunks <name> [name name ...]");
+        CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | block-entity> <to-chat | to-console | to-file> <ascii | csv> box <x1> <y1> <z1> <x2> <y2> <z2> <name> [name name ...]");
+        CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | block-entity> <to-chat | to-console | to-file> <ascii | csv> chunk-radius <radius> <name> [name name ...]");
 
         return 1;
     }

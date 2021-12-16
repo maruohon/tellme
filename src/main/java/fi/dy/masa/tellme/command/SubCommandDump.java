@@ -48,7 +48,6 @@ import fi.dy.masa.tellme.datadump.StatTypesDump;
 import fi.dy.masa.tellme.datadump.StatusEffectDump;
 import fi.dy.masa.tellme.datadump.StructureFeatureDump;
 import fi.dy.masa.tellme.datadump.TagDump;
-import fi.dy.masa.tellme.datadump.TileEntityDump;
 import fi.dy.masa.tellme.datadump.VillagerProfessionDump;
 import fi.dy.masa.tellme.datadump.VillagerTradesDump;
 import fi.dy.masa.tellme.util.EntityInfo;
@@ -154,6 +153,7 @@ public class SubCommandDump
         dumpProviders.put("biomes-with-colors",         (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.COLORS));
         dumpProviders.put("biomes-with-mob-spawns",     (ctx) -> BiomeDump.getFormattedBiomeDumpWithMobSpawns(ctx.format, ctx.world));
         dumpProviders.put("biomes-id-to-name",          (ctx) -> BiomeDump.getBiomeDumpIdToName(ctx.format, ctx.world));
+        dumpProviders.put("block-entities",             (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BLOCK_ENTITY_TYPE));
         dumpProviders.put("block-material-colors",      (ctx) -> BlockDump.getFormattedBlockToMapColorDump(ctx.format, ctx.world));
         dumpProviders.put("block-predicate-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BLOCK_PREDICATE_TYPE));
         dumpProviders.put("block-props",                (ctx) -> BlockDump.getFormattedBlockPropertiesDump(ctx.format));
@@ -230,7 +230,6 @@ public class SubCommandDump
         dumpProviders.put("tags-fluid-split",           (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.FLUID, true));
         dumpProviders.put("tags-item",                  (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.ITEM, false));
         dumpProviders.put("tags-item-split",            (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.ITEM, true));
-        dumpProviders.put("tile-entities",              (ctx) -> TileEntityDump.getFormattedTileEntityDump(ctx.format));
         dumpProviders.put("tree-decorator-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.TREE_DECORATOR_TYPE));
         dumpProviders.put("trunk-placer-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.TRUNK_PLACER_TYPE));
         dumpProviders.put("villager-professions",       (ctx) -> VillagerProfessionDump.getFormattedVillagerProfessionDump(ctx.format));

@@ -11,12 +11,12 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
-public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
+public class ChunkProcessorBlockEntityCounterPerChunk extends ChunkProcessorBase
 {
     private final Map<ChunkPos, Integer> perChunkTotalCount = new HashMap<>();
     private int totalCount;
 
-    public ChunkProcessorTileEntityCounterPerChunk(DataDump.Format format)
+    public ChunkProcessorBlockEntityCounterPerChunk(DataDump.Format format)
     {
         super(format);
     }
@@ -54,7 +54,7 @@ public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
         DataDump dump = new DataDump(3, this.format);
 
         dump.setSort(true).setSortReverse(true);
-        dump.addHeader("Loaded TileEntities by chunk:");
+        dump.addHeader("Loaded BlockEntities by chunk:");
         dump.addTitle("Total Count", "Chunk", "Region");
 
         for (CountsPerChunkHolder holder : counts)
@@ -65,7 +65,7 @@ public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
                     String.format("r.%d.%d", holder.pos.x >> 5, holder.pos.z >> 5));
         }
 
-        dump.addFooter(String.format("In total there were %d loaded TileEntities in %d chunks",
+        dump.addFooter(String.format("In total there were %d loaded BlockEntities in %d chunks",
                                      this.totalCount, this.getLoadedChunkCount() - this.chunksWithZeroCount));
 
         return dump;

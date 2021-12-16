@@ -29,10 +29,10 @@ public class LocateBlockEntities extends LocateBase
     {
         super(format);
 
-        this.filters = this.generateTileEntityFilters(filterStrings);
+        this.filters = this.generateBlockEntityFilters(filterStrings);
     }
 
-    protected Set<BlockEntityType<?>> generateTileEntityFilters(List<String> filterStrings) throws CommandSyntaxException
+    protected Set<BlockEntityType<?>> generateBlockEntityFilters(List<String> filterStrings) throws CommandSyntaxException
     {
         Set<BlockEntityType<?>> set = Sets.newIdentityHashSet();
 
@@ -46,18 +46,13 @@ public class LocateBlockEntities extends LocateBase
                 if (type.isPresent())
                 {
                     set.add(type.get());
-                }
-                else
-                {
-                    TellMe.logger.warn("Invalid TileEntity name '{}'", name);
-                    throw INVALID_NAME_EXCEPTION.create(name);
+                    continue;
                 }
             }
-            catch (Exception e)
-            {
-                TellMe.logger.warn("Invalid TileEntity name '{}'", name);
-                throw INVALID_NAME_EXCEPTION.create(name);
-            }
+            catch (Exception ignore) {}
+
+            TellMe.logger.warn("Invalid BlockEntity name '{}'", name);
+            throw INVALID_NAME_EXCEPTION.create(name);
         }
 
         return set;
@@ -74,7 +69,7 @@ public class LocateBlockEntities extends LocateBase
         {
             if (this.data.size() >= 100000)
             {
-                TellMe.logger.warn("Over 100 000 TileEntities found already, aborting...");
+                TellMe.logger.warn("Over 100 000 BlockEntities found already, aborting...");
                 break;
             }
 
@@ -105,7 +100,7 @@ public class LocateBlockEntities extends LocateBase
         }
 
         final long timeAfter = System.nanoTime();
-        TellMe.logger.info(String.format(Locale.US, "Located %d TileEntities in %d chunks in %.3f seconds.",
+        TellMe.logger.info(String.format(Locale.US, "Located %d BlockEntities in %d chunks in %.3f seconds.",
                                          count, chunks.size(), (timeAfter - timeBefore) / 1000000000D));
     }
 }
