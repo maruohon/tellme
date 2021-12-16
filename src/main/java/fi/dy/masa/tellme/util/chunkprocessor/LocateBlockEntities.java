@@ -75,12 +75,11 @@ public class LocateBlockEntities extends LocateBase
 
             ChunkPos chunkPos = chunk.getPos();
             final String dim = WorldUtils.getDimensionId(chunk.getWorld());
-            final int topY = chunk.getHighestNonEmptySectionYOffset() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
-            final int yMin = Math.max(0, posMin.getY());
+            final int yMin = Math.max(chunk.getBottomY(), posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
-            final int yMax = Math.min(topY, posMax.getY());
+            final int yMax = Math.min(chunk.getTopY() - 1, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
             BlockBox box = new BlockBox(xMin, yMin, zMin, xMax, yMax, zMax);
 

@@ -35,17 +35,17 @@ public class CommandUtils
     public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(new LiteralText("This command must be executed by a player"));
     public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> new LiteralText("Invalid output type: " + type));
 
-    public static BlockPos getMinCorner(Vec2f pos1, Vec2f pos2)
+    public static BlockPos getMinCorner(Vec2f pos1, Vec2f pos2, World world)
     {
         return new BlockPos(Math.min(MathHelper.floor(pos1.x), MathHelper.floor(pos2.x)),
-                            0,
+                            world.getBottomY(),
                             Math.min(MathHelper.floor(pos1.y), MathHelper.floor(pos2.y)));
     }
 
-    public static BlockPos getMaxCorner(Vec2f pos1, Vec2f pos2)
+    public static BlockPos getMaxCorner(Vec2f pos1, Vec2f pos2, World world)
     {
         return new BlockPos(Math.max(MathHelper.floor(pos1.x), MathHelper.floor(pos2.x)),
-                            255,
+                            world.getTopY() - 1,
                             Math.max(MathHelper.floor(pos1.y), MathHelper.floor(pos2.y)));
     }
 

@@ -324,8 +324,9 @@ public class SubCommandLoaded
     private static int listLoadedChunksInArea(ServerCommandSource source, Vec2f corner1, Vec2f corner2,
             OutputType outputType, DataDump.Format format, IWorldRetriever dimensionGetter) throws CommandSyntaxException
     {
-        BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
-        BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
+        World world = dimensionGetter.getWorldFromSource(source);
+        BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2, world);
+        BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2, world);
         List<String> lines = ChunkDump.getFormattedChunkDump(format, source.getServer(), dimensionGetter.getWorldFromSource(source), minPos, maxPos);
 
         if (lines != null)

@@ -76,14 +76,14 @@ public class LocateEntities extends LocateBase
             ChunkPos chunkPos = chunk.getPos();
 
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
-            final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
             final int xMax = Math.min((chunkPos.x << 4) + 16, posMax.getX());
-            final int yMax = Math.min(256, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 16, posMax.getZ());
+            //final int yMax = Math.min(chunk.getTopY(), posMax.getY());
+            //final int yMin = Math.max(chunk.getBottomY(), posMin.getY());
 
             this.dimName = WorldUtils.getDimensionId(chunk.getWorld());
-            Box bb = new Box(xMin, yMin, zMin, xMax, yMax, zMax);
+            Box bb = new Box(xMin, Double.MIN_VALUE, zMin, xMax, Double.MAX_VALUE, zMax);
             World world = chunk.getWorld();
             ((IMixinWorld) world).tellme_invoke_getEntityLookup().forEachIntersects(bb, this::entityConsumer);
         }

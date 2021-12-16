@@ -234,8 +234,11 @@ public class SubCommandBlockStats
                                         IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
         BlockPos centerPos = new BlockPos(center);
-        BlockPos minPos = new BlockPos(centerPos.getX() - range, Math.max(  0, centerPos.getY() - range), centerPos.getZ() - range);
-        BlockPos maxPos = new BlockPos(centerPos.getX() + range, Math.min(255, centerPos.getY() + range), centerPos.getZ() + range);
+        World world = dimensionGetter.getWorldFromSource(source);
+        int minY = world.getBottomY();
+        int maxY = world.getTopY() - 1;
+        BlockPos minPos = new BlockPos(centerPos.getX() - range, Math.max(minY, centerPos.getY() - range), centerPos.getZ() - range);
+        BlockPos maxPos = new BlockPos(centerPos.getX() + range, Math.min(maxY, centerPos.getY() + range), centerPos.getZ() + range);
 
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
@@ -252,8 +255,9 @@ public class SubCommandBlockStats
     private static int countBlocksArea(ServerCommandSource source, Vec2f corner1, Vec2f corner2,
                                        IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2);
-        BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2);
+        World world = dimensionGetter.getWorldFromSource(source);
+        BlockPos minPos = CommandUtils.getMinCorner(corner1, corner2, world);
+        BlockPos maxPos = CommandUtils.getMaxCorner(corner1, corner2, world);
 
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }
@@ -282,7 +286,7 @@ public class SubCommandBlockStats
         CommandUtils.sendMessage(source, "Counting blocks...");
 
         blockStats.setAppend(isAppend);
-        blockStats.processChunks(TellMe.dataProvider.getLoadedChunks(world));
+        blockStats.processChunks(TellMe.dataProvider.getLoadedChunks(world), world);
 
         CommandUtils.sendMessage(source, "Done");
 
