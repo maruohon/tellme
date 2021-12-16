@@ -149,9 +149,9 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
 
     public enum LocateType
     {
-        BLOCK       ("block",       "blocks",           () -> ForgeRegistries.BLOCKS, LocateBlocks::new),
-        ENTITY      ("entity",      "entities",         () -> ForgeRegistries.ENTITIES, LocateEntities::new),
-        TILE_ENTITY ("tile-entity", "tile_entities",    () -> ForgeRegistries.BLOCK_ENTITIES, LocateBlockEntities::new);
+        BLOCK       ("block",        "blocks",           () -> ForgeRegistries.BLOCKS, LocateBlocks::new),
+        ENTITY      ("entity",       "entities",         () -> ForgeRegistries.ENTITIES, LocateEntities::new),
+        BLOCK_ENTITY("block-entity", "block_entities",   () -> ForgeRegistries.BLOCK_ENTITIES, LocateBlockEntities::new);
 
         private final String argument;
         private final String plural;

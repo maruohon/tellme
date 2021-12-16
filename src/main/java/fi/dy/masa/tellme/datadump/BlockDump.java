@@ -125,11 +125,11 @@ public class BlockDump
 
         blockDump.addHeader("NOTE: The Hardness and Resistance values are the raw base values in the fields");
         blockDump.addHeader("of the Block class in question. The actual final values may be different");
-        blockDump.addHeader("for different states of the block, or they may depend on a TileEntity etc.");
+        blockDump.addHeader("for different states of the block, or they may depend on a BlockEntity etc.");
 
         blockDump.addFooter("NOTE: The Hardness and Resistance values are the raw base values in the fields");
         blockDump.addFooter("of the Block class in question. The actual final values may be different");
-        blockDump.addFooter("for different states of the block, or they may depend on a TileEntity etc.");
+        blockDump.addFooter("for different states of the block, or they may depend on a BlockEntity etc.");
 
         return blockDump.getLines();
     }
