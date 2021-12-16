@@ -13,16 +13,19 @@ import fi.dy.masa.tellme.util.WorldUtils;
 
 public abstract class ChunkProcessorAllChunks
 {
-    private boolean areCoordinatesValid(BlockPos pos1, BlockPos pos2) throws CommandSyntaxException
+    private boolean areCoordinatesValid(BlockPos pos1, BlockPos pos2, Level world) throws CommandSyntaxException
     {
-        if (pos1.getY() < 0 || pos2.getY() < 0)
+        int minY = world.getMinBuildHeight();
+        int maxY = world.getMaxBuildHeight() - 1;
+
+        if (pos1.getY() < minY || pos2.getY() < minY)
         {
-            throw (new SimpleCommandExceptionType(new TranslatableComponent("Argument(s) out of range: y < 0"))).create();
+            throw (new SimpleCommandExceptionType(new TranslatableComponent("Argument(s) out of range: y < " + minY))).create();
         }
 
-        if (pos1.getY() > 255 || pos2.getY() > 255)
+        if (pos1.getY() > maxY || pos2.getY() > maxY)
         {
-            throw (new SimpleCommandExceptionType(new TranslatableComponent("Argument(s) out of range: y > 255"))).create();
+            throw (new SimpleCommandExceptionType(new TranslatableComponent("Argument(s) out of range: y > " + maxY))).create();
         }
 
         if (pos1.getX() < -30000000 || pos2.getX() < -30000000 || pos1.getZ() < -30000000 || pos2.getZ() < -30000000)
@@ -40,7 +43,7 @@ public abstract class ChunkProcessorAllChunks
 
     public void processChunks(Level world, BlockPos posMin, BlockPos posMax) throws CommandSyntaxException
     {
-        if (this.areCoordinatesValid(posMin, posMax) == false)
+        if (this.areCoordinatesValid(posMin, posMax, world) == false)
         {
             throw (new SimpleCommandExceptionType(new TranslatableComponent("Invalid coordinate(s) in the range, aborting"))).create();
         }
@@ -53,9 +56,11 @@ public abstract class ChunkProcessorAllChunks
         this.processChunks(chunks, posMin, posMax);
     }
 
-    public void processChunks(Collection<LevelChunk> chunks)
+    public void processChunks(Collection<LevelChunk> chunks, Level world)
     {
-        this.processChunks(chunks, new BlockPos(-30000000, 0, -30000000), new BlockPos(30000000, 255, 30000000));
+        int minY = world.getMinBuildHeight();
+        int maxY = world.getMaxBuildHeight() - 1;
+        this.processChunks(chunks, new BlockPos(-30000000, minY, -30000000), new BlockPos(30000000, maxY, 30000000));
     }
 
     public abstract void processChunks(Collection<LevelChunk> chunks, BlockPos posMin, BlockPos posMax);

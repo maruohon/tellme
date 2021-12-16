@@ -101,13 +101,12 @@ public class LocateBlocks extends LocateBase
 
             ChunkPos chunkPos = chunk.getPos();
             final String dim = WorldUtils.getDimensionId(chunk.getLevel());
-            final int topY = chunk.getHighestSectionPosition() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
-            final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
-            final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
+            final int yMin = Math.max(chunk.getMinBuildHeight(), posMin.getY());
+            final int yMax = Math.min(chunk.getHighestSectionPosition() + 15, posMax.getY());
 
             for (int z = zMin; z <= zMax; ++z)
             {

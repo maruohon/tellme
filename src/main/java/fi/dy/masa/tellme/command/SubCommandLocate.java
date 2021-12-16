@@ -109,7 +109,7 @@ public class SubCommandLocate
         switch (areaType)
         {
             case ALL_LOADED:
-                locate.processChunks(TellMe.dataProvider.getLoadedChunks(world));
+                locate.processChunks(TellMe.dataProvider.getLoadedChunks(world), world);
                 break;
 
             case BOX:
@@ -127,8 +127,10 @@ public class SubCommandLocate
                 int chunkRadius = IntegerArgumentType.getInteger(ctx, "chunk_radius");
                 int blockRadius = chunkRadius * 16;
                 BlockPos center = CommandUtils.getBlockPosFromSource(source);
-                BlockPos minPos = new BlockPos(center.getX() - blockRadius,   0, center.getZ() - blockRadius);
-                BlockPos maxPos = new BlockPos(center.getX() + blockRadius, 255, center.getZ() + blockRadius);
+                int minY = world.getMinBuildHeight();
+                int maxY = world.getMaxBuildHeight() - 1;
+                BlockPos minPos = new BlockPos(center.getX() - blockRadius, minY, center.getZ() - blockRadius);
+                BlockPos maxPos = new BlockPos(center.getX() + blockRadius, maxY, center.getZ() + blockRadius);
                 locate.processChunks(world, minPos, maxPos);
                 break;
             }

@@ -253,8 +253,9 @@ public class SubCommandBiomeStats
     private static int countBiomesArea(CommandSourceStack source, Vec2 minPosVec2, Vec2 maxPosVec2,
                                        IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        BlockPos minPos = CommandUtils.getMinCorner(minPosVec2, maxPosVec2);
-        BlockPos maxPos = CommandUtils.getMaxCorner(minPosVec2, maxPosVec2);
+        Level world = dimensionGetter.getWorldFromSource(source);
+        BlockPos minPos = CommandUtils.getMinCorner(minPosVec2, maxPosVec2, world);
+        BlockPos maxPos = CommandUtils.getMaxCorner(minPosVec2, maxPosVec2, world);
 
         return countBiomesArea(source, minPos, maxPos, dimensionGetter, isAppend);
     }
