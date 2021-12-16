@@ -11,16 +11,12 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.advancement.Advancement;
-import net.minecraft.client.color.world.FoliageColors;
-import net.minecraft.client.color.world.GrassColors;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
@@ -46,25 +42,10 @@ public class DataProviderBase
     {
     }
 
-    public int getFoliageColor(Biome biome, BlockPos pos)
-    {
-        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return FoliageColors.getColor(temperature, humidity);
-    }
-
-    public int getGrassColor(Biome biome, BlockPos pos)
-    {
-        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return GrassColors.getColor(temperature, humidity);
-    }
-
     public Collection<WorldChunk> getLoadedChunks(World world)
     {
-        if (world instanceof ServerWorld)
+        if (world instanceof ServerWorld serverWorld)
         {
-            ServerWorld serverWorld = (ServerWorld) world; 
             ArrayList<WorldChunk> chunks = new ArrayList<>();
 
             try

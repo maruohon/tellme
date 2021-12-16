@@ -1,36 +1,38 @@
 {
-    "schemaVersion": 1,
-    "id": "tellme",
-    "name": "TellMe",
-    "version": "${mod_version}",
+	"schemaVersion": 1,
+	"id": "tellme",
+	"name": "TellMe",
+	"version": "${mod_version}",
 
-    "description": "Registry dumps and other information output",
-    "authors": [
-        "masa"
-    ],
-    "contact": {
-        "homepage": "https://www.curseforge.com/minecraft/mc-mods/tellme",
-        "issues": "https://github.com/maruohon/tellme/issues",
-        "sources": "https://github.com/maruohon/tellme",
-        "twitter": "https://twitter.com/maruohon",
-        "discord": "https://discordapp.com/channels/211786369951989762/453662800460644354/"
-    },
+	"description": "Registry dumps and other information output",
+	"authors": [
+		"masa"
+	],
+	"contact": {
+		"homepage": "https://www.curseforge.com/minecraft/mc-mods/tellme",
+		"issues": "https://github.com/maruohon/tellme/issues",
+		"sources": "https://github.com/maruohon/tellme",
+		"twitter": "https://twitter.com/maruohon",
+		"discord": "https://discordapp.com/channels/211786369951989762/453662800460644354/"
+	},
 
-    "license": "LGPLv3",
+	"license": "LGPLv3",
 
-    "environment": "*",
-    "entrypoints": {
-        "main": [
-            "fi.dy.masa.tellme.TellMe"
-        ],
-        "client": [
-            "fi.dy.masa.tellme.TellMe::setIsClient"
-        ]
-    },
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"fi.dy.masa.tellme.TellMe"
+		],
+		"client": [
+			"fi.dy.masa.tellme.TellMe::setIsClient"
+		]
+	},
 
-    "mixins": [
-        "mixins.tellme.json"
-    ],
+	"mixins": [
+		"mixins.tellme.json"
+	],
 
-    "depends": {}
+	"depends": {
+		"minecraft": ">=1.18"
+	}
 }

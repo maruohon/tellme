@@ -5,10 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BiomeAdditionsSound;
 import net.minecraft.sound.BiomeMoodSound;
 import net.minecraft.sound.MusicSound;
@@ -23,12 +21,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeEffects;
 import net.minecraft.world.biome.SpawnSettings;
-import net.minecraft.world.gen.feature.StructureFeature;
 import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.mixin.IMixinBiomeAdditionsSound;
-import fi.dy.masa.tellme.mixin.IMixinBiomeEffects;
-import fi.dy.masa.tellme.mixin.IMixinBiomeMoodSound;
-import fi.dy.masa.tellme.mixin.IMixinMusicSound;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -38,7 +31,6 @@ public class BiomeDump
 {
     public static final BiomeInfoProviderBase BASIC = new BiomeInfoProviderBasic();
     public static final BiomeInfoProviderBase COLORS = new BiomeInfoProviderColors();
-    public static final BiomeInfoProviderBase VALIDITY = new BiomeInfoProviderValidity();
 
     public static List<String> getFormattedBiomeDump(Format format, @Nullable World world, BiomeInfoProviderBase provider)
     {
@@ -116,16 +108,14 @@ public class BiomeDump
 
         Biome.Precipitation rainType = biome.getPrecipitation();
         BiomeEffects effects = biome.getEffects();
-        int skyColor = ((IMixinBiomeEffects) effects).tellmeGetSkyColor();
-        int fogColor = ((IMixinBiomeEffects) effects).tellmeGetFogColor();
-        int waterColor = ((IMixinBiomeEffects) effects).tellmeGetWaterColor();
-        int waterFogColor = ((IMixinBiomeEffects) effects).tellmeGetWaterFogColor();
+        int skyColor = effects.getSkyColor();
+        int fogColor = effects.getFogColor();
+        int waterColor = effects.getWaterColor();
+        int waterFogColor = effects.getWaterFogColor();
 
-        String strDepth = String.valueOf(biome.getDepth());
         String strMaxSpawnChance = String.valueOf(biome.getSpawnSettings().getCreatureSpawnProbability());
         String strRainType = rainType.getName();
         String strRainfall = String.valueOf(biome.getDownfall());
-        String strScale = String.valueOf(biome.getScale());
         String strTemperature = String.valueOf(biome.getTemperature());
 
         String strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
@@ -133,7 +123,6 @@ public class BiomeDump
         String strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
         String strWaterFogColor = String.format("0x%08X (%d)", waterFogColor, waterFogColor);
 
-        String strValidFor = world instanceof ServerWorld ? getValidForString(biome) : "?";
         boolean canSnow = biome.canSetSnow(world, pos);
         String strSnowing = canSnow ? "true" : "false";
 
@@ -148,10 +137,7 @@ public class BiomeDump
         entity.sendMessage(new LiteralText("RainType: ").append(new LiteralText(strRainType).formatted(green))
                                    .append(", downfall: ").append(new LiteralText(strRainfall).formatted(green))
                                    .append(", snows: ").append(new LiteralText(strSnowing).formatted(canSnow ? green : Formatting.RED)), false);
-        entity.sendMessage(new LiteralText("Depth: ").append(new LiteralText(strDepth).formatted(green))
-                                   .append(", scale: ").append(new LiteralText(strScale).formatted(green))
-                                   .append(", max spawn chance: ").append(new LiteralText(strMaxSpawnChance).formatted(green))
-                , false);
+        entity.sendMessage(new LiteralText("Max spawn chance: ").append(new LiteralText(strMaxSpawnChance).formatted(green)), false);
 
         entity.sendMessage(new LiteralText("Fog Color: ")
                                    .append(new LiteralText(strFogColor).formatted(green)), false);
@@ -162,18 +148,13 @@ public class BiomeDump
         entity.sendMessage(new LiteralText("Water Fog Color: ")
                                    .append(new LiteralText(strWaterFogColor).formatted(green)), false);
 
-        entity.sendMessage(getMusicInfo(((IMixinBiomeEffects) effects).tellmeGetMusic()), false);
-        entity.sendMessage(getAdditionsSoundInfo(((IMixinBiomeEffects) effects).tellmeGetAdditionsSound()), false);
-        entity.sendMessage(getLoopSoundInfo(((IMixinBiomeEffects) effects).tellmeGetLoopSound()), false);
-        entity.sendMessage(getMoodSoundInfo(((IMixinBiomeEffects) effects).tellmeGetMoodSound()), false);
+        entity.sendMessage(getMusicInfo(effects.getMusic()), false);
+        entity.sendMessage(getAdditionsSoundInfo(effects.getAdditionsSound()), false);
+        entity.sendMessage(getLoopSoundInfo(effects.getLoopSound()), false);
+        entity.sendMessage(getMoodSoundInfo(effects.getMoodSound()), false);
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
-
-        if (StringUtils.isBlank(strValidFor) == false)
-        {
-            entity.sendMessage(new LiteralText("Valid for: ").append(new LiteralText(strValidFor).formatted(Formatting.AQUA)), false);
-        }
     }
 
     public static MutableText getMusicInfo(Optional<MusicSound> optional)
@@ -183,14 +164,14 @@ public class BiomeDump
 
         if (optional.isPresent())
         {
-            IMixinMusicSound accessor = (IMixinMusicSound) optional.get();
-            Identifier id = Registry.SOUND_EVENT.getId(accessor.tellmeGetSound());
+            MusicSound sound = optional.get();
+            Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
             String name = id != null ? id.toString() : "?";
 
             return text.append(new LiteralText(name).formatted(green))
-                       .append(", min delay: ").append(new LiteralText(String.valueOf(accessor.tellmeGetMinDelay())).formatted(green))
-                       .append(", max delay: ").append(new LiteralText(String.valueOf(accessor.tellmeGetMaxDelay())).formatted(green))
-                       .append(", replace current: ").append(new LiteralText(String.valueOf(accessor.tellmeGetCanStop())).formatted(green));
+                       .append(", min delay: ").append(new LiteralText(String.valueOf(sound.getMinDelay())).formatted(green))
+                       .append(", max delay: ").append(new LiteralText(String.valueOf(sound.getMaxDelay())).formatted(green))
+                       .append(", replace current: ").append(new LiteralText(String.valueOf(sound.shouldReplaceCurrentMusic())).formatted(green));
         }
 
         return text.append(new LiteralText("-").formatted(Formatting.RED));
@@ -203,12 +184,12 @@ public class BiomeDump
 
         if (optional.isPresent())
         {
-            IMixinBiomeAdditionsSound accessor = (IMixinBiomeAdditionsSound) optional.get();
-            Identifier id = Registry.SOUND_EVENT.getId(accessor.tellmeGetSound());
+            BiomeAdditionsSound sound = optional.get();
+            Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
             String name = id != null ? id.toString() : "?";
 
             return text.append(new LiteralText(name).formatted(green))
-                       .append(", chance: ").append(new LiteralText(String.valueOf(accessor.tellmeGetPlayChance())).formatted(green));
+                       .append(", chance: ").append(new LiteralText(String.valueOf(sound.getChance())).formatted(green));
         }
 
         return text.append(new LiteralText("-").formatted(Formatting.RED));
@@ -236,14 +217,14 @@ public class BiomeDump
 
         if (optional.isPresent())
         {
-            IMixinBiomeMoodSound accessor = (IMixinBiomeMoodSound) optional.get();
-            Identifier id = Registry.SOUND_EVENT.getId(accessor.tellmeGetSound());
+            BiomeMoodSound sound = optional.get();
+            Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
             String name = id != null ? id.toString() : "?";
 
             return text.append(new LiteralText(name).formatted(green))
-                       .append(", delay: ").append(new LiteralText(String.valueOf(accessor.tellmeGetCultivationTicks())).formatted(green))
-                       .append(", range: ").append(new LiteralText(String.valueOf(accessor.tellmeGetSpawnRange())).formatted(green))
-                       .append(", extra distance: ").append(new LiteralText(String.valueOf(accessor.tellmeGetExtraDistance())).formatted(green));
+                       .append(", delay: ").append(new LiteralText(String.valueOf(sound.getCultivationTicks())).formatted(green))
+                       .append(", range: ").append(new LiteralText(String.valueOf(sound.getSpawnRange())).formatted(green))
+                       .append(", extra distance: ").append(new LiteralText(String.valueOf(sound.getExtraDistance())).formatted(green));
         }
 
         return text.append(new LiteralText("-").formatted(Formatting.RED));
@@ -283,31 +264,6 @@ public class BiomeDump
         }
 
         return lines;
-    }
-
-    private static String getValidForString(Biome biome)
-    {
-        List<String> strings = new ArrayList<>();
-
-        if (biome.getSpawnSettings().isPlayerSpawnFriendly())
-        {
-            strings.add("spawn");
-        }
-
-        for (StructureFeature<?> feature : StructureFeature.STRUCTURES.values())
-        {
-            if (biome.getGenerationSettings().hasStructureFeature(feature))
-            {
-                Identifier id = Registry.STRUCTURE_FEATURE.getId(feature);
-
-                if (id != null)
-                {
-                    strings.add(id.toString());
-                }
-            }
-        }
-
-        return String.join(", ", strings);
     }
 
     public static class IdToStringHolder implements Comparable<IdToStringHolder>
@@ -432,10 +388,10 @@ public class BiomeDump
             String intId = String.valueOf(registry.getRawId(biome));
             String regName = id.toString();
             BiomeEffects effects = biome.getEffects();
-            int skyColor = ((IMixinBiomeEffects) effects).tellmeGetSkyColor();
-            int fogColor = ((IMixinBiomeEffects) effects).tellmeGetFogColor();
-            int waterColor = ((IMixinBiomeEffects) effects).tellmeGetWaterColor();
-            int waterFogColor = ((IMixinBiomeEffects) effects).tellmeGetWaterFogColor();
+            int skyColor = effects.getSkyColor();
+            int fogColor = effects.getFogColor();
+            int waterColor = effects.getWaterColor();
+            int waterFogColor = effects.getWaterFogColor();
             String strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
             String strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
             String strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
@@ -443,8 +399,8 @@ public class BiomeDump
 
             if (TellMe.isClient())
             {
-                int foliageColor = TellMe.dataProvider.getFoliageColor(biome, BlockPos.ORIGIN);
-                int grassColor = TellMe.dataProvider.getGrassColor(biome, BlockPos.ORIGIN);
+                int foliageColor = biome.getFoliageColor();
+                int grassColor = biome.getGrassColorAt(0, 0);
                 String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
                 String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
 
@@ -454,34 +410,6 @@ public class BiomeDump
             {
                 dump.addData(intId, regName, strFogColor, strSkyColor, strWaterColor, strWaterFogColor);
             }
-        }
-    }
-
-    public static class BiomeInfoProviderValidity extends BiomeInfoProviderBase
-    {
-        @Override
-        public int getColumnCount()
-        {
-            return 3;
-        }
-
-        @Override
-        public void addTitle(DataDump dump)
-        {
-            dump.addTitle("ID", "Registry name", "Valid for");
-        }
-
-        @Override
-        public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
-        {
-            if (ctx.world == null) { return; }
-
-            Registry<Biome> registry = ctx.world.getRegistryManager().get(Registry.BIOME_KEY);
-            String intId = String.valueOf(registry.getRawId(biome));
-            String regName = id.toString();
-            String validFor = ctx.world instanceof ServerWorld ? getValidForString(biome) : "?";
-
-            dump.addData(intId, regName, validFor);
         }
     }
 }

@@ -100,26 +100,14 @@ public class DataProviderClient extends DataProviderBase
     {
         BlockPos pos = entity.getBlockPos();
         String pre = Formatting.GREEN.toString();
-        String rst = Formatting.RESET.toString() + Formatting.WHITE.toString();
+        String rst = Formatting.RESET.toString();
 
         // These are client-side only:
-        int color = this.getGrassColor(biome, pos);
+        int color = biome.getGrassColorAt(pos.getX(), pos.getZ());
         entity.sendMessage(new LiteralText(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)), false);
 
-        color = this.getFoliageColor(biome, pos);
+        color = biome.getFoliageColor();
         entity.sendMessage(new LiteralText(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)), false);
-    }
-
-    @Override
-    public int getFoliageColor(Biome biome, BlockPos pos)
-    {
-        return biome.getFoliageColor();
-    }
-
-    @Override
-    public int getGrassColor(Biome biome, BlockPos pos)
-    {
-        return biome.getGrassColorAt(pos.getX(), pos.getZ());
     }
 
     @Override
@@ -138,7 +126,7 @@ public class DataProviderClient extends DataProviderBase
             {
                 String index = String.valueOf(group.getIndex());
                 String name = group.getName();
-                String key = group.getTranslationKey().getString();
+                String key = group.getDisplayName().getString();
                 ItemStack stack = group.createIcon();
 
                 if (key == null)
@@ -174,7 +162,7 @@ public class DataProviderClient extends DataProviderBase
 
         if (group != null)
         {
-            String name = I18n.translate(group.getTranslationKey().getString());
+            String name = I18n.translate(group.getDisplayName().getString());
             obj.add("CreativeTabs", new JsonPrimitive(name));
         }
     }

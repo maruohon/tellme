@@ -12,34 +12,17 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class StructureFeatureDump
 {
-    public static List<String> getFormattedDump(DataDump.Format format, boolean spawns)
+    public static List<String> getFormattedDump(DataDump.Format format)
     {
-        DataDump dump = new DataDump(spawns ? 4 : 2, format);
+        DataDump dump = new DataDump(2, format);
 
         for (Identifier id : Registry.STRUCTURE_FEATURE.getIds())
         {
             StructureFeature<?> feature = Registry.STRUCTURE_FEATURE.get(id);
-
-            if (spawns)
-            {
-                String mobSpawns = getMobSpawnsString(feature.getMonsterSpawns().getEntries());
-                String passiveSpawns = getMobSpawnsString(feature.getCreatureSpawns().getEntries());
-                dump.addData(id.toString(), feature.getName(), mobSpawns, passiveSpawns);
-            }
-            else
-            {
-                dump.addData(id.toString(), feature.getName());
-            }
+            dump.addData(id.toString(), feature.getName());
         }
 
-        if (spawns)
-        {
-            dump.addTitle("Registry name", "Name", "Mob spawns", "Passive spawns");
-        }
-        else
-        {
-            dump.addTitle("Registry name", "Name");
-        }
+        dump.addTitle("Registry name", "Name");
 
         return dump.getLines();
     }

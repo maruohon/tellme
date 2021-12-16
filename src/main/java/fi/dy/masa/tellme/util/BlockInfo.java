@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
-import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
@@ -132,7 +131,7 @@ public class BlockInfo
     public static List<Pair<String, String>> getProperties(String blockName)
     {
         List<Pair<String, String>> props = new ArrayList<>();
-        Pattern patternNameProps = Pattern.compile("(?<name>([a-z0-9_]+:)?[a-z0-9\\._]+)\\[(?<props>[a-z0-9_]+=[a-z0-9_]+(,[a-z0-9_]+=[a-z0-9_]+)*)\\]");
+        Pattern patternNameProps = Pattern.compile("(?<name>([a-z0-9_]+:)?[a-z0-9._]+)\\[(?<props>[a-z0-9_]+=[a-z0-9_]+(,[a-z0-9_]+=[a-z0-9_]+)*)]");
         Matcher matcherNameProps = patternNameProps.matcher(blockName);
 
         if (matcherNameProps.matches())
@@ -141,11 +140,11 @@ public class BlockInfo
             //String name = matcherNameProps.group("name");
             String propStr = matcherNameProps.group("props");
             String[] propParts = propStr.split(",");
-            Pattern patternProp = Pattern.compile("(?<prop>[a-zA-Z0-9\\._-]+)=(?<value>[a-zA-Z0-9\\._-]+)");
+            Pattern patternProp = Pattern.compile("(?<prop>[a-zA-Z0-9._-]+)=(?<value>[a-zA-Z0-9._-]+)");
 
-            for (int i = 0; i < propParts.length; i++)
+            for (String propPart : propParts)
             {
-                Matcher matcherProp = patternProp.matcher(propParts[i]);
+                Matcher matcherProp = patternProp.matcher(propPart);
 
                 if (matcherProp.matches())
                 {
@@ -153,7 +152,7 @@ public class BlockInfo
                 }
                 else
                 {
-                    TellMe.logger.warn("Invalid block property '{}'", propParts[i]);
+                    TellMe.logger.warn("Invalid block property '{}'", propPart);
                 }
             }
 
@@ -209,11 +208,8 @@ public class BlockInfo
         {
             lines.add("BlockState properties:");
 
-            UnmodifiableIterator<Entry<Property<?>, Comparable<?>>> iter = state.getEntries().entrySet().iterator();
-
-            while (iter.hasNext())
+            for (Entry<Property<?>, Comparable<?>> entry : state.getEntries().entrySet())
             {
-                Entry<Property<?>, Comparable<?>> entry = iter.next();
                 lines.add(entry.getKey().toString() + ": " + entry.getValue().toString());
             }
         }
@@ -226,8 +222,7 @@ public class BlockInfo
 
         if (te != null)
         {
-            NbtCompound nbt = new NbtCompound();
-            te.writeNbt(nbt);
+            NbtCompound nbt = te.createNbt();
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
             lines.add("BlockEntity NBT (from BlockEntity::write()):");
@@ -266,7 +261,7 @@ public class BlockInfo
     public static String blockStateToString(BlockState state)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(Registry.BLOCK.getId(state.getBlock()).toString());
+        sb.append(Registry.BLOCK.getId(state.getBlock()));
 
         if (state.getEntries().isEmpty() == false)
         {
@@ -278,8 +273,9 @@ public class BlockInfo
         return sb.toString();
     }
 
-    public static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<Map.Entry<Property<?>, Comparable<?>>, String>()
+    public static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<>()
     {
+        @Override
         public String apply(@Nullable Map.Entry<Property<?>, Comparable<?>> entry)
         {
             if (entry == null)

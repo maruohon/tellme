@@ -95,7 +95,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
                     try
                     {
-                        NbtCompound tag = be.writeNbt(new NbtCompound());
+                        NbtCompound tag = be.createNbt();
                         this.data.add(new BlockEntityDataEntry(pos, id.toString(), tag.toString()));
                         ++total;
                     }

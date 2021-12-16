@@ -1,9 +1,9 @@
 package fi.dy.masa.tellme.command;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -93,14 +93,17 @@ public class SubCommandDump
         @Nullable MinecraftServer server = source.getServer();
         DumpContext dumpContext = new DumpContext(world, entity, server, format);
 
-        // Don't bother outputting anything else a second time, if outputting everything once anyway
         if (types.contains("all"))
         {
-            for (Map.Entry<String, DumpLineProvider> entry : providers.entrySet())
-            {
-                String name = entry.getKey();
-                DumpLineProvider provider = entry.getValue();
+            types = new ArrayList<>(providers.keySet());
+        }
 
+        for (String name : types)
+        {
+            DumpLineProvider provider = providers.get(name);
+
+            if (provider != null)
+            {
                 try
                 {
                     outputData(ctx, provider, dumpContext, name, outputType, format);
@@ -110,28 +113,9 @@ public class SubCommandDump
                     TellMe.logger.warn("Exception while dumping '{}'", name, e);
                 }
             }
-        }
-        else
-        {
-            for (String name : types)
+            else
             {
-                DumpLineProvider provider = providers.get(name);
-
-                if (provider != null)
-                {
-                    try
-                    {
-                        outputData(ctx, provider, dumpContext, name, outputType, format);
-                    }
-                    catch (Exception e)
-                    {
-                        TellMe.logger.warn("Exception while dumping '{}'", name, e);
-                    }
-                }
-                else
-                {
-                    ctx.getSource().sendError(new LiteralText("No such dump type: '" + name + "'"));
-                }
+                ctx.getSource().sendError(new LiteralText("No such dump type: '" + name + "'"));
             }
         }
 
@@ -168,24 +152,23 @@ public class SubCommandDump
         dumpProviders.put("biome-sources",              (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BIOME_SOURCE));
         dumpProviders.put("biomes-basic",               (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.BASIC));
         dumpProviders.put("biomes-with-colors",         (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.COLORS));
-        dumpProviders.put("biomes-with-feature-valid",  (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.VALIDITY));
         dumpProviders.put("biomes-with-mob-spawns",     (ctx) -> BiomeDump.getFormattedBiomeDumpWithMobSpawns(ctx.format, ctx.world));
         dumpProviders.put("biomes-id-to-name",          (ctx) -> BiomeDump.getBiomeDumpIdToName(ctx.format, ctx.world));
         dumpProviders.put("block-material-colors",      (ctx) -> BlockDump.getFormattedBlockToMapColorDump(ctx.format, ctx.world));
-        dumpProviders.put("block-placer-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BLOCK_PLACER_TYPE));
+        dumpProviders.put("block-predicate-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BLOCK_PREDICATE_TYPE));
         dumpProviders.put("block-props",                (ctx) -> BlockDump.getFormattedBlockPropertiesDump(ctx.format));
         dumpProviders.put("block-state-provider-types", (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BLOCK_STATE_PROVIDER_TYPE));
         dumpProviders.put("blocks",                     (ctx) -> BlockDump.getFormattedBlockDump(ctx.format, false));
         dumpProviders.put("blocks-with-tags",           (ctx) -> BlockDump.getFormattedBlockDump(ctx.format, true));
         dumpProviders.put("blockstates-by-block",       (ctx) -> BlockStatesDump.getFormattedBlockStatesDumpByBlock());
         dumpProviders.put("blockstates-by-state",       (ctx) -> BlockStatesDump.getFormattedBlockStatesDumpByState(ctx.format));
+        dumpProviders.put("carvers",                    (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.CARVER));
         dumpProviders.put("chunk-generators",           (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.CHUNK_GENERATOR));
         dumpProviders.put("chunk-status",               (ctx) -> ChunkStatusDump.getFormattedDump(ctx.format));
         dumpProviders.put("commands",                   (ctx) -> CommandDump.getFormattedCommandDump(ctx.format, ctx.server));
         dumpProviders.put("container-types",            (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.SCREEN_HANDLER));
         dumpProviders.put("creative-tabs",              (ctx) -> ItemGroupDump.getFormattedCreativetabDump(ctx.format));
         dumpProviders.put("custom-stats",               (ctx) -> StatTypesDump.getFormattedDumpCustomStats(ctx.format));
-        dumpProviders.put("decorators",                 (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.DECORATOR));
         dumpProviders.put("dimensions",                 (ctx) -> DimensionDump.getFormattedDimensionDump(ctx.format, ctx.server, false));
         dumpProviders.put("dimensions-verbose",         (ctx) -> DimensionDump.getFormattedDimensionDump(ctx.format, ctx.server, true));
         dumpProviders.put("enchantments",               (ctx) -> EnchantmentDump.getFormattedEnchantmentDump(ctx.format));
@@ -195,8 +178,13 @@ public class SubCommandDump
         dumpProviders.put("features",                   (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.FEATURE));
         dumpProviders.put("feature-size-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.FEATURE_SIZE_TYPE));
         dumpProviders.put("fluids",                     (ctx) -> FluidRegistryDump.getFormattedFluidRegistryDump(ctx.format));
+        dumpProviders.put("float-provider-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.FLOAT_PROVIDER_TYPE));
         dumpProviders.put("foliage-placer-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.FOLIAGE_PLACER_TYPE));
         dumpProviders.put("food-items",                 (ctx) -> FoodItemDump.getFormattedFoodItemDump(ctx.format));
+        dumpProviders.put("game-events",                (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.GAME_EVENT));
+        dumpProviders.put("height-provider-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.HEIGHT_PROVIDER_TYPE));
+        dumpProviders.put("int-provider-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.INT_PROVIDER_TYPE));
+        dumpProviders.put("inventory-screens",          (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.SCREEN_HANDLER));
         dumpProviders.put("items",                      (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_BASIC));
         dumpProviders.put("items-craftable",            (ctx) -> ItemDump.getFormattedCraftableItemsDump(ctx.format, ctx.server));
         dumpProviders.put("items-damageable",           (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_DAMAGEABLES));
@@ -204,15 +192,22 @@ public class SubCommandDump
         dumpProviders.put("items-with-tags",            (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_TAGS));
         dumpProviders.put("loot-condition-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_CONDITION_TYPE));
         dumpProviders.put("loot-function-types",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_FUNCTION_TYPE));
+        dumpProviders.put("loot-nbt-provider-types",    (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_NBT_PROVIDER_TYPE));
+        dumpProviders.put("loot-number-provider-types", (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_NUMBER_PROVIDER_TYPE));
         dumpProviders.put("loot-pool-entry-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_POOL_ENTRY_TYPE));
+        dumpProviders.put("loot-score-provider-types",  (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_SCORE_PROVIDER_TYPE));
+        dumpProviders.put("material-condition-types",   (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.MATERIAL_CONDITION));
+        dumpProviders.put("material-rule-types",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.MATERIAL_RULE));
         dumpProviders.put("memory-module-types",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.MEMORY_MODULE_TYPE));
         dumpProviders.put("mod-list",                   (ctx) -> ModListDump.getFormattedModListDump(ctx.format));
         dumpProviders.put("painting-types",             (ctx) -> PaintingTypesDump.getFormattedDump(ctx.format));
         dumpProviders.put("particle-types",             (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.PARTICLE_TYPE));
+        dumpProviders.put("placement-modifier-types",   (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.PLACEMENT_MODIFIER_TYPE));
         dumpProviders.put("players",                    (ctx) -> EntityInfo.getPlayerList(ctx.format, ctx.server));
         dumpProviders.put("player-nbt",                 (ctx) -> EntityInfo.getFullEntityInfo(ctx.entity, false));
         dumpProviders.put("poi-types",                  (ctx) -> PoiTypesDump.getFormattedDump(ctx.format));
         dumpProviders.put("position-rule-tests",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.POS_RULE_TEST));
+        dumpProviders.put("position-source-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.POSITION_SOURCE_TYPE));
         dumpProviders.put("potions",                    (ctx) -> PotionDump.getFormattedPotionTypeDump(ctx.format));
         dumpProviders.put("recipe-serializers",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.RECIPE_SERIALIZER));
         dumpProviders.put("recipe-types",               (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.RECIPE_TYPE));
@@ -223,12 +218,10 @@ public class SubCommandDump
         dumpProviders.put("spawn-eggs",                 (ctx) -> SpawnEggDump.getFormattedSpawnEggDump(ctx.format));
         dumpProviders.put("stat-types",                 (ctx) -> StatTypesDump.getFormattedDump(ctx.format));
         dumpProviders.put("status-effects",             (ctx) -> StatusEffectDump.getFormattedPotionDump(ctx.format));
-        dumpProviders.put("structure-features",         (ctx) -> StructureFeatureDump.getFormattedDump(ctx.format, false));
-        dumpProviders.put("structure-features-with-spawns", (ctx) -> StructureFeatureDump.getFormattedDump(ctx.format, true));
+        dumpProviders.put("structure-features",         (ctx) -> StructureFeatureDump.getFormattedDump(ctx.format));
         dumpProviders.put("structure-pieces",           (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PIECE));
         dumpProviders.put("structure-pool-elements",    (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_POOL_ELEMENT));
         dumpProviders.put("structure-processors",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PROCESSOR));
-        dumpProviders.put("surface-builders",           (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.SURFACE_BUILDER));
         dumpProviders.put("tags-block",                 (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.BLOCK, false));
         dumpProviders.put("tags-block-split",           (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.BLOCK, true));
         dumpProviders.put("tags-entitytype",            (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.ENTITY_TYPE, false));
