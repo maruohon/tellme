@@ -1,66 +1,60 @@
-
 buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-    }
+	repositories {
+		// These repositories are only for Gradle plugins, put any other repositories in the repository block further below
+		maven { url = 'https://maven.minecraftforge.net' }
+		mavenCentral()
+	}
+	dependencies {
+		classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+	}
 }
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'java'
+//apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
 
-repositories {
-    // gigaherz mappings
-    maven {
-        url 'https://www.dogforce-games.com/maven/'
-    }
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+// Mojang ships Java 16 to end users in 1.17+ instead of Java 8 in 1.16 or lower, so your mod should target Java 16.
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+//sourceCompatibility = JavaVersion.VERSION_16
+//targetCompatibility = JavaVersion.VERSION_16
 
 ext.configFile = file "build.properties"
 
 configFile.withReader {
-    def prop = new Properties()
-    prop.load(it)
-    project.ext.config = new ConfigSlurper().parse prop
+	def prop = new Properties()
+	prop.load(it)
+	project.ext.config = new ConfigSlurper().parse prop
 }
 
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
 minecraft {
-    mappings channel: "${config.mappings_channel}", version: "${config.mappings_version}"
+	mappings channel: "${config.mappings_channel}", version: "${config.mappings_version}"
 
-    //makeObfSourceJar = false
+	//makeObfSourceJar = false
 
-    ext.mod_version = config.mod_version
+	ext.mod_version = config.mod_version
 
-    if (mod_version.endsWith('-dev')) {
-        mod_version = mod_version + "." + new Date().format('yyyyMMdd.HHmmss')
-    }
-
-    //replaceIn "MaLiLibReference.java"
-    //replace "@MOD_VERSION@", mod_version
+	if (mod_version.endsWith('-dev')) {
+		mod_version = mod_version + "." + new Date().format('yyyyMMdd.HHmmss')
+	}
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:' + config.minecraft_version + '-' + config.forge_version
+	minecraft 'net.minecraftforge:forge:' + config.minecraft_version + '-' + config.forge_version
 }
 
 compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    options.encoding = 'UTF-8'
+	sourceCompatibility = JavaVersion.VERSION_16
+	targetCompatibility = JavaVersion.VERSION_16
+	options.encoding = 'UTF-8'
 }
 
 /*
 sourceSets {
-    main {
-        ext.refMap = 'mixins.' + config.mod_id + '.refmap.json'
-    }
+	main {
+		ext.refMap = 'mixins.' + config.mod_id + '.refmap.json'
+	}
 }
 */
 
@@ -74,51 +68,39 @@ version = project.minecraft.mod_version
  * include your own file from resources, simply remove the line below.
  */
 jar {
-    // Remove the "-mc1.12" suffix from the file name
-    //classifier = ""
-    // Don't append a 'mod-' filename prefix >_>
-    baseName = archivesBaseName
-
-    manifest {
-        attributes([
-            "Specification-Title": "${config.mod_id}",
-            "Specification-Vendor": "${config.author}",
-            "Specification-Version": "1", // We are version 1 of ourselves
-            "Implementation-Title": "${config.mod_name}",
-            "Implementation-Version": "${config.mod_version}",
-            "Implementation-Vendor": "${config.author}",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
-    }
+	manifest {
+		attributes([
+			"Specification-Title": "${config.mod_id}",
+			"Specification-Vendor": "${config.author}",
+			"Specification-Version": "1", // We are version 1 of ourselves
+			"Implementation-Title": "${config.mod_name}",
+			"Implementation-Version": project.jar.archiveVersion, //"${config.mod_version}",
+			"Implementation-Vendor": "${config.author}",
+			"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+		])
+	}
 }
 
 /*
 mixin {
-    defaultObfuscationEnv notch
-    add sourceSets.main, 'mixins.' + config.mod_id + '.refmap.json'
+	defaultObfuscationEnv notch
+	add sourceSets.main, 'mixins.' + config.mod_id + '.refmap.json'
 }
 */
 
+// Example configuration to allow publishing using the maven-publish plugin
+// This is the preferred method to reobfuscate your jar file
+jar.finalizedBy('reobfJar')
+// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
+// publish.dependsOn('reobfJar')
+
 processResources
 {
-    // Exclude the GIMP image files
-    exclude '**/*.xcf'
-    exclude '**/xcf'
+	// Exclude the GIMP image files
+	exclude '**/*.xcf'
+	exclude '**/xcf'
 
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "mod_version", project.minecraft.mod_version
-    inputs.property "minecraft_version", project.config.minecraft_version
-
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'mod_version': project.minecraft.mod_version, 'minecraft_version': project.config.minecraft_version
-    }
-      
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+	// this will ensure that this task is redone when the versions change.
+	inputs.property "mod_version", project.minecraft.mod_version
+	inputs.property "minecraft_version", project.config.minecraft_version
 }

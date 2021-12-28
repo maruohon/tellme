@@ -1,7 +1,6 @@
 {
-   "pack":
-   {
-      "pack_format": 4,
-      "description": "TellMe Resources"
-   }
+	"pack": {
+		"pack_format": 4,
+		"description": "TellMe Resources"
+	}
 }

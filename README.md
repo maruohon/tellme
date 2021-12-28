@@ -1,22 +1,22 @@
-TellMe
+## TellMe
 =========================
+TellMe is a small informational mod for Minecraft. It has registry dumps for most if not all
+of the registries Minecraft has, and it has some other commands such as locating blocks,
+entities or block entities in a given area, or outputting the NBT data and some other information
+of the block or entity yo uare looking at, or the item yo uare olding, or the biome you are in etc.
 
-TellMe is a small informational mod for Minecraft.
-It is mainly meant for modpack makers or other users who need some technical type information
-about the game or some settings.
+It is mainly meant for modpack makers, mod developers or other users who need some technical
+information about the above mentioned types of things.
 
-For documentation of all the commands and features, go to:
-
-* https://minecraft.curseforge.com/projects/tellme
+For more information and the compiled releases of the mod, go to:
+* https://www.curseforge.com/minecraft/mc-mods/tellme
 
 
-=====================================
+==========================
+## Compilation from source:
+* `git clone https://github.com/maruohon/tellme.git`
+* `cd tellme`
+* (change to the correct branch: `git checkout branchname`)
+* `gradlew build`
 
-Compilation and installation from source:
-
-* git clone https://github.com/maruohon/tellme.git
-* cd tellme
-* gradlew build
-
-Then copy the tellme-&lt;version&gt;.jar from build/libs/ into your Minecraft mods/ directory.
-The mod needs Forge to be installed.
+Then copy the `tellme-<version>.jar` from `build/libs/` into your Minecraft `mods/` directory.
