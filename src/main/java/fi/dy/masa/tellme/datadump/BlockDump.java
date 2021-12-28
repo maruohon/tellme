@@ -63,8 +63,8 @@ public class BlockDump
             {
                 Block block = entry.getValue();
                 ResourceLocation id = block.getRegistryName();
-                MaterialColor materialColor = block.getDefaultState().getMaterialColor(world, BlockPos.ZERO);
-                int color = materialColor != null ? materialColor.colorValue : 0xFFFFFF;
+                MaterialColor materialColor = block.defaultBlockState().getMapColor(world, BlockPos.ZERO);
+                int color = materialColor != null ? materialColor.col : 0xFFFFFF;
                 blockDump.addData(id.toString(), String.format("#%06X", color), String.valueOf(color));
             }
             catch (Exception ignore) {}
@@ -79,8 +79,8 @@ public class BlockDump
     {
         String modName = ModNameUtils.getModName(id);
         String registryName = id.toString();
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName().getString() : (new TranslationTextComponent(block.getTranslationKey())).getString();
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+        String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslationTextComponent(block.getDescriptionId())).getString();
+        displayName = TextFormatting.stripFormatting(displayName);
         Item item = stack.getItem();
         ResourceLocation itemIdRl = item != Items.AIR ? item.getRegistryName() : null;
         String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
@@ -107,7 +107,7 @@ public class BlockDump
                 String modName = ModNameUtils.getModName(id);
                 String registryName = id.toString();
                 Block block = ForgeRegistries.BLOCKS.getValue(id);
-                String hardness = String.format("%.2f", block.getDefaultState().getBlockHardness(null, BlockPos.ZERO));
+                String hardness = String.format("%.2f", block.defaultBlockState().getDestroySpeed(null, BlockPos.ZERO));
                 @SuppressWarnings("deprecation")
                 String resistance = String.format("%.2f", block.getExplosionResistance());
                 blockDump.addData(modName, registryName, hardness, resistance);
@@ -175,8 +175,8 @@ public class BlockDump
                     ResourceLocation itemIdRl = item != Items.AIR ? item.getRegistryName() : null;
                     String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
 
-                    String displayName = stack.isEmpty() == false ? stack.getDisplayName().getString() : (new TranslationTextComponent(block.getTranslationKey())).getString();
-                    displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+                    String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslationTextComponent(block.getDescriptionId())).getString();
+                    displayName = TextFormatting.stripFormatting(displayName);
 
                     JsonObject objItem = new JsonObject();
                     objItem.add("RegistryName", new JsonPrimitive(itemId));

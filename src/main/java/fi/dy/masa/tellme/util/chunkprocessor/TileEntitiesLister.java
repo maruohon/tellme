@@ -30,8 +30,8 @@ public class TileEntitiesLister extends ChunkProcessorBase
     @Override
     public void processChunk(Chunk chunk)
     {
-        Map<BlockPos, TileEntity> map = chunk.getTileEntityMap();
-        int count = chunk.getTileEntityMap().size();
+        Map<BlockPos, TileEntity> map = chunk.getBlockEntities();
+        int count = chunk.getBlockEntities().size();
 
         if (count == 0)
         {
@@ -52,7 +52,7 @@ public class TileEntitiesLister extends ChunkProcessorBase
                     ticking = true;
                 }
 
-                BlockPos pos = te.getPos();
+                BlockPos pos = te.getBlockPos();
                 int x = pos.getX();
                 int z = pos.getZ();
 

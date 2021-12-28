@@ -22,8 +22,8 @@ public class EnchantmentDump
             if (ench != null)
             {
                 String regName = key.toString();
-                String name = ench.getName() != null ? ench.getName() : "<null>";
-                String type = ench.type != null ? ench.type.toString() : "<null>";
+                String name = ench.getDescriptionId() != null ? ench.getDescriptionId() : "<null>";
+                String type = ench.category != null ? ench.category.toString() : "<null>";
                 Enchantment.Rarity rarity = ench.getRarity();
                 String rarityStr = rarity != null ? String.format("%s (%d)", rarity.toString(), rarity.getWeight()) : "<null>";
                 @SuppressWarnings("deprecation")

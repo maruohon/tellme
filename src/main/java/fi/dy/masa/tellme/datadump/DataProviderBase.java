@@ -32,12 +32,12 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 
 public class DataProviderBase
 {
-    private static final Field field_ChunkManager_immutableLoadedChunks = ObfuscationReflectionHelper.findField(ChunkManager.class, "field_219252_f");
+    private static final Field field_ChunkManager_immutableLoadedChunks = ObfuscationReflectionHelper.findField(ChunkManager.class, "visibleChunkMap");
 
     @Nullable
     public Collection<Advancement> getAdvacements(@Nullable MinecraftServer server)
     {
-        return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
+        return server != null ? server.getAdvancements().getAllAdvancements() : null;
     }
 
     public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
@@ -67,11 +67,11 @@ public class DataProviderBase
             try
             {
                 @SuppressWarnings("unchecked")
-                Long2ObjectLinkedOpenHashMap<ChunkHolder> immutableLoadedChunks = (Long2ObjectLinkedOpenHashMap<ChunkHolder>) field_ChunkManager_immutableLoadedChunks.get(((ServerWorld) world).getChunkProvider().chunkManager);
+                Long2ObjectLinkedOpenHashMap<ChunkHolder> immutableLoadedChunks = (Long2ObjectLinkedOpenHashMap<ChunkHolder>) field_ChunkManager_immutableLoadedChunks.get(((ServerWorld) world).getChunkSource().chunkMap);
 
                 for (ChunkHolder holder : immutableLoadedChunks.values())
                 {
-                    Optional<Chunk> optional = holder.getBorderFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                    Optional<Chunk> optional = holder.getFullChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK).left();
 
                     if (optional.isPresent())
                     {
@@ -94,7 +94,7 @@ public class DataProviderBase
     {
         if (server != null)
         {
-            CommandDispatcher<CommandSource> dispatcher = server.getCommandManager().getDispatcher();
+            CommandDispatcher<CommandSource> dispatcher = server.getCommands().getDispatcher();
 
             for (CommandNode<CommandSource> cmd : dispatcher.getRoot().getChildren())
             {

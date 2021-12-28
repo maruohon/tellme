@@ -22,7 +22,7 @@ public class VillagerTradesDump
         DataDump dump = new DataDump(6, format);
         Random rand = new Random();
 
-        ArrayList<VillagerProfession> professions = new ArrayList<>(VillagerTrades.VILLAGER_DEFAULT_TRADES.keySet());
+        ArrayList<VillagerProfession> professions = new ArrayList<>(VillagerTrades.TRADES.keySet());
         professions.sort(Comparator.comparing(v -> v.getRegistryName().toString()));
 
         for (VillagerProfession profession : professions)
@@ -30,7 +30,7 @@ public class VillagerTradesDump
             String regName = profession.getRegistryName().toString();
 
             dump.addData(regName, profession.toString(), "", "", "", "");
-            Int2ObjectMap<ITrade[]> map = VillagerTrades.VILLAGER_DEFAULT_TRADES.get(profession);
+            Int2ObjectMap<ITrade[]> map = VillagerTrades.TRADES.get(profession);
             ArrayList<Integer> levels = new ArrayList<>(map.keySet());
             Collections.sort(levels);
 
@@ -62,12 +62,12 @@ public class VillagerTradesDump
 
                         if (offer != null)
                         {
-                            ItemStack buy1 = offer.getBuyingStackFirst();
-                            ItemStack buy2 = offer.getBuyingStackSecond();
-                            ItemStack sell = offer.getSellingStack();
-                            String strBuy1 = buy1.isEmpty() == false ? buy1.getDisplayName().getString() : "";
-                            String strBuy2 = buy2.isEmpty() == false ? buy2.getDisplayName().getString() : "";
-                            String strSell = sell.isEmpty() == false ? sell.getDisplayName().getString() : "";
+                            ItemStack buy1 = offer.getBaseCostA();
+                            ItemStack buy2 = offer.getCostB();
+                            ItemStack sell = offer.getResult();
+                            String strBuy1 = buy1.isEmpty() == false ? buy1.getHoverName().getString() : "";
+                            String strBuy2 = buy2.isEmpty() == false ? buy2.getHoverName().getString() : "";
+                            String strSell = sell.isEmpty() == false ? sell.getHoverName().getString() : "";
 
                             dump.addData("", "", "", strBuy1, strBuy2, strSell);
                         }

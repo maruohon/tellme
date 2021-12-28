@@ -32,14 +32,14 @@ public class InteractEventHandler
         PlayerEntity player = event.getPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (Configs.Generic.enableDebugItemForItems && event.getWorld().isRemote == false &&
-            event.getHand() == Hand.MAIN_HAND && player.getCommandSource().hasPermissionLevel(4))
+        if (Configs.Generic.enableDebugItemForItems && event.getWorld().isClientSide == false &&
+            event.getHand() == Hand.MAIN_HAND && player.createCommandSourceStack().hasPermission(4))
         {
-            if (ItemInfo.areItemStacksEqual(Configs.debugItemItems, player.getHeldItemMainhand()))
+            if (ItemInfo.areItemStacksEqual(Configs.debugItemItems, player.getMainHandItem()))
             {
                 this.printItemInfo(player);
             }
-            else if (ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+            else if (ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getMainHandItem()))
             {
                 this.printBlockInfo(event, true);
             }
@@ -65,12 +65,12 @@ public class InteractEventHandler
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
             event.getHand() == Hand.MAIN_HAND &&
-            player.getCommandSource().hasPermissionLevel(4) &&
-            ItemStack.areItemsEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+            player.createCommandSourceStack().hasPermission(4) &&
+            ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
         {
-            if (event.getWorld().isRemote == false)
+            if (event.getWorld().isClientSide == false)
             {
-                if (player.isSneaking())
+                if (player.isShiftKeyDown())
                 {
                     EntityInfo.dumpFullEntityInfoToFile(player, entity);
                 }
@@ -92,15 +92,15 @@ public class InteractEventHandler
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
             event.getHand() == Hand.MAIN_HAND &&
-            player.getCommandSource().hasPermissionLevel(4) &&
-            ItemStack.areItemsEqual(Configs.debugItemBlocks, player.getHeldItemMainhand()))
+            player.createCommandSourceStack().hasPermission(4) &&
+            ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
         {
-            if (event.getWorld().isRemote == false)
+            if (event.getWorld().isClientSide == false)
             {
                 RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids);
-                boolean adjacent = ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getHeldItemOffhand());
+                boolean adjacent = ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getOffhandItem());
                 List<String> lines = BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player, trace, adjacent, false);
-                OutputType outputType = player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE;
+                OutputType outputType = player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE;
 
                 OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, "block_info_", player);
             }
@@ -113,7 +113,7 @@ public class InteractEventHandler
     private void printItemInfo(PlayerEntity player)
     {
         // Select the slot to the right from the current slot, or the first slot if the current slot is the last slot
-        int slot = player.inventory.currentItem;
+        int slot = player.inventory.selected;
         if (slot >= 0 && slot <= 7)
         {
             slot += 1;
@@ -127,11 +127,11 @@ public class InteractEventHandler
             return;
         }
 
-        ItemStack stack = player.inventory.getStackInSlot(slot);
+        ItemStack stack = player.inventory.getItem(slot);
 
         if (stack.isEmpty() == false && stack.getItem() != null)
         {
-            ItemInfo.printItemInfo(player, stack, player.isSneaking() ? OutputType.FILE : OutputType.CONSOLE);
+            ItemInfo.printItemInfo(player, stack, player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE);
         }
     }
 }

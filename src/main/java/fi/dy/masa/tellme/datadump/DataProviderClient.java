@@ -32,13 +32,13 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class DataProviderClient extends DataProviderBase
 {
-    //private static final Field field_ClientChunkProvider_array = ObfuscationReflectionHelper.findField(ClientChunkProvider.class, "field_217256_d");
-    //private static final Field field_ChunkArray_chunks = ObfuscationReflectionHelper.findField(ClientChunkProvider.ChunkArray.class, "field_217195_b");
+    //private static final Field field_ClientChunkProvider_array = ObfuscationReflectionHelper.findField(ClientChunkProvider.class, "storage");
+    //private static final Field field_ChunkArray_chunks = ObfuscationReflectionHelper.findField(ClientChunkProvider.ChunkArray.class, "chunks");
 
     @Override
     public Collection<Chunk> getLoadedChunks(World world)
     {
-        if (world.isRemote == false)
+        if (world.isClientSide == false)
         {
             return super.getLoadedChunks(world);
         }
@@ -47,11 +47,11 @@ public class DataProviderClient extends DataProviderBase
 
         if (world instanceof ClientWorld && mc.player != null)
         {
-            ClientChunkProvider provider = ((ClientWorld) world).getChunkProvider();
-            Vector3d vec = mc.player.getPositionVec();
+            ClientChunkProvider provider = ((ClientWorld) world).getChunkSource();
+            Vector3d vec = mc.player.position();
             ChunkPos center = new ChunkPos(((int) Math.floor(vec.x)) >> 4, ((int) Math.floor(vec.z)) >> 4);
             ArrayList<Chunk> list = new ArrayList<>();
-            final int renderDistance = mc.gameSettings.renderDistanceChunks;
+            final int renderDistance = mc.options.renderDistance;
 
             for (int chunkZ = center.z - renderDistance; chunkZ <= center.z + renderDistance; ++chunkZ)
             {
@@ -97,9 +97,9 @@ public class DataProviderClient extends DataProviderBase
     {
         Minecraft mc = Minecraft.getInstance();
 
-        if (mc.isSingleplayer() && mc.player != null)
+        if (mc.hasSingleplayerServer() && mc.player != null)
         {
-            return server != null ? server.getAdvancementManager().getAllAdvancements() : null;
+            return server != null ? server.getAdvancements().getAllAdvancements() : null;
         }
         else
         {
@@ -107,7 +107,7 @@ public class DataProviderClient extends DataProviderBase
 
             if (nh != null)
             {
-                return nh.getAdvancementManager().getAdvancementList().getAll();
+                return nh.getAdvancements().getAdvancements().getAllAdvancements();
             }
         }
 
@@ -117,17 +117,17 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
     {
-        BlockPos pos = entity.getPosition();
+        BlockPos pos = entity.blockPosition();
         TextFormatting green = TextFormatting.GREEN;
 
         // These are client-side only:
         int grassColor = biome.getGrassColor(pos.getX(), pos.getZ());
-        entity.sendStatusMessage(new StringTextComponent("Grass color: ")
-                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).mergeStyle(green)), false);
+        entity.displayClientMessage(new StringTextComponent("Grass color: ")
+                    .append(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).withStyle(green)), false);
 
         int foliageColor = biome.getFoliageColor();
-        entity.sendStatusMessage(new StringTextComponent("Foliage color: ")
-                    .appendSibling(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).mergeStyle(green)), false);
+        entity.displayClientMessage(new StringTextComponent("Foliage color: ")
+                    .append(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).withStyle(green)), false);
     }
 
     @Override
@@ -152,34 +152,34 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupData(DataDump dump)
     {
-        for (ItemGroup group : ItemGroup.GROUPS)
+        for (ItemGroup group : ItemGroup.TABS)
         {
             if (group != null)
             {
-                String index = String.valueOf(group.getIndex());
-                String name = group.getPath();
-                String key = group.getGroupName().getString();
-                ItemStack stack = group.createIcon();
+                String index = String.valueOf(group.getId());
+                String name = group.getRecipeFolderName();
+                String key = group.getDisplayName().getString();
+                ItemStack stack = group.makeIcon();
 
                 if (key == null)
                 {
-                    TellMe.logger.warn("null translation key for tab at index {} (name: '{}')", group.getIndex(), name);
+                    TellMe.logger.warn("null translation key for tab at index {} (name: '{}')", group.getId(), name);
                     continue;
                 }
 
                 if (name == null)
                 {
-                    TellMe.logger.warn("null name for tab at index {} (translation key: '{}')", group.getIndex(), key);
+                    TellMe.logger.warn("null name for tab at index {} (translation key: '{}')", group.getId(), key);
                     continue;
                 }
 
                 if (stack == null)
                 {
-                    TellMe.logger.warn("null icon item for tab at index {} (name: '{}', translation key: '{}')", group.getIndex(), name, key);
+                    TellMe.logger.warn("null icon item for tab at index {} (name: '{}', translation key: '{}')", group.getId(), name, key);
                     continue;
                 }
 
-                String translatedName = I18n.format(key);
+                String translatedName = I18n.get(key);
                 String iconItem = ItemDump.getStackInfoBasic(stack);
 
                 dump.addData(index, name, translatedName, iconItem);
@@ -190,14 +190,14 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupNames(JsonObject obj, Item item)
     {
-        String[] names = new String[ItemGroup.GROUPS.length];
+        String[] names = new String[ItemGroup.TABS.length];
         int i = 0;
 
         for (ItemGroup group : item.getCreativeTabs())
         {
             if (group != null)
             {
-                names[i++] = I18n.format(group.getGroupName().getString());
+                names[i++] = I18n.get(group.getDisplayName().getString());
             }
         }
 

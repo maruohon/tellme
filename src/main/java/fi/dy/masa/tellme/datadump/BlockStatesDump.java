@@ -24,7 +24,7 @@ public class BlockStatesDump
             Block block = entry.getValue();
             List<String> lines = new ArrayList<>();
 
-            for (Entry<Property<?>, Comparable<?>> propertyComparableEntry : block.getDefaultState().getValues().entrySet())
+            for (Entry<Property<?>, Comparable<?>> propertyComparableEntry : block.defaultBlockState().getValues().entrySet())
             {
                 lines.add(propertyComparableEntry.getKey().toString());
             }
@@ -49,7 +49,7 @@ public class BlockStatesDump
             Block block = entry.getValue();
             String regName = block.getRegistryName().toString();
 
-            ImmutableList<BlockState> validStates = block.getStateContainer().getValidStates();
+            ImmutableList<BlockState> validStates = block.getStateDefinition().getPossibleStates();
 
             for (BlockState state : validStates)
             {

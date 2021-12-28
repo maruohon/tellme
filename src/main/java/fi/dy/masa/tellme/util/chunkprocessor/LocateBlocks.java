@@ -58,7 +58,7 @@ public class LocateBlocks extends LocateBase
             if (block.isPresent())
             {
                 // First get all valid states for this block
-                Collection<BlockState> states = block.get().getStateContainer().getValidStates();
+                Collection<BlockState> states = block.get().getStateDefinition().getPossibleStates();
                 // Then get the list of properties and their values in the given name (if any)
                 List<Pair<String, String>> props = BlockInfo.getProperties(str);
 
@@ -100,8 +100,8 @@ public class LocateBlocks extends LocateBase
             }
 
             ChunkPos chunkPos = chunk.getPos();
-            final String dim = WorldUtils.getDimensionId(chunk.getWorld());
-            final int topY = chunk.getTopFilledSegment() + 15;
+            final String dim = WorldUtils.getDimensionId(chunk.getLevel());
+            final int topY = chunk.getHighestSectionPosition() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
@@ -115,7 +115,7 @@ public class LocateBlocks extends LocateBase
                 {
                     for (int y = yMin; y <= yMax; ++y)
                     {
-                        pos.setPos(x, y, z);
+                        pos.set(x, y, z);
                         BlockState state = chunk.getBlockState(pos);
 
                         if (filters.contains(state))

@@ -26,12 +26,12 @@ public class TagDump
         {
             case BLOCK:
             {
-                Map<ResourceLocation, ITag<Block>> tagMap = BlockTags.getCollection().getIDTagMap();
+                Map<ResourceLocation, ITag<Block>> tagMap = BlockTags.getAllTags().getAllTags();
 
                 for (Map.Entry<ResourceLocation, ITag<Block>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;
@@ -39,12 +39,12 @@ public class TagDump
 
             case ITEM:
             {
-                Map<ResourceLocation, ITag<Item>> tagMap = ItemTags.getCollection().getIDTagMap();
+                Map<ResourceLocation, ITag<Item>> tagMap = ItemTags.getAllTags().getAllTags();
 
                 for (Map.Entry<ResourceLocation, ITag<Item>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;
@@ -52,12 +52,12 @@ public class TagDump
 
             case FLUID:
             {
-                Map<ResourceLocation, ITag<Fluid>> tagMap = FluidTags.getCollection().getIDTagMap();
+                Map<ResourceLocation, ITag<Fluid>> tagMap = FluidTags.getAllTags().getAllTags();
 
                 for (Map.Entry<ResourceLocation, ITag<Fluid>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;
@@ -65,12 +65,12 @@ public class TagDump
 
             case ENTITY_TYPE:
             {
-                Map<ResourceLocation, ITag<EntityType<?>>> tagMap = EntityTypeTags.getCollection().getIDTagMap();
+                Map<ResourceLocation, ITag<EntityType<?>>> tagMap = EntityTypeTags.getAllTags().getAllTags();
 
                 for (Map.Entry<ResourceLocation, ITag<EntityType<?>>> entry : tagMap.entrySet())
                 {
                     addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getAllElements().stream().map((b) -> b.getRegistryName().toString()), split);
+                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
                 }
 
                 break;

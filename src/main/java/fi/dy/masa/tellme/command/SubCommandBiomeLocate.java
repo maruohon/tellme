@@ -77,14 +77,14 @@ public class SubCommandBiomeLocate
                 .executes(c -> search(c.getSource(), isAppend,
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius"),
-                        Vec2Argument.getVec2f(c, "center")))
+                        Vec2Argument.getVec2(c, "center")))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> search(c.getSource(), isAppend,
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius"),
-                        Vec2Argument.getVec2f(c, "center"),
-                        DimensionArgument.getDimensionArgument(c, "dimension")))
+                        Vec2Argument.getVec2(c, "center"),
+                        DimensionArgument.getDimension(c, "dimension")))
                 .build();
 
         actionNodeSearch.addChild(argSampleInterval);
@@ -112,7 +112,7 @@ public class SubCommandBiomeLocate
     private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
-        Vector2f center = entity != null ? new Vector2f((float) entity.getPosX(), (float) entity.getPosZ()) : Vector2f.ZERO;
+        Vector2f center = entity != null ? new Vector2f((float) entity.getX(), (float) entity.getZ()) : Vector2f.ZERO;
         return search(source, append, sampleInterval, sampleRadius, center);
     }
 
@@ -125,7 +125,7 @@ public class SubCommandBiomeLocate
             throw CommandUtils.NO_DIMENSION_EXCEPTION.create();
         }
 
-        return search(source, append, sampleInterval, sampleRadius, center, entity.getEntityWorld());
+        return search(source, append, sampleInterval, sampleRadius, center, entity.getCommandSenderWorld());
     }
 
     private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vector2f center, World world)
@@ -161,12 +161,12 @@ public class SubCommandBiomeLocate
         {
             if (consoleBiomeLocator == null)
             {
-                consoleBiomeLocator = new BiomeLocator(source.func_241861_q().getRegistry(Registry.BIOME_KEY));
+                consoleBiomeLocator = new BiomeLocator(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
             }
 
             return consoleBiomeLocator;
         }
 
-        return BIOME_LOCATORS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeLocator(source.func_241861_q().getRegistry(Registry.BIOME_KEY)));
+        return BIOME_LOCATORS.computeIfAbsent(entity.getUUID(), (e) -> new BiomeLocator(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)));
     }
 }

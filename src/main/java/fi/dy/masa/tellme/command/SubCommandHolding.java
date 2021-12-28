@@ -42,7 +42,7 @@ public class SubCommandHolding
 
     private static void handleHeldObject(PlayerEntity player, OutputType outputType)
     {
-        ItemStack stack = player.getHeldItemMainhand();
+        ItemStack stack = player.getMainHandItem();
 
         if (stack.isEmpty() == false)
         {

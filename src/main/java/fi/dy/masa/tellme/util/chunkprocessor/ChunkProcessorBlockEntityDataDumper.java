@@ -54,7 +54,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
     @Override
     public void processChunk(Chunk chunk)
     {
-        Map<BlockPos, TileEntity> blockEntities = chunk.getTileEntityMap();
+        Map<BlockPos, TileEntity> blockEntities = chunk.getBlockEntities();
         Set<TileEntityType<?>> filters = this.filters;
         boolean noFilters = filters.isEmpty();
         Vector3d min = this.minPos;
@@ -77,7 +77,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
                 if (id != null)
                 {
-                    BlockPos pos = be.getPos();
+                    BlockPos pos = be.getBlockPos();
 
                     if (hasBox &&
                         (pos.getX() < minX ||
@@ -92,7 +92,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
                     try
                     {
-                        CompoundNBT tag = be.write(new CompoundNBT());
+                        CompoundNBT tag = be.save(new CompoundNBT());
                         this.data.add(new BlockEntityDataEntry(pos, id.toString(), tag.toString()));
                     }
                     catch (Exception e)

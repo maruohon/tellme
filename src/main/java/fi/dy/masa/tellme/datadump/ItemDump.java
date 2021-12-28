@@ -86,9 +86,9 @@ public class ItemDump
 
             for (IRecipe<?> recipe : manager.getRecipes())
             {
-                ItemStack stack = recipe.getRecipeOutput();
+                ItemStack stack = recipe.getResultItem();
 
-                if (stack.isEmpty() == false && recipe.canFit(3, 3))
+                if (stack.isEmpty() == false && recipe.canCraftInDimensions(3, 3))
                 {
                     provider.addLine(dump, stack, recipe.getId());
                 }
@@ -112,8 +112,8 @@ public class ItemDump
         {
             ResourceLocation rl = stack.getItem().getRegistryName();
             String regName = rl != null ? rl.toString() : "<null>";
-            String displayName = stack.getDisplayName().getString();
-            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+            String displayName = stack.getHoverName().getString();
+            displayName = TextFormatting.stripFormatting(displayName);
 
             return String.format("[%s - '%s']", regName, displayName);
         }
@@ -127,8 +127,8 @@ public class ItemDump
         {
             ResourceLocation rl = stack.getItem().getRegistryName();
             String regName = rl != null ? rl.toString() : "<null>";
-            String displayName = stack.getDisplayName().getString();
-            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+            String displayName = stack.getHoverName().getString();
+            displayName = TextFormatting.stripFormatting(displayName);
             String nbt = stack.getTag() != null ? stack.getTag().toString() : "<no NBT>";
 
             return String.format("[%s - '%s' - %s]", regName, displayName, nbt);
@@ -177,15 +177,15 @@ public class ItemDump
 
     private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, ResourceLocation rl, PlayerEntity player)
     {
-        int id = Item.getIdFromItem(item);
+        int id = Item.getId(item);
         ItemStack stack = new ItemStack(item);
         int maxDamage = stack.getMaxDamage();
         String idStr = String.valueOf(id);
         String exists = RegistryUtils.isDummied(ForgeRegistries.ITEMS, rl) ? "false" : "true";
         String tags = getTagNamesJoined(item);
         String regName = rl != null ? rl.toString() : "<null>";
-        String displayName = stack.getDisplayName().getString();
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+        String displayName = stack.getHoverName().getString();
+        displayName = TextFormatting.stripFormatting(displayName);
 
         JsonObject obj = new JsonObject();
         obj.add("RegistryName", new JsonPrimitive(regName));
@@ -206,11 +206,11 @@ public class ItemDump
         {
             try
             {
-                World world = player.getEntityWorld();
+                World world = player.getCommandSenderWorld();
                 BlockPos pos = BlockPos.ZERO;
                 Block block = ((BlockItem) item).getBlock();
-                BlockState state = block.getDefaultState();
-                String hardness = String.format("%.2f", block.getDefaultState().getBlockHardness(null, BlockPos.ZERO));
+                BlockState state = block.defaultBlockState();
+                String hardness = String.format("%.2f", block.defaultBlockState().getDestroySpeed(null, BlockPos.ZERO));
                 @SuppressWarnings("deprecation")
                 String resistance = String.format("%.2f", block.getExplosionResistance());
                 String tool = block.getHarvestTool(state).getName();
@@ -218,10 +218,10 @@ public class ItemDump
                 String harvestLevelName = (harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length) ? HARVEST_LEVEL_NAMES[harvestLevel] : "Unknown";
                 boolean fallingBlock = block instanceof FallingBlock;
                 @SuppressWarnings("deprecation")
-                int light = state.getLightValue();
+                int light = state.getLightEmission();
                 // Ugly way to try to get the flammability...
                 boolean flammable = block.getFlammability(state, world, pos, Direction.UP) > 0;//Blocks.FIRE.getFlammability(block) > 0;
-                int opacity = state.getOpacity(world, pos);
+                int opacity = state.getLightBlock(world, pos);
 
                 obj.add("Type", new JsonPrimitive("block"));
                 obj.add("Hardness", new JsonPrimitive(hardness));
@@ -236,11 +236,11 @@ public class ItemDump
             }
             catch (Exception ignored) {}
         }
-        else if (item.isFood())
+        else if (item.isEdible())
         {
-            Food food = item.getFood();
-            String hunger = stack.isEmpty() == false ? String.valueOf(food.getHealing()) : "?";
-            String saturation = stack.isEmpty() == false ? String.valueOf(food.getSaturation()) : "?";
+            Food food = item.getFoodProperties();
+            String hunger = stack.isEmpty() == false ? String.valueOf(food.getNutrition()) : "?";
+            String saturation = stack.isEmpty() == false ? String.valueOf(food.getSaturationModifier()) : "?";
 
             obj.add("Type", new JsonPrimitive("food"));
             obj.add("Hunger", new JsonPrimitive(hunger));
@@ -278,7 +278,7 @@ public class ItemDump
                 {
                     JsonObject o1 = new JsonObject();
                     JsonObject o2 = new JsonObject();
-                    o1.add("Type", new JsonPrimitive(entry.getKey().getAttributeName()));
+                    o1.add("Type", new JsonPrimitive(entry.getKey().getDescriptionId()));
                     o1.add("Value", o2);
 
                     AttributeModifier att = entry.getValue();
@@ -302,7 +302,7 @@ public class ItemDump
     {
         protected String getItemId(ItemStack stack)
         {
-            return String.valueOf(Item.getIdFromItem(stack.getItem()));
+            return String.valueOf(Item.getId(stack.getItem()));
         }
 
         protected String getModName(ResourceLocation rl)
@@ -317,7 +317,7 @@ public class ItemDump
 
         protected String getDisplayName(ItemStack stack)
         {
-            return stack.isEmpty() == false ? stack.getDisplayName().getString() : DataDump.EMPTY_STRING;
+            return stack.isEmpty() == false ? stack.getHoverName().getString() : DataDump.EMPTY_STRING;
         }
 
         protected String getNBTString(ItemStack stack)
@@ -526,7 +526,7 @@ public class ItemDump
         @Override
         public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
         {
-            if (stack.getItem().isDamageable())
+            if (stack.getItem().canBeDepleted())
             {
                 dump.addData(this.getModName(id),
                              this.getRegistryName(id),

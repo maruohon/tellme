@@ -41,7 +41,7 @@ public class NbtStringifierSimple extends NbtStringifierBase
     @Override
     protected void appendCompound(String tagName, CompoundNBT tag)
     {
-        List<String> keys = Lists.newArrayList(tag.keySet());
+        List<String> keys = Lists.newArrayList(tag.getAllKeys());
         Collections.sort(keys);
         boolean first = true;
 

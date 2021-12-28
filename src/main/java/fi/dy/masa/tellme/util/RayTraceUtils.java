@@ -34,22 +34,22 @@ public class RayTraceUtils
     @Nonnull
     public static RayTraceResult getRayTraceFromEntity(World worldIn, Entity entityIn, boolean useLiquids, double range)
     {
-        Vector3d eyesVec = new Vector3d(entityIn.getPosX(), entityIn.getPosY() + entityIn.getEyeHeight(), entityIn.getPosZ());
-        Vector3d rangedLookRot = entityIn.getLook(1f).scale(range);
+        Vector3d eyesVec = new Vector3d(entityIn.getX(), entityIn.getY() + entityIn.getEyeHeight(), entityIn.getZ());
+        Vector3d rangedLookRot = entityIn.getViewVector(1f).scale(range);
         Vector3d lookVec = eyesVec.add(rangedLookRot);
 
         RayTraceContext ctx = new RayTraceContext(eyesVec, lookVec, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.ANY, entityIn);
-        RayTraceResult result = worldIn.rayTraceBlocks(ctx);
+        RayTraceResult result = worldIn.clip(ctx);
 
         if (result == null)
         {
-            result = BlockRayTraceResult.createMiss(Vector3d.ZERO, Direction.UP, BlockPos.ZERO);
+            result = BlockRayTraceResult.miss(Vector3d.ZERO, Direction.UP, BlockPos.ZERO);
         }
 
-        AxisAlignedBB bb = entityIn.getBoundingBox().expand(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expand(1d, 1d, 1d);
-        List<Entity> list = worldIn.getEntitiesWithinAABBExcludingEntity(entityIn, bb);
+        AxisAlignedBB bb = entityIn.getBoundingBox().expandTowards(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expandTowards(1d, 1d, 1d);
+        List<Entity> list = worldIn.getEntities(entityIn, bb);
 
-        double closest = result.getType() == RayTraceResult.Type.BLOCK ? eyesVec.distanceTo(result.getHitVec()) : Double.MAX_VALUE;
+        double closest = result.getType() == RayTraceResult.Type.BLOCK ? eyesVec.distanceTo(result.getLocation()) : Double.MAX_VALUE;
         Vector3d entityTraceHitPos = null;
         Entity targetEntity = null;
 
@@ -57,7 +57,7 @@ public class RayTraceUtils
         {
             Entity entity = list.get(i);
             bb = entity.getBoundingBox();
-            Optional<Vector3d> optional = bb.rayTrace(eyesVec, lookVec);
+            Optional<Vector3d> optional = bb.clip(eyesVec, lookVec);
 
             if (optional.isPresent())
             {

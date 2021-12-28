@@ -89,11 +89,11 @@ public class SubCommandLoaded
                           CommandUtils::getWorldFromCommandSource))
                 .build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> listLoadedChunksAll(c.getSource(),
                           c.getArgument("output_type", OutputType.class),
                           c.getArgument("output_format", DataDump.Format.class),
-                          (s) -> DimensionArgument.getDimensionArgument(c, "dimension")))
+                          (s) -> DimensionArgument.getDimension(c, "dimension")))
                 .build();
 
         argAreaTypeAll.addChild(argOutputType);
@@ -111,8 +111,8 @@ public class SubCommandLoaded
 
         ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
                 .executes(c -> listLoadedChunksInArea(c.getSource(),
-                          Vec2Argument.getVec2f(c, "start_corner"),
-                          Vec2Argument.getVec2f(c, "end_corner"),
+                          Vec2Argument.getVec2(c, "start_corner"),
+                          Vec2Argument.getVec2(c, "end_corner"),
                           c.getArgument("output_type", OutputType.class),
                           DataDump.Format.ASCII,
                           CommandUtils::getWorldFromCommandSource))
@@ -120,20 +120,20 @@ public class SubCommandLoaded
 
         ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
                 .executes(c -> listLoadedChunksInArea(c.getSource(),
-                          Vec2Argument.getVec2f(c, "start_corner"),
-                          Vec2Argument.getVec2f(c, "end_corner"),
+                          Vec2Argument.getVec2(c, "start_corner"),
+                          Vec2Argument.getVec2(c, "end_corner"),
                           c.getArgument("output_type", OutputType.class),
                           c.getArgument("output_format", DataDump.Format.class),
                           CommandUtils::getWorldFromCommandSource))
                 .build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> listLoadedChunksInArea(c.getSource(),
-                          Vec2Argument.getVec2f(c, "start_corner"),
-                          Vec2Argument.getVec2f(c, "end_corner"),
+                          Vec2Argument.getVec2(c, "start_corner"),
+                          Vec2Argument.getVec2(c, "end_corner"),
                           c.getArgument("output_type", OutputType.class),
                           c.getArgument("output_format", DataDump.Format.class),
-                          (s) -> DimensionArgument.getDimensionArgument(c, "dimension")))
+                          (s) -> DimensionArgument.getDimension(c, "dimension")))
                 .build();
 
         argAreaTypeInArea.addChild(argStartCorner);
@@ -182,8 +182,8 @@ public class SubCommandLoaded
         LiteralCommandNode<CommandSource> argAreaTypeAll = Commands.literal(AreaType.ALL_LOADED.getArgument())
                 .executes(c -> listLoadedEntities(target, AreaType.ALL_LOADED, c, CommandUtils::getWorldFromCommandSource)).build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionAll = Commands.argument("dimension", DimensionArgument.getDimension())
-                .executes(c -> listLoadedEntities(target, AreaType.ALL_LOADED, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"))).build();
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionAll = Commands.argument("dimension", DimensionArgument.dimension())
+                .executes(c -> listLoadedEntities(target, AreaType.ALL_LOADED, c, (s) -> DimensionArgument.getDimension(c, "dimension"))).build();
 
         // in-area
         LiteralCommandNode<CommandSource> argAreaTypeInArea = Commands.literal(AreaType.AREA.getArgument())
@@ -193,8 +193,8 @@ public class SubCommandLoaded
         ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec2Argument.vec2())
                 .executes(c -> listLoadedEntities(target, AreaType.AREA, c, CommandUtils::getWorldFromCommandSource)).build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInArea = Commands.argument("dimension", DimensionArgument.getDimension())
-                .executes(c -> listLoadedEntities(target, AreaType.AREA, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"))).build();
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInArea = Commands.argument("dimension", DimensionArgument.dimension())
+                .executes(c -> listLoadedEntities(target, AreaType.AREA, c, (s) -> DimensionArgument.getDimension(c, "dimension"))).build();
 
         // in-chunk
         LiteralCommandNode<CommandSource> argAreaTypeInChunk = Commands.literal(AreaType.CHUNK.getArgument())
@@ -203,8 +203,8 @@ public class SubCommandLoaded
         ArgumentCommandNode<CommandSource, ILocationArgument> argChunkCoords = Commands.argument("chunk", Vec2Argument.vec2())
                 .executes(c -> listLoadedEntities(target, AreaType.CHUNK, c, CommandUtils::getWorldFromCommandSource)).build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInChunk = Commands.argument("dimension", DimensionArgument.getDimension())
-                .executes(c -> listLoadedEntities(target, AreaType.CHUNK, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"))).build();
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInChunk = Commands.argument("dimension", DimensionArgument.dimension())
+                .executes(c -> listLoadedEntities(target, AreaType.CHUNK, c, (s) -> DimensionArgument.getDimension(c, "dimension"))).build();
 
         argEntityType.addChild(argGrouping);
         argGrouping.addChild(argOutputType);

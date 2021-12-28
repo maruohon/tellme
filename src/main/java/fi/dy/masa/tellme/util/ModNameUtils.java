@@ -22,7 +22,7 @@ public class ModNameUtils
         {
             for (ModInfo modInfo : ModList.get().getMods())
             {
-                String modName = TextFormatting.getTextWithoutFormattingCodes(modInfo.getDisplayName());
+                String modName = TextFormatting.stripFormatting(modInfo.getDisplayName());
                 MOD_IDS_TO_NAMES.put(modInfo.getModId(), modName);
             }
         }

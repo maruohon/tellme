@@ -53,7 +53,7 @@ public class SubCommandLookingAt
 
     private static void handleLookedAtObject(PlayerEntity player, OutputType outputType, boolean adjacent)
     {
-        World world = player.getEntityWorld();
+        World world = player.getCommandSenderWorld();
         RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(world, player, true, 10d);
         List<String> lines = null;
         String fileName = "looking_at_";
@@ -75,7 +75,7 @@ public class SubCommandLookingAt
         }
         else
         {
-            player.sendStatusMessage(new StringTextComponent("Not currently looking at anything within range"), false);
+            player.displayClientMessage(new StringTextComponent("Not currently looking at anything within range"), false);
         }
     }
 }

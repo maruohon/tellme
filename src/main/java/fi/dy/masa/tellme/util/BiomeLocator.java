@@ -104,15 +104,15 @@ public class BiomeLocator
 
     private boolean samplePosition(int x, int z, int totalBiomes, BiomeManager biomeManager)
     {
-        this.posMutable.setPos(x, 0, z);
+        this.posMutable.set(x, 0, z);
         Biome biome = biomeManager.getBiome(this.posMutable);
         this.count++;
 
         BlockPos oldPos = this.biomePositions.get(biome);
 
-        if (oldPos == null || oldPos.distanceSq(this.center) > this.posMutable.distanceSq(this.center))
+        if (oldPos == null || oldPos.distSqr(this.center) > this.posMutable.distSqr(this.center))
         {
-            this.biomePositions.put(biome, this.posMutable.toImmutable());
+            this.biomePositions.put(biome, this.posMutable.immutable());
 
             return this.biomePositions.size() >= totalBiomes;
         }

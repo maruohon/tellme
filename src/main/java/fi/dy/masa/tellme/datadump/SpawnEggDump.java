@@ -18,15 +18,15 @@ public class SpawnEggDump
 
         try
         {
-            fieldPrimaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "field_195988_c");
-            fieldSecondaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "field_195989_d");
+            fieldPrimaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "color1");
+            fieldSecondaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "color2");
         }
         catch (Exception e)
         {
             TellMe.logger.warn("Exception while reflecting spawn egg color fields", e);
         }
 
-        for (SpawnEggItem egg : SpawnEggItem.getEggs())
+        for (SpawnEggItem egg : SpawnEggItem.eggs())
         {
             try
             {

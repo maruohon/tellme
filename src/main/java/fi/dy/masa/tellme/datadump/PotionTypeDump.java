@@ -40,16 +40,16 @@ public class PotionTypeDump
 
     public static String getEffectInfo(Effect effect)
     {
-        String isBad = String.valueOf(effect.getEffectType() == EffectType.HARMFUL);
+        String isBad = String.valueOf(effect.getCategory() == EffectType.HARMFUL);
         String isBeneficial = String.valueOf(effect.isBeneficial());
 
-        return "Potion:[reg:" + effect.getRegistryName().toString() + ",name:" + effect.getName() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
+        return "Potion:[reg:" + effect.getRegistryName().toString() + ",name:" + effect.getDescriptionId() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
     }
 
     public static String getPotionEffectInfo(EffectInstance effect)
     {
         return String.format("PotionEffect:{%s,amplifier:%d,duration:%d,isAmbient:%s}",
-                getEffectInfo(effect.getPotion()),
+                getEffectInfo(effect.getEffect()),
                 effect.getAmplifier(),
                 effect.getDuration(),
                 effect.isAmbient());

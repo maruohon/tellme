@@ -72,13 +72,13 @@ public abstract class NbtStringifierBase
     {
         switch (tag.getId())
         {
-            case Constants.NBT.TAG_BYTE:    return String.valueOf(((ByteNBT) tag).getByte());
-            case Constants.NBT.TAG_SHORT:   return String.valueOf(((ShortNBT) tag).getShort());
-            case Constants.NBT.TAG_INT:     return String.valueOf(((IntNBT) tag).getInt());
-            case Constants.NBT.TAG_LONG:    return String.valueOf(((LongNBT) tag).getLong());
-            case Constants.NBT.TAG_FLOAT:   return String.valueOf(((FloatNBT) tag).getFloat());
-            case Constants.NBT.TAG_DOUBLE:  return String.valueOf(((DoubleNBT) tag).getDouble());
-            case Constants.NBT.TAG_STRING:  return ((StringNBT) tag).getString();
+            case Constants.NBT.TAG_BYTE:    return String.valueOf(((ByteNBT) tag).getAsByte());
+            case Constants.NBT.TAG_SHORT:   return String.valueOf(((ShortNBT) tag).getAsShort());
+            case Constants.NBT.TAG_INT:     return String.valueOf(((IntNBT) tag).getAsInt());
+            case Constants.NBT.TAG_LONG:    return String.valueOf(((LongNBT) tag).getAsLong());
+            case Constants.NBT.TAG_FLOAT:   return String.valueOf(((FloatNBT) tag).getAsFloat());
+            case Constants.NBT.TAG_DOUBLE:  return String.valueOf(((DoubleNBT) tag).getAsDouble());
+            case Constants.NBT.TAG_STRING:  return ((StringNBT) tag).getAsString();
         }
 
         return null;
@@ -186,11 +186,11 @@ public abstract class NbtStringifierBase
                 break;
 
             case Constants.NBT.TAG_BYTE_ARRAY:
-                this.appendByteArray(tagName, ((ByteArrayNBT) tag).getByteArray());
+                this.appendByteArray(tagName, ((ByteArrayNBT) tag).getAsByteArray());
                 break;
 
             case Constants.NBT.TAG_INT_ARRAY:
-                this.appendIntArray(tagName, ((IntArrayNBT) tag).getIntArray());
+                this.appendIntArray(tagName, ((IntArrayNBT) tag).getAsIntArray());
                 break;
 
             case Constants.NBT.TAG_LONG_ARRAY:

@@ -37,11 +37,11 @@ public class SubCommandCopyToClipboard
         if (entity instanceof ServerPlayerEntity)
         {
             PacketHandler.INSTANCE.sendTo(new MessageCopyToClipboard(message.getString()),
-                    ((ServerPlayerEntity) entity).connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+                    ((ServerPlayerEntity) entity).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
         }
         else
         {
-            source.sendFeedback(new StringTextComponent("'/tellme copy-to-clipboard' can only be run by a player"), false);
+            source.sendSuccess(new StringTextComponent("'/tellme copy-to-clipboard' can only be run by a player"), false);
             return -1;
         }
 

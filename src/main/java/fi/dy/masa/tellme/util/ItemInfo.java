@@ -23,7 +23,7 @@ public class ItemInfo
             return stack1.isEmpty() == stack2.isEmpty();
         }
 
-        return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
+        return stack1.sameItem(stack2) && ItemStack.tagMatches(stack1, stack2);
     }
 
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)
@@ -61,7 +61,7 @@ public class ItemInfo
 
     public static void printBasicItemInfoToChat(PlayerEntity entity, @Nonnull ItemStack stack)
     {
-        entity.sendStatusMessage(ItemData.getFor(stack).toChatMessage(), false);
+        entity.displayClientMessage(ItemData.getFor(stack).toChatMessage(), false);
     }
 
     public static void printItemInfo(PlayerEntity entity, @Nonnull ItemStack stack, OutputType outputType)
@@ -72,7 +72,7 @@ public class ItemInfo
 
         if (outputType == OutputType.CHAT && stack.hasTag())
         {
-            entity.sendStatusMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""), false);
+            entity.displayClientMessage(OutputUtils.getClipboardCopiableMessage("", stack.getTag().toString(), ""), false);
             lines = getPrettyNbtForChat(stack);
         }
         else
@@ -112,7 +112,7 @@ public class ItemInfo
                 nbtInfo = "no NBT data";
             }
 
-            return new ItemData(stack.getDisplayName().getString(), registryName, Item.getIdFromItem(stack.getItem()), nbtInfo);
+            return new ItemData(stack.getHoverName().getString(), registryName, Item.getId(stack.getItem()), nbtInfo);
         }
 
         public ITextComponent toChatMessage()

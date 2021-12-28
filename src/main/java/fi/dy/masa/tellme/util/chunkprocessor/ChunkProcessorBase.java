@@ -58,7 +58,7 @@ public abstract class ChunkProcessorBase
 
     public void processChunksInArea(World world, ChunkPos pos1, ChunkPos pos2)
     {
-        AbstractChunkProvider provider = world.getChunkProvider();
+        AbstractChunkProvider provider = world.getChunkSource();
         final int minCX = Math.min(pos1.x, pos2.x);
         final int minCZ = Math.min(pos1.z, pos2.z);
         final int maxCX = Math.max(pos1.x, pos2.x);

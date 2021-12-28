@@ -139,9 +139,9 @@ public class SubCommandBlockStats
                 .executes(c -> countBlocksLoadedChunks(c.getSource(),
                                                        CommandUtils::getWorldFromCommandSource, isAppend)).build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBlocksLoadedChunks(c.getSource(),
-                          (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                          (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argDimension);
@@ -156,15 +156,15 @@ public class SubCommandBlockStats
         ArgumentCommandNode<CommandSource, ILocationArgument> argStartCorner = Commands.argument("start_corner", Vec2Argument.vec2()).build();
         ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec2Argument.vec2())
                 .executes(c -> countBlocksArea(c.getSource(),
-                        Vec2Argument.getVec2f(c, "start_corner"),
-                        Vec2Argument.getVec2f(c, "end_corner"),
+                        Vec2Argument.getVec2(c, "start_corner"),
+                        Vec2Argument.getVec2(c, "end_corner"),
                         CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBlocksArea(c.getSource(),
-                        Vec2Argument.getVec2f(c, "start_corner"),
-                        Vec2Argument.getVec2f(c, "end_corner"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                        Vec2Argument.getVec2(c, "start_corner"),
+                        Vec2Argument.getVec2(c, "end_corner"),
+                        (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argStartCorner);
@@ -186,11 +186,11 @@ public class SubCommandBlockStats
                         CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBlocksBox(c.getSource(),
                         Vec3Argument.getVec3(c, "start_corner"),
                         Vec3Argument.getVec3(c, "end_corner"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                        (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argStartCorner);
@@ -216,11 +216,11 @@ public class SubCommandBlockStats
                         CommandUtils.getVec3dFromArg(c, "center"),
                         CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBlocksRange(c.getSource(),
                         IntegerArgumentType.getInteger(c, "block_range"),
                         CommandUtils.getVec3dFromArg(c, "center"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                        (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argChunkBlockRange);
@@ -338,6 +338,6 @@ public class SubCommandBlockStats
             return CONSOLE_BLOCK_STATS;
         }
 
-        return BLOCK_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BlockStats());
+        return BLOCK_STATS.computeIfAbsent(entity.getUUID(), (e) -> new BlockStats());
     }
 }

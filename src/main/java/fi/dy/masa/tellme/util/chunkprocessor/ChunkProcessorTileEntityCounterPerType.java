@@ -28,7 +28,7 @@ public class ChunkProcessorTileEntityCounterPerType extends ChunkProcessorBase
     @Override
     public void processChunk(Chunk chunk)
     {
-        Map<BlockPos, TileEntity> map = chunk.getTileEntityMap();
+        Map<BlockPos, TileEntity> map = chunk.getBlockEntities();
         final int total = map.size();
 
         if (total > 0)

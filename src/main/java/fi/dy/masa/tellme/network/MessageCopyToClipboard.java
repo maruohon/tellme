@@ -14,7 +14,7 @@ public class MessageCopyToClipboard
 
     public MessageCopyToClipboard(PacketBuffer buf)
     {
-        this.str = buf.readString();
+        this.str = buf.readUtf();
     }
 
     public MessageCopyToClipboard(String str)
@@ -24,7 +24,7 @@ public class MessageCopyToClipboard
 
     public void toBytes(PacketBuffer buf)
     {
-        buf.writeString(this.str);
+        buf.writeUtf(this.str);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctxSupplier)
@@ -47,11 +47,11 @@ public class MessageCopyToClipboard
             }
 
             mc.execute(() -> {
-                Minecraft.getInstance().keyboardListener.setClipboardString(this.str);
+                Minecraft.getInstance().keyboardHandler.setClipboard(this.str);
 
                 if (mc.player != null)
                 {
-                    mc.player.sendStatusMessage(new StringTextComponent("Copied " + this.str), true);
+                    mc.player.displayClientMessage(new StringTextComponent("Copied " + this.str), true);
                 }
             });
 

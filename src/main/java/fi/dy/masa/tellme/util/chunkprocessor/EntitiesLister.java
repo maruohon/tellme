@@ -29,7 +29,7 @@ public class EntitiesLister extends ChunkProcessorBase
     @Override
     public void processChunk(Chunk chunk)
     {
-        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
+        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
         int total = 0;
 
         for (int i = 0; i < entityLists.length; i++)
@@ -38,9 +38,9 @@ public class EntitiesLister extends ChunkProcessorBase
 
             for (Entity entity : map)
             {
-                double x = entity.getPosX();
-                double y = entity.getPosY();
-                double z = entity.getPosZ();
+                double x = entity.getX();
+                double y = entity.getY();
+                double z = entity.getZ();
                 int ix = (int) Math.floor(x);
                 int iz = (int) Math.floor(z);
 

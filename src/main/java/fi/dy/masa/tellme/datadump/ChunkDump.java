@@ -34,7 +34,7 @@ public class ChunkDump
             }
             else
             {
-                for (World world : server.getWorlds())
+                for (World world : server.getAllLevels())
                 {
                     worlds.add(world);
                 }
@@ -65,9 +65,9 @@ public class ChunkDump
                         ++chunkCount;
                         int count = 0;
 
-                        for (int l = 0; l < chunk.getEntityLists().length; l++)
+                        for (int l = 0; l < chunk.getEntitySections().length; l++)
                         {
-                            count += chunk.getEntityLists()[l].size();
+                            count += chunk.getEntitySections()[l].size();
                         }
 
                         String entityCount = String.valueOf(count);

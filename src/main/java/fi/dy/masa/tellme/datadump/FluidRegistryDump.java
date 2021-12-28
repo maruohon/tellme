@@ -30,7 +30,7 @@ public class FluidRegistryDump
             String luminosity = String.valueOf(attr.getLuminosity());
             String isGaseous = String.valueOf(attr.isGaseous());
             String rarity = attr.getRarity().toString();
-            BlockState blockState = fluid.getDefaultState().getBlockState();
+            BlockState blockState = fluid.defaultFluidState().createLegacyBlock();
             Block block = blockState.getBlock();
             String blockName = block != null && block != Blocks.AIR && block.getRegistryName() != null ? block.getRegistryName().toString() : "-";
 

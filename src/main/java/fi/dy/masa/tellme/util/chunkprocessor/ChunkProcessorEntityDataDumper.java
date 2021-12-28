@@ -52,7 +52,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
     @Override
     public void processChunk(Chunk chunk)
     {
-        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
+        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
         Set<EntityType<?>> filters = this.filters;
         boolean noFilters = filters.isEmpty();
         Vector3d min = this.minPos;
@@ -69,7 +69,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
         {
             for (Entity entity : entityList)
             {
-                Vector3d pos = entity.getPositionVec();
+                Vector3d pos = entity.position();
 
                 if (hasBox &&
                     (pos.x < minX ||
@@ -90,7 +90,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
                     ResourceLocation id = Registry.ENTITY_TYPE.getKey(type);
                     CompoundNBT tag = new CompoundNBT();
 
-                    if (entity.writeUnlessRemoved(tag))
+                    if (entity.saveAsPassenger(tag))
                     {
                         this.data.add(new EntityDataEntry(pos, id.toString(), tag.toString()));
                     }

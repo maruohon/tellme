@@ -67,8 +67,8 @@ public class SubCommandEntityData
         LiteralCommandNode<CommandSource> argAreaTypeAll = Commands.literal(AreaType.ALL_LOADED.getArgument())
                 .executes(c -> dumpEntityData(target, AreaType.ALL_LOADED, c, CommandUtils::getWorldFromCommandSource)).build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionAll = Commands.argument("dimension", DimensionArgument.getDimension())
-                .executes(c -> dumpEntityData(target, AreaType.ALL_LOADED, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"))).build();
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionAll = Commands.argument("dimension", DimensionArgument.dimension())
+                .executes(c -> dumpEntityData(target, AreaType.ALL_LOADED, c, (s) -> DimensionArgument.getDimension(c, "dimension"))).build();
 
         // in-box
         LiteralCommandNode<CommandSource> argAreaTypeInArea = Commands.literal("box")
@@ -78,8 +78,8 @@ public class SubCommandEntityData
         ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec3Argument.vec3())
                 .executes(c -> dumpEntityData(target, AreaType.AREA, c, CommandUtils::getWorldFromCommandSource)).build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInArea = Commands.argument("dimension", DimensionArgument.getDimension())
-                .executes(c -> dumpEntityData(target, AreaType.AREA, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"))).build();
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInArea = Commands.argument("dimension", DimensionArgument.dimension())
+                .executes(c -> dumpEntityData(target, AreaType.AREA, c, (s) -> DimensionArgument.getDimension(c, "dimension"))).build();
 
         // in-chunk
         LiteralCommandNode<CommandSource> argAreaTypeInChunk = Commands.literal(AreaType.CHUNK.getArgument())
@@ -88,20 +88,20 @@ public class SubCommandEntityData
         ArgumentCommandNode<CommandSource, ILocationArgument> argChunkCoords = Commands.argument("chunk", Vec2Argument.vec2())
                 .executes(c -> dumpEntityData(target, AreaType.CHUNK, c, CommandUtils::getWorldFromCommandSource)).build();
 
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInChunk = Commands.argument("dimension", DimensionArgument.getDimension())
-                .executes(c -> dumpEntityData(target, AreaType.CHUNK, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"))).build();
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimensionInChunk = Commands.argument("dimension", DimensionArgument.dimension())
+                .executes(c -> dumpEntityData(target, AreaType.CHUNK, c, (s) -> DimensionArgument.getDimension(c, "dimension"))).build();
 
         ArgumentCommandNode<CommandSource, List<String>> argNamesAll = Commands.argument("filters",
                 StringCollectionArgument.create(() -> target.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
-                .executes(c -> dumpEntityData(target, AreaType.ALL_LOADED, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), c.getArgument("filters", List.class))).build();
+                .executes(c -> dumpEntityData(target, AreaType.ALL_LOADED, c, (s) -> DimensionArgument.getDimension(c, "dimension"), c.getArgument("filters", List.class))).build();
 
         ArgumentCommandNode<CommandSource, List<String>> argNamesBox = Commands.argument("filters",
                 StringCollectionArgument.create(() -> target.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
-                .executes(c -> dumpEntityData(target, AreaType.AREA, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), c.getArgument("filters", List.class))).build();
+                .executes(c -> dumpEntityData(target, AreaType.AREA, c, (s) -> DimensionArgument.getDimension(c, "dimension"), c.getArgument("filters", List.class))).build();
 
         ArgumentCommandNode<CommandSource, List<String>> argNamesChunk = Commands.argument("filters",
                 StringCollectionArgument.create(() -> target.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
-                .executes(c -> dumpEntityData(target, AreaType.CHUNK, c, (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), c.getArgument("filters", List.class))).build();
+                .executes(c -> dumpEntityData(target, AreaType.CHUNK, c, (s) -> DimensionArgument.getDimension(c, "dimension"), c.getArgument("filters", List.class))).build();
 
         argEntityType.addChild(argOutputType);
         argOutputType.addChild(argOutputFormat);

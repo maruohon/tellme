@@ -80,8 +80,8 @@ public class LocateBlockEntities extends LocateBase
             }
 
             ChunkPos chunkPos = chunk.getPos();
-            final String dim = WorldUtils.getDimensionId(chunk.getWorld());
-            final int topY = chunk.getTopFilledSegment() + 15;
+            final String dim = WorldUtils.getDimensionId(chunk.getLevel());
+            final int topY = chunk.getHighestSectionPosition() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
@@ -90,13 +90,13 @@ public class LocateBlockEntities extends LocateBase
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
             MutableBoundingBox box = MutableBoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
 
-            for (TileEntity te : chunk.getTileEntityMap().values())
+            for (TileEntity te : chunk.getBlockEntities().values())
             {
-                BlockPos pos = te.getPos();
+                BlockPos pos = te.getBlockPos();
                 TileEntityType<?> type = te.getType();
                 //System.out.printf("plop @ %s - box: %s\n", pos, box);
 
-                if (filters.contains(type) && box.isVecInside(pos))
+                if (filters.contains(type) && box.isInside(pos))
                 {
                     String name = BlockInfo.getBlockEntityNameFor(type);
                     this.data.add(LocationData.of(name, dim, new Vector3d(pos.getX(), pos.getY(), pos.getZ())));

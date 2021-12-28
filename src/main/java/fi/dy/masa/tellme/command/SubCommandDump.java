@@ -92,7 +92,7 @@ public class SubCommandDump
         HashMap<String, DumpLineProvider> providers = getDumpProviders();
         CommandSource source = ctx.getSource();
         @Nullable Entity entity = source.getEntity();
-        @Nullable ServerWorld world = source.getWorld();
+        @Nullable ServerWorld world = source.getLevel();
         @Nullable MinecraftServer server = source.getServer();
         DumpContext dumpContext = new DumpContext(world, entity, server, format);
 
@@ -133,7 +133,7 @@ public class SubCommandDump
                 }
                 else
                 {
-                    ctx.getSource().sendErrorMessage(new StringTextComponent("No such dump type: '" + name + "'"));
+                    ctx.getSource().sendFailure(new StringTextComponent("No such dump type: '" + name + "'"));
                 }
             }
         }
@@ -149,7 +149,7 @@ public class SubCommandDump
 
         if (data.isEmpty())
         {
-            source.sendErrorMessage(new StringTextComponent("No data available for dump '" + name + "'"));
+            source.sendFailure(new StringTextComponent("No data available for dump '" + name + "'"));
             return;
         }
 
@@ -168,7 +168,7 @@ public class SubCommandDump
         dumpProviders.put("activities",                 (ctx) -> ActivityDump.getFormattedDump(ctx.format));
         dumpProviders.put("all-registry-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.REGISTRY));
         dumpProviders.put("advancements-simple",        (ctx) -> AdvancementDump.getFormattedAdvancementDumpSimple(ctx.format, ctx.server));
-        dumpProviders.put("biome-provider-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BIOME_PROVIDER_CODEC));
+        dumpProviders.put("biome-provider-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BIOME_SOURCE));
         dumpProviders.put("biomes-basic",               (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.BASIC));
         dumpProviders.put("biomes-with-colors",         (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.COLORS));
         dumpProviders.put("biomes-with-feature-valid",  (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.VALIDITY));
@@ -183,7 +183,7 @@ public class SubCommandDump
         dumpProviders.put("blocks-with-tags",           (ctx) -> BlockDump.getFormattedBlockDump(ctx.format, true));
         dumpProviders.put("blockstates-by-block",       (ctx) -> BlockStatesDump.getFormattedBlockStatesDumpByBlock());
         dumpProviders.put("blockstates-by-state",       (ctx) -> BlockStatesDump.getFormattedBlockStatesDumpByState(ctx.format));
-        dumpProviders.put("chunk-generator-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.CHUNK_GENERATOR_CODEC));
+        dumpProviders.put("chunk-generator-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.CHUNK_GENERATOR));
         dumpProviders.put("chunk-status",               (ctx) -> ChunkStatusDump.getFormattedDump(ctx.format));
         dumpProviders.put("commands",                   (ctx) -> CommandDump.getFormattedCommandDump(ctx.format, ctx.server));
         dumpProviders.put("container-types",            (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.CONTAINERS));
@@ -197,7 +197,7 @@ public class SubCommandDump
         dumpProviders.put("entities-with-class",        (ctx) -> EntityDump.getFormattedEntityDump(ctx.world, ctx.format, true));
         dumpProviders.put("entity-attributes",          (ctx) -> EntityDump.getFormattedEntityAttributeDump(ctx.format));
         dumpProviders.put("features",                   (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.FEATURES));
-        dumpProviders.put("feature-size-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.FEATURE_SIZE_TYPE));
+        dumpProviders.put("feature-size-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.FEATURE_SIZE_TYPES));
         dumpProviders.put("fluids",                     (ctx) -> FluidRegistryDump.getFormattedFluidRegistryDump(ctx.format));
         dumpProviders.put("foliage-placer-types",       (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.FOLIAGE_PLACER_TYPES));
         dumpProviders.put("food-items",                 (ctx) -> FoodItemDump.getFormattedFoodItemDump(ctx.format));
@@ -245,7 +245,7 @@ public class SubCommandDump
         dumpProviders.put("tags-item-split",            (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.ITEM, true));
         dumpProviders.put("tile-entities",              (ctx) -> TileEntityDump.getFormattedTileEntityDump(ctx.format));
         dumpProviders.put("tree-decorator-types",       (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.TREE_DECORATOR_TYPES));
-        dumpProviders.put("trunk-placer-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.TRUNK_REPLACER));
+        dumpProviders.put("trunk-placer-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.TRUNK_PLACER_TYPES));
         dumpProviders.put("villager-professions",       (ctx) -> VillagerProfessionDump.getFormattedVillagerProfessionDump(ctx.format));
         dumpProviders.put("villager-trades",            (ctx) -> VillagerTradesDump.getFormattedVillagerTradesDump(ctx.format, ctx.entity));
         dumpProviders.put("villager-types",             (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.VILLAGER_TYPE));

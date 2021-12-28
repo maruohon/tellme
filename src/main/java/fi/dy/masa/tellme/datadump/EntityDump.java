@@ -27,7 +27,7 @@ public class EntityDump
             String modName = ModNameUtils.getModName(id);
             @SuppressWarnings("deprecation")
             String entityId = String.valueOf(Registry.ENTITY_TYPE.getId(type));
-            String category = type.getClassification().getName();
+            String category = type.getCategory().getName();
 
             if (includeClassName && world != null)
             {
@@ -72,9 +72,9 @@ public class EntityDump
         {
             String idStr = id.toString();
             Attribute attr = ForgeRegistries.ATTRIBUTES.getValue(id);
-            String translationKey = attr.getAttributeName();
+            String translationKey = attr.getDescriptionId();
             String defaultValue = String.valueOf(attr.getDefaultValue());
-            String tracked = String.valueOf(attr.getShouldWatch());
+            String tracked = String.valueOf(attr.isClientSyncable());
 
             dump.addData(idStr, translationKey, defaultValue, tracked);
         }

@@ -17,7 +17,7 @@ public class CommandReloadConfig
     {
         dispatcher.register(
                 Commands.literal("tellme-reload")
-                    .requires((src) -> src.hasPermissionLevel(4))
+                    .requires((src) -> src.hasPermission(4))
                     .executes((src) -> reloadConfig(src.getSource())));
      }
 
@@ -25,7 +25,7 @@ public class CommandReloadConfig
      {
          if (Configs.reloadConfig())
          {
-             source.sendFeedback(new StringTextComponent("TellMe config reloaded"), false);
+             source.sendSuccess(new StringTextComponent("TellMe config reloaded"), false);
              return 1;
          }
 

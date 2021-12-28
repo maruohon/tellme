@@ -19,24 +19,24 @@ public class DimensionDump
 
         if (server != null)
         {
-            for (World world : server.getWorlds())
+            for (World world : server.getAllLevels())
             {
-                DimensionType dim = world.getDimensionType();
+                DimensionType dim = world.dimensionType();
                 String dimId = WorldUtils.getDimensionId(world);
-                String natural = String.valueOf(dim.isNatural());
-                String coordScale = String.valueOf(dim.getCoordinateScale());
+                String natural = String.valueOf(dim.natural());
+                String coordScale = String.valueOf(dim.coordinateScale());
 
                 if (verbose)
                 {
-                    String bedWorks = String.valueOf(dim.doesBedWork());
-                    String ceiling = String.valueOf(dim.getHasCeiling());
-                    String dragon = String.valueOf(dim.doesHasDragonFight());
-                    String raids = String.valueOf(dim.isHasRaids());
+                    String bedWorks = String.valueOf(dim.bedWorks());
+                    String ceiling = String.valueOf(dim.hasCeiling());
+                    String dragon = String.valueOf(dim.createDragonFight());
+                    String raids = String.valueOf(dim.hasRaids());
                     String skyLight = String.valueOf(dim.hasSkyLight());
-                    String logicalHeight = String.valueOf(dim.getLogicalHeight());
-                    String piglinSafe = String.valueOf(dim.isPiglinSafe());
-                    String respawnAnchor = String.valueOf(dim.doesRespawnAnchorWorks());
-                    String ultrawarm = String.valueOf(dim.isUltrawarm());
+                    String logicalHeight = String.valueOf(dim.logicalHeight());
+                    String piglinSafe = String.valueOf(dim.piglinSafe());
+                    String respawnAnchor = String.valueOf(dim.respawnAnchorWorks());
+                    String ultrawarm = String.valueOf(dim.ultraWarm());
 
                     dump.addData(dimId, natural, coordScale, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, skyLight, ultrawarm);
                 }
@@ -79,12 +79,12 @@ public class DimensionDump
 
         if (server != null)
         {
-            for (ServerWorld world : server.getWorlds())
+            for (ServerWorld world : server.getAllLevels())
             {
                 String dimId = WorldUtils.getDimensionId(world);
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
                 String entityCount = String.valueOf(world.getEntities().count());
-                String playerCount = String.valueOf(world.getPlayers().size());
+                String playerCount = String.valueOf(world.players().size());
 
                 dimensionDump.addData(dimId, loadedChunks, entityCount, playerCount);
             }

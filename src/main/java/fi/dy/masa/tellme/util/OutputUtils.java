@@ -28,13 +28,13 @@ public class OutputUtils
     public static IFormattableTextComponent getClipboardCopiableMessage(IFormattableTextComponent textPre, IFormattableTextComponent textToCopy, IFormattableTextComponent textPost)
     {
         final String copyString = textToCopy.getString();
-        textToCopy.modifyStyle((style) -> style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
-        textToCopy.mergeStyle(TextFormatting.UNDERLINE);
+        textToCopy.withStyle((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
+        textToCopy.withStyle(TextFormatting.UNDERLINE);
 
         StringTextComponent hoverText = new StringTextComponent(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
-        textToCopy.getStyle().setHoverEvent(new HoverEvent(Action.SHOW_TEXT, hoverText));
+        textToCopy.getStyle().withHoverEvent(new HoverEvent(Action.SHOW_TEXT, hoverText));
 
-        return textPre.appendSibling(textToCopy).appendSibling(textPost);
+        return textPre.append(textToCopy).append(textPost);
     }
 
     public static void sendClickableLinkMessage(PlayerEntity player, String messageKey, final File file)
@@ -43,18 +43,18 @@ public class OutputUtils
 
         if (TellMe.isClient())
         {
-            name.modifyStyle((style) -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
-            name.mergeStyle(TextFormatting.UNDERLINE);
+            name.withStyle((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
+            name.withStyle(TextFormatting.UNDERLINE);
         }
 
-        player.sendStatusMessage(new TranslationTextComponent(messageKey, name), false);
+        player.displayClientMessage(new TranslationTextComponent(messageKey, name), false);
     }
 
     public static void printOutputToChat(List<String> lines, PlayerEntity entity)
     {
         for (String line : lines)
         {
-            entity.sendStatusMessage(new StringTextComponent(line), false);
+            entity.displayClientMessage(new StringTextComponent(line), false);
         }
     }
 
@@ -69,7 +69,7 @@ public class OutputUtils
     public static void printOutput(@Nullable List<String> lines, OutputType outputType, DataDump.Format format,
             @Nullable String fileNameBase, Entity entity)
     {
-        printOutput(lines, outputType, format, fileNameBase, entity.getCommandSource());
+        printOutput(lines, outputType, format, fileNameBase, entity.createCommandSourceStack());
     }
 
     public static void printOutput(@Nullable List<String> lines, OutputType outputType, DataDump.Format format,
@@ -102,7 +102,7 @@ public class OutputUtils
 
                 if (player != null)
                 {
-                    player.sendStatusMessage(new StringTextComponent("Output printed to console"), false);
+                    player.displayClientMessage(new StringTextComponent("Output printed to console"), false);
                 }
                 break;
 
@@ -117,7 +117,7 @@ public class OutputUtils
                     }
                     else
                     {
-                        source.sendFeedback(new StringTextComponent("Output written to file '" + file.getName() + "'"), false);
+                        source.sendSuccess(new StringTextComponent("Output written to file '" + file.getName() + "'"), false);
                     }
                 }
                 break;

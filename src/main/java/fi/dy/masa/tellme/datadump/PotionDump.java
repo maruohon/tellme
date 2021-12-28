@@ -24,13 +24,13 @@ public class PotionDump
             ResourceLocation rl = effect.getRegistryName();
 
             @SuppressWarnings("deprecation")
-            String id = String.valueOf(Registry.EFFECTS.getId(effect));
+            String id = String.valueOf(Registry.MOB_EFFECT.getId(effect));
 
             String modName = ModNameUtils.getModName(rl);
             String regName = rl.toString();
-            String name = effect.getName();
-            String color = String.format("0x%08X (%10d)", effect.getLiquidColor(), effect.getLiquidColor());
-            String isBad = String.valueOf(effect.getEffectType() == EffectType.HARMFUL);
+            String name = effect.getDescriptionId();
+            String color = String.format("0x%08X (%10d)", effect.getColor(), effect.getColor());
+            String isBad = String.valueOf(effect.getCategory() == EffectType.HARMFUL);
             String isBeneficial = String.valueOf(effect.isBeneficial());
 
             potionDump.addData(modName, regName, name, id, color, isBad, isBeneficial);

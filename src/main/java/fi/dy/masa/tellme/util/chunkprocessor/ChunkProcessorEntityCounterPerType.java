@@ -25,7 +25,7 @@ public class ChunkProcessorEntityCounterPerType extends ChunkProcessorBase
     @Override
     public void processChunk(Chunk chunk)
     {
-        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntityLists();
+        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
         int total = 0;
 
         for (int i = 0; i < entityLists.length; i++)

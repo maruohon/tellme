@@ -44,44 +44,44 @@ public class BlockInfo
         Map<Material, String> names = new HashMap<>();
 
         names.put(Material.AIR, "AIR");
-        names.put(Material.ANVIL, "ANVIL");
+        names.put(Material.HEAVY_METAL, "ANVIL");
         names.put(Material.BAMBOO, "BAMBOO");
         names.put(Material.BAMBOO_SAPLING, "BAMBOO_SAPLING");
         names.put(Material.BARRIER, "BARRIER");
         names.put(Material.BUBBLE_COLUMN, "BUBBLE_COLUMN");
         names.put(Material.CACTUS, "CACTUS");
         names.put(Material.CAKE, "CAKE");
-        names.put(Material.CARPET, "CARPET");
+        names.put(Material.CLOTH_DECORATION, "CARPET");
         names.put(Material.CLAY, "CLAY");
         names.put(Material.CORAL, "CORAL");
-        names.put(Material.DRAGON_EGG, "DRAGON_EGG");
-        names.put(Material.EARTH, "EARTH");
+        names.put(Material.EGG, "DRAGON_EGG");
+        names.put(Material.DIRT, "EARTH");
         names.put(Material.FIRE, "FIRE");
         names.put(Material.GLASS, "GLASS");
-        names.put(Material.GOURD, "GOURD");
+        names.put(Material.VEGETABLE, "GOURD");
         names.put(Material.ICE, "ICE");
-        names.put(Material.IRON, "IRON");
+        names.put(Material.METAL, "IRON");
         names.put(Material.LAVA, "LAVA");
         names.put(Material.LEAVES, "LEAVES");
-        names.put(Material.MISCELLANEOUS, "MISCELLANEOUS");
+        names.put(Material.DECORATION, "MISCELLANEOUS");
         names.put(Material.NETHER_WOOD, "NETHER_WOOD");
-        names.put(Material.OCEAN_PLANT, "OCEAN_PLANT");
-        names.put(Material.ORGANIC, "ORGANIC");
-        names.put(Material.PACKED_ICE, "PACKED_ICE");
+        names.put(Material.WATER_PLANT, "OCEAN_PLANT");
+        names.put(Material.GRASS, "ORGANIC");
+        names.put(Material.ICE_SOLID, "PACKED_ICE");
         names.put(Material.PISTON, "PISTON");
-        names.put(Material.PLANTS, "PLANTS");
+        names.put(Material.PLANT, "PLANTS");
         names.put(Material.PORTAL, "PORTAL");
-        names.put(Material.REDSTONE_LIGHT, "REDSTONE_LIGHT");
-        names.put(Material.ROCK, "ROCK");
+        names.put(Material.BUILDABLE_GLASS, "REDSTONE_LIGHT");
+        names.put(Material.STONE, "ROCK");
         names.put(Material.SAND, "SAND");
-        names.put(Material.SEA_GRASS, "SEA_GRASS");
-        names.put(Material.SHULKER, "SHULKER");
-        names.put(Material.SNOW, "SNOW");
-        names.put(Material.SNOW_BLOCK, "SNOW_BLOCK");
+        names.put(Material.REPLACEABLE_WATER_PLANT, "SEA_GRASS");
+        names.put(Material.SHULKER_SHELL, "SHULKER");
+        names.put(Material.TOP_SNOW, "SNOW");
+        names.put(Material.SNOW, "SNOW_BLOCK");
         names.put(Material.SPONGE, "SPONGE");
-        names.put(Material.STRUCTURE_VOID, "STRUCTURE_VOID");
-        names.put(Material.TALL_PLANTS, "TALL_PLANTS");
-        names.put(Material.TNT, "TNT");
+        names.put(Material.STRUCTURAL_AIR, "STRUCTURE_VOID");
+        names.put(Material.REPLACEABLE_PLANT, "TALL_PLANTS");
+        names.put(Material.EXPLOSIVE, "TNT");
         names.put(Material.WATER, "WATER");
         names.put(Material.WEB, "WEB");
         names.put(Material.WOOD, "WOOD");
@@ -92,11 +92,11 @@ public class BlockInfo
 
     public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, Property<T> prop, String valueStr)
     {
-        Optional<T> value = prop.parseValue(valueStr);
+        Optional<T> value = prop.getValue(valueStr);
 
         if (value.isPresent())
         {
-            return state.with(prop, value.get());
+            return state.setValue(prop, value.get());
         }
 
         return state;
@@ -108,13 +108,13 @@ public class BlockInfo
 
         for (BlockState state : initialStates)
         {
-            Property<?> prop = state.getBlock().getStateContainer().getProperty(propName);
+            Property<?> prop = state.getBlock().getStateDefinition().getProperty(propName);
 
             if (prop != null)
             {
-                Optional<?> value = prop.parseValue(propValue);
+                Optional<?> value = prop.getValue(propValue);
 
-                if (value.isPresent() && state.get(prop).equals(value.get()))
+                if (value.isPresent() && state.getValue(prop).equals(value.get()))
                 {
                     list.add(state);
                 }
@@ -164,7 +164,7 @@ public class BlockInfo
     {
         String teInfo;
         BlockState state = world.getBlockState(pos);
-        boolean teInWorld = world.getTileEntity(pos) != null;
+        boolean teInWorld = world.getBlockEntity(pos) != null;
         boolean shouldHaveTE = state.getBlock().hasTileEntity(state);
 
         if (teInWorld == shouldHaveTE)
@@ -198,7 +198,7 @@ public class BlockInfo
 
         lines.add(String.format("Full block state: %s", state));
         lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
-                state.getBlockHardness(world, pos),
+                state.getDestroySpeed(world, pos),
                 explosionResistance,
                 getMaterialName(state.getMaterial())));
         lines.add("Block class: " + state.getBlock().getClass().getName());
@@ -217,12 +217,12 @@ public class BlockInfo
             lines.add("BlockState properties: <none>");
         }
 
-        TileEntity te = world.getTileEntity(pos);
+        TileEntity te = world.getBlockEntity(pos);
 
         if (te != null)
         {
             CompoundNBT nbt = new CompoundNBT();
-            te.write(nbt);
+            te.save(nbt);
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
             lines.add("BlockEntity NBT (from BlockEntity::write()):");
@@ -239,7 +239,7 @@ public class BlockInfo
 
     public static void printBasicBlockInfoToChat(PlayerEntity entity, World world, BlockPos pos)
     {
-        entity.sendStatusMessage(BlockData.getFor(world, pos).toChatMessage(), false);
+        entity.displayClientMessage(BlockData.getFor(world, pos).toChatMessage(), false);
     }
 
     @Nullable
@@ -249,7 +249,7 @@ public class BlockInfo
         if (trace.getType() == RayTraceResult.Type.BLOCK)
         {
             BlockRayTraceResult hit = (BlockRayTraceResult) trace;
-            BlockPos pos = adjacent ? hit.getPos().offset(hit.getFace()) : hit.getPos();
+            BlockPos pos = adjacent ? hit.getBlockPos().relative(hit.getDirection()) : hit.getBlockPos();
             BlockInfo.printBasicBlockInfoToChat(entity, world, pos);
 
             return getFullBlockInfo(world, pos, targetIsChat);
@@ -301,7 +301,7 @@ public class BlockInfo
         for (Property<?> prop : state.getProperties())
         {
             if (filterProperties.containsKey(prop) &&
-                filterProperties.get(prop).equals(state.get(prop)) == false)
+                filterProperties.get(prop).equals(state.getValue(prop)) == false)
             {
                 return false;
             }
@@ -331,19 +331,19 @@ public class BlockInfo
             Block block = state.getBlock();
 
             @SuppressWarnings("deprecation")
-            ItemStack stack = block.getItem(world, pos, state);
+            ItemStack stack = block.getCloneItemStack(world, pos, state);
             ResourceLocation rl = ForgeRegistries.BLOCKS.getKey(block);
             String registryName = rl != null ? rl.toString() : "<null>";
             String displayName;
 
             if (stack.isEmpty() == false)
             {
-                displayName = stack.getDisplayName().getString();
+                displayName = stack.getHoverName().getString();
             }
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = (new TranslationTextComponent(block.getTranslationKey())).getString();
+                displayName = (new TranslationTextComponent(block.getDescriptionId())).getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));
@@ -366,7 +366,7 @@ public class BlockInfo
 
     public static String getBlockEntityNameFor(TileEntityType<?> type)
     {
-        ResourceLocation id = TileEntityType.getId(type);
+        ResourceLocation id = TileEntityType.getKey(type);
         return id != null ? id.toString() : "<null>";
     }
 }

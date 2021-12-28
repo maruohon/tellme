@@ -51,13 +51,13 @@ public class BlockStats extends ChunkProcessorAllChunks
         final long timeBefore = System.nanoTime();
         Object2LongOpenHashMap<BlockState> counts = new Object2LongOpenHashMap<>();
         BlockPos.Mutable pos = new BlockPos.Mutable();
-        final BlockState air = Blocks.AIR.getDefaultState();
+        final BlockState air = Blocks.AIR.defaultBlockState();
         int count = 0;
 
         for (Chunk chunk : chunks)
         {
             ChunkPos chunkPos = chunk.getPos();
-            final int topY = chunk.getTopFilledSegment() + 15;
+            final int topY = chunk.getHighestSectionPosition() + 15;
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
@@ -71,7 +71,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 {
                     for (int x = xMin; x <= xMax; ++x)
                     {
-                        pos.setPos(x, y, z);
+                        pos.set(x, y, z);
                         BlockState state = chunk.getBlockState(pos);
 
                         counts.addTo(state, 1);
@@ -270,7 +270,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         {
             Block block = state.getBlock();
             ItemStack stack = new ItemStack(block);
-            String displayName = stack.isEmpty() == false ? stack.getDisplayName().getString() : (new TranslationTextComponent(block.getTranslationKey())).getString();
+            String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslationTextComponent(block.getDescriptionId())).getString();
 
             this.state = state;
             this.id = id;

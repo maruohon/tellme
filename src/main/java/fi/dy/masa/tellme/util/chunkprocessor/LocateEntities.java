@@ -74,7 +74,7 @@ public class LocateEntities extends LocateBase
         for (Chunk chunk : chunks)
         {
             ChunkPos chunkPos = chunk.getPos();
-            final String dim = WorldUtils.getDimensionId(chunk.getWorld());
+            final String dim = WorldUtils.getDimensionId(chunk.getLevel());
             final int xMin = Math.max(chunkPos.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
@@ -83,9 +83,9 @@ public class LocateEntities extends LocateBase
             final int zMax = Math.min((chunkPos.z << 4) + 16, posMax.getZ());
             AxisAlignedBB bb = new AxisAlignedBB(xMin, yMin, zMin, xMax, yMax, zMax);
 
-            for (int i = 0; i < chunk.getEntityLists().length; i++)
+            for (int i = 0; i < chunk.getEntitySections().length; i++)
             {
-                ClassInheritanceMultiMap<Entity> map = chunk.getEntityLists()[i];
+                ClassInheritanceMultiMap<Entity> map = chunk.getEntitySections()[i];
 
                 for (Entity entity : map)
                 {
@@ -94,7 +94,7 @@ public class LocateEntities extends LocateBase
                     if (filters.contains(type) && entity.getBoundingBox().intersects(bb))
                     {
                         String name = EntityInfo.getEntityNameFor(type);
-                        this.data.add(LocationData.of(name, dim, entity.getPositionVec()));
+                        this.data.add(LocationData.of(name, dim, entity.position()));
                         count++;
                     }
                 }

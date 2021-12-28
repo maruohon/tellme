@@ -22,14 +22,14 @@ public class FoodItemDump
     {
         String registryName = rl.toString();
         ItemStack stack = new ItemStack(item);
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName().getString() : DataDump.EMPTY_STRING;
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+        String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : DataDump.EMPTY_STRING;
+        displayName = TextFormatting.stripFormatting(displayName);
 
-        Food food = item.getFood();
-        String hunger = String.valueOf(food.getHealing());
-        String saturation = String.valueOf(food.getSaturation());
+        Food food = item.getFoodProperties();
+        String hunger = String.valueOf(food.getNutrition());
+        String saturation = String.valueOf(food.getSaturationModifier());
         String isMeat = String.valueOf(food.isMeat());
-        String isFastEat = String.valueOf(food.isFastEating());
+        String isFastEat = String.valueOf(food.isFastFood());
         List<Pair<EffectInstance, Float>> effects = food.getEffects();
         String effectsStr = effects.stream()
                 .map((pair) -> "{[" + pair.getFirst().toString() + "], Propability: " + pair.getSecond() + "}")
@@ -46,7 +46,7 @@ public class FoodItemDump
         {
             Item item = entry.getValue();
 
-            if (item.isFood())
+            if (item.isEdible())
             {
                 addData(itemDump, item, item.getRegistryName());
             }

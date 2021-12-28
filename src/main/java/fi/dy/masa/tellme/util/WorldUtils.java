@@ -12,9 +12,9 @@ public class WorldUtils
 {
     public static int getLoadedChunkCount(World world)
     {
-        if (world != null && world.getChunkProvider() instanceof ServerChunkProvider)
+        if (world != null && world.getChunkSource() instanceof ServerChunkProvider)
         {
-            return ((ServerChunkProvider) world.getChunkProvider()).chunkManager.func_219174_c();
+            return ((ServerChunkProvider) world.getChunkSource()).chunkMap.getTickingGenerated();
         }
 
         return 0;
@@ -37,7 +37,7 @@ public class WorldUtils
 
     public static String getDimensionId(World world)
     {
-        ResourceLocation id = world.func_241828_r().func_230520_a_().getKey(world.getDimensionType());
+        ResourceLocation id = world.registryAccess().dimensionTypes().getKey(world.dimensionType());
         return id != null ? id.toString() : "?";
     }
 }

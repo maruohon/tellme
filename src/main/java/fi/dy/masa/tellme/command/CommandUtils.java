@@ -164,30 +164,30 @@ public class CommandUtils
 
     public static void sendMessage(CommandSource source, String message)
     {
-        source.sendFeedback(new StringTextComponent(message), true);
+        source.sendSuccess(new StringTextComponent(message), true);
     }
 
     public static Vector2f getVec2fFromSource(CommandSource source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? new Vector2f((float) entity.getPosX(), (float) entity.getPosZ()) : Vector2f.ZERO;
+        return entity != null ? new Vector2f((float) entity.getX(), (float) entity.getZ()) : Vector2f.ZERO;
     }
 
     public static Vector2f getVec2fFromArg(CommandContext<CommandSource> ctx, String argName) throws CommandSyntaxException
     {
-        return Vec2Argument.getVec2f(ctx, argName);
+        return Vec2Argument.getVec2(ctx, argName);
     }
 
     public static Vector3d getVec3dFromSource(CommandSource source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? entity.getPositionVec() : Vector3d.ZERO;
+        return entity != null ? entity.position() : Vector3d.ZERO;
     }
 
     public static BlockPos getBlockPosFromSource(CommandSource source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? new BlockPos(entity.getPositionVec()) : BlockPos.ZERO;
+        return entity != null ? new BlockPos(entity.position()) : BlockPos.ZERO;
     }
 
     public static Vector3d getVec3dFromArg(CommandContext<CommandSource> ctx, String argName) throws CommandSyntaxException
@@ -204,7 +204,7 @@ public class CommandUtils
             throw NO_DIMENSION_EXCEPTION.create();
         }
 
-        return entity.getEntityWorld();
+        return entity.getCommandSenderWorld();
     }
 
     public interface IWorldRetriever

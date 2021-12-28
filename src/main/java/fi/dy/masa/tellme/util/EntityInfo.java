@@ -26,7 +26,7 @@ public class EntityInfo
         ResourceLocation rl = target.getType().getRegistryName();
         String regName = rl != null ? rl.toString() : "<null>";
 
-        return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getEntityId());
+        return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getId());
     }
 
     public static List<String> getFullEntityInfo(@Nullable Entity target, boolean targetIsChat)
@@ -41,9 +41,9 @@ public class EntityInfo
 
         CompoundNBT nbt = new CompoundNBT();
 
-        if (target.writeUnlessPassenger(nbt) == false)
+        if (target.save(nbt) == false)
         {
-            target.writeWithoutTypeId(nbt);
+            target.saveWithoutId(nbt);
         }
 
         lines.add("Entity class: " + target.getClass().getName());
@@ -62,7 +62,7 @@ public class EntityInfo
 
     public static List<String> getActivePotionEffectsForEntity(LivingEntity entity, DataDump.Format format)
     {
-        Collection<EffectInstance> effects = entity.getActivePotionEffects();
+        Collection<EffectInstance> effects = entity.getActiveEffects();
 
         if (effects.isEmpty() == false)
         {
@@ -70,7 +70,7 @@ public class EntityInfo
 
             for (EffectInstance effect : effects)
             {
-                ResourceLocation rl = effect.getPotion().getRegistryName();
+                ResourceLocation rl = effect.getEffect().getRegistryName();
 
                 dump.addData(
                         rl != null ? rl.toString() : effect.getClass().getName(),
@@ -94,9 +94,9 @@ public class EntityInfo
         ResourceLocation rl = target.getType().getRegistryName();
         String regName = rl != null ? rl.toString() : "null";
         String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
-        String textPost = String.format("] (entityId: %d)", target.getEntityId());
+        String textPost = String.format("] (entityId: %d)", target.getId());
 
-        player.sendStatusMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost), false);
+        player.displayClientMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost), false);
     }
 
     public static void printFullEntityInfoToConsole(PlayerEntity player, Entity target)
@@ -121,9 +121,9 @@ public class EntityInfo
             for (PlayerEntity player : server.getPlayerList().getPlayers())
             {
                 String name = player.getName().getString();
-                String dim = WorldUtils.getDimensionId(player.getEntityWorld());
+                String dim = WorldUtils.getDimensionId(player.getCommandSenderWorld());
                 String health = String.format("%.2f", player.getHealth());
-                BlockPos pos = player.getPosition();
+                BlockPos pos = player.blockPosition();
                 int x = pos.getX();
                 int y = pos.getY();
                 int z = pos.getZ();

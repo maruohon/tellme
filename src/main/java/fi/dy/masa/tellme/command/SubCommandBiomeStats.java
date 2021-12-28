@@ -90,15 +90,15 @@ public class SubCommandBiomeStats
         ArgumentCommandNode<CommandSource, ILocationArgument> argStartCorner = Commands.argument("start_corner", Vec2Argument.vec2()).build();
         ArgumentCommandNode<CommandSource, ILocationArgument> argEndCorner = Commands.argument("end_corner", Vec2Argument.vec2())
                 .executes(c -> countBiomesArea(c.getSource(),
-                        Vec2Argument.getVec2f(c, "start_corner"),
-                        Vec2Argument.getVec2f(c, "end_corner"),
+                        Vec2Argument.getVec2(c, "start_corner"),
+                        Vec2Argument.getVec2(c, "end_corner"),
                         CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBiomesArea(c.getSource(),
-                        Vec2Argument.getVec2f(c, "start_corner"),
-                        Vec2Argument.getVec2f(c, "end_corner"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                        Vec2Argument.getVec2(c, "start_corner"),
+                        Vec2Argument.getVec2(c, "end_corner"),
+                        (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argStartCorner);
@@ -124,11 +124,11 @@ public class SubCommandBiomeStats
                                                       CommandUtils.getVec2fFromArg(c, "center"),
                                                       CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBiomesChunkRadius(c.getSource(),
                         IntegerArgumentType.getInteger(c, "chunk_radius"),
                         CommandUtils.getVec2fFromArg(c, "center"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                        (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argChunkRadius);
@@ -157,12 +157,12 @@ public class SubCommandBiomeStats
                                                 CommandUtils.getVec2fFromArg(c, "center"),
                                                 CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBiomesRange(c.getSource(),
                         IntegerArgumentType.getInteger(c, "range_x"),
                         IntegerArgumentType.getInteger(c, "range_z"),
                         CommandUtils.getVec2fFromArg(c, "center"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                        (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argChunkRadiusX);
@@ -193,12 +193,12 @@ public class SubCommandBiomeStats
                                                   CommandUtils.getVec2fFromArg(c, "center"),
                                                   CommandUtils::getWorldFromCommandSource, isAppend))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.getDimension())
+        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension  = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> countBiomesSampled(c.getSource(),
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius"),
                         CommandUtils.getVec2fFromArg(c, "center"),
-                        (s) -> DimensionArgument.getDimensionArgument(c, "dimension"), isAppend))
+                        (s) -> DimensionArgument.getDimension(c, "dimension"), isAppend))
                 .build();
 
         argAreaType.addChild(argSampleInterval);
@@ -308,12 +308,12 @@ public class SubCommandBiomeStats
         {
             if (consoleBiomeStats == null)
             {
-                consoleBiomeStats = new BiomeStats(source.func_241861_q().getRegistry(Registry.BIOME_KEY));
+                consoleBiomeStats = new BiomeStats(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
             }
 
             return consoleBiomeStats;
         }
 
-        return BIOME_STATS.computeIfAbsent(entity.getUniqueID(), (e) -> new BiomeStats(source.func_241861_q().getRegistry(Registry.BIOME_KEY)));
+        return BIOME_STATS.computeIfAbsent(entity.getUUID(), (e) -> new BiomeStats(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)));
     }
 }

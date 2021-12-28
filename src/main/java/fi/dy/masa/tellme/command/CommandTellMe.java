@@ -41,7 +41,7 @@ public class CommandTellMe
     {
         dispatcher.register(
                 Commands.literal(baseCommandName)
-                    .requires((src) -> src.hasPermissionLevel(permissionLevel))
+                    .requires((src) -> src.hasPermission(permissionLevel))
                     .then(SubCommandBatchRun.registerSubCommand(dispatcher))
                     .then(SubCommandBiome.registerSubCommand(dispatcher))
                     .then(SubCommandBiomeLocate.registerSubCommand(dispatcher))

@@ -17,10 +17,10 @@ public class ChunkStatusDump
         for (Map.Entry<RegistryKey<ChunkStatus>, ChunkStatus> entry : ForgeRegistries.CHUNK_STATUS.getEntries())
         {
             ChunkStatus val = entry.getValue();
-            String ordinal = String.valueOf(val.ordinal());
+            String ordinal = String.valueOf(val.getIndex());
             String regName = val.getRegistryName().toString();
-            String type = val.getType().name();
-            String taskRange = String.valueOf(val.getTaskRange());
+            String type = val.getChunkType().name();
+            String taskRange = String.valueOf(val.getRange());
 
             dump.addData(ordinal, regName, type, taskRange);
         }
