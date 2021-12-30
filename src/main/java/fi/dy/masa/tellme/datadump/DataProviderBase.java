@@ -12,16 +12,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.FoliageColor;
-import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -42,20 +38,6 @@ public class DataProviderBase
 
     public void getCurrentBiomeInfoClientSide(Player entity, Biome biome)
     {
-    }
-
-    public int getFoliageColor(Biome biome, BlockPos pos)
-    {
-        double temperature = Mth.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = Mth.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return FoliageColor.get(temperature, humidity);
-    }
-
-    public int getGrassColor(Biome biome, BlockPos pos)
-    {
-        double temperature = Mth.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = Mth.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return GrassColor.get(temperature, humidity);
     }
 
     public Collection<LevelChunk> getLoadedChunks(Level world)

@@ -131,18 +131,6 @@ public class DataProviderClient extends DataProviderBase
     }
 
     @Override
-    public int getFoliageColor(Biome biome, BlockPos pos)
-    {
-        return biome.getFoliageColor();
-    }
-
-    @Override
-    public int getGrassColor(Biome biome, BlockPos pos)
-    {
-        return biome.getGrassColor(pos.getX(), pos.getZ());
-    }
-
-    @Override
     public void addCommandDumpData(DataDump dump, @Nullable MinecraftServer server)
     {
         // TODO 1.14

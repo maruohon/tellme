@@ -14,35 +14,18 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class StructureFeatureDump
 {
-    public static List<String> getFormattedDump(DataDump.Format format, boolean spawns)
+    public static List<String> getFormattedDump(DataDump.Format format)
     {
-        DataDump dump = new DataDump(spawns ? 4 : 2, format);
+        DataDump dump = new DataDump(2, format);
 
         for (Map.Entry<ResourceKey<StructureFeature<?>>, StructureFeature<?>> entry : ForgeRegistries.STRUCTURE_FEATURES.getEntries())
         {
             StructureFeature<?> feature = entry.getValue();
             ResourceLocation id = feature.getRegistryName();
-
-            if (spawns)
-            {
-                String mobSpawns = getMobSpawnsString(feature.getSpecialEnemies().unwrap());
-                String passiveSpawns = getMobSpawnsString(feature.getSpecialAnimals().unwrap());
-                dump.addData(id.toString(), feature.getFeatureName(), mobSpawns, passiveSpawns);
-            }
-            else
-            {
-                dump.addData(id.toString(), feature.getFeatureName());
-            }
+            dump.addData(id.toString(), feature.getFeatureName());
         }
 
-        if (spawns)
-        {
-            dump.addTitle("Registry name", "Name", "Mob spawns", "Passive spawns");
-        }
-        else
-        {
-            dump.addTitle("Registry name", "Name");
-        }
+        dump.addTitle("Registry name", "Name");
 
         return dump.getLines();
     }

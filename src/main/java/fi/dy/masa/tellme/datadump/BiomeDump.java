@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -21,10 +20,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -36,7 +33,6 @@ public class BiomeDump
     public static final BiomeInfoProviderBase BASIC = new BiomeInfoProviderBasic();
     public static final BiomeInfoProviderBase COLORS = new BiomeInfoProviderColors();
     public static final BiomeInfoProviderBase TYPES = new BiomeInfoProviderTypes();
-    public static final BiomeInfoProviderBase VALIDITY = new BiomeInfoProviderValidity();
 
     private static Registry<Biome> getBiomeRegistry(Level world)
     {
@@ -125,32 +121,20 @@ public class BiomeDump
         Biome.Precipitation rainType = biome.getPrecipitation();
 
         BiomeSpecialEffects effects = biome.getSpecialEffects();
-        String strFogColor = "?";
-        String strSkyColor = "?";
-        String strWaterColor = "?";
-        String strWaterFogColor = "?";
+        int skyColor = effects.getSkyColor();
+        int fogColor = effects.getFogColor();
+        int waterColor = effects.getWaterColor();
+        int waterFogColor = effects.getWaterFogColor();
+        String strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
+        String strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
+        String strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
+        String strWaterFogColor = String.format("0x%08X (%d)", waterFogColor, waterFogColor);
 
-        String strDepth = String.valueOf(biome.getDepth());
         String strMaxSpawnChance = String.valueOf(biome.getMobSettings().getCreatureProbability());
         String strRainType = rainType.getName();
         String strRainfall = String.valueOf(biome.getDownfall());
-        String strScale = String.valueOf(biome.getScale());
         String strTemperature = String.valueOf(biome.getBaseTemperature());
 
-        try
-        {
-            int skyColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47930_");
-            int fogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47927_");
-            int waterColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47928_");
-            int waterFogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47929_");
-            strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
-            strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
-            strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
-            strWaterFogColor = String.format("0x%08X (%d)", waterFogColor, waterFogColor);
-        }
-        catch (Exception ignore) {}
-
-        String strValidFor = getValidForString(biome);
         boolean canSnow = biome.shouldSnow(world, pos);
         String strSnowing = canSnow ? "yes" : "no";
 
@@ -169,10 +153,7 @@ public class BiomeDump
         entity.displayClientMessage(new TextComponent("RainType: ").append(new TextComponent(strRainType).withStyle(green))
                                    .append(", downfall: ").append(new TextComponent(strRainfall).withStyle(green))
                                    .append(", snows: ").append(new TextComponent(strSnowing).withStyle(canSnow ? green : red)), false);
-        entity.displayClientMessage(new TextComponent("Depth: ").append(new TextComponent(strDepth).withStyle(green))
-                                   .append(", scale: ").append(new TextComponent(strScale).withStyle(green))
-                                   .append(", max spawn chance: ").append(new TextComponent(strMaxSpawnChance).withStyle(green))
-                , false);
+        entity.displayClientMessage(new TextComponent("Max spawn chance: ").append(new TextComponent(strMaxSpawnChance).withStyle(green)), false);
 
         entity.displayClientMessage(new TextComponent("Fog Color: ")
                                    .append(new TextComponent(strFogColor).withStyle(green)), false);
@@ -188,12 +169,6 @@ public class BiomeDump
 
         entity.displayClientMessage(new TextComponent("Biome dictionary types: ")
                                    .append(new TextComponent(biomeDictionaryTypes).withStyle(green)), false);
-
-        if (StringUtils.isBlank(strValidFor) == false)
-        {
-            entity.displayClientMessage(new TextComponent("Valid for: ")
-                                       .append(new TextComponent(strValidFor).withStyle(ChatFormatting.AQUA)), false);
-        }
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
@@ -281,26 +256,6 @@ public class BiomeDump
         }
 
         return "";
-    }
-
-    private static String getValidForString(Biome biome)
-    {
-        List<String> strings = new ArrayList<>();
-
-        if (biome.getMobSettings().playerSpawnFriendly())
-        {
-            strings.add("spawn");
-        }
-
-        for (StructureFeature<?> structure : StructureFeature.STRUCTURES_REGISTRY.values())
-        {
-            if (biome.getGenerationSettings().isValidStart(structure))
-            {
-                strings.add(structure.getRegistryName().toString());
-            }
-        }
-
-        return String.join(", ", strings);
     }
 
     public static class IdToStringHolder implements Comparable<IdToStringHolder>
@@ -439,21 +394,13 @@ public class BiomeDump
         @Override
         public int getColumnCount()
         {
-            return TellMe.isClient() ? 8 : 6;
+            return 8;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            if (TellMe.isClient())
-            {
-                dump.addTitle("ID", "Registry name", "Fog Color", "Sky Color", "Water Color", "Water Fog Color", "Grass Color", "Foliage Color");
-            }
-            else
-            {
-                dump.addTitle("ID", "Registry name", "Fog Color", "Sky Color", "Water Color", "Water Fog Color");
-            }
-
+            dump.addTitle("ID", "Registry name", "Fog Color", "Sky Color", "Water Color", "Water Fog Color", "Grass Color", "Foliage Color");
             dump.setColumnProperties(0, Alignment.RIGHT, true); // id
         }
 
@@ -467,66 +414,21 @@ public class BiomeDump
             String regName = id.toString();
             BiomeSpecialEffects effects = biome.getSpecialEffects();
 
-            String strFogColor = "?";
-            String strSkyColor = "?";
-            String strWaterColor = "?";
-            String strWaterFogColor = "?";
+            int skyColor = effects.getSkyColor();
+            int fogColor = effects.getFogColor();
+            int waterColor = effects.getWaterColor();
+            int waterFogColor = effects.getWaterFogColor();
+            int foliageColor = biome.getFoliageColor();
+            int grassColor = biome.getGrassColor(0, 0);
 
-            try
-            {
-                int skyColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47930_");
-                int fogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47927_");
-                int waterColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47928_");
-                int waterFogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47929_");
-                strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
-                strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
-                strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
-                strWaterFogColor = String.format("0x%08X (%d)", waterFogColor, waterFogColor);
-            }
-            catch (Exception ignore) {}
+            String strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
+            String strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
+            String strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
+            String strWaterFogColor = String.format("0x%08X (%d)", waterFogColor, waterFogColor);
+            String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
+            String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
 
-            if (TellMe.isClient())
-            {
-                int foliageColor = TellMe.dataProvider.getFoliageColor(biome, BlockPos.ZERO);
-                int grassColor = TellMe.dataProvider.getGrassColor(biome, BlockPos.ZERO);
-                String grassColorStr = String.format("0x%08X (%10d)", grassColor, grassColor);
-                String foliageColorStr = String.format("0x%08X (%10d)", foliageColor, foliageColor);
-
-                dump.addData(intId, regName, strFogColor, strSkyColor, strWaterColor, strWaterFogColor, grassColorStr, foliageColorStr);
-            }
-            else
-            {
-                dump.addData(intId, regName, strFogColor, strSkyColor, strWaterColor, strWaterFogColor);
-            }
-        }
-    }
-
-    public static class BiomeInfoProviderValidity extends BiomeInfoProviderBase
-    {
-        @Override
-        public int getColumnCount()
-        {
-            return 3;
-        }
-
-        @Override
-        public void addTitle(DataDump dump)
-        {
-            dump.addTitle("ID", "Registry name", "Valid for");
-            dump.setColumnProperties(0, Alignment.RIGHT, true); // id
-        }
-
-        @Override
-        public void addLine(DataDump dump, Biome biome, ResourceLocation id, BiomeDumpContext ctx)
-        {
-            if (ctx.world == null) { return; }
-
-            Registry<Biome> registry = getBiomeRegistry(ctx.world);
-            String intId = String.valueOf(registry.getId(biome));
-            String regName = id.toString();
-            String validFor = getValidForString(biome);
-
-            dump.addData(intId, regName, validFor);
+            dump.addData(intId, regName, strFogColor, strSkyColor, strWaterColor, strWaterFogColor, grassColorStr, foliageColorStr);
         }
     }
 }
