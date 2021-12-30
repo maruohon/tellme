@@ -11,12 +11,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
 import fi.dy.masa.tellme.command.CommandUtils;
 
 public class BlockStateCountGroupingArgument implements ArgumentType<CommandUtils.BlockStateGrouping>
 {
-    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new StringTextComponent("No output format given"));
+    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new TextComponent("No output format given"));
     private static final ImmutableList<String> SUGGESTIONS = ImmutableList.copyOf(Stream.of(CommandUtils.BlockStateGrouping.values()).map(CommandUtils.BlockStateGrouping::getArgument).collect(Collectors.toList()));
 
     public static BlockStateCountGroupingArgument create()

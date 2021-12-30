@@ -1,10 +1,10 @@
 package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.Map;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.TickableBlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -28,9 +28,9 @@ public class TileEntitiesLister extends ChunkProcessorBase
     }
 
     @Override
-    public void processChunk(Chunk chunk)
+    public void processChunk(LevelChunk chunk)
     {
-        Map<BlockPos, TileEntity> map = chunk.getBlockEntities();
+        Map<BlockPos, BlockEntity> map = chunk.getBlockEntities();
         int count = chunk.getBlockEntities().size();
 
         if (count == 0)
@@ -41,12 +41,12 @@ public class TileEntitiesLister extends ChunkProcessorBase
         {
             int tickingCount = 0;
 
-            for (Map.Entry<BlockPos, TileEntity> entry : map.entrySet())
+            for (Map.Entry<BlockPos, BlockEntity> entry : map.entrySet())
             {
-                TileEntity te = entry.getValue();
+                BlockEntity te = entry.getValue();
                 boolean ticking = false;
 
-                if (te instanceof ITickableTileEntity)
+                if (te instanceof TickableBlockEntity)
                 {
                     tickingCount++;
                     ticking = true;

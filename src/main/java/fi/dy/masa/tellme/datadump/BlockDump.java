@@ -11,17 +11,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.MaterialColor;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -35,7 +35,7 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(tags ? 6 : 5, format);
 
-        for (Map.Entry<RegistryKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (Map.Entry<ResourceKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
             Block block = entry.getValue();
             addDataToDump(blockDump, block.getRegistryName(), block, new ItemStack(entry.getValue()), tags);
@@ -53,11 +53,11 @@ public class BlockDump
         return blockDump.getLines();
     }
 
-    public static List<String> getFormattedBlockToMapColorDump(DataDump.Format format, @Nullable World world)
+    public static List<String> getFormattedBlockToMapColorDump(DataDump.Format format, @Nullable Level world)
     {
         DataDump blockDump = new DataDump(3, format);
 
-        for (Map.Entry<RegistryKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (Map.Entry<ResourceKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
             try
             {
@@ -79,8 +79,8 @@ public class BlockDump
     {
         String modName = ModNameUtils.getModName(id);
         String registryName = id.toString();
-        String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslationTextComponent(block.getDescriptionId())).getString();
-        displayName = TextFormatting.stripFormatting(displayName);
+        String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslatableComponent(block.getDescriptionId())).getString();
+        displayName = ChatFormatting.stripFormatting(displayName);
         Item item = stack.getItem();
         ResourceLocation itemIdRl = item != Items.AIR ? item.getRegistryName() : null;
         String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
@@ -139,7 +139,7 @@ public class BlockDump
         HashMultimap<String, ResourceLocation> map = HashMultimap.create(400, 512);
 
         // Get a mapping of modName => collection-of-block-names
-        for (Map.Entry<RegistryKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
+        for (Map.Entry<ResourceKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
             ResourceLocation key = entry.getValue().getRegistryName();
             map.put(key.getNamespace(), key);
@@ -175,8 +175,8 @@ public class BlockDump
                     ResourceLocation itemIdRl = item != Items.AIR ? item.getRegistryName() : null;
                     String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
 
-                    String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslationTextComponent(block.getDescriptionId())).getString();
-                    displayName = TextFormatting.stripFormatting(displayName);
+                    String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslatableComponent(block.getDescriptionId())).getString();
+                    displayName = ChatFormatting.stripFormatting(displayName);
 
                     JsonObject objItem = new JsonObject();
                     objItem.add("RegistryName", new JsonPrimitive(itemId));

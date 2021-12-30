@@ -8,20 +8,20 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeAmbience;
-import net.minecraft.world.biome.MobSpawnInfo;
-import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -38,17 +38,17 @@ public class BiomeDump
     public static final BiomeInfoProviderBase TYPES = new BiomeInfoProviderTypes();
     public static final BiomeInfoProviderBase VALIDITY = new BiomeInfoProviderValidity();
 
-    private static Registry<Biome> getBiomeRegistry(World world)
+    private static Registry<Biome> getBiomeRegistry(Level world)
     {
         return world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
     }
 
-    private static RegistryKey<Biome> getBiomeKey(Biome biome, World world)
+    private static ResourceKey<Biome> getBiomeKey(Biome biome, Level world)
     {
         return world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getResourceKey(biome).orElse(null);
     }
 
-    public static List<String> getFormattedBiomeDump(Format format, @Nullable World world, BiomeInfoProviderBase provider)
+    public static List<String> getFormattedBiomeDump(Format format, @Nullable Level world, BiomeInfoProviderBase provider)
     {
         DataDump biomeDump = new DataDump(provider.getColumnCount(), format);
 
@@ -68,7 +68,7 @@ public class BiomeDump
         return biomeDump.getLines();
     }
 
-    public static List<String> getFormattedBiomeDumpWithMobSpawns(Format format, @Nullable World world)
+    public static List<String> getFormattedBiomeDumpWithMobSpawns(Format format, @Nullable Level world)
     {
         DataDump biomeDump = new DataDump(3, format);
 
@@ -85,12 +85,12 @@ public class BiomeDump
             //String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(biome);
             List<String> spawns = new ArrayList<>();
 
-            for (EntityClassification type : EntityClassification.values())
+            for (MobCategory type : MobCategory.values())
             {
                 List<String> tmpList = new ArrayList<>();
 
                 // Add the spawns grouped by category and sorted alphabetically within each category
-                for (MobSpawnInfo.Spawners spawn : biome.getMobSettings().getMobs(type))
+                for (MobSpawnSettings.SpawnerData spawn : biome.getMobSettings().getMobs(type))
                 {
                     ResourceLocation erl = spawn.type.getRegistryName();
                     String entName = erl != null ? erl.toString() : "<null>";
@@ -110,20 +110,20 @@ public class BiomeDump
         return biomeDump.getLines();
     }
 
-    public static void printCurrentBiomeInfoToChat(PlayerEntity entity)
+    public static void printCurrentBiomeInfoToChat(Player entity)
     {
-        World world = entity.getCommandSenderWorld();
+        Level world = entity.getCommandSenderWorld();
         BlockPos pos = entity.blockPosition();
         Biome biome = world.getBiome(pos);
-        TextFormatting green = TextFormatting.GREEN;
-        TextFormatting red = TextFormatting.RED;
+        ChatFormatting green = ChatFormatting.GREEN;
+        ChatFormatting red = ChatFormatting.RED;
 
         Registry<Biome> registry = getBiomeRegistry(world);
         String intId = String.valueOf(registry.getId(biome));
         String regName = registry.getKey(biome).toString();
-        Biome.RainType rainType = biome.getPrecipitation();
+        Biome.Precipitation rainType = biome.getPrecipitation();
 
-        BiomeAmbience effects = biome.getSpecialEffects();
+        BiomeSpecialEffects effects = biome.getSpecialEffects();
         String strFogColor = "?";
         String strSkyColor = "?";
         String strWaterColor = "?";
@@ -138,10 +138,10 @@ public class BiomeDump
 
         try
         {
-            int skyColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "skyColor");
-            int fogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "fogColor");
-            int waterColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "waterColor");
-            int waterFogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "waterFogColor");
+            int skyColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47930_");
+            int fogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47927_");
+            int waterColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47928_");
+            int waterFogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47929_");
             strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
             strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
             strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);
@@ -156,49 +156,49 @@ public class BiomeDump
         String biomeTypes = getBiomeTypesForBiome(world, biome);
         String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(getBiomeKey(biome, world));
         //boolean isOceanic = BiomeManager.oceanBiomes.contains(biome);
-        IFormattableTextComponent textPre = new StringTextComponent("ID: ")
-                                                    .append(new StringTextComponent(intId).withStyle(green))
+        MutableComponent textPre = new TextComponent("ID: ")
+                                                    .append(new TextComponent(intId).withStyle(green))
                                                     .append(" - Registry name: ");
 
-        entity.displayClientMessage(new StringTextComponent("------------- Current biome info ------------"), false);
-        entity.displayClientMessage(OutputUtils.getClipboardCopiableMessage(textPre, new StringTextComponent(regName).withStyle(green), new StringTextComponent("")), false);
+        entity.displayClientMessage(new TextComponent("------------- Current biome info ------------"), false);
+        entity.displayClientMessage(OutputUtils.getClipboardCopiableMessage(textPre, new TextComponent(regName).withStyle(green), new TextComponent("")), false);
 
-        entity.displayClientMessage(new StringTextComponent("Temperature: ")
-                                   .append(new StringTextComponent(strTemperature).withStyle(green)), false);
-        entity.displayClientMessage(new StringTextComponent("RainType: ").append(new StringTextComponent(strRainType).withStyle(green))
-                                   .append(", downfall: ").append(new StringTextComponent(strRainfall).withStyle(green))
-                                   .append(", snows: ").append(new StringTextComponent(strSnowing).withStyle(canSnow ? green : red)), false);
-        entity.displayClientMessage(new StringTextComponent("Depth: ").append(new StringTextComponent(strDepth).withStyle(green))
-                                   .append(", scale: ").append(new StringTextComponent(strScale).withStyle(green))
-                                   .append(", max spawn chance: ").append(new StringTextComponent(strMaxSpawnChance).withStyle(green))
+        entity.displayClientMessage(new TextComponent("Temperature: ")
+                                   .append(new TextComponent(strTemperature).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("RainType: ").append(new TextComponent(strRainType).withStyle(green))
+                                   .append(", downfall: ").append(new TextComponent(strRainfall).withStyle(green))
+                                   .append(", snows: ").append(new TextComponent(strSnowing).withStyle(canSnow ? green : red)), false);
+        entity.displayClientMessage(new TextComponent("Depth: ").append(new TextComponent(strDepth).withStyle(green))
+                                   .append(", scale: ").append(new TextComponent(strScale).withStyle(green))
+                                   .append(", max spawn chance: ").append(new TextComponent(strMaxSpawnChance).withStyle(green))
                 , false);
 
-        entity.displayClientMessage(new StringTextComponent("Fog Color: ")
-                                   .append(new StringTextComponent(strFogColor).withStyle(green)), false);
-        entity.displayClientMessage(new StringTextComponent("Sky Color: ")
-                                   .append(new StringTextComponent(strSkyColor).withStyle(green)), false);
-        entity.displayClientMessage(new StringTextComponent("Water Color Multiplier: ")
-                                   .append(new StringTextComponent(strWaterColor).withStyle(green)), false);
-        entity.displayClientMessage(new StringTextComponent("Water Fog Color: ")
-                                   .append(new StringTextComponent(strWaterFogColor).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Fog Color: ")
+                                   .append(new TextComponent(strFogColor).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Sky Color: ")
+                                   .append(new TextComponent(strSkyColor).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Water Color Multiplier: ")
+                                   .append(new TextComponent(strWaterColor).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Water Fog Color: ")
+                                   .append(new TextComponent(strWaterFogColor).withStyle(green)), false);
 
-        entity.displayClientMessage(new StringTextComponent("Biome types: ")
-                                   .append(new StringTextComponent(biomeTypes).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Biome types: ")
+                                   .append(new TextComponent(biomeTypes).withStyle(green)), false);
 
-        entity.displayClientMessage(new StringTextComponent("Biome dictionary types: ")
-                                   .append(new StringTextComponent(biomeDictionaryTypes).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Biome dictionary types: ")
+                                   .append(new TextComponent(biomeDictionaryTypes).withStyle(green)), false);
 
         if (StringUtils.isBlank(strValidFor) == false)
         {
-            entity.displayClientMessage(new StringTextComponent("Valid for: ")
-                                       .append(new StringTextComponent(strValidFor).withStyle(TextFormatting.AQUA)), false);
+            entity.displayClientMessage(new TextComponent("Valid for: ")
+                                       .append(new TextComponent(strValidFor).withStyle(ChatFormatting.AQUA)), false);
         }
 
         // Get the grass and foliage colors, if called on the client side
         TellMe.dataProvider.getCurrentBiomeInfoClientSide(entity, biome);
     }
 
-    public static List<String> getBiomeDumpIdToName(Format format, @Nullable World world)
+    public static List<String> getBiomeDumpIdToName(Format format, @Nullable Level world)
     {
         List<IdToStringHolder> data = new ArrayList<>();
         List<String> lines = new ArrayList<>();
@@ -234,7 +234,7 @@ public class BiomeDump
         return lines;
     }
 
-    private static String getBiomeTypesForBiome(World world, Biome biome)
+    private static String getBiomeTypesForBiome(Level world, Biome biome)
     {
         Set<String> typeNames = new HashSet<>();
         Registry<Biome> registry = getBiomeRegistry(world);
@@ -263,7 +263,7 @@ public class BiomeDump
         return "";
     }
 
-    private static String getBiomeDictionaryTypesForBiome(RegistryKey<Biome> biomeKey)
+    private static String getBiomeDictionaryTypesForBiome(ResourceKey<Biome> biomeKey)
     {
         List<String> typeStrings = new ArrayList<>();
         Set<BiomeDictionary.Type> types = BiomeDictionary.getTypes(biomeKey);
@@ -291,7 +291,7 @@ public class BiomeDump
             strings.add("spawn");
         }
 
-        for (Structure<?> structure : Structure.STRUCTURES_REGISTRY.values())
+        for (StructureFeature<?> structure : StructureFeature.STRUCTURES_REGISTRY.values())
         {
             if (biome.getGenerationSettings().isValidStart(structure))
             {
@@ -342,9 +342,9 @@ public class BiomeDump
     public static class BiomeDumpContext
     {
         @Nullable
-        public final World world;
+        public final Level world;
 
-        public BiomeDumpContext(@Nullable World world)
+        public BiomeDumpContext(@Nullable Level world)
         {
             this.world = world;
         }
@@ -387,8 +387,8 @@ public class BiomeDump
             String intId = String.valueOf(registry.getId(biome));
             String regName = id.toString();
             String temp = String.format("%5.2f", biome.getBaseTemperature());
-            Biome.RainType precipitation = biome.getPrecipitation();
-            String precStr = precipitation != Biome.RainType.NONE ? precipitation.getName() : "-";
+            Biome.Precipitation precipitation = biome.getPrecipitation();
+            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.getName() : "-";
             String downfall = String.format("%.2f", biome.getDownfall());
 
             dump.addData(intId, regName, temp, precStr, downfall);
@@ -423,8 +423,8 @@ public class BiomeDump
             String intId = String.valueOf(registry.getId(biome));
             String regName = id.toString();
             String temp = String.format("%5.2f", biome.getBaseTemperature());
-            Biome.RainType precipitation = biome.getPrecipitation();
-            String precStr = precipitation != Biome.RainType.NONE ? precipitation.getName() : "-";
+            Biome.Precipitation precipitation = biome.getPrecipitation();
+            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.getName() : "-";
             String downfall = String.format("%.2f", biome.getDownfall());
             String biomeTypes = getBiomeTypesForBiome(ctx.world, biome);
             String biomeDictionaryTypes = getBiomeDictionaryTypesForBiome(getBiomeKey(biome, ctx.world));
@@ -464,7 +464,7 @@ public class BiomeDump
             Registry<Biome> registry = getBiomeRegistry(ctx.world);
             String intId = String.valueOf(registry.getId(biome));
             String regName = id.toString();
-            BiomeAmbience effects = biome.getSpecialEffects();
+            BiomeSpecialEffects effects = biome.getSpecialEffects();
 
             String strFogColor = "?";
             String strSkyColor = "?";
@@ -473,10 +473,10 @@ public class BiomeDump
 
             try
             {
-                int skyColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "skyColor");
-                int fogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "fogColor");
-                int waterColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "waterColor");
-                int waterFogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeAmbience.class, effects, "waterFogColor");
+                int skyColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47930_");
+                int fogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47927_");
+                int waterColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47928_");
+                int waterFogColor = ObfuscationReflectionHelper.getPrivateValue(BiomeSpecialEffects.class, effects, "f_47929_");
                 strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
                 strSkyColor = String.format("0x%08X (%d)", skyColor, skyColor);
                 strWaterColor = String.format("0x%08X (%d)", waterColor, waterColor);

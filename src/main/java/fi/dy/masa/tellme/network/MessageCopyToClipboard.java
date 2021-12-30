@@ -2,17 +2,17 @@ package fi.dy.masa.tellme.network;
 
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.text.StringTextComponent;
-import fi.dy.masa.tellme.TellMe;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
+import fi.dy.masa.tellme.TellMe;
 
 public class MessageCopyToClipboard
 {
     private String str;
 
-    public MessageCopyToClipboard(PacketBuffer buf)
+    public MessageCopyToClipboard(FriendlyByteBuf buf)
     {
         this.str = buf.readUtf();
     }
@@ -22,7 +22,7 @@ public class MessageCopyToClipboard
         this.str = str;
     }
 
-    public void toBytes(PacketBuffer buf)
+    public void toBytes(FriendlyByteBuf buf)
     {
         buf.writeUtf(this.str);
     }
@@ -51,7 +51,7 @@ public class MessageCopyToClipboard
 
                 if (mc.player != null)
                 {
-                    mc.player.displayClientMessage(new StringTextComponent("Copied " + this.str), true);
+                    mc.player.displayClientMessage(new TextComponent("Copied " + this.str), true);
                 }
             });
 

@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.TickableBlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
@@ -25,9 +25,9 @@ public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
     }
 
     @Override
-    public void processChunk(Chunk chunk)
+    public void processChunk(LevelChunk chunk)
     {
-        Map<BlockPos, TileEntity> map = chunk.getBlockEntities();
+        Map<BlockPos, BlockEntity> map = chunk.getBlockEntities();
         ChunkPos pos = chunk.getPos();
         final int count = chunk.getBlockEntities().size();
 
@@ -35,9 +35,9 @@ public class ChunkProcessorTileEntityCounterPerChunk extends ChunkProcessorBase
         {
             int tickingCount = 0;
 
-            for (TileEntity te : map.values())
+            for (BlockEntity te : map.values())
             {
-                if (te instanceof ITickableTileEntity)
+                if (te instanceof TickableBlockEntity)
                 {
                     ++tickingCount;
                 }

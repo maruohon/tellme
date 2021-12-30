@@ -11,14 +11,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 
 public class OutputTypeArgument implements ArgumentType<OutputType>
 {
     private static final ImmutableList<String> TYPE_ARGUMENTS = ImmutableList.copyOf(Arrays.asList(OutputType.values()).stream().map((type) -> type.getArgument()).collect(Collectors.toList()));
-    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new StringTextComponent("No output type given"));
+    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new TextComponent("No output type given"));
 
     public static OutputTypeArgument create()
     {

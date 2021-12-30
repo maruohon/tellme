@@ -11,18 +11,18 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.DimensionArgument;
-import net.minecraft.command.arguments.ILocationArgument;
-import net.minecraft.command.arguments.Vec2Argument;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeManager;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.DimensionArgument;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
+import net.minecraft.commands.arguments.coordinates.Vec2Argument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.phys.Vec2;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
@@ -35,17 +35,17 @@ public class SubCommandBiomeLocate
     private static final Map<UUID, BiomeLocator> BIOME_LOCATORS = Maps.newHashMap();
     private static BiomeLocator consoleBiomeLocator;
 
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<CommandSourceStack> registerSubCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("locate-biome").executes(c -> printHelp(c.getSource())).build();
+        LiteralCommandNode<CommandSourceStack> subCommandRootNode = Commands.literal("locate-biome").executes(c -> printHelp(c.getSource())).build();
 
-        LiteralCommandNode<CommandSource> actionNodeOutputData = Commands.literal("output-data").build();
-        ArgumentCommandNode<CommandSource, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
+        LiteralCommandNode<CommandSourceStack> actionNodeOutputData = Commands.literal("output-data").build();
+        ArgumentCommandNode<CommandSourceStack, OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create())
                 .executes(c -> outputData(c.getSource(),
                         c.getArgument("output_type", OutputType.class),
                         DataDump.Format.ASCII))
                 .build();
-        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
+        ArgumentCommandNode<CommandSourceStack, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create())
                 .executes(c -> outputData(c.getSource(),
                         c.getArgument("output_type", OutputType.class),
                         c.getArgument("output_format", DataDump.Format.class)
@@ -62,24 +62,24 @@ public class SubCommandBiomeLocate
         return subCommandRootNode;
     }
 
-    private static LiteralCommandNode<CommandSource> createNodes(String command, boolean isAppend)
+    private static LiteralCommandNode<CommandSourceStack> createNodes(String command, boolean isAppend)
     {
-        LiteralCommandNode<CommandSource> actionNodeSearch = Commands.literal(command).build();
+        LiteralCommandNode<CommandSourceStack> actionNodeSearch = Commands.literal(command).build();
 
-        ArgumentCommandNode<CommandSource, Integer> argSampleInterval = Commands.argument("sample_interval", IntegerArgumentType.integer(1, Integer.MAX_VALUE)).build();
-        ArgumentCommandNode<CommandSource, Integer> argSampleRadius = Commands.argument("sample_radius",   IntegerArgumentType.integer(1, Integer.MAX_VALUE))
+        ArgumentCommandNode<CommandSourceStack, Integer> argSampleInterval = Commands.argument("sample_interval", IntegerArgumentType.integer(1, Integer.MAX_VALUE)).build();
+        ArgumentCommandNode<CommandSourceStack, Integer> argSampleRadius = Commands.argument("sample_radius",   IntegerArgumentType.integer(1, Integer.MAX_VALUE))
                 .executes(c -> search(c.getSource(), isAppend,
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius")))
                 .build();
 
-        ArgumentCommandNode<CommandSource, ILocationArgument> argCenter = Commands.argument("center", Vec2Argument.vec2())
+        ArgumentCommandNode<CommandSourceStack, Coordinates> argCenter = Commands.argument("center", Vec2Argument.vec2())
                 .executes(c -> search(c.getSource(), isAppend,
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius"),
                         Vec2Argument.getVec2(c, "center")))
                 .build();
-        ArgumentCommandNode<CommandSource, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.dimension())
+        ArgumentCommandNode<CommandSourceStack, ResourceLocation> argDimension = Commands.argument("dimension", DimensionArgument.dimension())
                 .executes(c -> search(c.getSource(), isAppend,
                         IntegerArgumentType.getInteger(c, "sample_interval"),
                         IntegerArgumentType.getInteger(c, "sample_radius"),
@@ -95,7 +95,7 @@ public class SubCommandBiomeLocate
         return actionNodeSearch;
     }
 
-    private static int printHelp(CommandSource source)
+    private static int printHelp(CommandSourceStack source)
     {
         CommandUtils.sendMessage(source, "Searches for the closest location of biomes around the center point.");
         CommandUtils.sendMessage(source, "Usage: /tellme locate-biome <search | search-append> <sample_interval> <sample_radius> [centerX centerZ] [dimension]");
@@ -109,14 +109,14 @@ public class SubCommandBiomeLocate
         return 1;
     }
 
-    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius) throws CommandSyntaxException
+    private static int search(CommandSourceStack source, boolean append, int sampleInterval, int sampleRadius) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
-        Vector2f center = entity != null ? new Vector2f((float) entity.getX(), (float) entity.getZ()) : Vector2f.ZERO;
+        Vec2 center = entity != null ? new Vec2((float) entity.getX(), (float) entity.getZ()) : Vec2.ZERO;
         return search(source, append, sampleInterval, sampleRadius, center);
     }
 
-    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vector2f center) throws CommandSyntaxException
+    private static int search(CommandSourceStack source, boolean append, int sampleInterval, int sampleRadius, Vec2 center) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
 
@@ -128,7 +128,7 @@ public class SubCommandBiomeLocate
         return search(source, append, sampleInterval, sampleRadius, center, entity.getCommandSenderWorld());
     }
 
-    private static int search(CommandSource source, boolean append, int sampleInterval, int sampleRadius, Vector2f center, World world)
+    private static int search(CommandSourceStack source, boolean append, int sampleInterval, int sampleRadius, Vec2 center, Level world)
     {
         Entity entity = source.getEntity();
         BiomeLocator biomeLocator = getBiomeLocatorFor(source, entity);
@@ -144,7 +144,7 @@ public class SubCommandBiomeLocate
         return 1;
     }
 
-    private static int outputData(CommandSource source, OutputType outputType, DataDump.Format format)
+    private static int outputData(CommandSourceStack source, OutputType outputType, DataDump.Format format)
     {
         Entity entity = source.getEntity();
         BiomeLocator biomeLocator = getBiomeLocatorFor(source, entity);
@@ -155,7 +155,7 @@ public class SubCommandBiomeLocate
         return 1;
     }
 
-    private static BiomeLocator getBiomeLocatorFor(final CommandSource source, @Nullable final Entity entity)
+    private static BiomeLocator getBiomeLocatorFor(final CommandSourceStack source, @Nullable final Entity entity)
     {
         if (entity == null)
         {

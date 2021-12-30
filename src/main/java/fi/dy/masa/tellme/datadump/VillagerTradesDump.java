@@ -6,12 +6,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.merchant.villager.VillagerProfession;
-import net.minecraft.entity.merchant.villager.VillagerTrades;
-import net.minecraft.entity.merchant.villager.VillagerTrades.ITrade;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.MerchantOffer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerTrades;
+import net.minecraft.world.entity.npc.VillagerTrades.ItemListing;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.MerchantOffer;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
@@ -30,13 +30,13 @@ public class VillagerTradesDump
             String regName = profession.getRegistryName().toString();
 
             dump.addData(regName, profession.toString(), "", "", "", "");
-            Int2ObjectMap<ITrade[]> map = VillagerTrades.TRADES.get(profession);
+            Int2ObjectMap<ItemListing[]> map = VillagerTrades.TRADES.get(profession);
             ArrayList<Integer> levels = new ArrayList<>(map.keySet());
             Collections.sort(levels);
 
             for (int level : levels)
             {
-                ITrade[] trades = map.get(level);
+                ItemListing[] trades = map.get(level);
 
                 if (trades == null)
                 {
@@ -49,7 +49,7 @@ public class VillagerTradesDump
                 {
                     try
                     {
-                        ITrade trade = trades[i];
+                        ItemListing trade = trades[i];
 
                         // Exclude the map trades, they are super slow to fetch
                         if (trade.getClass().getName().equals("net.minecraft.entity.merchant.villager.VillagerTrades$EmeraldForMapTrade"))

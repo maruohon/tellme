@@ -6,16 +6,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
 
@@ -39,7 +39,7 @@ public class EntityInfo
         List<String> lines = new ArrayList<>();
         lines.add(getBasicEntityInfo(target));
 
-        CompoundNBT nbt = new CompoundNBT();
+        CompoundTag nbt = new CompoundTag();
 
         if (target.save(nbt) == false)
         {
@@ -55,20 +55,20 @@ public class EntityInfo
             lines.add("");
         }
 
-        lines.addAll((new NbtStringifierPretty(targetIsChat ? TextFormatting.GRAY.toString() : null)).getNbtLines(nbt));
+        lines.addAll((new NbtStringifierPretty(targetIsChat ? ChatFormatting.GRAY.toString() : null)).getNbtLines(nbt));
 
         return lines;
     }
 
     public static List<String> getActivePotionEffectsForEntity(LivingEntity entity, DataDump.Format format)
     {
-        Collection<EffectInstance> effects = entity.getActiveEffects();
+        Collection<MobEffectInstance> effects = entity.getActiveEffects();
 
         if (effects.isEmpty() == false)
         {
             DataDump dump = new DataDump(4, format);
 
-            for (EffectInstance effect : effects)
+            for (MobEffectInstance effect : effects)
             {
                 ResourceLocation rl = effect.getEffect().getRegistryName();
 
@@ -89,7 +89,7 @@ public class EntityInfo
         return Collections.emptyList();
     }
 
-    public static void printBasicEntityInfoToChat(PlayerEntity player, Entity target)
+    public static void printBasicEntityInfoToChat(Player player, Entity target)
     {
         ResourceLocation rl = target.getType().getRegistryName();
         String regName = rl != null ? rl.toString() : "null";
@@ -99,13 +99,13 @@ public class EntityInfo
         player.displayClientMessage(OutputUtils.getClipboardCopiableMessage(textPre, regName, textPost), false);
     }
 
-    public static void printFullEntityInfoToConsole(PlayerEntity player, Entity target)
+    public static void printFullEntityInfoToConsole(Player player, Entity target)
     {
         printBasicEntityInfoToChat(player, target);
         OutputUtils.printOutputToConsole(getFullEntityInfo(target, false));
     }
 
-    public static void dumpFullEntityInfoToFile(PlayerEntity player, Entity target)
+    public static void dumpFullEntityInfoToFile(Player player, Entity target)
     {
         printBasicEntityInfoToChat(player, target);
         File file = DataDump.dumpDataToFile("entity_data", getFullEntityInfo(target, false));
@@ -118,7 +118,7 @@ public class EntityInfo
 
         if (server != null)
         {
-            for (PlayerEntity player : server.getPlayerList().getPlayers())
+            for (Player player : server.getPlayerList().getPlayers())
             {
                 String name = player.getName().getString();
                 String dim = WorldUtils.getDimensionId(player.getCommandSenderWorld());

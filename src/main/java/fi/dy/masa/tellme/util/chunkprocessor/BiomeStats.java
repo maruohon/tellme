@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -35,7 +35,7 @@ public class BiomeStats
     public void getFullBiomeDistribution(BiomeManager biomeManager, BlockPos posMin, BlockPos posMax)
     {
         Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<>();
-        BlockPos.Mutable posMutable = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos posMutable = new BlockPos.MutableBlockPos();
         final long timeBefore = System.nanoTime();
         final int xMin = posMin.getX();
         final int zMin = posMin.getZ();
@@ -64,7 +64,7 @@ public class BiomeStats
     public void getSampledBiomeDistribution(BiomeManager biomeManager, int centerX, int centerZ, int sampleInterval, int sampleRadius)
     {
         Object2LongOpenHashMap<Biome> counts = new Object2LongOpenHashMap<>();
-        BlockPos.Mutable posMutable = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos posMutable = new BlockPos.MutableBlockPos();
         final long timeBefore = System.nanoTime();
         final int endX = centerX + sampleRadius * sampleInterval;
         final int endZ = centerZ + sampleRadius * sampleInterval;

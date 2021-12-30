@@ -3,9 +3,9 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -19,7 +19,7 @@ public class DimensionDump
 
         if (server != null)
         {
-            for (World world : server.getAllLevels())
+            for (Level world : server.getAllLevels())
             {
                 DimensionType dim = world.dimensionType();
                 String dimId = WorldUtils.getDimensionId(world);
@@ -79,7 +79,7 @@ public class DimensionDump
 
         if (server != null)
         {
-            for (ServerWorld world : server.getAllLevels())
+            for (ServerLevel world : server.getAllLevels())
             {
                 String dimId = WorldUtils.getDimensionId(world);
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));

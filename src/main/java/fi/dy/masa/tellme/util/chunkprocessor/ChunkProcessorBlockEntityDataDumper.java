@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -22,7 +22,7 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 {
     private final List<BlockEntityDataEntry> data = new ArrayList<>();
-    private final Set<TileEntityType<?>> filters = new HashSet<>();
+    private final Set<BlockEntityType<?>> filters = new HashSet<>();
 
     public ChunkProcessorBlockEntityDataDumper(DataDump.Format format, Collection<String> filtersIn)
     {
@@ -41,7 +41,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
             {
                 ResourceLocation id = new ResourceLocation(str);
                 @SuppressWarnings("deprecation")
-                Optional<TileEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOptional(id);
+                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOptional(id);
                 type.ifPresent(this.filters::add);
             }
             catch (Exception e)
@@ -52,13 +52,13 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
     }
 
     @Override
-    public void processChunk(Chunk chunk)
+    public void processChunk(LevelChunk chunk)
     {
-        Map<BlockPos, TileEntity> blockEntities = chunk.getBlockEntities();
-        Set<TileEntityType<?>> filters = this.filters;
+        Map<BlockPos, BlockEntity> blockEntities = chunk.getBlockEntities();
+        Set<BlockEntityType<?>> filters = this.filters;
         boolean noFilters = filters.isEmpty();
-        Vector3d min = this.minPos;
-        Vector3d max = this.maxPos;
+        Vec3 min = this.minPos;
+        Vec3 max = this.maxPos;
         boolean hasBox = min != null && max != null;
         int minX = min != null ? (int) Math.floor(min.x) : 0;
         int minY = min != null ? (int) Math.floor(min.y) : 0;
@@ -67,9 +67,9 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
         int maxY = max != null ? (int) Math.floor(max.y) : 0;
         int maxZ = max != null ? (int) Math.floor(max.z) : 0;
 
-        for (TileEntity be : blockEntities.values())
+        for (BlockEntity be : blockEntities.values())
         {
-            TileEntityType<?> type = be.getType();
+            BlockEntityType<?> type = be.getType();
 
             if (noFilters || filters.contains(type))
             {
@@ -92,7 +92,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
                     try
                     {
-                        CompoundNBT tag = be.save(new CompoundNBT());
+                        CompoundTag tag = be.save(new CompoundTag());
                         this.data.add(new BlockEntityDataEntry(pos, id.toString(), tag.toString()));
                     }
                     catch (Exception e)

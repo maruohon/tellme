@@ -11,14 +11,14 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
 import fi.dy.masa.tellme.command.CommandUtils;
 
 public class FileArgument implements ArgumentType<File>
 {
-    public static final DynamicCommandExceptionType NO_SUCH_FILE_EXCEPTION = new DynamicCommandExceptionType((v) -> new StringTextComponent("No such file: " + v));
-    private static final SimpleCommandExceptionType EMPTY_FILE_NAME = new SimpleCommandExceptionType(new StringTextComponent("Empty file name"));
-    private static final SimpleCommandExceptionType NO_DIRECTORY = new SimpleCommandExceptionType(new StringTextComponent("No base directory set"));
+    public static final DynamicCommandExceptionType NO_SUCH_FILE_EXCEPTION = new DynamicCommandExceptionType((v) -> new TextComponent("No such file: " + v));
+    private static final SimpleCommandExceptionType EMPTY_FILE_NAME = new SimpleCommandExceptionType(new TextComponent("Empty file name"));
+    private static final SimpleCommandExceptionType NO_DIRECTORY = new SimpleCommandExceptionType(new TextComponent("No base directory set"));
 
     @Nullable private final File dir;
     private final boolean shouldExist;

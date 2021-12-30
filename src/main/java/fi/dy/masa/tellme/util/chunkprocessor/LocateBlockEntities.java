@@ -7,15 +7,15 @@ import java.util.Optional;
 import java.util.Set;
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -23,7 +23,7 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class LocateBlockEntities extends LocateBase
 {
-    protected final Set<TileEntityType<?>> filters;
+    protected final Set<BlockEntityType<?>> filters;
 
     protected LocateBlockEntities(DataDump.Format format, List<String> filterStrings) throws CommandSyntaxException
     {
@@ -32,9 +32,9 @@ public class LocateBlockEntities extends LocateBase
         this.filters = this.generateTileEntityFilters(filterStrings);
     }
 
-    protected Set<TileEntityType<?>> generateTileEntityFilters(List<String> filterStrings) throws CommandSyntaxException
+    protected Set<BlockEntityType<?>> generateTileEntityFilters(List<String> filterStrings) throws CommandSyntaxException
     {
-        Set<TileEntityType<?>> set = Sets.newIdentityHashSet();
+        Set<BlockEntityType<?>> set = Sets.newIdentityHashSet();
 
         for (String name : filterStrings)
         {
@@ -42,7 +42,7 @@ public class LocateBlockEntities extends LocateBase
             {
                 ResourceLocation key = new ResourceLocation(name);
                 @SuppressWarnings("deprecation")
-                Optional<TileEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOptional(key);
+                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOptional(key);
 
                 if (type.isPresent())
                 {
@@ -65,13 +65,13 @@ public class LocateBlockEntities extends LocateBase
     }
 
     @Override
-    public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
+    public void processChunks(Collection<LevelChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         final long timeBefore = System.currentTimeMillis();
-        Set<TileEntityType<?>> filters = this.filters;
+        Set<BlockEntityType<?>> filters = this.filters;
         int count = 0;
 
-        for (Chunk chunk : chunks)
+        for (LevelChunk chunk : chunks)
         {
             if (this.data.size() >= 100000)
             {
@@ -88,18 +88,18 @@ public class LocateBlockEntities extends LocateBase
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
-            MutableBoundingBox box = MutableBoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
+            BoundingBox box = BoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
 
-            for (TileEntity te : chunk.getBlockEntities().values())
+            for (BlockEntity te : chunk.getBlockEntities().values())
             {
                 BlockPos pos = te.getBlockPos();
-                TileEntityType<?> type = te.getType();
+                BlockEntityType<?> type = te.getType();
                 //System.out.printf("plop @ %s - box: %s\n", pos, box);
 
                 if (filters.contains(type) && box.isInside(pos))
                 {
                     String name = BlockInfo.getBlockEntityNameFor(type);
-                    this.data.add(LocationData.of(name, dim, new Vector3d(pos.getX(), pos.getY(), pos.getZ())));
+                    this.data.add(LocationData.of(name, dim, new Vec3(pos.getX(), pos.getY(), pos.getZ())));
                     count++;
                 }
             }

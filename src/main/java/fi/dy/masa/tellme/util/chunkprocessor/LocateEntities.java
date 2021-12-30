@@ -7,15 +7,15 @@ import java.util.Optional;
 import java.util.Set;
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ClassInstanceMultiMap;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.AABB;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -65,13 +65,13 @@ public class LocateEntities extends LocateBase
     }
 
     @Override
-    public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
+    public void processChunks(Collection<LevelChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         final long timeBefore = System.currentTimeMillis();
         Set<EntityType<?>> filters = this.filters;
         int count = 0;
 
-        for (Chunk chunk : chunks)
+        for (LevelChunk chunk : chunks)
         {
             ChunkPos chunkPos = chunk.getPos();
             final String dim = WorldUtils.getDimensionId(chunk.getLevel());
@@ -81,11 +81,11 @@ public class LocateEntities extends LocateBase
             final int xMax = Math.min((chunkPos.x << 4) + 16, posMax.getX());
             final int yMax = Math.min(256, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 16, posMax.getZ());
-            AxisAlignedBB bb = new AxisAlignedBB(xMin, yMin, zMin, xMax, yMax, zMax);
+            AABB bb = new AABB(xMin, yMin, zMin, xMax, yMax, zMax);
 
             for (int i = 0; i < chunk.getEntitySections().length; i++)
             {
-                ClassInheritanceMultiMap<Entity> map = chunk.getEntitySections()[i];
+                ClassInstanceMultiMap<Entity> map = chunk.getEntitySections()[i];
 
                 for (Entity entity : map)
                 {

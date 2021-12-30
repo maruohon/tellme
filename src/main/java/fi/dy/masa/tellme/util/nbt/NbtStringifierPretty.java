@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.util.Constants;
 
 public class NbtStringifierPretty extends NbtStringifierBase
@@ -21,7 +21,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
         super(false, baseColor);
     }
 
-    public List<String> getNbtLines(CompoundNBT tag)
+    public List<String> getNbtLines(CompoundTag tag)
     {
         this.lines = new ArrayList<>();
         this.setIndentationLevel(0);
@@ -61,7 +61,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
     }
 
     @Override
-    protected void appendPrimitive(String tagName, INBT tag)
+    protected void appendPrimitive(String tagName, Tag tag)
     {
         String tagType = tag.getType().getPrettyName();
         String value = this.getFormattedPrimitiveString(tag);
@@ -71,7 +71,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
     }
 
     @Override
-    protected void appendCompound(String tagName, CompoundNBT compound)
+    protected void appendCompound(String tagName, CompoundTag compound)
     {
         List<String> keys = Lists.newArrayList(compound.getAllKeys());
         Collections.sort(keys);
@@ -85,7 +85,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
         for (String key : keys)
         {
-            INBT tag = compound.get(key);
+            Tag tag = compound.get(key);
             this.appendTag(key, tag);
         }
 
@@ -94,7 +94,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
     }
 
     @Override
-    protected void appendList(String tagName, ListNBT list)
+    protected void appendList(String tagName, ListTag list)
     {
         final int size = list.size();
 
@@ -108,7 +108,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
         for (int i = 0; i < size; ++i)
         {
-            INBT tag = list.get(i);
+            Tag tag = list.get(i);
             this.appendTag("", tag);
         }
 

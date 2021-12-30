@@ -1,12 +1,12 @@
 package fi.dy.masa.tellme.util;
 
 import java.lang.invoke.MethodHandle;
-import net.minecraft.util.ResourceLocation;
-import fi.dy.masa.tellme.TellMe;
-import fi.dy.masa.tellme.util.MethodHandleUtils.UnableToFindMethodHandleException;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.MethodHandleUtils.UnableToFindMethodHandleException;
 
 public class RegistryUtils
 {

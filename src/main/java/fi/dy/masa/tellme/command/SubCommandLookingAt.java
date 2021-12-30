@@ -6,13 +6,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.util.BlockInfo;
@@ -23,15 +23,15 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLookingAt
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<CommandSourceStack> registerSubCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("looking-at")
+        LiteralCommandNode<CommandSourceStack> subCommandRootNode = Commands.literal("looking-at")
                 .executes(c -> execute(OutputType.CHAT, c.getSource(), false)).build();
 
-        ArgumentCommandNode<CommandSource, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create())
+        ArgumentCommandNode<CommandSourceStack, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create())
                 .executes(c -> execute(c.getArgument("output_type", OutputType.class), c.getSource(), false)).build();
 
-        LiteralCommandNode<CommandSource> adjacentNode = Commands.literal("adjacent")
+        LiteralCommandNode<CommandSourceStack> adjacentNode = Commands.literal("adjacent")
                 .executes(c -> execute(c.getArgument("output_type", OutputType.class), c.getSource(), true)).build();
 
         subCommandRootNode.addChild(outputTypeNode);
@@ -40,32 +40,32 @@ public class SubCommandLookingAt
         return subCommandRootNode;
     }
 
-    private static int execute(OutputType outputType, CommandSource source, boolean adjacent) throws CommandSyntaxException
+    private static int execute(OutputType outputType, CommandSourceStack source, boolean adjacent) throws CommandSyntaxException
     {
-        if ((source.getEntity() instanceof PlayerEntity) == false)
+        if ((source.getEntity() instanceof Player) == false)
         {
             throw CommandUtils.NOT_A_PLAYER_EXCEPTION.create();
         }
 
-        handleLookedAtObject((PlayerEntity) source.getEntity(), outputType, adjacent);
+        handleLookedAtObject((Player) source.getEntity(), outputType, adjacent);
         return 1;
     }
 
-    private static void handleLookedAtObject(PlayerEntity player, OutputType outputType, boolean adjacent)
+    private static void handleLookedAtObject(Player player, OutputType outputType, boolean adjacent)
     {
-        World world = player.getCommandSenderWorld();
-        RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(world, player, true, 10d);
+        Level world = player.getCommandSenderWorld();
+        HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, player, true, 10d);
         List<String> lines = null;
         String fileName = "looking_at_";
 
-        if (trace.getType() == RayTraceResult.Type.BLOCK)
+        if (trace.getType() == HitResult.Type.BLOCK)
         {
             lines = BlockInfo.getBlockInfoFromRayTracedTarget(world, player, trace, adjacent, outputType == OutputType.CHAT);
             fileName += "block";
         }
-        else if (trace.getType() == RayTraceResult.Type.ENTITY)
+        else if (trace.getType() == HitResult.Type.ENTITY)
         {
-            lines = EntityInfo.getFullEntityInfo(((EntityRayTraceResult) trace).getEntity(), outputType == OutputType.CHAT);
+            lines = EntityInfo.getFullEntityInfo(((EntityHitResult) trace).getEntity(), outputType == OutputType.CHAT);
             fileName += "entity";
         }
 
@@ -75,7 +75,7 @@ public class SubCommandLookingAt
         }
         else
         {
-            player.displayClientMessage(new StringTextComponent("Not currently looking at anything within range"), false);
+            player.displayClientMessage(new TextComponent("Not currently looking at anything within range"), false);
         }
     }
 }

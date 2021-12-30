@@ -16,27 +16,27 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FallingBlock;
-import net.minecraft.entity.ai.attributes.Attribute;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Food;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ToolItem;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.RecipeManager;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -63,7 +63,7 @@ public class ItemDump
     {
         DataDump itemDump = new DataDump(provider.getColumnCount(), format);
 
-        for (Map.Entry<RegistryKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        for (Map.Entry<ResourceKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
             Item item = entry.getValue();
             provider.addLine(itemDump, new ItemStack(item), item.getRegistryName());
@@ -84,7 +84,7 @@ public class ItemDump
         {
             RecipeManager manager = server.getRecipeManager();
 
-            for (IRecipe<?> recipe : manager.getRecipes())
+            for (Recipe<?> recipe : manager.getRecipes())
             {
                 ItemStack stack = recipe.getResultItem();
 
@@ -113,7 +113,7 @@ public class ItemDump
             ResourceLocation rl = stack.getItem().getRegistryName();
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = stack.getHoverName().getString();
-            displayName = TextFormatting.stripFormatting(displayName);
+            displayName = ChatFormatting.stripFormatting(displayName);
 
             return String.format("[%s - '%s']", regName, displayName);
         }
@@ -128,7 +128,7 @@ public class ItemDump
             ResourceLocation rl = stack.getItem().getRegistryName();
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = stack.getHoverName().getString();
-            displayName = TextFormatting.stripFormatting(displayName);
+            displayName = ChatFormatting.stripFormatting(displayName);
             String nbt = stack.getTag() != null ? stack.getTag().toString() : "<no NBT>";
 
             return String.format("[%s - '%s' - %s]", regName, displayName, nbt);
@@ -137,12 +137,12 @@ public class ItemDump
         return DataDump.EMPTY_STRING;
     }
 
-    public static String getJsonItemsWithPropsDump(PlayerEntity player)
+    public static String getJsonItemsWithPropsDump(Player player)
     {
         HashMultimap<String, ResourceLocation> map = HashMultimap.create(10000, 16);
 
         // Get a mapping of modName => collection-of-block-names
-        for (Map.Entry<RegistryKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        for (Map.Entry<ResourceKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
             ResourceLocation key = entry.getValue().getRegistryName();
             map.put(key.getNamespace(), key);
@@ -175,7 +175,7 @@ public class ItemDump
         return gson.toJson(root);
     }
 
-    private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, ResourceLocation rl, PlayerEntity player)
+    private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, ResourceLocation rl, Player player)
     {
         int id = Item.getId(item);
         ItemStack stack = new ItemStack(item);
@@ -185,7 +185,7 @@ public class ItemDump
         String tags = getTagNamesJoined(item);
         String regName = rl != null ? rl.toString() : "<null>";
         String displayName = stack.getHoverName().getString();
-        displayName = TextFormatting.stripFormatting(displayName);
+        displayName = ChatFormatting.stripFormatting(displayName);
 
         JsonObject obj = new JsonObject();
         obj.add("RegistryName", new JsonPrimitive(regName));
@@ -206,7 +206,7 @@ public class ItemDump
         {
             try
             {
-                World world = player.getCommandSenderWorld();
+                Level world = player.getCommandSenderWorld();
                 BlockPos pos = BlockPos.ZERO;
                 Block block = ((BlockItem) item).getBlock();
                 BlockState state = block.defaultBlockState();
@@ -238,7 +238,7 @@ public class ItemDump
         }
         else if (item.isEdible())
         {
-            Food food = item.getFoodProperties();
+            FoodProperties food = item.getFoodProperties();
             String hunger = stack.isEmpty() == false ? String.valueOf(food.getNutrition()) : "?";
             String saturation = stack.isEmpty() == false ? String.valueOf(food.getSaturationModifier()) : "?";
 
@@ -262,13 +262,13 @@ public class ItemDump
                 obj.add("ToolTypes", new JsonPrimitive(String.join(",", toolTypeNames)));
                 obj.add("HarvestLevels", new JsonPrimitive(levels));
 
-                if (item instanceof ToolItem)
+                if (item instanceof DiggerItem)
                 {
-                    obj.add("ToolMaterial", new JsonPrimitive(((ToolItem) item).getTier().toString()));
+                    obj.add("ToolMaterial", new JsonPrimitive(((DiggerItem) item).getTier().toString()));
                 }
             }
 
-            Multimap<Attribute, AttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlotType.MAINHAND, stack);
+            Multimap<Attribute, AttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlot.MAINHAND, stack);
 
             if (attributes.isEmpty() == false)
             {

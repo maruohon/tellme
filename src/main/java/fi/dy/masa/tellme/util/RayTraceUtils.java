@@ -3,21 +3,21 @@ package fi.dy.masa.tellme.util;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class RayTraceUtils
 {
     @Nonnull
-    public static RayTraceResult getRayTraceFromEntity(World worldIn, Entity entityIn, boolean useLiquids)
+    public static HitResult getRayTraceFromEntity(Level worldIn, Entity entityIn, boolean useLiquids)
     {
         double reach = 6.0d;
 
@@ -32,36 +32,36 @@ public class RayTraceUtils
     }
 
     @Nonnull
-    public static RayTraceResult getRayTraceFromEntity(World worldIn, Entity entityIn, boolean useLiquids, double range)
+    public static HitResult getRayTraceFromEntity(Level worldIn, Entity entityIn, boolean useLiquids, double range)
     {
-        Vector3d eyesVec = new Vector3d(entityIn.getX(), entityIn.getY() + entityIn.getEyeHeight(), entityIn.getZ());
-        Vector3d rangedLookRot = entityIn.getViewVector(1f).scale(range);
-        Vector3d lookVec = eyesVec.add(rangedLookRot);
+        Vec3 eyesVec = new Vec3(entityIn.getX(), entityIn.getY() + entityIn.getEyeHeight(), entityIn.getZ());
+        Vec3 rangedLookRot = entityIn.getViewVector(1f).scale(range);
+        Vec3 lookVec = eyesVec.add(rangedLookRot);
 
-        RayTraceContext ctx = new RayTraceContext(eyesVec, lookVec, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.ANY, entityIn);
-        RayTraceResult result = worldIn.clip(ctx);
+        ClipContext ctx = new ClipContext(eyesVec, lookVec, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, entityIn);
+        HitResult result = worldIn.clip(ctx);
 
         if (result == null)
         {
-            result = BlockRayTraceResult.miss(Vector3d.ZERO, Direction.UP, BlockPos.ZERO);
+            result = BlockHitResult.miss(Vec3.ZERO, Direction.UP, BlockPos.ZERO);
         }
 
-        AxisAlignedBB bb = entityIn.getBoundingBox().expandTowards(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expandTowards(1d, 1d, 1d);
+        AABB bb = entityIn.getBoundingBox().expandTowards(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expandTowards(1d, 1d, 1d);
         List<Entity> list = worldIn.getEntities(entityIn, bb);
 
-        double closest = result.getType() == RayTraceResult.Type.BLOCK ? eyesVec.distanceTo(result.getLocation()) : Double.MAX_VALUE;
-        Vector3d entityTraceHitPos = null;
+        double closest = result.getType() == HitResult.Type.BLOCK ? eyesVec.distanceTo(result.getLocation()) : Double.MAX_VALUE;
+        Vec3 entityTraceHitPos = null;
         Entity targetEntity = null;
 
         for (int i = 0; i < list.size(); i++)
         {
             Entity entity = list.get(i);
             bb = entity.getBoundingBox();
-            Optional<Vector3d> optional = bb.clip(eyesVec, lookVec);
+            Optional<Vec3> optional = bb.clip(eyesVec, lookVec);
 
             if (optional.isPresent())
             {
-                Vector3d hitPos = optional.get();
+                Vec3 hitPos = optional.get();
                 double distance = eyesVec.distanceTo(hitPos);
 
                 if (distance <= closest)
@@ -75,7 +75,7 @@ public class RayTraceUtils
 
         if (targetEntity != null)
         {
-            result = new EntityRayTraceResult(targetEntity, entityTraceHitPos);
+            result = new EntityHitResult(targetEntity, entityTraceHitPos);
         }
 
         return result;

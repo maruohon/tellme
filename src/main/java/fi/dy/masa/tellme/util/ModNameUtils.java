@@ -2,8 +2,8 @@ package fi.dy.masa.tellme.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 
@@ -22,7 +22,7 @@ public class ModNameUtils
         {
             for (ModInfo modInfo : ModList.get().getMods())
             {
-                String modName = TextFormatting.stripFormatting(modInfo.getDisplayName());
+                String modName = ChatFormatting.stripFormatting(modInfo.getDisplayName());
                 MOD_IDS_TO_NAMES.put(modInfo.getModId(), modName);
             }
         }

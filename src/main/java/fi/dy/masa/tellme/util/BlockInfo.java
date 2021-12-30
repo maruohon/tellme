@@ -14,23 +14,23 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.state.Property;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
@@ -160,7 +160,7 @@ public class BlockInfo
         return props;
     }
 
-    private static String getTileInfo(World world, BlockPos pos)
+    private static String getTileInfo(Level world, BlockPos pos)
     {
         String teInfo;
         BlockState state = world.getBlockState(pos);
@@ -180,7 +180,7 @@ public class BlockInfo
         return teInfo;
     }
 
-    private static List<String> getFullBlockInfo(World world, BlockPos pos, boolean targetIsChat)
+    private static List<String> getFullBlockInfo(Level world, BlockPos pos, boolean targetIsChat)
     {
         List<String> lines = new ArrayList<>();
         BlockData data = BlockData.getFor(world, pos);
@@ -217,16 +217,16 @@ public class BlockInfo
             lines.add("BlockState properties: <none>");
         }
 
-        TileEntity te = world.getBlockEntity(pos);
+        BlockEntity te = world.getBlockEntity(pos);
 
         if (te != null)
         {
-            CompoundNBT nbt = new CompoundNBT();
+            CompoundTag nbt = new CompoundTag();
             te.save(nbt);
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
-            lines.add("BlockEntity NBT (from BlockEntity::write()):");
-            lines.addAll((new NbtStringifierPretty(targetIsChat ? TextFormatting.GRAY.toString() : null)).getNbtLines(nbt));
+            lines.add("BlockEntity NBT (from BlockEntity::save()):");
+            lines.addAll((new NbtStringifierPretty(targetIsChat ? ChatFormatting.GRAY.toString() : null)).getNbtLines(nbt));
         }
 
         return lines;
@@ -237,18 +237,18 @@ public class BlockInfo
         return MATERIAL_NAMES.getOrDefault(material, "<unknown>");
     }
 
-    public static void printBasicBlockInfoToChat(PlayerEntity entity, World world, BlockPos pos)
+    public static void printBasicBlockInfoToChat(Player entity, Level world, BlockPos pos)
     {
         entity.displayClientMessage(BlockData.getFor(world, pos).toChatMessage(), false);
     }
 
     @Nullable
-    public static List<String> getBlockInfoFromRayTracedTarget(World world, PlayerEntity entity, RayTraceResult trace, boolean adjacent, boolean targetIsChat)
+    public static List<String> getBlockInfoFromRayTracedTarget(Level world, Player entity, HitResult trace, boolean adjacent, boolean targetIsChat)
     {
         // Ray traced to a block
-        if (trace.getType() == RayTraceResult.Type.BLOCK)
+        if (trace.getType() == HitResult.Type.BLOCK)
         {
-            BlockRayTraceResult hit = (BlockRayTraceResult) trace;
+            BlockHitResult hit = (BlockHitResult) trace;
             BlockPos pos = adjacent ? hit.getBlockPos().relative(hit.getDirection()) : hit.getBlockPos();
             BlockInfo.printBasicBlockInfoToChat(entity, world, pos);
 
@@ -325,7 +325,7 @@ public class BlockInfo
             this.teInfo = teInfo;
         }
 
-        public static BlockData getFor(World world, BlockPos pos)
+        public static BlockData getFor(Level world, BlockPos pos)
         {
             BlockState state = world.getBlockState(pos);
             Block block = state.getBlock();
@@ -343,13 +343,13 @@ public class BlockInfo
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = (new TranslationTextComponent(block.getDescriptionId())).getString();
+                displayName = (new TranslatableComponent(block.getDescriptionId())).getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));
         }
 
-        public ITextComponent toChatMessage()
+        public Component toChatMessage()
         {
             String textPre = String.format("%s (", this.displayName);
             String textPost = String.format(") %s", this.teInfo);
@@ -364,9 +364,9 @@ public class BlockInfo
         }
     }
 
-    public static String getBlockEntityNameFor(TileEntityType<?> type)
+    public static String getBlockEntityNameFor(BlockEntityType<?> type)
     {
-        ResourceLocation id = TileEntityType.getKey(type);
+        ResourceLocation id = BlockEntityType.getKey(type);
         return id != null ? id.toString() : "<null>";
     }
 }

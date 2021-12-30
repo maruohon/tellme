@@ -10,10 +10,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.datadump.BlockDump;
@@ -23,12 +23,12 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandDumpJson
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<CommandSourceStack> registerSubCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("dump-json").build();
+        LiteralCommandNode<CommandSourceStack> subCommandRootNode = Commands.literal("dump-json").build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> dumpTypesNode =
+        ArgumentCommandNode<CommandSourceStack, List<String>> dumpTypesNode =
                 Commands.argument("dump_types",
                         StringCollectionArgument.create(() -> ImmutableList.of("blocks", "items-with-props"), "No dump types given"))
                 .executes(c -> execute(c, (List<String>) c.getArgument("dump_types", List.class))).build();
@@ -38,7 +38,7 @@ public class SubCommandDumpJson
         return subCommandRootNode;
     }
 
-    private static int execute(CommandContext<CommandSource> ctx, List<String> types) throws CommandSyntaxException
+    private static int execute(CommandContext<CommandSourceStack> ctx, List<String> types) throws CommandSyntaxException
     {
         @Nullable Entity entity = ctx.getSource().getEntity();
 
@@ -63,7 +63,7 @@ public class SubCommandDumpJson
         switch (type)
         {
             case "blocks":              return BlockDump.getJsonBlockDump();
-            case "items-with-props":    if (entity instanceof PlayerEntity) { return ItemDump.getJsonItemsWithPropsDump((PlayerEntity) entity); } break;
+            case "items-with-props":    if (entity instanceof Player) { return ItemDump.getJsonItemsWithPropsDump((Player) entity); } break;
         }
 
         return null;

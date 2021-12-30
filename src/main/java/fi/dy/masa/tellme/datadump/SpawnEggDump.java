@@ -2,7 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import net.minecraft.item.SpawnEggItem;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -18,8 +18,8 @@ public class SpawnEggDump
 
         try
         {
-            fieldPrimaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "color1");
-            fieldSecondaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "color2");
+            fieldPrimaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "f_151200_");
+            fieldSecondaryColor = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "f_151201_");
         }
         catch (Exception e)
         {

@@ -5,24 +5,24 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.MessageArgument;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.MessageArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.fml.network.NetworkDirection;
 import fi.dy.masa.tellme.network.MessageCopyToClipboard;
 import fi.dy.masa.tellme.network.PacketHandler;
-import net.minecraftforge.fml.network.NetworkDirection;
 
 public class SubCommandCopyToClipboard
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<CommandSourceStack> registerSubCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("copy-to-clipboard").build();
+        LiteralCommandNode<CommandSourceStack> subCommandRootNode = Commands.literal("copy-to-clipboard").build();
 
-        ArgumentCommandNode<CommandSource, MessageArgument.Message> messageNode = Commands.argument("message", MessageArgument.message())
+        ArgumentCommandNode<CommandSourceStack, MessageArgument.Message> messageNode = Commands.argument("message", MessageArgument.message())
                 .executes(c -> execute(c.getSource(), MessageArgument.getMessage(c, "message"))).build();
 
         subCommandRootNode.addChild(messageNode);
@@ -30,18 +30,18 @@ public class SubCommandCopyToClipboard
         return subCommandRootNode;
     }
 
-    private static int execute(CommandSource source, ITextComponent message) throws CommandSyntaxException
+    private static int execute(CommandSourceStack source, Component message) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
 
-        if (entity instanceof ServerPlayerEntity)
+        if (entity instanceof ServerPlayer)
         {
             PacketHandler.INSTANCE.sendTo(new MessageCopyToClipboard(message.getString()),
-                    ((ServerPlayerEntity) entity).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                    ((ServerPlayer) entity).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
         }
         else
         {
-            source.sendSuccess(new StringTextComponent("'/tellme copy-to-clipboard' can only be run by a player"), false);
+            source.sendSuccess(new TextComponent("'/tellme copy-to-clipboard' can only be run by a player"), false);
             return -1;
         }
 

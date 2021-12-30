@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -54,17 +54,17 @@ public class ItemInfo
 
         List<String> lines = new ArrayList<>();
         lines.add("");
-        lines.addAll((new NbtStringifierPretty(TextFormatting.GRAY.toString())).getNbtLines(stack.getTag()));
+        lines.addAll((new NbtStringifierPretty(ChatFormatting.GRAY.toString())).getNbtLines(stack.getTag()));
 
         return lines;
     }
 
-    public static void printBasicItemInfoToChat(PlayerEntity entity, @Nonnull ItemStack stack)
+    public static void printBasicItemInfoToChat(Player entity, @Nonnull ItemStack stack)
     {
         entity.displayClientMessage(ItemData.getFor(stack).toChatMessage(), false);
     }
 
-    public static void printItemInfo(PlayerEntity entity, @Nonnull ItemStack stack, OutputType outputType)
+    public static void printItemInfo(Player entity, @Nonnull ItemStack stack, OutputType outputType)
     {
         printBasicItemInfoToChat(entity, stack);
 
@@ -115,7 +115,7 @@ public class ItemInfo
             return new ItemData(stack.getHoverName().getString(), registryName, Item.getId(stack.getItem()), nbtInfo);
         }
 
-        public ITextComponent toChatMessage()
+        public Component toChatMessage()
         {
             String textPre = String.format("%s (", this.displayName);
             String textPost = String.format(" - id: %d) %s", this.id, this.nbtInfo);

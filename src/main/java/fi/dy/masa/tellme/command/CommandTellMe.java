@@ -2,10 +2,10 @@ package fi.dy.masa.tellme.command;
 
 import java.util.Collections;
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.ArgumentSerializer;
-import net.minecraft.command.arguments.ArgumentTypes;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.synchronization.ArgumentTypes;
+import net.minecraft.commands.synchronization.EmptyArgumentSerializer;
 import fi.dy.masa.tellme.command.argument.BiomeArgument;
 import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
 import fi.dy.masa.tellme.command.argument.FileArgument;
@@ -16,28 +16,28 @@ import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 
 public class CommandTellMe
 {
-    public static void registerServerCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static void registerServerCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         register(dispatcher, "tellme", 4);
     }
 
-    public static void registerClientCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static void registerClientCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         register(dispatcher, "ctellme", 0);
     }
 
     public static void registerArgumentTypes()
     {
-        ArgumentTypes.register("tellme:biome", BiomeArgument.class, new ArgumentSerializer<>(BiomeArgument::create));
-        ArgumentTypes.register("tellme:block_grouping", BlockStateCountGroupingArgument.class, new ArgumentSerializer<>(BlockStateCountGroupingArgument::create));
-        ArgumentTypes.register("tellme:file", FileArgument.class, new ArgumentSerializer<>(FileArgument::createEmpty));
-        ArgumentTypes.register("tellme:grouping", GroupingArgument.class, new ArgumentSerializer<>(GroupingArgument::create));
-        ArgumentTypes.register("tellme:output_format", OutputFormatArgument.class, new ArgumentSerializer<>(OutputFormatArgument::create));
-        ArgumentTypes.register("tellme:output_type", OutputTypeArgument.class, new ArgumentSerializer<>(OutputTypeArgument::create));
-        ArgumentTypes.register("tellme:string_collection", StringCollectionArgument.class, new ArgumentSerializer<>(() -> StringCollectionArgument.create(() -> Collections.emptyList(), "")));
+        ArgumentTypes.register("tellme:biome", BiomeArgument.class, new EmptyArgumentSerializer<>(BiomeArgument::create));
+        ArgumentTypes.register("tellme:block_grouping", BlockStateCountGroupingArgument.class, new EmptyArgumentSerializer<>(BlockStateCountGroupingArgument::create));
+        ArgumentTypes.register("tellme:file", FileArgument.class, new EmptyArgumentSerializer<>(FileArgument::createEmpty));
+        ArgumentTypes.register("tellme:grouping", GroupingArgument.class, new EmptyArgumentSerializer<>(GroupingArgument::create));
+        ArgumentTypes.register("tellme:output_format", OutputFormatArgument.class, new EmptyArgumentSerializer<>(OutputFormatArgument::create));
+        ArgumentTypes.register("tellme:output_type", OutputTypeArgument.class, new EmptyArgumentSerializer<>(OutputTypeArgument::create));
+        ArgumentTypes.register("tellme:string_collection", StringCollectionArgument.class, new EmptyArgumentSerializer<>(() -> StringCollectionArgument.create(() -> Collections.emptyList(), "")));
     }
 
-    protected static void register(CommandDispatcher<CommandSource> dispatcher, String baseCommandName, final int permissionLevel)
+    protected static void register(CommandDispatcher<CommandSourceStack> dispatcher, String baseCommandName, final int permissionLevel)
     {
         dispatcher.register(
                 Commands.literal(baseCommandName)

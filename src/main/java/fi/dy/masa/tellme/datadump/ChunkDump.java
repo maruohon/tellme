@@ -4,29 +4,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkDump
 {
-    public static List<String> getFormattedChunkDump(DataDump.Format format, MinecraftServer server, @Nullable World worldIn)
+    public static List<String> getFormattedChunkDump(DataDump.Format format, MinecraftServer server, @Nullable Level worldIn)
     {
         return getFormattedChunkDump(format, server, worldIn, null, null);
     }
 
-    public static List<String> getFormattedChunkDump(DataDump.Format format, @Nullable MinecraftServer server, @Nullable World worldIn, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
+    public static List<String> getFormattedChunkDump(DataDump.Format format, @Nullable MinecraftServer server, @Nullable Level worldIn, @Nullable BlockPos minPos, @Nullable BlockPos maxPos)
     {
         DataDump chunkDump = new DataDump(4, format);
 
         if (server != null)
         {
-            List<World> worlds = new ArrayList<>();
+            List<Level> worlds = new ArrayList<>();
 
             if (worldIn != null)
             {
@@ -34,7 +34,7 @@ public class ChunkDump
             }
             else
             {
-                for (World world : server.getAllLevels())
+                for (Level world : server.getAllLevels())
                 {
                     worlds.add(world);
                 }
@@ -46,14 +46,14 @@ public class ChunkDump
             final int maxCZ = maxPos != null ? maxPos.getZ() >> 4 : Integer.MAX_VALUE;
             int chunkCount = 0;
 
-            for (World world : worlds)
+            for (Level world : worlds)
             {
                 if (world != null)
                 {
                     String dimId = WorldUtils.getDimensionId(world);
-                    Collection<Chunk> chunks = TellMe.dataProvider.getLoadedChunks(world);
+                    Collection<LevelChunk> chunks = TellMe.dataProvider.getLoadedChunks(world);
 
-                    for (Chunk chunk : chunks)
+                    for (LevelChunk chunk : chunks)
                     {
                         ChunkPos cp = chunk.getPos();
 

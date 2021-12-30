@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.item.Food;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -23,14 +23,14 @@ public class FoodItemDump
         String registryName = rl.toString();
         ItemStack stack = new ItemStack(item);
         String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : DataDump.EMPTY_STRING;
-        displayName = TextFormatting.stripFormatting(displayName);
+        displayName = ChatFormatting.stripFormatting(displayName);
 
-        Food food = item.getFoodProperties();
+        FoodProperties food = item.getFoodProperties();
         String hunger = String.valueOf(food.getNutrition());
         String saturation = String.valueOf(food.getSaturationModifier());
         String isMeat = String.valueOf(food.isMeat());
         String isFastEat = String.valueOf(food.isFastFood());
-        List<Pair<EffectInstance, Float>> effects = food.getEffects();
+        List<Pair<MobEffectInstance, Float>> effects = food.getEffects();
         String effectsStr = effects.stream()
                 .map((pair) -> "{[" + pair.getFirst().toString() + "], Propability: " + pair.getSecond() + "}")
                 .collect(Collectors.joining(", "));
@@ -42,7 +42,7 @@ public class FoodItemDump
     {
         DataDump itemDump = new DataDump(8, format);
 
-        for (Map.Entry<RegistryKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
+        for (Map.Entry<ResourceKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
             Item item = entry.getValue();
 

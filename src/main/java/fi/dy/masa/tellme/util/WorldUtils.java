@@ -2,27 +2,27 @@ package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerChunkProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public class WorldUtils
 {
-    public static int getLoadedChunkCount(World world)
+    public static int getLoadedChunkCount(Level world)
     {
-        if (world != null && world.getChunkSource() instanceof ServerChunkProvider)
+        if (world != null && world.getChunkSource() instanceof ServerChunkCache)
         {
-            return ((ServerChunkProvider) world.getChunkSource()).chunkMap.getTickingGenerated();
+            return ((ServerChunkCache) world.getChunkSource()).chunkMap.getTickingGenerated();
         }
 
         return 0;
     }
 
-    public static List<Chunk> loadAndGetChunks(World world, ChunkPos posMin, ChunkPos posMax)
+    public static List<LevelChunk> loadAndGetChunks(Level world, ChunkPos posMin, ChunkPos posMax)
     {
-        List<Chunk> chunks = new ArrayList<>();
+        List<LevelChunk> chunks = new ArrayList<>();
 
         for (int cZ = posMin.z; cZ <= posMax.z; cZ++)
         {
@@ -35,7 +35,7 @@ public class WorldUtils
         return chunks;
     }
 
-    public static String getDimensionId(World world)
+    public static String getDimensionId(Level world)
     {
         ResourceLocation id = world.registryAccess().dimensionTypes().getKey(world.dimensionType());
         return id != null ? id.toString() : "?";

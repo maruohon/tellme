@@ -1,10 +1,10 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.IForgeRegistry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import net.minecraftforge.registries.IForgeRegistry;
 
 public class SimpleForgeRegistryKeyOnlyDump
 {

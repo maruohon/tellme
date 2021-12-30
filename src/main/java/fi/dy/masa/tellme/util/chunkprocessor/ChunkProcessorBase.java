@@ -2,12 +2,12 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 
 import java.util.Collection;
 import javax.annotation.Nullable;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.AbstractChunkProvider;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -16,8 +16,8 @@ public abstract class ChunkProcessorBase
 {
     protected final DataDump.Format format;
     protected int chunksWithZeroCount;
-    @Nullable protected Vector3d minPos;
-    @Nullable protected Vector3d maxPos;
+    @Nullable protected Vec3 minPos;
+    @Nullable protected Vec3 maxPos;
     private int loadedChunks;
     private int unloadedChunks;
 
@@ -41,24 +41,24 @@ public abstract class ChunkProcessorBase
         return this.chunksWithZeroCount;
     }
 
-    public void setBoxCorners(Vector3d pos1, Vector3d pos2)
+    public void setBoxCorners(Vec3 pos1, Vec3 pos2)
     {
         this.minPos = CommandUtils.getMinCornerVec3d(pos1, pos2);
         this.maxPos = CommandUtils.getMaxCornerVec3d(pos1, pos2);
     }
 
-    public void processChunks(Collection<Chunk> chunks)
+    public void processChunks(Collection<LevelChunk> chunks)
     {
-        for (Chunk chunk : chunks)
+        for (LevelChunk chunk : chunks)
         {
             this.processChunk(chunk);
             ++this.loadedChunks;
         }
     }
 
-    public void processChunksInArea(World world, ChunkPos pos1, ChunkPos pos2)
+    public void processChunksInArea(Level world, ChunkPos pos1, ChunkPos pos2)
     {
-        AbstractChunkProvider provider = world.getChunkSource();
+        ChunkSource provider = world.getChunkSource();
         final int minCX = Math.min(pos1.x, pos2.x);
         final int minCZ = Math.min(pos1.z, pos2.z);
         final int maxCX = Math.max(pos1.x, pos2.x);
@@ -68,7 +68,7 @@ public abstract class ChunkProcessorBase
         {
             for (int cx = minCX; cx <= maxCX; ++cx)
             {
-                Chunk chunk = provider.getChunk(cx, cz, false);
+                LevelChunk chunk = provider.getChunk(cx, cz, false);
 
                 if (chunk != null)
                 {
@@ -83,7 +83,7 @@ public abstract class ChunkProcessorBase
         }
     }
 
-    protected abstract void processChunk(Chunk chunk);
+    protected abstract void processChunk(LevelChunk chunk);
 
     public abstract DataDump getDump();
 

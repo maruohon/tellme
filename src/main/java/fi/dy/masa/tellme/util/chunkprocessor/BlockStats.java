@@ -13,18 +13,18 @@ import com.google.common.collect.ArrayListMultimap;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.command.arguments.BlockStateParser;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.Property;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
@@ -46,15 +46,15 @@ public class BlockStats extends ChunkProcessorAllChunks
     }
 
     @Override
-    public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
+    public void processChunks(Collection<LevelChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         final long timeBefore = System.nanoTime();
         Object2LongOpenHashMap<BlockState> counts = new Object2LongOpenHashMap<>();
-        BlockPos.Mutable pos = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         final BlockState air = Blocks.AIR.defaultBlockState();
         int count = 0;
 
-        for (Chunk chunk : chunks)
+        for (LevelChunk chunk : chunks)
         {
             ChunkPos chunkPos = chunk.getPos();
             final int topY = chunk.getHighestSectionPosition() + 15;
@@ -137,7 +137,7 @@ public class BlockStats extends ChunkProcessorAllChunks
     {
         ArrayList<BlockStateCount> list = new ArrayList<>();
         ArrayListMultimap<Block, BlockStateCount> infoByBlock = ArrayListMultimap.create();
-        DynamicCommandExceptionType exception = new DynamicCommandExceptionType((type) -> new StringTextComponent("Invalid block state filter: '" + type + "'"));
+        DynamicCommandExceptionType exception = new DynamicCommandExceptionType((type) -> new TextComponent("Invalid block state filter: '" + type + "'"));
 
         for (BlockStateCount info : this.blockStats.values())
         {
@@ -270,7 +270,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         {
             Block block = state.getBlock();
             ItemStack stack = new ItemStack(block);
-            String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslationTextComponent(block.getDescriptionId())).getString();
+            String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslatableComponent(block.getDescriptionId())).getString();
 
             this.state = state;
             this.id = id;

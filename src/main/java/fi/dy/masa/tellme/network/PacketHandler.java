@@ -1,9 +1,9 @@
 package fi.dy.masa.tellme.network;
 
-import net.minecraft.util.ResourceLocation;
-import fi.dy.masa.tellme.reference.Reference;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
+import fi.dy.masa.tellme.reference.Reference;
 
 public class PacketHandler
 {

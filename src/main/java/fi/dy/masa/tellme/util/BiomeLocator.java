@@ -3,11 +3,11 @@ package fi.dy.masa.tellme.util;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.MutableRegistry;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.WritableRegistry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -16,13 +16,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 public class BiomeLocator
 {
     private final Object2ObjectOpenHashMap<Biome, BlockPos> biomePositions = new Object2ObjectOpenHashMap<>();
-    private final BlockPos.Mutable posMutable = new BlockPos.Mutable();
-    private final MutableRegistry<Biome> registry;
+    private final BlockPos.MutableBlockPos posMutable = new BlockPos.MutableBlockPos();
+    private final WritableRegistry<Biome> registry;
     private BlockPos center = BlockPos.ZERO;
     private int count;
     private boolean append;
 
-    public BiomeLocator(MutableRegistry<Biome> registry)
+    public BiomeLocator(WritableRegistry<Biome> registry)
     {
         this.registry = registry;
     }

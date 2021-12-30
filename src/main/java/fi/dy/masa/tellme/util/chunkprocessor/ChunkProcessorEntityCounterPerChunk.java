@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.util.ClassInstanceMultiMap;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkProcessorEntityCounterPerChunk extends ChunkProcessorBase
@@ -22,9 +22,9 @@ public class ChunkProcessorEntityCounterPerChunk extends ChunkProcessorBase
     }
 
     @Override
-    public void processChunk(Chunk chunk)
+    public void processChunk(LevelChunk chunk)
     {
-        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
+        ClassInstanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
         int total = 0;
 
         for (int i = 0; i < entityLists.length; i++)

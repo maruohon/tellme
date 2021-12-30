@@ -5,10 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.MobSpawnInfo;
-import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -18,9 +18,9 @@ public class StructureFeatureDump
     {
         DataDump dump = new DataDump(spawns ? 4 : 2, format);
 
-        for (Map.Entry<RegistryKey<Structure<?>>, Structure<?>> entry : ForgeRegistries.STRUCTURE_FEATURES.getEntries())
+        for (Map.Entry<ResourceKey<StructureFeature<?>>, StructureFeature<?>> entry : ForgeRegistries.STRUCTURE_FEATURES.getEntries())
         {
-            Structure<?> feature = entry.getValue();
+            StructureFeature<?> feature = entry.getValue();
             ResourceLocation id = feature.getRegistryName();
 
             if (spawns)
@@ -47,11 +47,11 @@ public class StructureFeatureDump
         return dump.getLines();
     }
 
-    public static String getMobSpawnsString(Collection<MobSpawnInfo.Spawners> list)
+    public static String getMobSpawnsString(Collection<MobSpawnSettings.SpawnerData> list)
     {
         List<String> spawns = new ArrayList<>();
 
-        for (MobSpawnInfo.Spawners spawn : list)
+        for (MobSpawnSettings.SpawnerData spawn : list)
         {
             ResourceLocation erl = ForgeRegistries.ENTITIES.getKey(spawn.type);
             String entName = erl != null ? erl.toString() : "<null>";

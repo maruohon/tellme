@@ -3,11 +3,11 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -18,7 +18,7 @@ public class StatTypesDump
     {
         DataDump dump = new DataDump(2, format);
 
-        for (Map.Entry<RegistryKey<StatType<?>>, StatType<?>> entry : ForgeRegistries.STAT_TYPES.getEntries())
+        for (Map.Entry<ResourceKey<StatType<?>>, StatType<?>> entry : ForgeRegistries.STAT_TYPES.getEntries())
         {
             StatType<?> type = entry.getValue();
             String typeName = type.getRegistryName().toString();

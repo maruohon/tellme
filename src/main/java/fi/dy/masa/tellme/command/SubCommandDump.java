@@ -11,14 +11,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.Entity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
@@ -64,14 +64,14 @@ public class SubCommandDump
 
     // /tellme dump <to-chat | to-console | to-file> <ascii | csv> <type> [type] ...
 
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<CommandSourceStack> registerSubCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("dump").build();
-        ArgumentCommandNode<CommandSource, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create()).build();
-        ArgumentCommandNode<CommandSource, DataDump.Format> outputFormatNode = Commands.argument("output_format", OutputFormatArgument.create()).build();
+        LiteralCommandNode<CommandSourceStack> subCommandRootNode = Commands.literal("dump").build();
+        ArgumentCommandNode<CommandSourceStack, OutputType> outputTypeNode = Commands.argument("output_type", OutputTypeArgument.create()).build();
+        ArgumentCommandNode<CommandSourceStack, DataDump.Format> outputFormatNode = Commands.argument("output_format", OutputFormatArgument.create()).build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> dumpTypesNode =
+        ArgumentCommandNode<CommandSourceStack, List<String>> dumpTypesNode =
                 Commands.argument("dump_types",
                         StringCollectionArgument.create(() -> SubCommandDump.getDumpProviders().keySet(), "No dump types given"))
                 .executes(c -> execute(c,
@@ -87,12 +87,12 @@ public class SubCommandDump
         return subCommandRootNode;
     }
 
-    private static int execute(CommandContext<CommandSource> ctx, OutputType outputType, DataDump.Format format, List<String> types) throws CommandSyntaxException
+    private static int execute(CommandContext<CommandSourceStack> ctx, OutputType outputType, DataDump.Format format, List<String> types) throws CommandSyntaxException
     {
         HashMap<String, DumpLineProvider> providers = getDumpProviders();
-        CommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
         @Nullable Entity entity = source.getEntity();
-        @Nullable ServerWorld world = source.getLevel();
+        @Nullable ServerLevel world = source.getLevel();
         @Nullable MinecraftServer server = source.getServer();
         DumpContext dumpContext = new DumpContext(world, entity, server, format);
 
@@ -133,7 +133,7 @@ public class SubCommandDump
                 }
                 else
                 {
-                    ctx.getSource().sendFailure(new StringTextComponent("No such dump type: '" + name + "'"));
+                    ctx.getSource().sendFailure(new TextComponent("No such dump type: '" + name + "'"));
                 }
             }
         }
@@ -141,15 +141,15 @@ public class SubCommandDump
         return 1;
     }
 
-    public static void outputData(CommandContext<CommandSource> ctx,
+    public static void outputData(CommandContext<CommandSourceStack> ctx,
             DumpLineProvider provider, DumpContext context, String name, OutputType outputType, DataDump.Format format)
     {
-        CommandSource source = ctx.getSource();
+        CommandSourceStack source = ctx.getSource();
         List<String> data = provider.getLines(context);
 
         if (data.isEmpty())
         {
-            source.sendFailure(new StringTextComponent("No data available for dump '" + name + "'"));
+            source.sendFailure(new TextComponent("No data available for dump '" + name + "'"));
             return;
         }
 
@@ -261,12 +261,12 @@ public class SubCommandDump
 
     public static class DumpContext
     {
-        @Nullable public final World world;
+        @Nullable public final Level world;
         @Nullable public final Entity entity;
         @Nullable public final MinecraftServer server;
         public final DataDump.Format format;
 
-        public DumpContext(@Nullable World world, @Nullable Entity entity, @Nullable MinecraftServer server, DataDump.Format format)
+        public DumpContext(@Nullable Level world, @Nullable Entity entity, @Nullable MinecraftServer server, DataDump.Format format)
         {
             this.world = world;
             this.entity = entity;

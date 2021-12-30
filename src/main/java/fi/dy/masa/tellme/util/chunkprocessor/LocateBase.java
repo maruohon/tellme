@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.function.Supplier;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -20,7 +20,7 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
     protected static final String FMT_CHUNK_5 = "%5d, %5d";
     protected static final String FMT_COORDS = "x = %.2f, y = %.2f, z = %.2f";
     protected static final String FMT_COORDS_8 = "x = %8.2f, y = %5.2f, z = %8.2f";
-    protected static final DynamicCommandExceptionType INVALID_NAME_EXCEPTION = new DynamicCommandExceptionType((v) -> new StringTextComponent("Invalid name: " + v));
+    protected static final DynamicCommandExceptionType INVALID_NAME_EXCEPTION = new DynamicCommandExceptionType((v) -> new TextComponent("Invalid name: " + v));
 
     protected final List<LocationData> data = new ArrayList<>();
     protected final DataDump.Format format;
@@ -81,7 +81,7 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
 
     protected void addLine(DataDump dump, LocationData data)
     {
-        Vector3d pos = data.pos;
+        Vec3 pos = data.pos;
         int rx = ((int) pos.x) >> 9;
         int rz = ((int) pos.z) >> 9;
         int cx = ((int) pos.x) >> 4;
@@ -132,16 +132,16 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
     {
         private final String name;
         private final String dimension;
-        private final Vector3d pos;
+        private final Vec3 pos;
 
-        private LocationData(String name, String dimension, Vector3d pos)
+        private LocationData(String name, String dimension, Vec3 pos)
         {
             this.name = name;
             this.dimension = dimension;
             this.pos = pos;
         }
 
-        protected static LocationData of(String name, String dimension, Vector3d pos)
+        protected static LocationData of(String name, String dimension, Vec3 pos)
         {
             return new LocationData(name, dimension, pos);
         }

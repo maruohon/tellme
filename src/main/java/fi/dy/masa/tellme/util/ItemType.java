@@ -1,7 +1,7 @@
 package fi.dy.masa.tellme.util;
 
 import javax.annotation.Nonnull;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Wrapper class for ItemStack, which implements equals()

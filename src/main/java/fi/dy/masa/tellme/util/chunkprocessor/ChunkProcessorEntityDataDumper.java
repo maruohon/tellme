@@ -6,14 +6,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ClassInstanceMultiMap;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -50,13 +50,13 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
     }
 
     @Override
-    public void processChunk(Chunk chunk)
+    public void processChunk(LevelChunk chunk)
     {
-        ClassInheritanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
+        ClassInstanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
         Set<EntityType<?>> filters = this.filters;
         boolean noFilters = filters.isEmpty();
-        Vector3d min = this.minPos;
-        Vector3d max = this.maxPos;
+        Vec3 min = this.minPos;
+        Vec3 max = this.maxPos;
         boolean hasBox = min != null && max != null;
         double minX = min != null ? min.x : 0;
         double minY = min != null ? min.y : 0;
@@ -65,11 +65,11 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
         double maxY = max != null ? max.y : 0;
         double maxZ = max != null ? max.z : 0;
 
-        for (ClassInheritanceMultiMap<Entity> entityList : entityLists)
+        for (ClassInstanceMultiMap<Entity> entityList : entityLists)
         {
             for (Entity entity : entityList)
             {
-                Vector3d pos = entity.position();
+                Vec3 pos = entity.position();
 
                 if (hasBox &&
                     (pos.x < minX ||
@@ -88,7 +88,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
                 {
                     @SuppressWarnings("deprecation")
                     ResourceLocation id = Registry.ENTITY_TYPE.getKey(type);
-                    CompoundNBT tag = new CompoundNBT();
+                    CompoundTag tag = new CompoundTag();
 
                     if (entity.saveAsPassenger(tag))
                     {
@@ -109,7 +109,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
 
         for (EntityDataEntry entry : this.data)
         {
-            Vector3d pos = entry.pos;
+            Vec3 pos = entry.pos;
             dump.addData(String.format("%.2f %.2f %.2f", pos.x, pos.y, pos.z), entry.entityId, entry.nbtData);
         }
 
@@ -118,11 +118,11 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
 
     private static class EntityDataEntry
     {
-        public final Vector3d pos;
+        public final Vec3 pos;
         public final String entityId;
         public final String nbtData;
 
-        public EntityDataEntry(Vector3d pos, String entityId, String nbtData)
+        public EntityDataEntry(Vec3 pos, String entityId, String nbtData)
         {
             this.pos = pos;
             this.entityId = entityId;

@@ -1,9 +1,9 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import fi.dy.masa.tellme.util.datadump.DataDump;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
+import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ModListDump
 {

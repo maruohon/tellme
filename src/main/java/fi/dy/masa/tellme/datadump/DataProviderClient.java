@@ -7,26 +7,26 @@ import java.util.Collections;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientChunkProvider;
-import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.multiplayer.ClientChunkCache;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -36,7 +36,7 @@ public class DataProviderClient extends DataProviderBase
     //private static final Field field_ChunkArray_chunks = ObfuscationReflectionHelper.findField(ClientChunkProvider.ChunkArray.class, "chunks");
 
     @Override
-    public Collection<Chunk> getLoadedChunks(World world)
+    public Collection<LevelChunk> getLoadedChunks(Level world)
     {
         if (world.isClientSide == false)
         {
@@ -45,19 +45,19 @@ public class DataProviderClient extends DataProviderBase
 
         Minecraft mc = Minecraft.getInstance();
 
-        if (world instanceof ClientWorld && mc.player != null)
+        if (world instanceof ClientLevel && mc.player != null)
         {
-            ClientChunkProvider provider = ((ClientWorld) world).getChunkSource();
-            Vector3d vec = mc.player.position();
+            ClientChunkCache provider = ((ClientLevel) world).getChunkSource();
+            Vec3 vec = mc.player.position();
             ChunkPos center = new ChunkPos(((int) Math.floor(vec.x)) >> 4, ((int) Math.floor(vec.z)) >> 4);
-            ArrayList<Chunk> list = new ArrayList<>();
+            ArrayList<LevelChunk> list = new ArrayList<>();
             final int renderDistance = mc.options.renderDistance;
 
             for (int chunkZ = center.z - renderDistance; chunkZ <= center.z + renderDistance; ++chunkZ)
             {
                 for (int chunkX = center.x - renderDistance; chunkX <= center.x + renderDistance; ++chunkX)
                 {
-                    Chunk chunk = provider.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
+                    LevelChunk chunk = provider.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
 
                     if (chunk != null)
                     {
@@ -103,7 +103,7 @@ public class DataProviderClient extends DataProviderBase
         }
         else
         {
-            ClientPlayNetHandler nh = mc.getConnection();
+            ClientPacketListener nh = mc.getConnection();
 
             if (nh != null)
             {
@@ -115,19 +115,19 @@ public class DataProviderClient extends DataProviderBase
     }
 
     @Override
-    public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
+    public void getCurrentBiomeInfoClientSide(Player entity, Biome biome)
     {
         BlockPos pos = entity.blockPosition();
-        TextFormatting green = TextFormatting.GREEN;
+        ChatFormatting green = ChatFormatting.GREEN;
 
         // These are client-side only:
         int grassColor = biome.getGrassColor(pos.getX(), pos.getZ());
-        entity.displayClientMessage(new StringTextComponent("Grass color: ")
-                    .append(new StringTextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Grass color: ")
+                    .append(new TextComponent(String.format("0x%08X (%d)", grassColor, grassColor)).withStyle(green)), false);
 
         int foliageColor = biome.getFoliageColor();
-        entity.displayClientMessage(new StringTextComponent("Foliage color: ")
-                    .append(new StringTextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).withStyle(green)), false);
+        entity.displayClientMessage(new TextComponent("Foliage color: ")
+                    .append(new TextComponent(String.format("0x%08X (%d)", foliageColor, foliageColor)).withStyle(green)), false);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupData(DataDump dump)
     {
-        for (ItemGroup group : ItemGroup.TABS)
+        for (CreativeModeTab group : CreativeModeTab.TABS)
         {
             if (group != null)
             {
@@ -190,10 +190,10 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupNames(JsonObject obj, Item item)
     {
-        String[] names = new String[ItemGroup.TABS.length];
+        String[] names = new String[CreativeModeTab.TABS.length];
         int i = 0;
 
-        for (ItemGroup group : item.getCreativeTabs())
+        for (CreativeModeTab group : item.getCreativeTabs())
         {
             if (group != null)
             {

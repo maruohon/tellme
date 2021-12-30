@@ -1,12 +1,12 @@
 package fi.dy.masa.tellme.event;
 
 import java.util.List;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
@@ -29,11 +29,11 @@ public class InteractEventHandler
     @SubscribeEvent
     public void onRightClickItem(PlayerInteractEvent.RightClickItem event)
     {
-        PlayerEntity player = event.getPlayer();
+        Player player = event.getPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.Generic.enableDebugItemForItems && event.getWorld().isClientSide == false &&
-            event.getHand() == Hand.MAIN_HAND && player.createCommandSourceStack().hasPermission(4))
+            event.getHand() == InteractionHand.MAIN_HAND && player.createCommandSourceStack().hasPermission(4))
         {
             if (ItemInfo.areItemStacksEqual(Configs.debugItemItems, player.getMainHandItem()))
             {
@@ -60,11 +60,11 @@ public class InteractEventHandler
 
     private void printEntityInfo(PlayerInteractEvent event, Entity entity)
     {
-        PlayerEntity player = event.getPlayer();
+        Player player = event.getPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
-            event.getHand() == Hand.MAIN_HAND &&
+            event.getHand() == InteractionHand.MAIN_HAND &&
             player.createCommandSourceStack().hasPermission(4) &&
             ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
         {
@@ -81,23 +81,23 @@ public class InteractEventHandler
             }
 
             event.setCanceled(true);
-            event.setCancellationResult(ActionResultType.SUCCESS);
+            event.setCancellationResult(InteractionResult.SUCCESS);
         }
     }
 
     private void printBlockInfo(PlayerInteractEvent event, boolean useLiquids)
     {
-        PlayerEntity player = event.getPlayer();
+        Player player = event.getPlayer();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
-            event.getHand() == Hand.MAIN_HAND &&
+            event.getHand() == InteractionHand.MAIN_HAND &&
             player.createCommandSourceStack().hasPermission(4) &&
             ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
         {
             if (event.getWorld().isClientSide == false)
             {
-                RayTraceResult trace = RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids);
+                HitResult trace = RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids);
                 boolean adjacent = ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getOffhandItem());
                 List<String> lines = BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player, trace, adjacent, false);
                 OutputType outputType = player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE;
@@ -106,11 +106,11 @@ public class InteractEventHandler
             }
 
             event.setCanceled(true);
-            event.setCancellationResult(ActionResultType.SUCCESS);
+            event.setCancellationResult(InteractionResult.SUCCESS);
         }
     }
 
-    private void printItemInfo(PlayerEntity player)
+    private void printItemInfo(Player player)
     {
         // Select the slot to the right from the current slot, or the first slot if the current slot is the last slot
         int slot = player.inventory.selected;

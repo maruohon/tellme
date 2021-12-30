@@ -11,20 +11,20 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.FoliageColors;
-import net.minecraft.world.GrassColors;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ChunkHolder;
-import net.minecraft.world.server.ChunkManager;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.FoliageColor;
+import net.minecraft.world.level.GrassColor;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -32,7 +32,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 
 public class DataProviderBase
 {
-    private static final Field field_ChunkManager_immutableLoadedChunks = ObfuscationReflectionHelper.findField(ChunkManager.class, "visibleChunkMap");
+    private static final Field field_ChunkManager_immutableLoadedChunks = ObfuscationReflectionHelper.findField(ChunkMap.class, "f_140130_");
 
     @Nullable
     public Collection<Advancement> getAdvacements(@Nullable MinecraftServer server)
@@ -40,38 +40,38 @@ public class DataProviderBase
         return server != null ? server.getAdvancements().getAllAdvancements() : null;
     }
 
-    public void getCurrentBiomeInfoClientSide(PlayerEntity entity, Biome biome)
+    public void getCurrentBiomeInfoClientSide(Player entity, Biome biome)
     {
     }
 
     public int getFoliageColor(Biome biome, BlockPos pos)
     {
-        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return FoliageColors.get(temperature, humidity);
+        double temperature = Mth.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
+        double humidity = Mth.clamp(biome.getDownfall(), 0.0F, 1.0F);
+        return FoliageColor.get(temperature, humidity);
     }
 
     public int getGrassColor(Biome biome, BlockPos pos)
     {
-        double temperature = MathHelper.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
-        return GrassColors.get(temperature, humidity);
+        double temperature = Mth.clamp(biome.getTemperature(pos), 0.0F, 1.0F);
+        double humidity = Mth.clamp(biome.getDownfall(), 0.0F, 1.0F);
+        return GrassColor.get(temperature, humidity);
     }
 
-    public Collection<Chunk> getLoadedChunks(World world)
+    public Collection<LevelChunk> getLoadedChunks(Level world)
     {
-        if (world instanceof ServerWorld)
+        if (world instanceof ServerLevel)
         {
-            ArrayList<Chunk> chunks = new ArrayList<>();
+            ArrayList<LevelChunk> chunks = new ArrayList<>();
 
             try
             {
                 @SuppressWarnings("unchecked")
-                Long2ObjectLinkedOpenHashMap<ChunkHolder> immutableLoadedChunks = (Long2ObjectLinkedOpenHashMap<ChunkHolder>) field_ChunkManager_immutableLoadedChunks.get(((ServerWorld) world).getChunkSource().chunkMap);
+                Long2ObjectLinkedOpenHashMap<ChunkHolder> immutableLoadedChunks = (Long2ObjectLinkedOpenHashMap<ChunkHolder>) field_ChunkManager_immutableLoadedChunks.get(((ServerLevel) world).getChunkSource().chunkMap);
 
                 for (ChunkHolder holder : immutableLoadedChunks.values())
                 {
-                    Optional<Chunk> optional = holder.getFullChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK).left();
+                    Optional<LevelChunk> optional = holder.getFullChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK).left();
 
                     if (optional.isPresent())
                     {
@@ -94,12 +94,12 @@ public class DataProviderBase
     {
         if (server != null)
         {
-            CommandDispatcher<CommandSource> dispatcher = server.getCommands().getDispatcher();
+            CommandDispatcher<CommandSourceStack> dispatcher = server.getCommands().getDispatcher();
 
-            for (CommandNode<CommandSource> cmd : dispatcher.getRoot().getChildren())
+            for (CommandNode<CommandSourceStack> cmd : dispatcher.getRoot().getChildren())
             {
                 String cmdName = cmd.getName();
-                Command<CommandSource> command = cmd.getCommand();
+                Command<CommandSourceStack> command = cmd.getCommand();
                 String commandClassName = command != null ? command.getClass().getName() : "-";
                 dump.addData(cmdName, commandClassName);
             }

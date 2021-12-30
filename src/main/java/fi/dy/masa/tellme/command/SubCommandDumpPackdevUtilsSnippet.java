@@ -10,9 +10,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.Entity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
 import fi.dy.masa.tellme.datadump.DumpUtils;
@@ -21,12 +21,12 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandDumpPackdevUtilsSnippet
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<CommandSourceStack> registerSubCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("dump-packdevutils-snippet").build();
+        LiteralCommandNode<CommandSourceStack> subCommandRootNode = Commands.literal("dump-packdevutils-snippet").build();
 
         @SuppressWarnings("unchecked")
-        ArgumentCommandNode<CommandSource, List<String>> dumpTypesNode =
+        ArgumentCommandNode<CommandSourceStack, List<String>> dumpTypesNode =
                 Commands.argument("dump_types",
                                   StringCollectionArgument.create(() -> ImmutableList.of("blocks", "items", "entities", "biomes", "enchantments", "potions"), "No dump types given"))
                         .executes(c -> execute(c, (List<String>) c.getArgument("dump_types", List.class))).build();
@@ -36,7 +36,7 @@ public class SubCommandDumpPackdevUtilsSnippet
         return subCommandRootNode;
     }
 
-    private static int execute(CommandContext<CommandSource> ctx, List<String> types) throws CommandSyntaxException
+    private static int execute(CommandContext<CommandSourceStack> ctx, List<String> types) throws CommandSyntaxException
     {
         @Nullable Entity entity = ctx.getSource().getEntity();
 

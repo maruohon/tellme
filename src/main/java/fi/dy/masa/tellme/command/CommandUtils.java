@@ -14,53 +14,53 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.arguments.Vec2Argument;
-import net.minecraft.command.arguments.Vec3Argument;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.coordinates.Vec2Argument;
+import net.minecraft.commands.arguments.coordinates.Vec3Argument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 public class CommandUtils
 {
     public static final FilenameFilter FILTER_FILES = (pathName, fileName) -> { return (new File(pathName, fileName)).isFile(); };
-    public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(new StringTextComponent("This command must either be executed by an entity, or the dimension must be specified"));
-    public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> new StringTextComponent("The dimension \"" + type + "\" was not loaded"));
-    public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(new StringTextComponent("This command must be executed by a player"));
-    public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> new StringTextComponent("Invalid output type: " + type));
+    public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(new TextComponent("This command must either be executed by an entity, or the dimension must be specified"));
+    public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> new TextComponent("The dimension \"" + type + "\" was not loaded"));
+    public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(new TextComponent("This command must be executed by a player"));
+    public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> new TextComponent("Invalid output type: " + type));
 
-    public static BlockPos getMinCorner(Vector2f pos1, Vector2f pos2)
+    public static BlockPos getMinCorner(Vec2 pos1, Vec2 pos2)
     {
-        return new BlockPos(Math.min(MathHelper.floor(pos1.x), MathHelper.floor(pos2.x)),
+        return new BlockPos(Math.min(Mth.floor(pos1.x), Mth.floor(pos2.x)),
                             0,
-                            Math.min(MathHelper.floor(pos1.y), MathHelper.floor(pos2.y)));
+                            Math.min(Mth.floor(pos1.y), Mth.floor(pos2.y)));
     }
 
-    public static BlockPos getMaxCorner(Vector2f pos1, Vector2f pos2)
+    public static BlockPos getMaxCorner(Vec2 pos1, Vec2 pos2)
     {
-        return new BlockPos(Math.max(MathHelper.floor(pos1.x), MathHelper.floor(pos2.x)),
+        return new BlockPos(Math.max(Mth.floor(pos1.x), Mth.floor(pos2.x)),
                             255,
-                            Math.max(MathHelper.floor(pos1.y), MathHelper.floor(pos2.y)));
+                            Math.max(Mth.floor(pos1.y), Mth.floor(pos2.y)));
     }
 
-    public static BlockPos getMinCorner(Vector3d pos1, Vector3d pos2)
+    public static BlockPos getMinCorner(Vec3 pos1, Vec3 pos2)
     {
-        return new BlockPos(Math.min(MathHelper.floor(pos1.x), MathHelper.floor(pos2.x)),
-                            Math.min(MathHelper.floor(pos1.y), MathHelper.floor(pos2.y)),
-                            Math.min(MathHelper.floor(pos1.z), MathHelper.floor(pos2.z)));
+        return new BlockPos(Math.min(Mth.floor(pos1.x), Mth.floor(pos2.x)),
+                            Math.min(Mth.floor(pos1.y), Mth.floor(pos2.y)),
+                            Math.min(Mth.floor(pos1.z), Mth.floor(pos2.z)));
     }
 
-    public static BlockPos getMaxCorner(Vector3d pos1, Vector3d pos2)
+    public static BlockPos getMaxCorner(Vec3 pos1, Vec3 pos2)
     {
-        return new BlockPos(Math.max(MathHelper.floor(pos1.x), MathHelper.floor(pos2.x)),
-                            Math.max(MathHelper.floor(pos1.y), MathHelper.floor(pos2.y)),
-                            Math.max(MathHelper.floor(pos1.z), MathHelper.floor(pos2.z)));
+        return new BlockPos(Math.max(Mth.floor(pos1.x), Mth.floor(pos2.x)),
+                            Math.max(Mth.floor(pos1.y), Mth.floor(pos2.y)),
+                            Math.max(Mth.floor(pos1.z), Mth.floor(pos2.z)));
     }
 
     /**
@@ -68,9 +68,9 @@ public class CommandUtils
      * @param vec
      * @return
      */
-    public static ChunkPos getAsChunkPos(Vector2f vec)
+    public static ChunkPos getAsChunkPos(Vec2 vec)
     {
-        return new ChunkPos(MathHelper.floor(vec.x) >> 4, MathHelper.floor(vec.y) >> 4);
+        return new ChunkPos(Mth.floor(vec.x) >> 4, Mth.floor(vec.y) >> 4);
     }
 
     /**
@@ -79,10 +79,10 @@ public class CommandUtils
      * @param pos2
      * @return
      */
-    public static ChunkPos getMinCornerChunkPos(Vector2f pos1, Vector2f pos2)
+    public static ChunkPos getMinCornerChunkPos(Vec2 pos1, Vec2 pos2)
     {
-        return new ChunkPos(Math.min(MathHelper.floor(pos1.x) >> 4, MathHelper.floor(pos2.x) >> 4),
-                            Math.min(MathHelper.floor(pos1.y) >> 4, MathHelper.floor(pos2.y) >> 4));
+        return new ChunkPos(Math.min(Mth.floor(pos1.x) >> 4, Mth.floor(pos2.x) >> 4),
+                            Math.min(Mth.floor(pos1.y) >> 4, Mth.floor(pos2.y) >> 4));
     }
 
     /**
@@ -91,40 +91,40 @@ public class CommandUtils
      * @param pos2
      * @return
      */
-    public static ChunkPos getMaxCornerChunkPos(Vector2f pos1, Vector2f pos2)
+    public static ChunkPos getMaxCornerChunkPos(Vec2 pos1, Vec2 pos2)
     {
-        return new ChunkPos(Math.max(MathHelper.floor(pos1.x) >> 4, MathHelper.floor(pos2.x) >> 4),
-                            Math.max(MathHelper.floor(pos1.y) >> 4, MathHelper.floor(pos2.y) >> 4));
+        return new ChunkPos(Math.max(Mth.floor(pos1.x) >> 4, Mth.floor(pos2.x) >> 4),
+                            Math.max(Mth.floor(pos1.y) >> 4, Mth.floor(pos2.y) >> 4));
     }
 
     /**
      * Takes in block coordinates, outputs chunk coordinates
      */
-    public static ChunkPos getMinCornerChunkPos(Vector3d pos1, Vector3d pos2)
+    public static ChunkPos getMinCornerChunkPos(Vec3 pos1, Vec3 pos2)
     {
-        return new ChunkPos(Math.min(MathHelper.floor(pos1.x) >> 4, MathHelper.floor(pos2.x) >> 4),
-                            Math.min(MathHelper.floor(pos1.z) >> 4, MathHelper.floor(pos2.z) >> 4));
+        return new ChunkPos(Math.min(Mth.floor(pos1.x) >> 4, Mth.floor(pos2.x) >> 4),
+                            Math.min(Mth.floor(pos1.z) >> 4, Mth.floor(pos2.z) >> 4));
     }
 
     /**
      * Takes in block coordinates, outputs chunk coordinates
      */
-    public static ChunkPos getMaxCornerChunkPos(Vector3d pos1, Vector3d pos2)
+    public static ChunkPos getMaxCornerChunkPos(Vec3 pos1, Vec3 pos2)
     {
-        return new ChunkPos(Math.max(MathHelper.floor(pos1.x) >> 4, MathHelper.floor(pos2.x) >> 4),
-                            Math.max(MathHelper.floor(pos1.z) >> 4, MathHelper.floor(pos2.z) >> 4));
+        return new ChunkPos(Math.max(Mth.floor(pos1.x) >> 4, Mth.floor(pos2.x) >> 4),
+                            Math.max(Mth.floor(pos1.z) >> 4, Mth.floor(pos2.z) >> 4));
     }
 
-    public static Vector3d getMinCornerVec3d(Vector3d pos1, Vector3d pos2)
+    public static Vec3 getMinCornerVec3d(Vec3 pos1, Vec3 pos2)
     {
-        return new Vector3d(Math.min(pos1.x, pos2.x),
+        return new Vec3(Math.min(pos1.x, pos2.x),
                             Math.min(pos1.y, pos2.y),
                             Math.min(pos1.z, pos2.z));
     }
 
-    public static Vector3d getMaxCornerVec3d(Vector3d pos1, Vector3d pos2)
+    public static Vec3 getMaxCornerVec3d(Vec3 pos1, Vec3 pos2)
     {
-        return new Vector3d(Math.max(pos1.x, pos2.x),
+        return new Vec3(Math.max(pos1.x, pos2.x),
                             Math.max(pos1.y, pos2.y),
                             Math.max(pos1.z, pos2.z));
     }
@@ -159,43 +159,43 @@ public class CommandUtils
 
     public static void throwException(String message) throws CommandSyntaxException
     {
-        throw (new SimpleCommandExceptionType(new TranslationTextComponent(message))).create();
+        throw (new SimpleCommandExceptionType(new TranslatableComponent(message))).create();
     }
 
-    public static void sendMessage(CommandSource source, String message)
+    public static void sendMessage(CommandSourceStack source, String message)
     {
-        source.sendSuccess(new StringTextComponent(message), true);
+        source.sendSuccess(new TextComponent(message), true);
     }
 
-    public static Vector2f getVec2fFromSource(CommandSource source)
+    public static Vec2 getVec2fFromSource(CommandSourceStack source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? new Vector2f((float) entity.getX(), (float) entity.getZ()) : Vector2f.ZERO;
+        return entity != null ? new Vec2((float) entity.getX(), (float) entity.getZ()) : Vec2.ZERO;
     }
 
-    public static Vector2f getVec2fFromArg(CommandContext<CommandSource> ctx, String argName) throws CommandSyntaxException
+    public static Vec2 getVec2fFromArg(CommandContext<CommandSourceStack> ctx, String argName) throws CommandSyntaxException
     {
         return Vec2Argument.getVec2(ctx, argName);
     }
 
-    public static Vector3d getVec3dFromSource(CommandSource source)
+    public static Vec3 getVec3dFromSource(CommandSourceStack source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? entity.position() : Vector3d.ZERO;
+        return entity != null ? entity.position() : Vec3.ZERO;
     }
 
-    public static BlockPos getBlockPosFromSource(CommandSource source)
+    public static BlockPos getBlockPosFromSource(CommandSourceStack source)
     {
         Entity entity = source.getEntity();
         return entity != null ? new BlockPos(entity.position()) : BlockPos.ZERO;
     }
 
-    public static Vector3d getVec3dFromArg(CommandContext<CommandSource> ctx, String argName) throws CommandSyntaxException
+    public static Vec3 getVec3dFromArg(CommandContext<CommandSourceStack> ctx, String argName) throws CommandSyntaxException
     {
         return Vec3Argument.getVec3(ctx, argName);
     }
 
-    public static World getWorldFromCommandSource(CommandSource source) throws CommandSyntaxException
+    public static Level getWorldFromCommandSource(CommandSourceStack source) throws CommandSyntaxException
     {
         Entity entity = source.getEntity();
 
@@ -209,7 +209,7 @@ public class CommandUtils
 
     public interface IWorldRetriever
     {
-        World getWorldFromSource(CommandSource source) throws CommandSyntaxException;
+        Level getWorldFromSource(CommandSourceStack source) throws CommandSyntaxException;
     }
 
     public enum OutputType

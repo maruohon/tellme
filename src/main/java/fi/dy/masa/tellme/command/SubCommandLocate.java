@@ -9,14 +9,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.ILocationArgument;
-import net.minecraft.command.arguments.Vec3Argument;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
+import net.minecraft.commands.arguments.coordinates.Vec3Argument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
@@ -28,9 +28,9 @@ import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SubCommandLocate
 {
-    public static CommandNode<CommandSource> registerSubCommand(CommandDispatcher<CommandSource> dispatcher)
+    public static CommandNode<CommandSourceStack> registerSubCommand(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralCommandNode<CommandSource> subCommandRootNode = Commands.literal("locate").executes(c -> printHelp(c.getSource())).build();
+        LiteralCommandNode<CommandSourceStack> subCommandRootNode = Commands.literal("locate").executes(c -> printHelp(c.getSource())).build();
 
         subCommandRootNode.addChild(createNodes(LocateType.BLOCK));
         subCommandRootNode.addChild(createNodes(LocateType.ENTITY));
@@ -39,7 +39,7 @@ public class SubCommandLocate
         return subCommandRootNode;
     }
 
-    private static int printHelp(CommandSource source)
+    private static int printHelp(CommandSourceStack source)
     {
         CommandUtils.sendMessage(source, "Locates Blocks or TileEntities or Entities in the current dimension");
         CommandUtils.sendMessage(source, "Usage: /tellme locate <block | entity | te> <to-chat | to-console | to-file> <ascii | csv> all-loaded-chunks <name> [name name ...]");
@@ -49,31 +49,31 @@ public class SubCommandLocate
         return 1;
     }
 
-    private static LiteralCommandNode<CommandSource> createNodes(LocateType type)
+    private static LiteralCommandNode<CommandSourceStack> createNodes(LocateType type)
     {
-        LiteralCommandNode<CommandSource> argTarget = Commands.literal(type.getArgument()).build();
+        LiteralCommandNode<CommandSourceStack> argTarget = Commands.literal(type.getArgument()).build();
 
-        ArgumentCommandNode<CommandSource, CommandUtils.OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create()).build();
-        ArgumentCommandNode<CommandSource, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create()).build();
+        ArgumentCommandNode<CommandSourceStack, CommandUtils.OutputType> argOutputType = Commands.argument("output_type", OutputTypeArgument.create()).build();
+        ArgumentCommandNode<CommandSourceStack, DataDump.Format> argOutputFormat = Commands.argument("output_format", OutputFormatArgument.create()).build();
 
-        LiteralCommandNode<CommandSource> argAreaTypeAllLoaded = Commands.literal("all-loaded-chunks").build();
-        LiteralCommandNode<CommandSource> argAreaTypeBox = Commands.literal("box").build();
-        LiteralCommandNode<CommandSource> argAreaTypeChunkRadius = Commands.literal("chunk-radius").build();
+        LiteralCommandNode<CommandSourceStack> argAreaTypeAllLoaded = Commands.literal("all-loaded-chunks").build();
+        LiteralCommandNode<CommandSourceStack> argAreaTypeBox = Commands.literal("box").build();
+        LiteralCommandNode<CommandSourceStack> argAreaTypeChunkRadius = Commands.literal("chunk-radius").build();
 
-        ArgumentCommandNode<CommandSource, Integer> argChunkRadius = Commands.argument("chunk_radius", IntegerArgumentType.integer(1, 64)).build();
+        ArgumentCommandNode<CommandSourceStack, Integer> argChunkRadius = Commands.argument("chunk_radius", IntegerArgumentType.integer(1, 64)).build();
 
-        ArgumentCommandNode<CommandSource, ILocationArgument> argAreaCorner1 = Commands.argument("start_corner", Vec3Argument.vec3()).build();
-        ArgumentCommandNode<CommandSource, ILocationArgument> argAreaCorner2 = Commands.argument("end_corner", Vec3Argument.vec3()).build();
+        ArgumentCommandNode<CommandSourceStack, Coordinates> argAreaCorner1 = Commands.argument("start_corner", Vec3Argument.vec3()).build();
+        ArgumentCommandNode<CommandSourceStack, Coordinates> argAreaCorner2 = Commands.argument("end_corner", Vec3Argument.vec3()).build();
 
-        ArgumentCommandNode<CommandSource, List<String>> argNamesAllLoaded = Commands.argument(type.getPlural(),
+        ArgumentCommandNode<CommandSourceStack, List<String>> argNamesAllLoaded = Commands.argument(type.getPlural(),
                 StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.ALL_LOADED, ctx)).build();
 
-        ArgumentCommandNode<CommandSource, List<String>> argNamesBox = Commands.argument(type.getPlural(),
+        ArgumentCommandNode<CommandSourceStack, List<String>> argNamesBox = Commands.argument(type.getPlural(),
                 StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.BOX, ctx)).build();
 
-        ArgumentCommandNode<CommandSource, List<String>> argNamesChunkRadius = Commands.argument(type.getPlural(),
+        ArgumentCommandNode<CommandSourceStack, List<String>> argNamesChunkRadius = Commands.argument(type.getPlural(),
                 StringCollectionArgument.create(() -> type.getRegistrySupplier().get().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList()), ""))
                 .executes(ctx -> locate(type, AreaType.CHUNK_RADIUS, ctx)).build();
 
@@ -95,14 +95,14 @@ public class SubCommandLocate
         return argTarget;
     }
 
-    private static int locate(LocateType locateType, AreaType areaType, CommandContext<CommandSource> ctx) throws CommandSyntaxException
+    private static int locate(LocateType locateType, AreaType areaType, CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException
     {
         CommandUtils.OutputType outputType = ctx.getArgument("output_type", CommandUtils.OutputType.class);
         DataDump.Format outputFormat = ctx.getArgument("output_format", DataDump.Format.class);
         @SuppressWarnings("unchecked")
         List<String> filters = ctx.getArgument(locateType.getPlural(), List.class);
-        CommandSource source = ctx.getSource();
-        World world = CommandUtils.getWorldFromCommandSource(source);
+        CommandSourceStack source = ctx.getSource();
+        Level world = CommandUtils.getWorldFromCommandSource(source);
 
         LocateBase locate = locateType.createChunkProcessor(outputFormat, filters);
 
@@ -114,8 +114,8 @@ public class SubCommandLocate
 
             case BOX:
             {
-                Vector3d vecStart = CommandUtils.getVec3dFromArg(ctx, "start_corner");
-                Vector3d vecEnd = CommandUtils.getVec3dFromArg(ctx, "end_corner");
+                Vec3 vecStart = CommandUtils.getVec3dFromArg(ctx, "start_corner");
+                Vec3 vecEnd = CommandUtils.getVec3dFromArg(ctx, "end_corner");
                 BlockPos minPos = CommandUtils.getMinCorner(vecStart, vecEnd);
                 BlockPos maxPos = CommandUtils.getMaxCorner(vecStart, vecEnd);
                 locate.processChunks(world, minPos, maxPos);

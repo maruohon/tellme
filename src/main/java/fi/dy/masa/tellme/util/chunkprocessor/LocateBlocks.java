@@ -8,14 +8,14 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -84,14 +84,14 @@ public class LocateBlocks extends LocateBase
     }
 
     @Override
-    public void processChunks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax)
+    public void processChunks(Collection<LevelChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
         final long timeBefore = System.currentTimeMillis();
         Set<BlockState> filters = this.filters;
-        BlockPos.Mutable pos = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int count = 0;
 
-        for (Chunk chunk : chunks)
+        for (LevelChunk chunk : chunks)
         {
             if (this.data.size() > 100000)
             {
@@ -121,7 +121,7 @@ public class LocateBlocks extends LocateBase
                         if (filters.contains(state))
                         {
                             ResourceLocation name = state.getBlock().getRegistryName();
-                            this.data.add(LocationData.of(name.toString(), dim, new Vector3d(x, y, z)));
+                            this.data.add(LocationData.of(name.toString(), dim, new Vec3(x, y, z)));
                             count++;
                         }
                     }
