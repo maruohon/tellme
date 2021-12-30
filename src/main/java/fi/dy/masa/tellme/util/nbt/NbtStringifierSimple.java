@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.Constants;
 
 public class NbtStringifierSimple extends NbtStringifierBase
 {
@@ -86,8 +85,8 @@ public class NbtStringifierSimple extends NbtStringifierBase
     @Override
     protected void appendByteArray(String tagName, byte[] arr)
     {
-        String valueColorStr = this.colored ? this.getPrimitiveColorCode(Constants.NBT.TAG_BYTE) : null;
-        String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(Constants.NBT.TAG_BYTE) : null;
+        String valueColorStr = this.colored ? this.getPrimitiveColorCode(Tag.TAG_BYTE) : null;
+        String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(Tag.TAG_BYTE) : null;
         final int size = arr.length;
 
         this.stringBuilder.append('[');
@@ -108,8 +107,8 @@ public class NbtStringifierSimple extends NbtStringifierBase
     @Override
     protected void appendIntArray(String tagName, int[] arr)
     {
-        String valueColorStr = this.colored ? this.getPrimitiveColorCode(Constants.NBT.TAG_INT) : null;
-        String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(Constants.NBT.TAG_INT) : null;
+        String valueColorStr = this.colored ? this.getPrimitiveColorCode(Tag.TAG_INT) : null;
+        String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(Tag.TAG_INT) : null;
         final int size = arr.length;
 
         this.stringBuilder.append('[');
@@ -130,8 +129,8 @@ public class NbtStringifierSimple extends NbtStringifierBase
     @Override
     protected void appendLongArray(String tagName, long[] arr)
     {
-        String valueColorStr = this.colored ? this.getPrimitiveColorCode(Constants.NBT.TAG_LONG) : null;
-        String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(Constants.NBT.TAG_LONG) : null;
+        String valueColorStr = this.colored ? this.getPrimitiveColorCode(Tag.TAG_LONG) : null;
+        String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(Tag.TAG_LONG) : null;
         final int size = arr.length;
 
         this.stringBuilder.append('[');

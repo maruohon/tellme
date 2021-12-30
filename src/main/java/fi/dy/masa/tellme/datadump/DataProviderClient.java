@@ -93,7 +93,7 @@ public class DataProviderClient extends DataProviderBase
 
     @Override
     @Nullable
-    public Collection<Advancement> getAdvacements(@Nullable MinecraftServer server)
+    public Collection<Advancement> getAdvancements(@Nullable MinecraftServer server)
     {
         Minecraft mc = Minecraft.getInstance();
 

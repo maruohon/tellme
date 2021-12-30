@@ -15,7 +15,6 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.Constants;
 
 public abstract class NbtStringifierBase
 {
@@ -72,13 +71,13 @@ public abstract class NbtStringifierBase
     {
         switch (tag.getId())
         {
-            case Constants.NBT.TAG_BYTE:    return String.valueOf(((ByteTag) tag).getAsByte());
-            case Constants.NBT.TAG_SHORT:   return String.valueOf(((ShortTag) tag).getAsShort());
-            case Constants.NBT.TAG_INT:     return String.valueOf(((IntTag) tag).getAsInt());
-            case Constants.NBT.TAG_LONG:    return String.valueOf(((LongTag) tag).getAsLong());
-            case Constants.NBT.TAG_FLOAT:   return String.valueOf(((FloatTag) tag).getAsFloat());
-            case Constants.NBT.TAG_DOUBLE:  return String.valueOf(((DoubleTag) tag).getAsDouble());
-            case Constants.NBT.TAG_STRING:  return ((StringTag) tag).getAsString();
+            case Tag.TAG_BYTE:    return String.valueOf(((ByteTag) tag).getAsByte());
+            case Tag.TAG_SHORT:   return String.valueOf(((ShortTag) tag).getAsShort());
+            case Tag.TAG_INT:     return String.valueOf(((IntTag) tag).getAsInt());
+            case Tag.TAG_LONG:    return String.valueOf(((LongTag) tag).getAsLong());
+            case Tag.TAG_FLOAT:   return String.valueOf(((FloatTag) tag).getAsFloat());
+            case Tag.TAG_DOUBLE:  return String.valueOf(((DoubleTag) tag).getAsDouble());
+            case Tag.TAG_STRING:  return ((StringTag) tag).getAsString();
         }
 
         return null;
@@ -89,11 +88,11 @@ public abstract class NbtStringifierBase
     {
         switch (tagId)
         {
-            case Constants.NBT.TAG_BYTE:    return "b";
-            case Constants.NBT.TAG_SHORT:   return "s";
-            case Constants.NBT.TAG_LONG:    return "L";
-            case Constants.NBT.TAG_FLOAT:   return "f";
-            case Constants.NBT.TAG_DOUBLE:  return "d";
+            case Tag.TAG_BYTE:    return "b";
+            case Tag.TAG_SHORT:   return "s";
+            case Tag.TAG_LONG:    return "L";
+            case Tag.TAG_FLOAT:   return "f";
+            case Tag.TAG_DOUBLE:  return "d";
         }
 
         return null;
@@ -104,15 +103,15 @@ public abstract class NbtStringifierBase
     {
         switch (tagId)
         {
-            case Constants.NBT.TAG_BYTE:
-            case Constants.NBT.TAG_SHORT:
-            case Constants.NBT.TAG_INT:
-            case Constants.NBT.TAG_LONG:
-            case Constants.NBT.TAG_FLOAT:
-            case Constants.NBT.TAG_DOUBLE:
+            case Tag.TAG_BYTE:
+            case Tag.TAG_SHORT:
+            case Tag.TAG_INT:
+            case Tag.TAG_LONG:
+            case Tag.TAG_FLOAT:
+            case Tag.TAG_DOUBLE:
                 return this.numberColor;
 
-            case Constants.NBT.TAG_STRING:
+            case Tag.TAG_STRING:
                 return this.stringColor;
         }
 
@@ -124,7 +123,7 @@ public abstract class NbtStringifierBase
         String valueStr = this.getPrimitiveValue(tag);
         String valueColorStr = this.colored ? this.getPrimitiveColorCode(tag.getId()) : null;
         String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(tag.getId()) : null;
-        boolean useQuotes = tag.getId() == Constants.NBT.TAG_STRING;
+        boolean useQuotes = tag.getId() == Tag.TAG_STRING;
 
         return this.getFormattedPrimitiveString(valueStr, useQuotes, valueColorStr, numberSuffixStr);
     }
@@ -177,23 +176,23 @@ public abstract class NbtStringifierBase
     {
         switch (tag.getId())
         {
-            case Constants.NBT.TAG_COMPOUND:
+            case Tag.TAG_COMPOUND:
                 this.appendCompound(tagName, (CompoundTag) tag);
                 break;
 
-            case Constants.NBT.TAG_LIST:
+            case Tag.TAG_LIST:
                 this.appendList(tagName, (ListTag) tag);
                 break;
 
-            case Constants.NBT.TAG_BYTE_ARRAY:
+            case Tag.TAG_BYTE_ARRAY:
                 this.appendByteArray(tagName, ((ByteArrayTag) tag).getAsByteArray());
                 break;
 
-            case Constants.NBT.TAG_INT_ARRAY:
+            case Tag.TAG_INT_ARRAY:
                 this.appendIntArray(tagName, ((IntArrayTag) tag).getAsIntArray());
                 break;
 
-            case Constants.NBT.TAG_LONG_ARRAY:
+            case Tag.TAG_LONG_ARRAY:
                 this.appendLongArray(tagName, ((LongArrayTag) tag).getAsLongArray());
                 break;
 

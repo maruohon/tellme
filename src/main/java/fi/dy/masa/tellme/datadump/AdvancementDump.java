@@ -15,7 +15,7 @@ public class AdvancementDump
     public static List<String> getFormattedAdvancementDumpSimple(Format format, @Nullable MinecraftServer server)
     {
         DataDump advancementDump = new DataDump(4, format);
-        Iterable<Advancement> iterable = TellMe.dataProvider.getAdvacements(server);
+        Iterable<Advancement> iterable = TellMe.dataProvider.getAdvancements(server);
 
         if (iterable == null)
         {

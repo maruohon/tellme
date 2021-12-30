@@ -5,7 +5,7 @@ import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
+import net.minecraftforge.forgespi.language.IModInfo;
 
 public class ModNameUtils
 {
@@ -20,7 +20,7 @@ public class ModNameUtils
     {
         if (MOD_IDS_TO_NAMES.isEmpty())
         {
-            for (ModInfo modInfo : ModList.get().getMods())
+            for (IModInfo modInfo : ModList.get().getMods())
             {
                 String modName = ChatFormatting.stripFormatting(modInfo.getDisplayName());
                 MOD_IDS_TO_NAMES.put(modInfo.getModId(), modName);

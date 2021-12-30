@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.reference.Reference;
@@ -119,14 +119,14 @@ public class Configs
     }
 
     @SubscribeEvent
-    public static void onConfigLoad(final ModConfig.Loading event)
+    public static void onConfigLoad(final ModConfigEvent.Loading event)
     {
         //System.out.printf("*** ModConfig.Loading\n");
         setConfigValues(COMMON_CONFIG);
     }
 
     @SubscribeEvent
-    public static void onConfigReload(final ModConfig.Reloading event)
+    public static void onConfigReload(final ModConfigEvent.Reloading event)
     {
         //System.out.printf("*** ModConfig.ConfigReloading\n");
         setConfigValues(COMMON_CONFIG);

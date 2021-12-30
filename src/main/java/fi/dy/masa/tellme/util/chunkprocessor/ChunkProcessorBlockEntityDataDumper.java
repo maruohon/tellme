@@ -73,7 +73,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
             if (noFilters || filters.contains(type))
             {
-                ResourceLocation id = ForgeRegistries.TILE_ENTITIES.getKey(type);
+                ResourceLocation id = ForgeRegistries.BLOCK_ENTITIES.getKey(type);
 
                 if (id != null)
                 {

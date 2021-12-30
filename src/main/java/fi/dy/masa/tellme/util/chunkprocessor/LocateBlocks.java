@@ -86,7 +86,7 @@ public class LocateBlocks extends LocateBase
     @Override
     public void processChunks(Collection<LevelChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
-        final long timeBefore = System.currentTimeMillis();
+        final long timeBefore = System.nanoTime();
         Set<BlockState> filters = this.filters;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int count = 0;
@@ -129,8 +129,8 @@ public class LocateBlocks extends LocateBase
             }
         }
 
-        final long timeAfter = System.currentTimeMillis();
+        final long timeAfter = System.nanoTime();
         TellMe.logger.info(String.format(Locale.US, "Located %d blocks in %d chunks in %.3f seconds.",
-                                         count, chunks.size(), (timeAfter - timeBefore) / 1000f));
+                                         count, chunks.size(), (timeAfter - timeBefore) / 1000000000D));
     }
 }

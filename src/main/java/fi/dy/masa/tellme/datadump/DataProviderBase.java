@@ -25,7 +25,7 @@ import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -35,7 +35,7 @@ public class DataProviderBase
     private static final Field field_ChunkManager_immutableLoadedChunks = ObfuscationReflectionHelper.findField(ChunkMap.class, "f_140130_");
 
     @Nullable
-    public Collection<Advancement> getAdvacements(@Nullable MinecraftServer server)
+    public Collection<Advancement> getAdvancements(@Nullable MinecraftServer server)
     {
         return server != null ? server.getAdvancements().getAllAdvancements() : null;
     }

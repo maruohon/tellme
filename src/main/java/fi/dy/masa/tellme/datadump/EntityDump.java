@@ -37,7 +37,7 @@ public class EntityDump
                 {
                     Entity entity = type.create(world);
                     Class<? extends Entity> clazz = entity.getClass();
-                    entity.remove();
+                    entity.remove(Entity.RemovalReason.DISCARDED);
                     className = clazz.getName();
                 }
                 catch (Exception ignore) {}

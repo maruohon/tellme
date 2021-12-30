@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -17,12 +17,12 @@ public class BiomeLocator
 {
     private final Object2ObjectOpenHashMap<Biome, BlockPos> biomePositions = new Object2ObjectOpenHashMap<>();
     private final BlockPos.MutableBlockPos posMutable = new BlockPos.MutableBlockPos();
-    private final WritableRegistry<Biome> registry;
+    private final Registry<Biome> registry;
     private BlockPos center = BlockPos.ZERO;
     private int count;
     private boolean append;
 
-    public BiomeLocator(WritableRegistry<Biome> registry)
+    public BiomeLocator(Registry<Biome> registry)
     {
         this.registry = registry;
     }

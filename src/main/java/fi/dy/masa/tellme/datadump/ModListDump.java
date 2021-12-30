@@ -2,7 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
+import net.minecraftforge.forgespi.language.IModInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ModListDump
@@ -11,7 +11,7 @@ public class ModListDump
     {
         DataDump dump = new DataDump(3, format);
 
-        for (ModInfo modInfo : ModList.get().getMods())
+        for (IModInfo modInfo : ModList.get().getMods())
         {
             String modId = modInfo.getModId();
             String modName = modInfo.getDisplayName();

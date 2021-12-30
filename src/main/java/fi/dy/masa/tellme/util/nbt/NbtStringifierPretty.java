@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.Constants;
 
 public class NbtStringifierPretty extends NbtStringifierBase
 {
@@ -37,10 +36,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
 
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < level; ++i)
-        {
-            sb.append("    ");
-        }
+        sb.append("    ".repeat(Math.max(0, level)));
 
         this.indentation = sb.toString();
     }
@@ -106,9 +102,8 @@ public class NbtStringifierPretty extends NbtStringifierBase
         this.addIndentedLine("[");
         this.setIndentationLevel(this.indentationLevel + 1);
 
-        for (int i = 0; i < size; ++i)
+        for (Tag tag : list)
         {
-            Tag tag = list.get(i);
             this.appendTag("", tag);
         }
 
@@ -127,7 +122,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
     @Override
     protected void appendByteArray(String tagName, byte[] arr)
     {
-        int tagId = Constants.NBT.TAG_BYTE;
+        int tagId = Tag.TAG_BYTE;
         String valueColorStr = this.colored ? this.getPrimitiveColorCode(tagId) : null;
         String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(tagId) : null;
         final int size = arr.length;
@@ -180,7 +175,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
     @Override
     protected void appendIntArray(String tagName, int[] arr)
     {
-        int tagId = Constants.NBT.TAG_INT;
+        int tagId = Tag.TAG_INT;
         String valueColorStr = this.colored ? this.getPrimitiveColorCode(tagId) : null;
         String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(tagId) : null;
         final int size = arr.length;
@@ -233,7 +228,7 @@ public class NbtStringifierPretty extends NbtStringifierBase
     @Override
     protected void appendLongArray(String tagName, long[] arr)
     {
-        int tagId = Constants.NBT.TAG_LONG;
+        int tagId = Tag.TAG_LONG;
         String valueColorStr = this.colored ? this.getPrimitiveColorCode(tagId) : null;
         String numberSuffixStr = this.useNumberSuffix ? this.getNumberSuffix(tagId) : null;
         final int size = arr.length;

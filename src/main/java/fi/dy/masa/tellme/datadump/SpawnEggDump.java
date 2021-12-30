@@ -3,7 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.lang.reflect.Field;
 import java.util.List;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 

@@ -44,45 +44,49 @@ public class BlockInfo
         Map<Material, String> names = new HashMap<>();
 
         names.put(Material.AIR, "AIR");
-        names.put(Material.HEAVY_METAL, "ANVIL");
+        names.put(Material.AMETHYST, "AMETHYST");
         names.put(Material.BAMBOO, "BAMBOO");
         names.put(Material.BAMBOO_SAPLING, "BAMBOO_SAPLING");
         names.put(Material.BARRIER, "BARRIER");
         names.put(Material.BUBBLE_COLUMN, "BUBBLE_COLUMN");
+        names.put(Material.BUILDABLE_GLASS, "BUILDABLE_GLASS");
         names.put(Material.CACTUS, "CACTUS");
         names.put(Material.CAKE, "CAKE");
-        names.put(Material.CLOTH_DECORATION, "CARPET");
         names.put(Material.CLAY, "CLAY");
-        names.put(Material.CORAL, "CORAL");
-        names.put(Material.EGG, "DRAGON_EGG");
-        names.put(Material.DIRT, "EARTH");
+        names.put(Material.CLOTH_DECORATION, "CLOTH_DECORATION");
+        names.put(Material.DECORATION, "DECORATION");
+        names.put(Material.DIRT, "DIRT");
+        names.put(Material.EGG, "EGG");
+        names.put(Material.EXPLOSIVE, "EXPLOSIVE");
         names.put(Material.FIRE, "FIRE");
         names.put(Material.GLASS, "GLASS");
-        names.put(Material.VEGETABLE, "GOURD");
+        names.put(Material.GRASS, "GRASS");
+        names.put(Material.HEAVY_METAL, "HEAVY_METAL");
         names.put(Material.ICE, "ICE");
-        names.put(Material.METAL, "IRON");
+        names.put(Material.ICE_SOLID, "ICE_SOLID");
         names.put(Material.LAVA, "LAVA");
         names.put(Material.LEAVES, "LEAVES");
-        names.put(Material.DECORATION, "MISCELLANEOUS");
+        names.put(Material.METAL, "METAL");
+        names.put(Material.MOSS, "MOSS");
         names.put(Material.NETHER_WOOD, "NETHER_WOOD");
-        names.put(Material.WATER_PLANT, "OCEAN_PLANT");
-        names.put(Material.GRASS, "ORGANIC");
-        names.put(Material.ICE_SOLID, "PACKED_ICE");
         names.put(Material.PISTON, "PISTON");
-        names.put(Material.PLANT, "PLANTS");
+        names.put(Material.PLANT, "PLANT");
         names.put(Material.PORTAL, "PORTAL");
-        names.put(Material.BUILDABLE_GLASS, "REDSTONE_LIGHT");
-        names.put(Material.STONE, "ROCK");
+        names.put(Material.POWDER_SNOW, "POWDER_SNOW");
+        names.put(Material.REPLACEABLE_FIREPROOF_PLANT, "REPLACEABLE_FIREPROOF_PLANT");
+        names.put(Material.REPLACEABLE_PLANT, "REPLACEABLE_PLANT");
+        names.put(Material.REPLACEABLE_WATER_PLANT, "REPLACEABLE_WATER_PLANT");
         names.put(Material.SAND, "SAND");
-        names.put(Material.REPLACEABLE_WATER_PLANT, "SEA_GRASS");
-        names.put(Material.SHULKER_SHELL, "SHULKER");
-        names.put(Material.TOP_SNOW, "SNOW");
-        names.put(Material.SNOW, "SNOW_BLOCK");
+        names.put(Material.SCULK, "SCULK");
+        names.put(Material.SHULKER_SHELL, "SHULKER_SHELL");
+        names.put(Material.SNOW, "SNOW");
         names.put(Material.SPONGE, "SPONGE");
-        names.put(Material.STRUCTURAL_AIR, "STRUCTURE_VOID");
-        names.put(Material.REPLACEABLE_PLANT, "TALL_PLANTS");
-        names.put(Material.EXPLOSIVE, "TNT");
+        names.put(Material.STONE, "STONE");
+        names.put(Material.STRUCTURAL_AIR, "STRUCTURAL_AIR");
+        names.put(Material.TOP_SNOW, "TOP_SNOW");
+        names.put(Material.VEGETABLE, "VEGETABLE");
         names.put(Material.WATER, "WATER");
+        names.put(Material.WATER_PLANT, "WATER_PLANT");
         names.put(Material.WEB, "WEB");
         names.put(Material.WOOD, "WOOD");
         names.put(Material.WOOL, "WOOL");
@@ -127,7 +131,7 @@ public class BlockInfo
     public static List<Pair<String, String>> getProperties(String blockName)
     {
         List<Pair<String, String>> props = new ArrayList<>();
-        Pattern patternNameProps = Pattern.compile("(?<name>([a-z0-9_]+:)?[a-z0-9\\._]+)\\[(?<props>[a-z0-9_]+=[a-z0-9_]+(,[a-z0-9_]+=[a-z0-9_]+)*)\\]");
+        Pattern patternNameProps = Pattern.compile("(?<name>([a-z0-9_]+:)?[a-z0-9._]+)\\[(?<props>[a-z0-9_]+=[a-z0-9_]+(,[a-z0-9_]+=[a-z0-9_]+)*)]");
         Matcher matcherNameProps = patternNameProps.matcher(blockName);
 
         if (matcherNameProps.matches())
@@ -136,7 +140,7 @@ public class BlockInfo
             //String name = matcherNameProps.group("name");
             String propStr = matcherNameProps.group("props");
             String[] propParts = propStr.split(",");
-            Pattern patternProp = Pattern.compile("(?<prop>[a-zA-Z0-9\\._-]+)=(?<value>[a-zA-Z0-9\\._-]+)");
+            Pattern patternProp = Pattern.compile("(?<prop>[a-zA-Z0-9._-]+)=(?<value>[a-zA-Z0-9._-]+)");
 
             for (String propPart : propParts)
             {
@@ -165,7 +169,7 @@ public class BlockInfo
         String teInfo;
         BlockState state = world.getBlockState(pos);
         boolean teInWorld = world.getBlockEntity(pos) != null;
-        boolean shouldHaveTE = state.getBlock().hasTileEntity(state);
+        boolean shouldHaveTE = state.hasBlockEntity();
 
         if (teInWorld == shouldHaveTE)
         {
@@ -273,7 +277,7 @@ public class BlockInfo
         return sb.toString();
     }
 
-    public static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<Map.Entry<Property<?>, Comparable<?>>, String>()
+    public static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_MAP_PRINTER = new Function<>()
     {
         @Override
         public String apply(@Nullable Map.Entry<Property<?>, Comparable<?>> entry)

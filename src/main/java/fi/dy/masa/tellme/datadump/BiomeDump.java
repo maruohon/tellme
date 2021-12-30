@@ -24,7 +24,7 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -90,11 +90,12 @@ public class BiomeDump
                 List<String> tmpList = new ArrayList<>();
 
                 // Add the spawns grouped by category and sorted alphabetically within each category
-                for (MobSpawnSettings.SpawnerData spawn : biome.getMobSettings().getMobs(type))
+                for (MobSpawnSettings.SpawnerData spawn : biome.getMobSettings().getMobs(type).unwrap())
                 {
                     ResourceLocation erl = spawn.type.getRegistryName();
                     String entName = erl != null ? erl.toString() : "<null>";
-                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.weight, spawn.minCount, spawn.maxCount));
+                    int weight = spawn.getWeight().asInt();
+                    tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, weight, spawn.minCount, spawn.maxCount));
                 }
 
                 Collections.sort(tmpList);

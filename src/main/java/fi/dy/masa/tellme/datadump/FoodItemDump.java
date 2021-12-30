@@ -32,7 +32,7 @@ public class FoodItemDump
         String isFastEat = String.valueOf(food.isFastFood());
         List<Pair<MobEffectInstance, Float>> effects = food.getEffects();
         String effectsStr = effects.stream()
-                .map((pair) -> "{[" + pair.getFirst().toString() + "], Propability: " + pair.getSecond() + "}")
+                .map((pair) -> "{[" + pair.getFirst().toString() + "], Probability: " + pair.getSecond() + "}")
                 .collect(Collectors.joining(", "));
 
         dump.addData(registryName, displayName, hunger, saturation, isMeat, isFastEat, ItemDump.getTagNamesJoined(item), effectsStr);

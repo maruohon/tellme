@@ -57,6 +57,7 @@ public class SubCommandEntityData
         return 1;
     }
 
+    @SuppressWarnings("unchecked")
     private static LiteralCommandNode<CommandSourceStack> createNodesEntities(LocateType target)
     {
         LiteralCommandNode<CommandSourceStack> argEntityType = Commands.literal(target.getArgument()).build();

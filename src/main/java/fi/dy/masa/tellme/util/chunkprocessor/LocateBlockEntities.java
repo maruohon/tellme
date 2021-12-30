@@ -67,7 +67,7 @@ public class LocateBlockEntities extends LocateBase
     @Override
     public void processChunks(Collection<LevelChunk> chunks, BlockPos posMin, BlockPos posMax)
     {
-        final long timeBefore = System.currentTimeMillis();
+        final long timeBefore = System.nanoTime();
         Set<BlockEntityType<?>> filters = this.filters;
         int count = 0;
 
@@ -88,7 +88,7 @@ public class LocateBlockEntities extends LocateBase
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
-            BoundingBox box = BoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
+            BoundingBox box = new BoundingBox(xMin, yMin, zMin, xMax, yMax, zMax);
 
             for (BlockEntity te : chunk.getBlockEntities().values())
             {
@@ -105,8 +105,8 @@ public class LocateBlockEntities extends LocateBase
             }
         }
 
-        final long timeAfter = System.currentTimeMillis();
+        final long timeAfter = System.nanoTime();
         TellMe.logger.info(String.format(Locale.US, "Located %d TileEntities in %d chunks in %.3f seconds.",
-                                         count, chunks.size(), (timeAfter - timeBefore) / 1000f));
+                                         count, chunks.size(), (timeAfter - timeBefore) / 1000000000D));
     }
 }

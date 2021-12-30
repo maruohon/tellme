@@ -25,8 +25,8 @@ public class StructureFeatureDump
 
             if (spawns)
             {
-                String mobSpawns = getMobSpawnsString(feature.getSpecialEnemies());
-                String passiveSpawns = getMobSpawnsString(feature.getSpecialAnimals());
+                String mobSpawns = getMobSpawnsString(feature.getSpecialEnemies().unwrap());
+                String passiveSpawns = getMobSpawnsString(feature.getSpecialAnimals().unwrap());
                 dump.addData(id.toString(), feature.getFeatureName(), mobSpawns, passiveSpawns);
             }
             else
@@ -55,7 +55,8 @@ public class StructureFeatureDump
         {
             ResourceLocation erl = ForgeRegistries.ENTITIES.getKey(spawn.type);
             String entName = erl != null ? erl.toString() : "<null>";
-            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, spawn.weight, spawn.minCount, spawn.maxCount));
+            int weight = spawn.getWeight().asInt();
+            spawns.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, weight, spawn.minCount, spawn.maxCount));
         }
 
         Collections.sort(spawns);

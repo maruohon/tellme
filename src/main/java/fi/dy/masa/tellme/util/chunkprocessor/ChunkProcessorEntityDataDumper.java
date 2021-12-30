@@ -9,12 +9,14 @@ import java.util.Set;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ClassInstanceMultiMap;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
@@ -52,9 +54,12 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
     @Override
     public void processChunk(LevelChunk chunk)
     {
-        ClassInstanceMultiMap<Entity>[] entityLists = chunk.getEntitySections();
-        Set<EntityType<?>> filters = this.filters;
-        boolean noFilters = filters.isEmpty();
+        ChunkPos pos = chunk.getPos();
+        WorldUtils.processEntitiesInChunk(chunk.getLevel(), pos.x, pos.z, this::entityConsumer);
+    }
+
+    private void entityConsumer(Entity entity)
+    {
         Vec3 min = this.minPos;
         Vec3 max = this.maxPos;
         boolean hasBox = min != null && max != null;
@@ -65,36 +70,29 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
         double maxY = max != null ? max.y : 0;
         double maxZ = max != null ? max.z : 0;
 
-        for (ClassInstanceMultiMap<Entity> entityList : entityLists)
+        Vec3 pos = entity.position();
+
+        if (hasBox &&
+            (pos.x < minX ||
+             pos.y < minY ||
+             pos.z < minZ ||
+             pos.x > maxX ||
+             pos.y > maxY ||
+             pos.z > maxZ))
         {
-            for (Entity entity : entityList)
+            return;
+        }
+
+        EntityType<?> type = entity.getType();
+
+        if (this.filters.isEmpty() || this.filters.contains(type))
+        {
+            ResourceLocation id = ForgeRegistries.ENTITIES.getKey(type);
+            CompoundTag tag = new CompoundTag();
+
+            if (entity.saveAsPassenger(tag))
             {
-                Vec3 pos = entity.position();
-
-                if (hasBox &&
-                    (pos.x < minX ||
-                     pos.y < minY ||
-                     pos.z < minZ ||
-                     pos.x > maxX ||
-                     pos.y > maxY ||
-                     pos.z > maxZ))
-                {
-                    continue;
-                }
-
-                EntityType<?> type = entity.getType();
-
-                if (noFilters || filters.contains(type))
-                {
-                    @SuppressWarnings("deprecation")
-                    ResourceLocation id = Registry.ENTITY_TYPE.getKey(type);
-                    CompoundTag tag = new CompoundTag();
-
-                    if (entity.saveAsPassenger(tag))
-                    {
-                        this.data.add(new EntityDataEntry(pos, id.toString(), tag.toString()));
-                    }
-                }
+                this.data.add(new EntityDataEntry(pos, id.toString(), tag.toString()));
             }
         }
     }

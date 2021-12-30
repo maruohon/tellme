@@ -113,7 +113,7 @@ public class InteractEventHandler
     private void printItemInfo(Player player)
     {
         // Select the slot to the right from the current slot, or the first slot if the current slot is the last slot
-        int slot = player.inventory.selected;
+        int slot = player.getInventory().selected;
         if (slot >= 0 && slot <= 7)
         {
             slot += 1;
@@ -127,7 +127,7 @@ public class InteractEventHandler
             return;
         }
 
-        ItemStack stack = player.inventory.getItem(slot);
+        ItemStack stack = player.getInventory().getItem(slot);
 
         if (stack.isEmpty() == false && stack.getItem() != null)
         {

@@ -1,8 +1,6 @@
 package fi.dy.masa.tellme.datadump;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,9 +26,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
@@ -38,7 +37,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.IPlantable;
-import net.minecraftforge.common.ToolType;
 import net.minecraftforge.registries.ForgeRegistries;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -49,15 +47,12 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class ItemDump
 {
-    public static final String[] HARVEST_LEVEL_NAMES = new String[] { "Wood/Gold", "Stone", "Iron", "Diamond" };
-
-    public static final ItemInfoProviderBase INFO_REGISTRY_NAME = new ItemInfoProviderRegistryNameOnly();
     public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic(false);
     public static final ItemInfoProviderBase INFO_TAGS = new ItemInfoProviderBasic(true);
     public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
     public static final ItemInfoProviderBase INFO_DAMAGEABLES = new ItemInfoProviderDamageables();
     public static final ItemInfoProviderBase INFO_PLANTABLES = new ItemInfoProviderPlantables();
-    public static final ItemInfoProviderBase INFO_TOOL_CLASS = new ItemInfoProviderToolClasses();
+    public static final ItemInfoProviderBase INFO_TIERED = new ItemInfoProviderTiered();
 
     public static List<String> getFormattedItemDump(Format format, ItemInfoProviderBase provider)
     {
@@ -213,9 +208,6 @@ public class ItemDump
                 String hardness = String.format("%.2f", block.defaultBlockState().getDestroySpeed(null, BlockPos.ZERO));
                 @SuppressWarnings("deprecation")
                 String resistance = String.format("%.2f", block.getExplosionResistance());
-                String tool = block.getHarvestTool(state).getName();
-                int harvestLevel = block.getHarvestLevel(state);
-                String harvestLevelName = (harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length) ? HARVEST_LEVEL_NAMES[harvestLevel] : "Unknown";
                 boolean fallingBlock = block instanceof FallingBlock;
                 @SuppressWarnings("deprecation")
                 int light = state.getLightEmission();
@@ -229,9 +221,6 @@ public class ItemDump
                 obj.add("LightValue", new JsonPrimitive(light));
                 obj.add("LightOpacity", new JsonPrimitive(opacity));
                 obj.add("Flammable", new JsonPrimitive(flammable));
-                obj.add("HarvestTool", new JsonPrimitive(tool));
-                obj.add("HarvestLevel", new JsonPrimitive(harvestLevel));
-                obj.add("HarvestLevelName", new JsonPrimitive(harvestLevelName));
                 obj.add("FallingBlock", new JsonPrimitive(fallingBlock));
             }
             catch (Exception ignored) {}
@@ -248,26 +237,6 @@ public class ItemDump
         }
         else
         {
-            obj.add("Type", new JsonPrimitive("generic"));
-            List<ToolType> toolTypes = new ArrayList<>(item.getToolTypes(stack));
-
-            if (toolTypes.isEmpty() == false)
-            {
-                ArrayList<String> toolTypeNames = new ArrayList<>();
-                toolTypes.forEach((c) -> toolTypeNames.add(c.getName()));
-                Collections.sort(toolTypeNames);
-
-                String levels = toolTypes.stream().map((t) -> String.valueOf(item.getHarvestLevel(stack, t, player, null))).collect(Collectors.joining(","));
-
-                obj.add("ToolTypes", new JsonPrimitive(String.join(",", toolTypeNames)));
-                obj.add("HarvestLevels", new JsonPrimitive(levels));
-
-                if (item instanceof DiggerItem)
-                {
-                    obj.add("ToolMaterial", new JsonPrimitive(((DiggerItem) item).getTier().toString()));
-                }
-            }
-
             Multimap<Attribute, AttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlot.MAINHAND, stack);
 
             if (attributes.isEmpty() == false)
@@ -327,11 +296,6 @@ public class ItemDump
 
         public void addHeaders(DataDump dump)
         {
-            dump.setColumnProperties(2, Alignment.RIGHT, true); // ID
-
-            dump.addHeader("*** WARNING ***");
-            dump.addHeader("Don't use the item ID for anything \"proper\"!!");
-            dump.addHeader("It's provided here for completeness's sake, it's different in every world.");
         }
 
         public abstract int getColumnCount();
@@ -339,36 +303,6 @@ public class ItemDump
         public abstract void addTitle(DataDump dump);
 
         public abstract void addLine(DataDump dump, ItemStack stack, ResourceLocation id);
-    }
-
-    public static class ItemInfoProviderRegistryNameOnly extends ItemInfoProviderBase
-    {
-        public ItemInfoProviderRegistryNameOnly()
-        {
-        }
-
-        @Override
-        public int getColumnCount()
-        {
-            return 1;
-        }
-
-        @Override
-        public void addTitle(DataDump dump)
-        {
-            dump.addTitle("Registry name");
-        }
-
-        @Override
-        public void addHeaders(DataDump dump)
-        {
-        }
-
-        @Override
-        public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
-        {
-            dump.addData(this.getRegistryName(id));
-        }
     }
 
     public static class ItemInfoProviderBasic extends ItemInfoProviderBase
@@ -400,6 +334,16 @@ public class ItemDump
         }
 
         @Override
+        public void addHeaders(DataDump dump)
+        {
+            dump.setColumnProperties(2, Alignment.RIGHT, true); // ID
+
+            dump.addHeader("*** WARNING ***");
+            dump.addHeader("Don't use the item ID for anything \"proper\"!!");
+            dump.addHeader("It's provided here for completeness's sake, it's different in every world.");
+        }
+
+        @Override
         public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
         {
             if (this.tags)
@@ -420,18 +364,18 @@ public class ItemDump
         }
     }
 
-    public static class ItemInfoProviderToolClasses extends ItemInfoProviderBase
+    public static class ItemInfoProviderTiered extends ItemInfoProviderBase
     {
         @Override
         public int getColumnCount()
         {
-            return 7;
+            return 4;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tool classes", "Harvest levels", "Tags");
+            dump.addTitle("Mod name", "Registry name", "Display name", "Tier");
         }
 
         @Override
@@ -439,34 +383,18 @@ public class ItemDump
         {
             Item item = stack.getItem();
 
-            if (item.getToolTypes(stack).isEmpty() == false)
+            if (item instanceof TieredItem tiered)
             {
-                List<ToolType> toolTypes = new ArrayList<>(item.getToolTypes(stack));
-
-                Collections.sort(toolTypes, Comparator.comparing(ToolType::getName));
-
-                List<String> strings = new ArrayList<>();
-                toolTypes.forEach((c) -> strings.add(c.getName()));
-
-                String toolClasses = String.join(", ", strings);
-
-                for (int i = 0; i < toolTypes.size(); ++i)
-                {
-                    ToolType type = toolTypes.get(i);
-                    int harvestLevel = item.getHarvestLevel(stack, type, null, null);
-                    String hlName = harvestLevel >= 0 && harvestLevel < HARVEST_LEVEL_NAMES.length ? HARVEST_LEVEL_NAMES[harvestLevel] : "?";
-                    strings.set(i, String.format("%s = %d (%s)", type.getName(), harvestLevel, hlName));
-                }
-
-                String harvestLevels = String.join(", ", strings);
+                Tier tier = tiered.getTier();
+                @SuppressWarnings("deprecation")
+                String tierInfo = String.format("uses: %d, level: %d, speed: %.3f, dmgbns: %.3f, ench: %d",
+                                                tier.getUses(), tier.getLevel(), tier.getSpeed(),
+                                                tier.getAttackDamageBonus(), tier.getEnchantmentValue());
 
                 dump.addData(this.getModName(id),
                              this.getRegistryName(id),
-                             this.getItemId(stack),
                              this.getDisplayName(stack),
-                             toolClasses,
-                             harvestLevels,
-                             getTagNamesJoined(stack.getItem()));
+                             tierInfo);
             }
         }
     }
@@ -476,13 +404,13 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 6;
+            return 5;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Plant Type", "Tags");
+            dump.addTitle("Mod name", "Registry name", "Display name", "Plant Type", "Tags");
         }
 
         @Override
@@ -496,7 +424,6 @@ public class ItemDump
 
                     dump.addData(this.getModName(id),
                                  this.getRegistryName(id),
-                                 this.getItemId(stack),
                                  this.getDisplayName(stack),
                                  ((IPlantable) block).getPlantType(null, BlockPos.ZERO).getName(),
                                  getTagNamesJoined(stack.getItem()));
@@ -514,13 +441,13 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 5;
+            return 4;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
+            dump.addTitle("Mod name", "Registry name", "Display name", "Tags");
         }
 
         @Override
@@ -530,7 +457,6 @@ public class ItemDump
             {
                 dump.addData(this.getModName(id),
                              this.getRegistryName(id),
-                             this.getItemId(stack),
                              this.getDisplayName(stack),
                              getTagNamesJoined(stack.getItem()));
             }
@@ -542,13 +468,13 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 6;
+            return 5;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Recipe name", "Tags");
+            dump.addTitle("Mod name", "Registry name", "Display name", "Recipe name", "Tags");
         }
 
         @Override
@@ -558,7 +484,6 @@ public class ItemDump
 
             dump.addData(this.getModName(id),
                          this.getRegistryName(itemId),
-                         this.getItemId(stack),
                          this.getDisplayName(stack),
                          this.getRegistryName(id),
                          getTagNamesJoined(stack.getItem()));

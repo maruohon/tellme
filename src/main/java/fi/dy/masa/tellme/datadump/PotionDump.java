@@ -1,14 +1,15 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraftforge.registries.ForgeRegistries;
-import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
@@ -16,32 +17,53 @@ public class PotionDump
 {
     public static List<String> getFormattedPotionDump(DataDump.Format format)
     {
-        DataDump potionDump = new DataDump(7, format);
+        DataDump potionTypeDump = new DataDump(3, format);
 
-        for (Map.Entry<ResourceKey<MobEffect>, MobEffect> entry : ForgeRegistries.POTIONS.getEntries())
+        for (Map.Entry<ResourceKey<Potion>, Potion> entry : ForgeRegistries.POTIONS.getEntries())
         {
-            MobEffect effect = entry.getValue();
-            ResourceLocation rl = effect.getRegistryName();
+            Potion potion = entry.getValue();
+            String regName = potion.getRegistryName().toString();
 
             @SuppressWarnings("deprecation")
-            String id = String.valueOf(Registry.MOB_EFFECT.getId(effect));
+            String id = String.valueOf(Registry.POTION.getId(potion));
 
-            String modName = ModNameUtils.getModName(rl);
-            String regName = rl.toString();
-            String name = effect.getDescriptionId();
-            String color = String.format("0x%08X (%10d)", effect.getColor(), effect.getColor());
-            String isBad = String.valueOf(effect.getCategory() == MobEffectCategory.HARMFUL);
-            String isBeneficial = String.valueOf(effect.isBeneficial());
+            List<MobEffectInstance> effects = potion.getEffects();
 
-            potionDump.addData(modName, regName, name, id, color, isBad, isBeneficial);
+            potionTypeDump.addData(regName, id, String.join(", ", getEffectInfoLines(effects)));
         }
 
-        potionDump.addTitle("Mod name", "Registry name", "Potion Name", "ID", "Liquid color", "Is bad", "Is beneficial");
+        potionTypeDump.addTitle("Registry name", "ID", "Effects");
+        potionTypeDump.setColumnProperties(1, Alignment.RIGHT, true); // id
 
-        potionDump.setColumnProperties(3, Alignment.RIGHT, true); // id
-        potionDump.setColumnAlignment(5, Alignment.RIGHT); // is bad
-        potionDump.setColumnAlignment(6, Alignment.RIGHT); // is beneficial
+        return potionTypeDump.getLines();
+    }
 
-        return potionDump.getLines();
+    public static String getMobEffectInfo(MobEffect effect)
+    {
+        String isBad = String.valueOf(effect.getCategory() == MobEffectCategory.HARMFUL);
+        String isBeneficial = String.valueOf(effect.isBeneficial());
+
+        return "MobEffect:[reg:" + effect.getRegistryName().toString() + ",name:" + effect.getDescriptionId() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
+    }
+
+    public static String getMobEffectInstanceInfo(MobEffectInstance effect)
+    {
+        return String.format("MobEffectInstance:{%s,amplifier:%d,duration:%d,isAmbient:%s}",
+                             getMobEffectInfo(effect.getEffect()),
+                             effect.getAmplifier(),
+                             effect.getDuration(),
+                             effect.isAmbient());
+    }
+
+    public static List<String> getEffectInfoLines(List<MobEffectInstance> effects)
+    {
+        List<String> lines = new ArrayList<>();
+
+        for (MobEffectInstance effect : effects)
+        {
+            lines.add(getMobEffectInstanceInfo(effect));
+        }
+
+        return lines;
     }
 }

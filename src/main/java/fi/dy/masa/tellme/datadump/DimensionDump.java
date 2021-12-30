@@ -1,6 +1,7 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -83,10 +84,11 @@ public class DimensionDump
             {
                 String dimId = WorldUtils.getDimensionId(world);
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
-                String entityCount = String.valueOf(world.getEntities().count());
+                long entityCount = StreamSupport.stream(world.getEntities().getAll().spliterator(), false).count();
+                String entityCountStr = String.valueOf(entityCount);
                 String playerCount = String.valueOf(world.players().size());
 
-                dimensionDump.addData(dimId, loadedChunks, entityCount, playerCount);
+                dimensionDump.addData(dimId, loadedChunks, entityCountStr, playerCount);
             }
         }
 
