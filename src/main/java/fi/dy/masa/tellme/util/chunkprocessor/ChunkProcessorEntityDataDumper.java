@@ -69,22 +69,15 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
     {
         Vec3d min = this.minPos;
         Vec3d max = this.maxPos;
-        boolean hasBox = min != null && max != null;
-        double minX = min != null ? min.x : 0;
-        double minY = min != null ? min.y : 0;
-        double minZ = min != null ? min.z : 0;
-        double maxX = max != null ? max.x : 0;
-        double maxY = max != null ? max.y : 0;
-        double maxZ = max != null ? max.z : 0;
         Vec3d pos = entity.getPos();
 
-        if (hasBox &&
-            (pos.x < minX ||
-             pos.y < minY ||
-             pos.z < minZ ||
-             pos.x > maxX ||
-             pos.y > maxY ||
-             pos.z > maxZ))
+        if (min != null && max != null &&
+            (pos.x < min.x ||
+             pos.y < min.y ||
+             pos.z < min.z ||
+             pos.x > max.x ||
+             pos.y > max.y ||
+             pos.z > max.z))
         {
             return;
         }

@@ -12,6 +12,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.WorldChunk;
@@ -58,17 +59,16 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
     {
         Map<BlockPos, BlockEntity> blockEntities = chunk.getBlockEntities();
         Set<BlockEntityType<?>> filters = this.filters;
-        boolean noFilters = filters.isEmpty();
-        Vec3d min = this.minPos;
-        Vec3d max = this.maxPos;
-        boolean hasBox = min != null && max != null;
-        int minX = min != null ? (int) Math.floor(min.x) : 0;
-        int minY = min != null ? (int) Math.floor(min.y) : 0;
-        int minZ = min != null ? (int) Math.floor(min.z) : 0;
-        int maxX = max != null ? (int) Math.floor(max.x) : 0;
-        int maxY = max != null ? (int) Math.floor(max.y) : 0;
-        int maxZ = max != null ? (int) Math.floor(max.z) : 0;
-        int total = 0;
+        final Vec3d min = this.minPos;
+        final Vec3d max = this.maxPos;
+        final boolean noFilters = filters.isEmpty();
+        final boolean hasBox = min != null && max != null;
+        final int minX = hasBox ? MathHelper.floor(min.x) : 0;
+        final int minY = hasBox ? MathHelper.floor(min.y) : 0;
+        final int minZ = hasBox ? MathHelper.floor(min.z) : 0;
+        final int maxX = hasBox ? MathHelper.floor(max.x) : 0;
+        final int maxY = hasBox ? MathHelper.floor(max.y) : 0;
+        final int maxZ = hasBox ? MathHelper.floor(max.z) : 0;
 
         for (BlockEntity be : blockEntities.values())
         {
@@ -97,7 +97,6 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
                     {
                         NbtCompound tag = be.createNbt();
                         this.data.add(new BlockEntityDataEntry(pos, id.toString(), tag.toString()));
-                        ++total;
                     }
                     catch (Exception e)
                     {
