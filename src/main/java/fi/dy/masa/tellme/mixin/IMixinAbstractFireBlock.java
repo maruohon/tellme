@@ -9,5 +9,5 @@ import net.minecraft.block.BlockState;
 public interface IMixinAbstractFireBlock
 {
     @Invoker("isFlammable")
-    boolean invokeIsFlammable(BlockState state);
+    boolean tellme_getIsFlammable(BlockState state);
 }

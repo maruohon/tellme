@@ -91,14 +91,17 @@ public class SubCommandEntityData
         ArgumentCommandNode<ServerCommandSource, Identifier> argDimensionInChunk = CommandManager.argument("dimension", DimensionArgumentType.dimension())
             .executes(c -> dumpEntityData(target, AreaType.CHUNK, c, (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"))).build();
 
+        @SuppressWarnings("unchecked")
         ArgumentCommandNode<ServerCommandSource, List<String>> argNamesAll = CommandManager.argument("filters",
             StringCollectionArgument.create(() -> target.getRegistrySupplier().get().getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
             .executes(c -> dumpEntityData(target, AreaType.ALL_LOADED, c, (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"), c.getArgument("filters", List.class))).build();
 
+        @SuppressWarnings("unchecked")
         ArgumentCommandNode<ServerCommandSource, List<String>> argNamesBox = CommandManager.argument("filters",
             StringCollectionArgument.create(() -> target.getRegistrySupplier().get().getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
             .executes(c -> dumpEntityData(target, AreaType.AREA, c, (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"), c.getArgument("filters", List.class))).build();
 
+        @SuppressWarnings("unchecked")
         ArgumentCommandNode<ServerCommandSource, List<String>> argNamesChunk = CommandManager.argument("filters",
             StringCollectionArgument.create(() -> target.getRegistrySupplier().get().getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
             .executes(c -> dumpEntityData(target, AreaType.CHUNK, c, (s) -> DimensionArgumentType.getDimensionArgument(c, "dimension"), c.getArgument("filters", List.class))).build();

@@ -10,5 +10,5 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 public interface IMixinThreadedAnvilChunkStorage
 {
     @Accessor("chunkHolders")
-    Long2ObjectLinkedOpenHashMap<ChunkHolder> tellmeGetChunkHolders();
+    Long2ObjectLinkedOpenHashMap<ChunkHolder> tellme_getChunkHolders();
 }

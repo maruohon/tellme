@@ -85,7 +85,7 @@ public class DimensionDump
             {
                 String dimId = WorldUtils.getDimensionId(world);
                 String loadedChunks = String.valueOf(WorldUtils.getLoadedChunkCount(world));
-                long entityCount = StreamSupport.stream(((IMixinWorld) world).tellme_invoke_getEntityLookup().iterate().spliterator(), false).count();
+                long entityCount = StreamSupport.stream(((IMixinWorld) world).tellme_getEntityLookup().iterate().spliterator(), false).count();
                 String entityCountStr = String.valueOf(entityCount);
                 String playerCount = String.valueOf(world.getPlayers().size());
 

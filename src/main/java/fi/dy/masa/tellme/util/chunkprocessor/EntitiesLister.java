@@ -37,7 +37,7 @@ public class EntitiesLister extends ChunkProcessorBase
         World world = chunk.getWorld();
         ChunkPos pos = chunk.getPos();
         Box box = WorldUtils.createEntityBoxForChunk(world, pos.x, pos.z);
-        ((IMixinWorld) world).tellme_invoke_getEntityLookup().forEachIntersects(box, this::entityConsumer);
+        ((IMixinWorld) world).tellme_getEntityLookup().forEachIntersects(box, this::entityConsumer);
 
         if (totalBefore == this.totalCount)
         {

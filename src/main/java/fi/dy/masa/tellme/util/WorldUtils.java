@@ -22,7 +22,7 @@ public class WorldUtils
     public static int getLoadedChunkCount(ServerWorld world)
     {
         //return ((ServerChunkManager) world.getChunkManager()).getTotalChunksLoadedCount();
-        Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) world.getChunkManager().threadedAnvilChunkStorage).tellmeGetChunkHolders();
+        Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders = ((IMixinThreadedAnvilChunkStorage) world.getChunkManager().threadedAnvilChunkStorage).tellme_getChunkHolders();
         return chunkHolders.size();
     }
 
@@ -61,7 +61,7 @@ public class WorldUtils
     {
         Box box = createEntityBoxForChunk(world, chunkX, chunkZ);
         SimpleEntityCounter counter = new SimpleEntityCounter();
-        ((IMixinWorld) world).tellme_invoke_getEntityLookup().forEachIntersects(box, counter::countEntity);
+        ((IMixinWorld) world).tellme_getEntityLookup().forEachIntersects(box, counter::countEntity);
 
         return counter.getCount();
     }
@@ -71,7 +71,7 @@ public class WorldUtils
     {
         Box box = createEntityBoxForChunk(world, chunkX, chunkZ);
         PerTypeEntityCounter counter = new PerTypeEntityCounter(perTypeCount);
-        ((IMixinWorld) world).tellme_invoke_getEntityLookup().forEachIntersects(box, counter::countEntity);
+        ((IMixinWorld) world).tellme_getEntityLookup().forEachIntersects(box, counter::countEntity);
 
         return counter.getCount();
     }

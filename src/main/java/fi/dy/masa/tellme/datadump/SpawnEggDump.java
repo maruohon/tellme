@@ -19,8 +19,8 @@ public class SpawnEggDump
             {
                 String id = Registry.ITEM.getId(egg).toString();
                 String entityId = Registry.ENTITY_TYPE.getId(egg.getEntityType(null)).toString();
-                int primaryColor = ((IMixinSpawnEggItem) egg).tellmeGetPrimaryColor();
-                int secondaryColor = ((IMixinSpawnEggItem) egg).tellmeGetSecondaryColor();
+                int primaryColor = ((IMixinSpawnEggItem) egg).tellme_getPrimaryColor();
+                int secondaryColor = ((IMixinSpawnEggItem) egg).tellme_getSecondaryColor();
                 String colorPrimary = String.format("0x%08X (%10d)", primaryColor, primaryColor);
                 String colorSecondary = String.format("0x%08X (%10d)", secondaryColor, secondaryColor);
 

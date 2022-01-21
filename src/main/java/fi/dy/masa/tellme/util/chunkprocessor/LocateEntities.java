@@ -85,7 +85,7 @@ public class LocateEntities extends LocateBase
             this.dimName = WorldUtils.getDimensionId(chunk.getWorld());
             Box bb = new Box(xMin, Double.MIN_VALUE, zMin, xMax, Double.MAX_VALUE, zMax);
             World world = chunk.getWorld();
-            ((IMixinWorld) world).tellme_invoke_getEntityLookup().forEachIntersects(bb, this::entityConsumer);
+            ((IMixinWorld) world).tellme_getEntityLookup().forEachIntersects(bb, this::entityConsumer);
         }
 
         final long timeAfter = System.nanoTime();

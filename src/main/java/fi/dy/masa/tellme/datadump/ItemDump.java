@@ -204,7 +204,7 @@ public class ItemDump
                 String resistance = String.format("%.2f", block.getBlastResistance());
                 boolean fallingBlock = block instanceof FallingBlock;
                 int light = state.getLuminance();
-                boolean flammable = ((IMixinAbstractFireBlock) Blocks.FIRE).invokeIsFlammable(state);
+                boolean flammable = ((IMixinAbstractFireBlock) Blocks.FIRE).tellme_getIsFlammable(state);
                 int opacity = state.getOpacity(world, pos);
 
                 obj.add("Type", new JsonPrimitive("block"));
