@@ -6,6 +6,7 @@
 	"mixins": [
 		"IMixinAbstractFireBlock",
 		"IMixinFluidTags",
+		"IMixinGeneratorType",
 		"IMixinSpawnEggItem",
 		"IMixinThreadedAnvilChunkStorage",
 		"IMixinWorld",

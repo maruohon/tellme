@@ -35,6 +35,7 @@ import fi.dy.masa.tellme.datadump.EnchantmentDump;
 import fi.dy.masa.tellme.datadump.EntityDump;
 import fi.dy.masa.tellme.datadump.FluidRegistryDump;
 import fi.dy.masa.tellme.datadump.FoodItemDump;
+import fi.dy.masa.tellme.datadump.GeneratorTypesDump;
 import fi.dy.masa.tellme.datadump.ItemDump;
 import fi.dy.masa.tellme.datadump.ItemGroupDump;
 import fi.dy.masa.tellme.datadump.ModListDump;
@@ -182,6 +183,7 @@ public class SubCommandDump
         dumpProviders.put("foliage-placer-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.FOLIAGE_PLACER_TYPE));
         dumpProviders.put("food-items",                 (ctx) -> FoodItemDump.getFormattedFoodItemDump(ctx.format));
         dumpProviders.put("game-events",                (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.GAME_EVENT));
+        dumpProviders.put("generator-types",            (ctx) -> GeneratorTypesDump.getFormattedDump(ctx.format));
         dumpProviders.put("height-provider-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.HEIGHT_PROVIDER_TYPE));
         dumpProviders.put("int-provider-types",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.INT_PROVIDER_TYPE));
         dumpProviders.put("inventory-screens",          (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.SCREEN_HANDLER));
