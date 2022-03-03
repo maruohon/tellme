@@ -47,7 +47,6 @@ import fi.dy.masa.tellme.datadump.SoundEventDump;
 import fi.dy.masa.tellme.datadump.SpawnEggDump;
 import fi.dy.masa.tellme.datadump.StatTypesDump;
 import fi.dy.masa.tellme.datadump.StatusEffectDump;
-import fi.dy.masa.tellme.datadump.StructureFeatureDump;
 import fi.dy.masa.tellme.datadump.TagDump;
 import fi.dy.masa.tellme.datadump.VillagerProfessionDump;
 import fi.dy.masa.tellme.datadump.VillagerTradesDump;
@@ -220,7 +219,7 @@ public class SubCommandDump
         dumpProviders.put("spawn-eggs",                 (ctx) -> SpawnEggDump.getFormattedSpawnEggDump(ctx.format));
         dumpProviders.put("stat-types",                 (ctx) -> StatTypesDump.getFormattedDump(ctx.format));
         dumpProviders.put("status-effects",             (ctx) -> StatusEffectDump.getFormattedPotionDump(ctx.format));
-        dumpProviders.put("structure-features",         (ctx) -> StructureFeatureDump.getFormattedDump(ctx.format));
+        dumpProviders.put("structure-features",         (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_FEATURE));
         dumpProviders.put("structure-pieces",           (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PIECE));
         dumpProviders.put("structure-pool-elements",    (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_POOL_ELEMENT));
         dumpProviders.put("structure-processors",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PROCESSOR));

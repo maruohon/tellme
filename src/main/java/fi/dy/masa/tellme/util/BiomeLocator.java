@@ -105,7 +105,7 @@ public class BiomeLocator
     private boolean samplePosition(int x, int z, int totalBiomes, BiomeAccess biomeAccess)
     {
         this.posMutable.set(x, 0, z);
-        Biome biome = biomeAccess.getBiome(this.posMutable);
+        Biome biome = biomeAccess.getBiome(this.posMutable).value();
         this.count++;
 
         BlockPos oldPos = this.biomePositions.get(biome);

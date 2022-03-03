@@ -43,14 +43,14 @@ public class BiomeStats
         final int zMax = posMax.getZ();
         final int width = xMax - xMin + 1;
         final int length = zMax - zMin + 1;
-        final long count = width * length;
+        final long count = (long) width * length;
 
         for (int x = xMin; x <= xMax; ++x)
         {
             for (int z = zMin; z <= zMax; ++z)
             {
                 posMutable.set(x, 0, z);
-                Biome biome = biomeAccess.getBiome(posMutable);
+                Biome biome = biomeAccess.getBiome(posMutable).value();
                 counts.addTo(biome, 1);
             }
         }
@@ -75,7 +75,7 @@ public class BiomeStats
             for (int x = centerX - sampleRadius * sampleInterval; x <= endX; x += sampleInterval)
             {
                 posMutable.set(x, 0, z);
-                Biome biome = biomeAccess.getBiome(posMutable);
+                Biome biome = biomeAccess.getBiome(posMutable).value();
                 counts.addTo(biome, 1);
                 ++count;
             }

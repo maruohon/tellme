@@ -98,7 +98,7 @@ public class BiomeDump
     {
         World world = entity.getEntityWorld();
         BlockPos pos = entity.getBlockPos();
-        Biome biome = world.getBiome(pos);
+        Biome biome = world.getBiome(pos).value();
         Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
 
         String intId = String.valueOf(registry.getRawId(biome));
