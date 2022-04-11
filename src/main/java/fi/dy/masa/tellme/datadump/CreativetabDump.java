@@ -1,9 +1,9 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 
 public class CreativetabDump
 {

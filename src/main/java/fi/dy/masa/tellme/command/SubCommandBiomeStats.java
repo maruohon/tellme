@@ -8,10 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import com.google.common.collect.Maps;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.WorldUtils;
-import fi.dy.masa.tellme.util.chunkprocessor.BiomeStats;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -24,6 +20,10 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.chunkprocessor.BiomeStats;
 
 public class SubCommandBiomeStats extends SubCommand
 {

@@ -3,9 +3,9 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
 
 public class SpawnEggDump
 {

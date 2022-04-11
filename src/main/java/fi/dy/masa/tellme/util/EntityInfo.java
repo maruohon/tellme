@@ -3,14 +3,14 @@ package fi.dy.masa.tellme.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import fi.dy.masa.tellme.LiteModTellMe;
-import fi.dy.masa.tellme.command.SubCommand;
-import fi.dy.masa.tellme.datadump.DataDump;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.command.SubCommand;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class EntityInfo
 {

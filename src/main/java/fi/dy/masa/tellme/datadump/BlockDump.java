@@ -11,9 +11,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
-import fi.dy.masa.tellme.mixin.IMixinBlock;
-import fi.dy.masa.tellme.util.ModNameUtils;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -22,6 +19,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
+import fi.dy.masa.tellme.mixin.IMixinBlock;
+import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class BlockDump extends DataDump
 {

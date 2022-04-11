@@ -4,12 +4,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.chunk.Chunk;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryBase;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.chunk.Chunk;
 
 public class LoggerBase
 {

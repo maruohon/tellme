@@ -6,12 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.TileEntityDump;
-import fi.dy.masa.tellme.util.WorldUtils;
-import fi.dy.masa.tellme.util.chunkprocessor.Locate;
-import fi.dy.masa.tellme.util.chunkprocessor.Locate.LocateType;
-import fi.dy.masa.tellme.util.chunkprocessor.Locate.OutputType;
 import net.minecraft.block.Block;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -25,6 +19,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.TileEntityDump;
+import fi.dy.masa.tellme.util.WorldUtils;
+import fi.dy.masa.tellme.util.chunkprocessor.Locate;
+import fi.dy.masa.tellme.util.chunkprocessor.Locate.LocateType;
+import fi.dy.masa.tellme.util.chunkprocessor.Locate.OutputType;
 
 public class SubCommandLocate extends SubCommand
 {

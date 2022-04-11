@@ -6,6 +6,12 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import com.google.common.collect.Sets;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.tellme.datadump.BiomeDump;
 import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.datadump.BlockStatesDump;
@@ -23,12 +29,6 @@ import fi.dy.masa.tellme.datadump.SoundEventDump;
 import fi.dy.masa.tellme.datadump.SpawnEggDump;
 import fi.dy.masa.tellme.datadump.TileEntityDump;
 import fi.dy.masa.tellme.datadump.WorldTypeDump;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 
 public class SubCommandDump extends SubCommand
 {

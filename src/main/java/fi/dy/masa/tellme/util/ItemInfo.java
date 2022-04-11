@@ -4,13 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import fi.dy.masa.tellme.LiteModTellMe;
-import fi.dy.masa.tellme.command.SubCommand;
-import fi.dy.masa.tellme.datadump.DataDump;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.command.SubCommand;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class ItemInfo
 {

@@ -3,8 +3,6 @@ package fi.dy.masa.tellme.util;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Set;
-import fi.dy.masa.tellme.LiteModTellMe;
-import fi.dy.masa.tellme.reference.Constants;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
@@ -17,6 +15,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.reference.Constants;
 
 public class NBTFormatter
 {

@@ -8,12 +8,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.base.Optional;
 import com.google.common.collect.UnmodifiableIterator;
-import fi.dy.masa.tellme.LiteModTellMe;
-import fi.dy.masa.tellme.command.SubCommand;
-import fi.dy.masa.tellme.datadump.DataDump;
+import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -27,6 +24,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.command.SubCommand;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class BlockInfo
 {

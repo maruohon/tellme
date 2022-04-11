@@ -1,12 +1,12 @@
 package fi.dy.masa.tellme.event.datalogging;
 
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.tellme.datadump.DataDump;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.tellme.datadump.DataDump;
 
 public class DataEntry
 {

@@ -8,12 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.tellme.LiteModTellMe;
-import fi.dy.masa.tellme.datadump.DataDump;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.datadump.TileEntityDump;
-import fi.dy.masa.tellme.util.BlockInfo;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -28,6 +22,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.datadump.DataDump;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.datadump.TileEntityDump;
+import fi.dy.masa.tellme.util.BlockInfo;
 
 public class Locate extends ChunkProcessorAllChunks
 {
