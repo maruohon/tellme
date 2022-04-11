@@ -34,7 +34,7 @@ public class WorldUtils
             int cX = pos.getX() >> 4;
             int cZ = pos.getZ() >> 4;
             int radius = Minecraft.getMinecraft().gameSettings.renderDistanceChunks + 1;
-            List<Chunk> chunks = new ArrayList<Chunk>();
+            List<Chunk> chunks = new ArrayList<>();
 
             for (int z = cZ - radius; z <= (cZ + radius); z++)
             {

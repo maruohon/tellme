@@ -5,10 +5,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import fi.dy.masa.tellme.datadump.DataDump.Alignment;
-import fi.dy.masa.tellme.datadump.DataDump.Format;
-import fi.dy.masa.tellme.util.ChatUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -20,6 +16,10 @@ import net.minecraft.world.ColorizerGrass;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.MapGenVillage;
+import fi.dy.masa.malilib.util.GameUtils;
+import fi.dy.masa.tellme.datadump.DataDump.Alignment;
+import fi.dy.masa.tellme.datadump.DataDump.Format;
+import fi.dy.masa.tellme.util.ChatUtils;
 
 public class BiomeDump
 {
@@ -29,7 +29,7 @@ public class BiomeDump
 
         DataDump biomeDump = new DataDump(columns, format);
         biomeDump.setSort(false);
-        World world = Minecraft.getMinecraft().world;
+        World world = GameUtils.getClientWorld();
 
         if (world != null)
         {
