@@ -1,16 +1,17 @@
 {
-    "required": true,
-    "package": "fi.dy.masa.tellme.mixin",
-    "refmap": "mixins.tellme.refmap.json",
-    "minVersion": "0.6",
-    "client": [
-        "IMixinBlock",
-        "IMixinDimensionType",
-        "IMixinPotionEffect",
-        "IMixinTileEntity",
-        "MixinChunk"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    }
+	"required": true,
+	"package": "fi.dy.masa.tellme.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"refmap": "mixins.tellme.refmap.json",
+	"minVersion": "0.7",
+	"client": [
+		"IMixinBlock",
+		"IMixinDimensionType",
+		"IMixinPotionEffect",
+		"IMixinTileEntity",
+		"MixinChunk"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }

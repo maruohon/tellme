@@ -1,5 +1,5 @@
 {
-    "name": "tellme",
-    "mcversion": "1.12.2",
-    "mixinConfigs": [ "mixins.tellme.json" ]
+	"name": "tellme",
+	"mcversion": "1.12.2",
+	"mixinConfigs": [ "mixins.tellme.json" ]
 }
