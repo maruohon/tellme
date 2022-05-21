@@ -16,9 +16,11 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import fi.dy.masa.malilib.util.ItemUtils;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.mixin.IMixinBlock;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -71,16 +73,18 @@ public class BlockDump extends DataDump
         String blockId = String.valueOf(Block.getIdFromBlock(block));
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : block.getLocalizedName();
+        boolean notEmpty = ItemUtils.notEmpty(stack);
+        String displayName = notEmpty ? stack.getDisplayName() : block.getLocalizedName();
         displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
         Item item = Item.getItemFromBlock(block);
         String itemId = item != Items.AIR ? String.valueOf(Item.getIdFromItem(item)) : EMPTY_STRING;
-        String itemMeta = stack.isEmpty() == false ? String.valueOf(stack.getMetadata()) : EMPTY_STRING;
+        String itemMeta = notEmpty ? String.valueOf(stack.getMetadata()) : EMPTY_STRING;
         String subTypes = subTypesKnown ? String.valueOf(hasSubTypes) : "?";
 
         if (this.dumpNBT)
         {
-            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : EMPTY_STRING;
+            NBTTagCompound tag = ItemUtils.getTag(stack);
+            String nbt = notEmpty && tag != null ? tag.toString() : EMPTY_STRING;
             this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, nbt);
         }
         else
@@ -277,7 +281,7 @@ public class BlockDump extends DataDump
                 String itemName = Item.REGISTRY.getNameForObject(item).toString();
                 int itemId = Item.getIdFromItem(item);
                 int itemMeta = stack.getMetadata();
-                String displayName = stack.isEmpty() == false ? stack.getDisplayName() : block.getLocalizedName();
+                String displayName = ItemUtils.notEmpty(stack) ? stack.getDisplayName() : block.getLocalizedName();
                 displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
                 JsonObject objItem = new JsonObject();

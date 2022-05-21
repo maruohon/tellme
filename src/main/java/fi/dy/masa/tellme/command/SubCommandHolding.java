@@ -5,6 +5,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import fi.dy.masa.malilib.util.ItemUtils;
 import fi.dy.masa.tellme.util.ItemInfo;
 
 public class SubCommandHolding extends SubCommand
@@ -40,7 +41,7 @@ public class SubCommandHolding extends SubCommand
     {
         ItemStack stack = player.getHeldItemMainhand();
 
-        if (stack.isEmpty() == false)
+        if (ItemUtils.notEmpty(stack))
         {
             ItemInfo.printItemInfo(player, stack, dumpToFile);
         }

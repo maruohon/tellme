@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import fi.dy.masa.malilib.util.ItemUtils;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -16,15 +17,16 @@ public class FoodItemDump
 {
     private static void addData(DataDump dump, ItemFood item, ResourceLocation rl, boolean hasSubTypes, @Nonnull ItemStack stack)
     {
+        boolean notEmpty = ItemUtils.notEmpty(stack);
         int id = Item.getIdFromItem(item);
-        int meta = stack.isEmpty() == false ? stack.getMetadata() : 0;
+        int meta = notEmpty ? stack.getMetadata() : 0;
 
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
+        String displayName = notEmpty ? stack.getDisplayName() : DataDump.EMPTY_STRING;
         displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
-        String hunger = stack.isEmpty() == false ? String.valueOf(item.getHealAmount(stack)) : "?";
-        String saturation = stack.isEmpty() == false ? String.valueOf(item.getSaturationModifier(stack)) : "?";
+        String hunger = notEmpty ? String.valueOf(item.getHealAmount(stack)) : "?";
+        String saturation = notEmpty ? String.valueOf(item.getSaturationModifier(stack)) : "?";
 
         dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
                 String.valueOf(hasSubTypes), displayName, hunger, saturation);

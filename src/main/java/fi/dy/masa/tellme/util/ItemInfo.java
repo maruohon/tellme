@@ -7,7 +7,9 @@ import javax.annotation.Nonnull;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
+import fi.dy.masa.malilib.util.ItemUtils;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -16,9 +18,12 @@ public class ItemInfo
 {
     public static boolean areItemStacksEqual(@Nonnull ItemStack stack1, @Nonnull ItemStack stack2)
     {
-        if (stack1.isEmpty() || stack2.isEmpty())
+        boolean isEmpty1 = ItemUtils.isEmpty(stack1);
+        boolean isEmpty2 = ItemUtils.isEmpty(stack2);
+
+        if (isEmpty1 || isEmpty2)
         {
-            return stack1.isEmpty() == stack2.isEmpty();
+            return isEmpty1 == isEmpty2;
         }
 
         return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
@@ -27,17 +32,19 @@ public class ItemInfo
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)
     {
         List<String> lines = new ArrayList<>();
+        NBTTagCompound tag = ItemUtils.getTag(stack);
+
         lines.add(ItemData.getFor(stack).toString());
 
-        if (stack.hasTagCompound() == false)
+        if (tag == null)
         {
             return lines;
         }
 
         lines.add("");
-        lines.add(stack.getTagCompound().toString());
+        lines.add(tag.toString());
         lines.add("");
-        NBTFormatter.getPrettyFormattedNBT(lines, stack.getTagCompound());
+        NBTFormatter.getPrettyFormattedNBT(lines, tag);
 
         return lines;
     }

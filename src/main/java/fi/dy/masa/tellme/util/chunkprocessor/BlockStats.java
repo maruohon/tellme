@@ -15,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
+import fi.dy.masa.malilib.util.ItemUtils;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
@@ -96,7 +97,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 int id = Block.getIdFromBlock(block);
                 int meta = block.getMetaFromState(state);
                 ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
-                String displayName = stack.isEmpty() == false ? stack.getDisplayName() : registryName;
+                String displayName = ItemUtils.notEmpty(stack) ? stack.getDisplayName() : registryName;
 
                 if (key == null)
                 {

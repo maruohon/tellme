@@ -5,9 +5,11 @@ import javax.annotation.Nonnull;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import fi.dy.masa.malilib.util.ItemUtils;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -16,17 +18,19 @@ public class ItemDump
 {
     private static void addData(DataDump dump, Item item, ResourceLocation rl, boolean hasSubTypes, boolean dumpNBT, @Nonnull ItemStack stack)
     {
+        boolean notEmpty = ItemUtils.notEmpty(stack);
         int id = Item.getIdFromItem(item);
-        int meta = stack.isEmpty() == false ? stack.getMetadata() : 0;
+        int meta = notEmpty ? stack.getMetadata() : 0;
 
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
-        String displayName = stack.isEmpty() == false ? stack.getDisplayName() : DataDump.EMPTY_STRING;
+        String displayName = notEmpty ? stack.getDisplayName() : DataDump.EMPTY_STRING;
         displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
         if (dumpNBT)
         {
-            String nbt = stack.isEmpty() == false && stack.getTagCompound() != null ? stack.getTagCompound().toString() : DataDump.EMPTY_STRING;
+            NBTTagCompound tag = ItemUtils.getTag(stack);
+            String nbt = notEmpty && tag != null ? tag.toString() : DataDump.EMPTY_STRING;
 
             dump.addData(modName, registryName, String.valueOf(id), String.valueOf(meta),
                     String.valueOf(hasSubTypes), displayName, nbt);
@@ -77,7 +81,7 @@ public class ItemDump
     {
         if (item.getHasSubtypes())
         {
-            NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+            NonNullList<ItemStack> stacks = NonNullList.create();
             CreativeTabs tab = item.getCreativeTab();
 
             if (tab != null)
@@ -98,7 +102,7 @@ public class ItemDump
 
     public static String getStackInfoBasic(ItemStack stack)
     {
-        if (stack.isEmpty() == false)
+        if (ItemUtils.notEmpty(stack))
         {
             // old: [%s @ %d - display: %s - NBT: %s]
             int meta = stack.getMetadata();
@@ -115,7 +119,7 @@ public class ItemDump
 
     public static String getStackInfo(ItemStack stack)
     {
-        if (stack.isEmpty() == false)
+        if (ItemUtils.notEmpty(stack))
         {
             // old: [%s @ %d - display: %s - NBT: %s]
             int meta = stack.getMetadata();
@@ -124,9 +128,10 @@ public class ItemDump
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = meta == 32767 ? "(WILDCARD)" : stack.getDisplayName();
             displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+            NBTTagCompound tag = ItemUtils.getTag(stack);
 
             return String.format("[%s@%d - '%s' - %s]", regName, meta, displayName,
-                    stack.getTagCompound() != null ? stack.getTagCompound().toString() : "<no NBT>");
+                    tag != null ? tag.toString() : "<no NBT>");
         }
 
         return DataDump.EMPTY_STRING;

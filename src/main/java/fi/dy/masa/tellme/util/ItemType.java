@@ -2,6 +2,8 @@ package fi.dy.masa.tellme.util;
 
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import fi.dy.masa.malilib.util.ItemUtils;
 
 /**
  * Wrapper class for ItemStack, which implements equals()
@@ -29,7 +31,8 @@ public class ItemType
         //result = prime * result + ((stack == null) ? 0 : stack.hashCode());
         result = prime * result + this.stack.getMetadata();
         result = prime * result + this.stack.getItem().hashCode();
-        result = prime * result + (this.stack.getTagCompound() != null ? this.stack.getTagCompound().hashCode() : 0);
+        NBTTagCompound tag = ItemUtils.getTag(this.stack);
+        result = prime * result + (tag != null ? tag.hashCode() : 0);
         return result;
     }
 
@@ -40,15 +43,16 @@ public class ItemType
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (this.getClass() != obj.getClass())
             return false;
 
         ItemType other = (ItemType) obj;
+        boolean isEmpty1 = ItemUtils.isEmpty(this.stack);
+        boolean isEmpty2 = ItemUtils.isEmpty(other.stack);
 
-        if (this.stack.isEmpty() || other.stack.isEmpty())
+        if (isEmpty1 || isEmpty2)
         {
-            if (this.stack.isEmpty() != other.stack.isEmpty())
-                return false;
+            return isEmpty1 == isEmpty2;
         }
         else
         {
@@ -64,7 +68,5 @@ public class ItemType
 
             return ItemStack.areItemStackTagsEqual(this.stack, other.stack);
         }
-
-        return true;
     }
 }
