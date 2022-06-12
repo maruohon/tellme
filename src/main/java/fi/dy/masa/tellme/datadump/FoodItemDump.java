@@ -5,10 +5,10 @@ import javax.annotation.Nonnull;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import fi.dy.masa.malilib.util.ItemUtils;
+import fi.dy.masa.malilib.util.game.wrap.DefaultedList;
+import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -17,7 +17,7 @@ public class FoodItemDump
 {
     private static void addData(DataDump dump, ItemFood item, ResourceLocation rl, boolean hasSubTypes, @Nonnull ItemStack stack)
     {
-        boolean notEmpty = ItemUtils.notEmpty(stack);
+        boolean notEmpty = ItemWrap.notEmpty(stack);
         int id = Item.getIdFromItem(item);
         int meta = notEmpty ? stack.getMetadata() : 0;
 
@@ -73,7 +73,7 @@ public class FoodItemDump
         {
             if (item.getCreativeTab() != null)
             {
-                NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+                DefaultedList<ItemStack> stacks = DefaultedList.empty();
                 item.getSubItems(item.getCreativeTab(), stacks);
 
                 for (ItemStack stack : stacks)

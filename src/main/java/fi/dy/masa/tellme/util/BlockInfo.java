@@ -24,7 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.util.ItemUtils;
+import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -285,7 +285,7 @@ public class BlockInfo
             String registryName = rl != null ? rl.toString() : "<null>";
             String displayName;
 
-            if (ItemUtils.notEmpty(stack))
+            if (ItemWrap.notEmpty(stack))
             {
                 displayName = stack.getDisplayName();
             }

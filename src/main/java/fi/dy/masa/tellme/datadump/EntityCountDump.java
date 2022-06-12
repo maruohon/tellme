@@ -3,7 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.game.WorldUtils;
 import fi.dy.masa.tellme.util.chunkprocessor.ChunkProcessorLoadedChunks;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesLister;
 import fi.dy.masa.tellme.util.chunkprocessor.EntitiesPerChunkCounter;

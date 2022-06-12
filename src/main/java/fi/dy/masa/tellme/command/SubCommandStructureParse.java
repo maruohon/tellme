@@ -23,7 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import fi.dy.masa.malilib.util.data.json.JsonUtils;
-import fi.dy.masa.malilib.util.nbt.NbtUtils;
+import fi.dy.masa.malilib.util.game.wrap.NbtWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -205,20 +205,20 @@ public class SubCommandStructureParse extends SubCommand
                 is.close();
 
                 if (nbt != null &&
-                    NbtUtils.containsCompound(nbt, "data"))
+                    NbtWrap.containsCompound(nbt, "data"))
                 {
-                    NBTTagCompound tagData = NbtUtils.getCompound(nbt, "data");
-                    NBTTagCompound tagFeatures = NbtUtils.getCompound(tagData, "Features");
+                    NBTTagCompound tagData = NbtWrap.getCompound(nbt, "data");
+                    NBTTagCompound tagFeatures = NbtWrap.getCompound(tagData, "Features");
                     Map<String, Multimap<String, StructureBoundingBox>> mapMain = new HashMap<>();
 
-                    for (String key : NbtUtils.getKeys(tagFeatures))
+                    for (String key : NbtWrap.getKeys(tagFeatures))
                     {
-                        NBTTagCompound tag = NbtUtils.getCompound(tagFeatures, key);
+                        NBTTagCompound tag = NbtWrap.getCompound(tagFeatures, key);
 
-                        if (NbtUtils.containsList(tag, "Children"))
+                        if (NbtWrap.containsList(tag, "Children"))
                         {
-                            NBTTagList tagList = NbtUtils.getListOfCompounds(tag, "Children");
-                            String mainId = NbtUtils.getString(tag, "id");
+                            NBTTagList tagList = NbtWrap.getListOfCompounds(tag, "Children");
+                            String mainId = NbtWrap.getString(tag, "id");
                             Multimap<String, StructureBoundingBox> mapType;
 
                             if (mapMain.containsKey(mainId))
@@ -231,19 +231,19 @@ public class SubCommandStructureParse extends SubCommand
                                 mapMain.put(mainId, mapType);
                             }
 
-                            NBTTagCompound tagChild = NbtUtils.getCompoundAt(tagList, 0);
-                            String idChild = NbtUtils.getString(tagChild, "id");
+                            NBTTagCompound tagChild = NbtWrap.getCompoundAt(tagList, 0);
+                            String idChild = NbtWrap.getString(tagChild, "id");
 
                             // Only include the main BB for structures with many child parts
-                            if (NbtUtils.getListSize(tagList) > 1)
+                            if (NbtWrap.getListSize(tagList) > 1)
                             {
-                                int[] bb = NbtUtils.getIntArray(tag, "BB");
+                                int[] bb = NbtWrap.getIntArray(tag, "BB");
                                 StructureBoundingBox mainBB = StructureBoundingBox.createProper(bb[0], bb[1], bb[2], bb[3], bb[4], bb[5]);
                                 mapType.put(idChild, mainBB);
                             }
                             else
                             {
-                                int[] bb = NbtUtils.getIntArray(tagChild, "BB");
+                                int[] bb = NbtWrap.getIntArray(tagChild, "BB");
                                 StructureBoundingBox childBB = StructureBoundingBox.createProper(bb[0], bb[1], bb[2], bb[3], bb[4], bb[5]);
                                 mapType.put(idChild, childBB);
                             }

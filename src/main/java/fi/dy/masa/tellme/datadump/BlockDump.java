@@ -17,17 +17,17 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import fi.dy.masa.malilib.util.ItemUtils;
+import fi.dy.masa.malilib.util.game.wrap.DefaultedList;
+import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.mixin.IMixinBlock;
 import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class BlockDump extends DataDump
 {
-    private boolean dumpNBT;
+    private final boolean dumpNBT;
 
     private BlockDump(Format format, boolean dumpNBT)
     {
@@ -73,7 +73,7 @@ public class BlockDump extends DataDump
         String blockId = String.valueOf(Block.getIdFromBlock(block));
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
-        boolean notEmpty = ItemUtils.notEmpty(stack);
+        boolean notEmpty = ItemWrap.notEmpty(stack);
         String displayName = notEmpty ? stack.getDisplayName() : block.getLocalizedName();
         displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
         Item item = Item.getItemFromBlock(block);
@@ -83,7 +83,7 @@ public class BlockDump extends DataDump
 
         if (this.dumpNBT)
         {
-            NBTTagCompound tag = ItemUtils.getTag(stack);
+            NBTTagCompound tag = ItemWrap.getTag(stack);
             String nbt = notEmpty && tag != null ? tag.toString() : EMPTY_STRING;
             this.addData(modName, registryName, blockId, subTypes, itemId, itemMeta, displayName, nbt);
         }
@@ -187,7 +187,7 @@ public class BlockDump extends DataDump
 
     public static void getDataForBlockSubtypes(Block block, ResourceLocation rl, BlockDump blockDump)
     {
-        NonNullList<ItemStack> stacks = NonNullList.<ItemStack>create();
+        DefaultedList<ItemStack> stacks = DefaultedList.empty();
         CreativeTabs tab = block.getCreativeTab();
         block.getSubBlocks(tab, stacks);
 
@@ -281,7 +281,7 @@ public class BlockDump extends DataDump
                 String itemName = Item.REGISTRY.getNameForObject(item).toString();
                 int itemId = Item.getIdFromItem(item);
                 int itemMeta = stack.getMetadata();
-                String displayName = ItemUtils.notEmpty(stack) ? stack.getDisplayName() : block.getLocalizedName();
+                String displayName = ItemWrap.notEmpty(stack) ? stack.getDisplayName() : block.getLocalizedName();
                 displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
 
                 JsonObject objItem = new JsonObject();

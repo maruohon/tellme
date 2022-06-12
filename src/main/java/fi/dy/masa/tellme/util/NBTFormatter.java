@@ -13,7 +13,7 @@ import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
-import fi.dy.masa.malilib.util.nbt.NbtUtils;
+import fi.dy.masa.malilib.util.game.wrap.NbtWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.reference.Constants;
 
@@ -43,7 +43,7 @@ public class NBTFormatter
         String line;
         String pre = "";
         String pre2 = "";
-        int typeId = NbtUtils.getTypeId(nbt);
+        int typeId = NbtWrap.getTypeId(nbt);
 
         try
         {
@@ -124,8 +124,8 @@ public class NBTFormatter
 
             case Constants.NBT.TAG_LIST:
                 NBTTagList tagList = (NBTTagList)nbt;
-                int tagCount = NbtUtils.getListSize(tagList);
-                int tagType = NbtUtils.getListStoredType(tagList);
+                int tagCount = NbtWrap.getListSize(tagList);
+                int tagType = NbtWrap.getListStoredType(tagList);
 
                 lines.add(pre + getTagDescription(typeId, name) + " (" + tagCount + " entries of " + getTagName(tagType) + " (" + tagType + "))");
                 lines.add(pre + "{");
@@ -144,9 +144,9 @@ public class NBTFormatter
 
                 NBTTagCompound tag = (NBTTagCompound) nbt;
 
-                for (String key : NbtUtils.getKeys(tag))
+                for (String key : NbtWrap.getKeys(tag))
                 {
-                    getPrettyFormattedLine(lines, tag.getTag(key), key, depth + 1);
+                    getPrettyFormattedLine(lines, NbtWrap.getTag(tag, key), key, depth + 1);
                 }
 
                 lines.add(pre + "}");

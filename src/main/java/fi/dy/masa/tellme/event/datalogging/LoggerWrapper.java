@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.malilib.util.EntityUtils;
+import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventBase;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventLoad;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventUnload;
@@ -80,7 +80,7 @@ public class LoggerWrapper extends LoggerBase
     public void onEntityEvent(Entity entity)
     {
         if (this.enabled && (this.enablePrint || this.enableLog) &&
-            (this.useFilter == false || this.chunkFilters.contains(new ChunkPos(EntityUtils.getChunkX(entity), EntityUtils.getChunkZ(entity)))))
+            (this.useFilter == false || this.chunkFilters.contains(new ChunkPos(EntityWrap.getChunkX(entity), EntityWrap.getChunkZ(entity)))))
         {
             this.handleData(this.createEntityDataEntry(entity));
         }

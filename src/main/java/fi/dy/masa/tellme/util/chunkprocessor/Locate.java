@@ -22,7 +22,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
-import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.game.WorldUtils;
+import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -244,7 +245,7 @@ public class Locate extends ChunkProcessorAllChunks
                     if (filters.contains(entity.getClass()) && entity.getEntityBoundingBox().intersects(bb))
                     {
                         ResourceLocation name = EntityList.getKey(entity);
-                        this.data.add(LocationData.of(name.toString(), dim, entity.getPositionVector()));
+                        this.data.add(LocationData.of(name.toString(), dim, EntityWrap.getEntityPos(entity)));
                         count++;
                     }
                 }

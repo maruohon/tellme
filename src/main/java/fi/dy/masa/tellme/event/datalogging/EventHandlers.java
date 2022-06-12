@@ -3,7 +3,7 @@ package fi.dy.masa.tellme.event.datalogging;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.game.WorldUtils;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
 
 public class EventHandlers

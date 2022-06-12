@@ -9,7 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
-import fi.dy.masa.malilib.util.ItemUtils;
+import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -18,8 +18,8 @@ public class ItemInfo
 {
     public static boolean areItemStacksEqual(@Nonnull ItemStack stack1, @Nonnull ItemStack stack2)
     {
-        boolean isEmpty1 = ItemUtils.isEmpty(stack1);
-        boolean isEmpty2 = ItemUtils.isEmpty(stack2);
+        boolean isEmpty1 = ItemWrap.isEmpty(stack1);
+        boolean isEmpty2 = ItemWrap.isEmpty(stack2);
 
         if (isEmpty1 || isEmpty2)
         {
@@ -32,7 +32,7 @@ public class ItemInfo
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)
     {
         List<String> lines = new ArrayList<>();
-        NBTTagCompound tag = ItemUtils.getTag(stack);
+        NBTTagCompound tag = ItemWrap.getTag(stack);
 
         lines.add(ItemData.getFor(stack).toString());
 

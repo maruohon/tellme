@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.util.EntityUtils;
+import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
 
 public class RayTraceUtils
 {
@@ -23,7 +23,7 @@ public class RayTraceUtils
     @Nonnull
     public static RayTraceResult getRayTraceFromEntity(World worldIn, Entity entityIn, boolean useLiquids, double range)
     {
-        Vec3d eyesVec = new Vec3d(EntityUtils.getX(entityIn), EntityUtils.getY(entityIn) + entityIn.getEyeHeight(), EntityUtils.getZ(entityIn));
+        Vec3d eyesVec = new Vec3d(EntityWrap.getX(entityIn), EntityWrap.getY(entityIn) + entityIn.getEyeHeight(), EntityWrap.getZ(entityIn));
         Vec3d rangedLookRot = entityIn.getLook(1f).scale(range);
         Vec3d lookVec = eyesVec.add(rangedLookRot);
 

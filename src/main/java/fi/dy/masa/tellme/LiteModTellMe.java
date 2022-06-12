@@ -37,7 +37,7 @@ public class LiteModTellMe implements LiteMod, ServerCommandProvider
     @Override
     public void init(File configPath)
     {
-        configDirPath = ConfigUtils.getConfigDirectoryPath().resolve(Reference.MOD_ID).toFile().getAbsolutePath();
+        configDirPath = ConfigUtils.getConfigDirectory().resolve(Reference.MOD_ID).toFile().getAbsolutePath();
         Registry.CLIENT_COMMAND_HANDLER.registerCommand(new ClientCommandTellme());
     }
 
