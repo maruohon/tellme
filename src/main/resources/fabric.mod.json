@@ -33,6 +33,8 @@
 	],
 
 	"depends": {
-		"minecraft": ">=1.19"
+		"minecraft": ">=1.19",
+		"fabric-command-api-v2": "*",
+		"fabric-registry-sync-v0": "*"
 	}
 }

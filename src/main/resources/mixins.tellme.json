@@ -7,8 +7,7 @@
 		"IMixinAbstractFireBlock",
 		"IMixinSpawnEggItem",
 		"IMixinThreadedAnvilChunkStorage",
-		"IMixinWorld",
-		"MixinCommandManager"
+		"IMixinWorld"
 	],
 	"injectors": {
 		"defaultRequire": 1

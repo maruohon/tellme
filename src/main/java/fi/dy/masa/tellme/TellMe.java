@@ -2,11 +2,12 @@ package fi.dy.masa.tellme;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import fi.dy.masa.tellme.command.CommandTellMe;
 import fi.dy.masa.tellme.datadump.DataProviderBase;
 import fi.dy.masa.tellme.datadump.DataProviderClient;
 import fi.dy.masa.tellme.reference.Reference;
-import net.fabricmc.api.ModInitializer;
 
 public class TellMe implements ModInitializer
 {
@@ -18,6 +19,7 @@ public class TellMe implements ModInitializer
     public void onInitialize()
     {
         CommandTellMe.registerArgumentTypes();
+        CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, dedicated) -> CommandTellMe.registerServerCommand(dispatcher));
     }
 
     public static void setIsClient()
