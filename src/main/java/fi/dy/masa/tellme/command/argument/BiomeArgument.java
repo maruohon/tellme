@@ -13,7 +13,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -23,7 +23,7 @@ public class BiomeArgument implements ArgumentType<Identifier>
 {
     private static final Collection<String> EXAMPLES = Stream.of(BiomeKeys.PLAINS, BiomeKeys.OCEAN).map((regKey) -> regKey.getValue().toString()).collect(Collectors.toList());
 
-    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> new LiteralText("Invalid biome name: \"" + val + "\""));
+    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> Text.literal("Invalid biome name: \"" + val + "\""));
 
     public Identifier parse(StringReader reader) throws CommandSyntaxException
     {

@@ -14,7 +14,7 @@ import net.minecraft.block.MapColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -74,7 +74,7 @@ public class BlockDump
     {
         String modName = ModNameUtils.getModName(id);
         String registryName = id.toString();
-        String displayName = stack.isEmpty() == false ? stack.getName().getString() : (new TranslatableText(block.getTranslationKey())).getString();
+        String displayName = stack.isEmpty() == false ? stack.getName().getString() : (Text.translatable(block.getTranslationKey())).getString();
         displayName = Formatting.strip(displayName);
         Item item = stack.getItem();
         Identifier itemIdRl = item != Items.AIR ? Registry.ITEM.getId(item) : null;
@@ -165,7 +165,7 @@ public class BlockDump
                     Identifier itemIdRl = item != Items.AIR ? Registry.ITEM.getId(item) : null;
                     String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
 
-                    String displayName = stack.isEmpty() == false ? stack.getName().getString() : (new TranslatableText(block.getTranslationKey())).getString();
+                    String displayName = stack.isEmpty() == false ? stack.getName().getString() : (Text.translatable(block.getTranslationKey())).getString();
                     displayName = Formatting.strip(displayName);
 
                     JsonObject objItem = new JsonObject();

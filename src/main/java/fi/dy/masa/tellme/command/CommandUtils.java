@@ -18,8 +18,7 @@ import net.minecraft.command.argument.Vec2ArgumentType;
 import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
@@ -29,11 +28,11 @@ import net.minecraft.world.World;
 
 public class CommandUtils
 {
-    public static final FilenameFilter FILTER_FILES = (pathName, fileName) -> { return (new File(pathName, fileName)).isFile(); };
-    public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(new LiteralText("This command must either be executed by an entity, or the dimension must be specified"));
-    public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> new LiteralText("The dimension \"" + type + "\" was not loaded"));
-    public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(new LiteralText("This command must be executed by a player"));
-    public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> new LiteralText("Invalid output type: " + type));
+    public static final FilenameFilter FILTER_FILES = (pathName, fileName) -> (new File(pathName, fileName)).isFile();
+    public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(Text.literal("This command must either be executed by an entity, or the dimension must be specified"));
+    public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> Text.literal("The dimension \"" + type + "\" was not loaded"));
+    public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(Text.literal("This command must be executed by a player"));
+    public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> Text.literal("Invalid output type: " + type));
 
     public static BlockPos getMinCorner(Vec2f pos1, Vec2f pos2, World world)
     {
@@ -159,12 +158,12 @@ public class CommandUtils
 
     public static void throwException(String message) throws CommandSyntaxException
     {
-        throw (new SimpleCommandExceptionType(new TranslatableText(message))).create();
+        throw (new SimpleCommandExceptionType(Text.translatable(message))).create();
     }
 
     public static void sendMessage(ServerCommandSource source, String message)
     {
-        source.sendFeedback(new LiteralText(message), true);
+        source.sendFeedback(Text.literal(message), true);
     }
 
     public static Vec2f getVec2fFromSource(ServerCommandSource source)

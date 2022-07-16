@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -19,7 +19,7 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
     protected static final String FMT_CHUNK_5 = "%5d, %5d";
     protected static final String FMT_COORDS = "x = %.2f, y = %.2f, z = %.2f";
     protected static final String FMT_COORDS_8 = "x = %8.2f, y = %5.2f, z = %8.2f";
-    protected static final DynamicCommandExceptionType INVALID_NAME_EXCEPTION = new DynamicCommandExceptionType((v) -> new LiteralText("Invalid name: " + v));
+    protected static final DynamicCommandExceptionType INVALID_NAME_EXCEPTION = new DynamicCommandExceptionType((v) -> Text.literal("Invalid name: " + v));
 
     protected final List<LocationData> data = new ArrayList<>();
     protected final DataDump.Format format;

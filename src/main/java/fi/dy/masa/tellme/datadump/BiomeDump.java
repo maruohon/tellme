@@ -11,8 +11,8 @@ import net.minecraft.sound.BiomeAdditionsSound;
 import net.minecraft.sound.BiomeMoodSound;
 import net.minecraft.sound.MusicSound;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -126,27 +126,27 @@ public class BiomeDump
         boolean canSnow = biome.canSetSnow(world, pos);
         String strSnowing = canSnow ? "true" : "false";
 
-        MutableText textPre = new LiteralText("ID: ").append(new LiteralText(intId).formatted(green))
+        MutableText textPre = Text.literal("ID: ").append(Text.literal(intId).formatted(green))
                                .append(" - Registry name: ");
 
-        entity.sendMessage(new LiteralText("------------- Current biome info ------------"), false);
-        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, new LiteralText(regName).formatted(green), new LiteralText("")), false);
+        entity.sendMessage(Text.literal("------------- Current biome info ------------"), false);
+        entity.sendMessage(OutputUtils.getClipboardCopiableMessage(textPre, Text.literal(regName).formatted(green), Text.literal("")), false);
 
-        entity.sendMessage(new LiteralText("Temperature: ")
-                                   .append(new LiteralText(strTemperature).formatted(green)), false);
-        entity.sendMessage(new LiteralText("RainType: ").append(new LiteralText(strRainType).formatted(green))
-                                   .append(", downfall: ").append(new LiteralText(strRainfall).formatted(green))
-                                   .append(", snows: ").append(new LiteralText(strSnowing).formatted(canSnow ? green : Formatting.RED)), false);
-        entity.sendMessage(new LiteralText("Max spawn chance: ").append(new LiteralText(strMaxSpawnChance).formatted(green)), false);
+        entity.sendMessage(Text.literal("Temperature: ")
+                                   .append(Text.literal(strTemperature).formatted(green)), false);
+        entity.sendMessage(Text.literal("RainType: ").append(Text.literal(strRainType).formatted(green))
+                                   .append(", downfall: ").append(Text.literal(strRainfall).formatted(green))
+                                   .append(", snows: ").append(Text.literal(strSnowing).formatted(canSnow ? green : Formatting.RED)), false);
+        entity.sendMessage(Text.literal("Max spawn chance: ").append(Text.literal(strMaxSpawnChance).formatted(green)), false);
 
-        entity.sendMessage(new LiteralText("Fog Color: ")
-                                   .append(new LiteralText(strFogColor).formatted(green)), false);
-        entity.sendMessage(new LiteralText("Sky Color: ")
-                                   .append(new LiteralText(strSkyColor).formatted(green)), false);
-        entity.sendMessage(new LiteralText("waterColorMultiplier: ")
-                                   .append(new LiteralText(strWaterColor).formatted(green)), false);
-        entity.sendMessage(new LiteralText("Water Fog Color: ")
-                                   .append(new LiteralText(strWaterFogColor).formatted(green)), false);
+        entity.sendMessage(Text.literal("Fog Color: ")
+                                   .append(Text.literal(strFogColor).formatted(green)), false);
+        entity.sendMessage(Text.literal("Sky Color: ")
+                                   .append(Text.literal(strSkyColor).formatted(green)), false);
+        entity.sendMessage(Text.literal("waterColorMultiplier: ")
+                                   .append(Text.literal(strWaterColor).formatted(green)), false);
+        entity.sendMessage(Text.literal("Water Fog Color: ")
+                                   .append(Text.literal(strWaterFogColor).formatted(green)), false);
 
         entity.sendMessage(getMusicInfo(effects.getMusic()), false);
         entity.sendMessage(getAdditionsSoundInfo(effects.getAdditionsSound()), false);
@@ -159,7 +159,7 @@ public class BiomeDump
 
     public static MutableText getMusicInfo(Optional<MusicSound> optional)
     {
-        LiteralText text = new LiteralText("Music: ");
+        MutableText text = Text.literal("Music: ");
         Formatting green = Formatting.GREEN;
 
         if (optional.isPresent())
@@ -168,18 +168,18 @@ public class BiomeDump
             Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
             String name = id != null ? id.toString() : "?";
 
-            return text.append(new LiteralText(name).formatted(green))
-                       .append(", min delay: ").append(new LiteralText(String.valueOf(sound.getMinDelay())).formatted(green))
-                       .append(", max delay: ").append(new LiteralText(String.valueOf(sound.getMaxDelay())).formatted(green))
-                       .append(", replace current: ").append(new LiteralText(String.valueOf(sound.shouldReplaceCurrentMusic())).formatted(green));
+            return text.append(Text.literal(name).formatted(green))
+                       .append(", min delay: ").append(Text.literal(String.valueOf(sound.getMinDelay())).formatted(green))
+                       .append(", max delay: ").append(Text.literal(String.valueOf(sound.getMaxDelay())).formatted(green))
+                       .append(", replace current: ").append(Text.literal(String.valueOf(sound.shouldReplaceCurrentMusic())).formatted(green));
         }
 
-        return text.append(new LiteralText("-").formatted(Formatting.RED));
+        return text.append(Text.literal("-").formatted(Formatting.RED));
     }
 
     public static MutableText getAdditionsSoundInfo(Optional<BiomeAdditionsSound> optional)
     {
-        LiteralText text = new LiteralText("Additions Sound: ");
+        MutableText text = Text.literal("Additions Sound: ");
         Formatting green = Formatting.GREEN;
 
         if (optional.isPresent())
@@ -188,31 +188,31 @@ public class BiomeDump
             Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
             String name = id != null ? id.toString() : "?";
 
-            return text.append(new LiteralText(name).formatted(green))
-                       .append(", chance: ").append(new LiteralText(String.valueOf(sound.getChance())).formatted(green));
+            return text.append(Text.literal(name).formatted(green))
+                       .append(", chance: ").append(Text.literal(String.valueOf(sound.getChance())).formatted(green));
         }
 
-        return text.append(new LiteralText("-").formatted(Formatting.RED));
+        return text.append(Text.literal("-").formatted(Formatting.RED));
     }
 
     public static MutableText getLoopSoundInfo(Optional<SoundEvent> optional)
     {
-        LiteralText text = new LiteralText("Loop Sound: ");
+        MutableText text = Text.literal("Loop Sound: ");
 
         if (optional.isPresent())
         {
             Identifier id = Registry.SOUND_EVENT.getId(optional.get());
             String name = id != null ? id.toString() : "?";
 
-            return text.append(new LiteralText(name).formatted(Formatting.GREEN));
+            return text.append(Text.literal(name).formatted(Formatting.GREEN));
         }
 
-        return text.append(new LiteralText("-").formatted(Formatting.RED));
+        return text.append(Text.literal("-").formatted(Formatting.RED));
     }
 
     public static MutableText getMoodSoundInfo(Optional<BiomeMoodSound> optional)
     {
-        LiteralText text = new LiteralText("Mood Sound: ");
+        MutableText text = Text.literal("Mood Sound: ");
         Formatting green = Formatting.GREEN;
 
         if (optional.isPresent())
@@ -221,13 +221,13 @@ public class BiomeDump
             Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
             String name = id != null ? id.toString() : "?";
 
-            return text.append(new LiteralText(name).formatted(green))
-                       .append(", delay: ").append(new LiteralText(String.valueOf(sound.getCultivationTicks())).formatted(green))
-                       .append(", range: ").append(new LiteralText(String.valueOf(sound.getSpawnRange())).formatted(green))
-                       .append(", extra distance: ").append(new LiteralText(String.valueOf(sound.getExtraDistance())).formatted(green));
+            return text.append(Text.literal(name).formatted(green))
+                       .append(", delay: ").append(Text.literal(String.valueOf(sound.getCultivationTicks())).formatted(green))
+                       .append(", range: ").append(Text.literal(String.valueOf(sound.getSpawnRange())).formatted(green))
+                       .append(", extra distance: ").append(Text.literal(String.valueOf(sound.getExtraDistance())).formatted(green));
         }
 
-        return text.append(new LiteralText("-").formatted(Formatting.RED));
+        return text.append(Text.literal("-").formatted(Formatting.RED));
     }
 
     public static List<String> getBiomeDumpIdToName(Format format, @Nullable World world)

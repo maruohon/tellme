@@ -10,7 +10,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
 public class SubCommandCopyToClipboard
@@ -41,7 +40,7 @@ public class SubCommandCopyToClipboard
         }
         else
         {
-            source.sendFeedback(new LiteralText("'/tellme copy-to-clipboard' can only be run by a player"), false);
+            source.sendFeedback(Text.literal("'/tellme copy-to-clipboard' can only be run by a player"), false);
             return -1;
         }
 

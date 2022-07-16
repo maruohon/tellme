@@ -17,7 +17,7 @@ public class DimensionDump
 {
     public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server, boolean verbose)
     {
-        DataDump dump = new DataDump(verbose ? 12 : 3, format);
+        DataDump dump = new DataDump(verbose ? 13 : 3, format);
 
         if (server != null)
         {
@@ -25,22 +25,23 @@ public class DimensionDump
             {
                 DimensionType dim = world.getDimension();
                 String dimId = WorldUtils.getDimensionId(world);
-                String natural = String.valueOf(dim.isNatural());
-                String coordScale = String.valueOf(dim.getCoordinateScale());
+                String natural = String.valueOf(dim.natural());
+                String coordScale = String.valueOf(dim.coordinateScale());
 
                 if (verbose)
                 {
-                    String bedWorks = String.valueOf(dim.isBedWorking());
+                    String bedWorks = String.valueOf(dim.bedWorks());
                     String ceiling = String.valueOf(dim.hasCeiling());
-                    String dragon = String.valueOf(dim.hasEnderDragonFight());
                     String raids = String.valueOf(dim.hasRaids());
                     String skyLight = String.valueOf(dim.hasSkyLight());
-                    String logicalHeight = String.valueOf(dim.getLogicalHeight());
-                    String piglinSafe = String.valueOf(dim.isPiglinSafe());
-                    String respawnAnchor = String.valueOf(dim.isRespawnAnchorWorking());
-                    String ultrawarm = String.valueOf(dim.isUltrawarm());
+                    String minY = String.valueOf(dim.minY());
+                    String height = String.valueOf(dim.height());
+                    String logicalHeight = String.valueOf(dim.logicalHeight());
+                    String piglinSafe = String.valueOf(dim.piglinSafe());
+                    String respawnAnchor = String.valueOf(dim.respawnAnchorWorks());
+                    String ultrawarm = String.valueOf(dim.ultrawarm());
 
-                    dump.addData(dimId, natural, coordScale, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor,  skyLight, ultrawarm);
+                    dump.addData(dimId, natural, coordScale, bedWorks, ceiling, minY, height, logicalHeight, piglinSafe, raids, respawnAnchor, skyLight, ultrawarm);
                 }
                 else
                 {
@@ -51,18 +52,19 @@ public class DimensionDump
 
         if (verbose)
         {
-            dump.addTitle("ID", "Natural", "Coord Scale", "Bed works", "Ceiling", "Dragon", "Height", "Piglin safe", "Raids", "Resp. Anchor", "Sky Light", "Ultra Warm");
+            dump.addTitle("ID", "Natural", "Coord Scale", "Bed works", "Ceiling", "minY", "Height", "Logical Height", "Piglin safe", "Raids", "Resp. Anchor", "Sky Light", "Ultra Warm");
             dump.setColumnAlignment(1, Alignment.RIGHT); // natural
-            dump.setColumnAlignment(2, Alignment.RIGHT); // bed
-            dump.setColumnAlignment(3, Alignment.RIGHT); // ceiling
-            dump.setColumnAlignment(4, Alignment.RIGHT); // dragon
-            dump.setColumnProperties(5, Alignment.RIGHT, true); // height
-            dump.setColumnAlignment(6, Alignment.RIGHT); // piglin
-            dump.setColumnAlignment(7, Alignment.RIGHT); // raids
-            dump.setColumnAlignment(8, Alignment.RIGHT); // respawn anchor
-            dump.setColumnAlignment(9, Alignment.RIGHT); // shrunk
-            dump.setColumnAlignment(10, Alignment.RIGHT); // sky light
-            dump.setColumnAlignment(11, Alignment.RIGHT); // ultra warm
+            dump.setColumnProperties(2, Alignment.RIGHT, true); // coord scale
+            dump.setColumnAlignment(3, Alignment.RIGHT); // bed
+            dump.setColumnAlignment(4, Alignment.RIGHT); // ceiling
+            dump.setColumnProperties(5, Alignment.RIGHT, true); // min y
+            dump.setColumnProperties(6, Alignment.RIGHT, true); // height
+            dump.setColumnProperties(7, Alignment.RIGHT, true); // logical height
+            dump.setColumnAlignment(8, Alignment.RIGHT); // piglin
+            dump.setColumnAlignment(9, Alignment.RIGHT); // raids
+            dump.setColumnAlignment(10, Alignment.RIGHT); // respawn anchor
+            dump.setColumnAlignment(11, Alignment.RIGHT); // sky light
+            dump.setColumnAlignment(12, Alignment.RIGHT); // ultra warm
         }
         else
         {

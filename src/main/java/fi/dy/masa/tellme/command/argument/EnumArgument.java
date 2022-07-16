@@ -12,12 +12,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import fi.dy.masa.tellme.command.CommandUtils;
 
 public class EnumArgument<T extends Enum<T>> implements ArgumentType<T>
 {
-    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new LiteralText("No argument given"));
+    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(Text.literal("No argument given"));
 
     private final Function<String, T> entryFactory;
     private final ImmutableList<String> typeArguments;

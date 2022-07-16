@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -20,22 +20,22 @@ public abstract class ChunkProcessorAllChunks
 
         if (pos1.getY() < minY || pos2.getY() < minY)
         {
-            throw (new SimpleCommandExceptionType(new TranslatableText("Argument(s) out of range: y < " + minY))).create();
+            throw (new SimpleCommandExceptionType(Text.literal("Argument(s) out of range: y < " + minY))).create();
         }
 
         if (pos1.getY() > maxY || pos2.getY() > maxY)
         {
-            throw (new SimpleCommandExceptionType(new TranslatableText("Argument(s) out of range: y > " + maxY))).create();
+            throw (new SimpleCommandExceptionType(Text.literal("Argument(s) out of range: y > " + maxY))).create();
         }
 
         if (pos1.getX() < -30000000 || pos2.getX() < -30000000 || pos1.getZ() < -30000000 || pos2.getZ() < -30000000)
         {
-            throw (new SimpleCommandExceptionType(new TranslatableText("Argument(s) out of range (world limits): x or z < -30M"))).create();
+            throw (new SimpleCommandExceptionType(Text.literal("Argument(s) out of range (world limits): x or z < -30M"))).create();
         }
 
         if (pos1.getX() > 30000000 || pos2.getX() > 30000000 || pos1.getZ() > 30000000 || pos2.getZ() > 30000000)
         {
-            throw (new SimpleCommandExceptionType(new TranslatableText("Argument(s) out of range (world limits): x or z > 30M"))).create();
+            throw (new SimpleCommandExceptionType(Text.literal("Argument(s) out of range (world limits): x or z > 30M"))).create();
         }
 
         return true;
@@ -45,7 +45,7 @@ public abstract class ChunkProcessorAllChunks
     {
         if (this.areCoordinatesValid(posMin, posMax, world) == false)
         {
-            throw (new SimpleCommandExceptionType(new TranslatableText("Invalid coordinate(s) in the range, aborting"))).create();
+            throw (new SimpleCommandExceptionType(Text.literal("Invalid coordinate(s) in the range, aborting"))).create();
         }
 
         ChunkPos chunkPosMin = new ChunkPos(posMin.getX() >> 4, posMin.getZ() >> 4);

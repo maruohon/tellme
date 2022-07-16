@@ -8,10 +8,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
@@ -21,7 +19,7 @@ public class OutputUtils
 {
     public static Text getClipboardCopiableMessage(String textPre, String textToCopy, String textPost)
     {
-        return getClipboardCopiableMessage(new LiteralText(textPre), new LiteralText(textToCopy), new LiteralText(textPost));
+        return getClipboardCopiableMessage(Text.literal(textPre), Text.literal(textToCopy), Text.literal(textPost));
     }
 
     public static MutableText getClipboardCopiableMessage(MutableText textPre, MutableText textToCopy, MutableText textPost)
@@ -30,7 +28,7 @@ public class OutputUtils
         textToCopy.styled((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
         textToCopy.formatted(Formatting.UNDERLINE);
 
-        LiteralText hoverText = new LiteralText(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
+        MutableText hoverText = Text.literal(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
         textToCopy.getStyle().withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
         return textPre.append(textToCopy).append(textPost);
@@ -38,7 +36,7 @@ public class OutputUtils
 
     public static void sendClickableLinkMessage(PlayerEntity player, String messageKey, final File file)
     {
-        LiteralText name = new LiteralText(file.getName());
+        MutableText name = Text.literal(file.getName());
 
         if (TellMe.isClient())
         {
@@ -46,14 +44,14 @@ public class OutputUtils
             name.formatted(Formatting.UNDERLINE);
         }
 
-        player.sendMessage(new TranslatableText(messageKey, name), false);
+        player.sendMessage(Text.translatable(messageKey, name), false);
     }
 
     public static void printOutputToChat(List<String> lines, PlayerEntity entity)
     {
         for (String line : lines)
         {
-            entity.sendMessage(new LiteralText(line), false);
+            entity.sendMessage(Text.literal(line), false);
         }
     }
 
@@ -101,7 +99,7 @@ public class OutputUtils
 
                 if (player != null)
                 {
-                    player.sendMessage(new LiteralText("Output printed to console"), false);
+                    player.sendMessage(Text.literal("Output printed to console"), false);
                 }
                 break;
 
@@ -116,7 +114,7 @@ public class OutputUtils
                     }
                     else
                     {
-                        source.sendFeedback(new LiteralText("Output written to file '" + file.getName() + "'"), false);
+                        source.sendFeedback(Text.literal("Output written to file '" + file.getName() + "'"), false);
                     }
                 }
                 break;

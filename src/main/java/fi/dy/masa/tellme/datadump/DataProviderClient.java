@@ -17,7 +17,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -56,7 +56,7 @@ public class DataProviderClient extends DataProviderBase
             ClientChunkManager chunkManager = ((ClientWorld) world).getChunkManager();
             Vec3d vec = mc.player.getPos();
             ChunkPos center = new ChunkPos(MathHelper.floor(vec.x) >> 4, MathHelper.floor(vec.z) >> 4);
-            final int renderDistance = mc.options.viewDistance;
+            final int renderDistance = mc.options.getViewDistance().getValue();
 
             for (int chunkZ = center.z - renderDistance; chunkZ <= center.z + renderDistance; ++chunkZ)
             {
@@ -104,10 +104,10 @@ public class DataProviderClient extends DataProviderBase
 
         // These are client-side only:
         int color = biome.getGrassColorAt(pos.getX(), pos.getZ());
-        entity.sendMessage(new LiteralText(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)), false);
+        entity.sendMessage(Text.literal(String.format("Grass color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)), false);
 
         color = biome.getFoliageColor();
-        entity.sendMessage(new LiteralText(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)), false);
+        entity.sendMessage(Text.literal(String.format("Foliage color: %s0x%08X%s (%s%d%s)", pre, color, rst, pre, color, rst)), false);
     }
 
     @Override

@@ -2,10 +2,11 @@ package fi.dy.masa.tellme.command;
 
 import java.util.Collections;
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.command.argument.ArgumentTypes;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Identifier;
 import fi.dy.masa.tellme.command.argument.BiomeArgument;
 import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
 import fi.dy.masa.tellme.command.argument.FileArgument;
@@ -28,13 +29,13 @@ public class CommandTellMe
 
     public static void registerArgumentTypes()
     {
-        ArgumentTypes.register("tellme:biome", BiomeArgument.class, new ConstantArgumentSerializer<>(BiomeArgument::create));
-        ArgumentTypes.register("tellme:block_grouping", BlockStateCountGroupingArgument.class, new ConstantArgumentSerializer<>(BlockStateCountGroupingArgument::create));
-        ArgumentTypes.register("tellme:file", FileArgument.class, new ConstantArgumentSerializer<>(FileArgument::createEmpty));
-        ArgumentTypes.register("tellme:grouping", GroupingArgument.class, new ConstantArgumentSerializer<>(GroupingArgument::create));
-        ArgumentTypes.register("tellme:output_format", OutputFormatArgument.class, new ConstantArgumentSerializer<>(OutputFormatArgument::create));
-        ArgumentTypes.register("tellme:output_type", OutputTypeArgument.class, new ConstantArgumentSerializer<>(OutputTypeArgument::create));
-        ArgumentTypes.register("tellme:string_collection", StringCollectionArgument.class, new ConstantArgumentSerializer<>(() -> StringCollectionArgument.create(() -> Collections.emptyList(), "")));
+        ArgumentTypeRegistry.registerArgumentType(new Identifier("tellme:biome"), BiomeArgument.class, ConstantArgumentSerializer.of(BiomeArgument::create));
+        ArgumentTypeRegistry.registerArgumentType(new Identifier("tellme:block_grouping"), BlockStateCountGroupingArgument.class, ConstantArgumentSerializer.of(BlockStateCountGroupingArgument::create));
+        ArgumentTypeRegistry.registerArgumentType(new Identifier("tellme:file"), FileArgument.class, ConstantArgumentSerializer.of(FileArgument::createEmpty));
+        ArgumentTypeRegistry.registerArgumentType(new Identifier("tellme:grouping"), GroupingArgument.class, ConstantArgumentSerializer.of(GroupingArgument::create));
+        ArgumentTypeRegistry.registerArgumentType(new Identifier("tellme:output_format"), OutputFormatArgument.class, ConstantArgumentSerializer.of(OutputFormatArgument::create));
+        ArgumentTypeRegistry.registerArgumentType(new Identifier("tellme:output_type"), OutputTypeArgument.class, ConstantArgumentSerializer.of(OutputTypeArgument::create));
+        ArgumentTypeRegistry.registerArgumentType(new Identifier("tellme:string_collection"), StringCollectionArgument.class, ConstantArgumentSerializer.of(() -> StringCollectionArgument.create(Collections::emptyList, "")));
     }
 
     protected static void register(CommandDispatcher<ServerCommandSource> dispatcher, String baseCommandName, final int permissionLevel)

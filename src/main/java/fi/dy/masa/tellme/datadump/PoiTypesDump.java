@@ -17,7 +17,7 @@ public class PoiTypesDump
         {
             PointOfInterestType type = Registry.POINT_OF_INTEREST_TYPE.get(id);
 
-            dump.addData(id.toString(), type.toString(), String.valueOf(type.getSearchDistance()));
+            dump.addData(id.toString(), type.toString(), String.valueOf(type.searchDistance()));
         }
 
         dump.addTitle("Registry name", "Name", "Search distance");

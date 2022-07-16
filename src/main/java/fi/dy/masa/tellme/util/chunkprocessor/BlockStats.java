@@ -10,17 +10,16 @@ import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
 import com.google.common.collect.ArrayListMultimap;
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.property.Property;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -33,7 +32,6 @@ import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 
 public class BlockStats extends ChunkProcessorAllChunks
 {
@@ -138,7 +136,7 @@ public class BlockStats extends ChunkProcessorAllChunks
     {
         ArrayList<BlockStateCount> list = new ArrayList<>();
         ArrayListMultimap<Block, BlockStateCount> infoByBlock = ArrayListMultimap.create();
-        DynamicCommandExceptionType exception = new DynamicCommandExceptionType((type) -> new LiteralText("Invalid block state filter: '" + type + "'"));
+        DynamicCommandExceptionType exception = new DynamicCommandExceptionType((type) -> Text.literal("Invalid block state filter: '" + type + "'"));
 
         for (BlockStateCount info : this.blockStats.values())
         {
@@ -147,9 +145,8 @@ public class BlockStats extends ChunkProcessorAllChunks
 
         for (String filter : filters)
         {
-            StringReader reader = new StringReader(filter);
-            BlockArgumentParser parser = (new BlockArgumentParser(reader, false)).parse(false);
-            BlockState state = parser.getBlockState();
+            BlockArgumentParser.BlockResult result = BlockArgumentParser.block(Registry.BLOCK, filter, false);
+            BlockState state = result.blockState();
 
             if (state == null)
             {
@@ -157,7 +154,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             }
 
             Block block = state.getBlock();
-            Map<Property<?>, Comparable<?>> parsedProperties = parser.getBlockProperties();
+            Map<Property<?>, Comparable<?>> parsedProperties = result.properties();
 
             // No block state properties specified, get all states for this block
             if (parsedProperties.size() == 0)
@@ -268,7 +265,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         {
             Block block = state.getBlock();
             ItemStack stack = new ItemStack(block);
-            String displayName = stack.isEmpty() == false ? stack.getName().getString() : (new TranslatableText(block.getTranslationKey())).getString();
+            String displayName = stack.isEmpty() == false ? stack.getName().getString() : (Text.translatable(block.getTranslationKey())).getString();
 
             this.state = state;
             this.id = id;
@@ -302,8 +299,8 @@ public class BlockStats extends ChunkProcessorAllChunks
         {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((registryName == null) ? 0 : registryName.hashCode());
-            result = prime * result + ((state == null) ? 0 : state.hashCode());
+            result = prime * result + ((this.registryName == null) ? 0 : this.registryName.hashCode());
+            result = prime * result + ((this.state == null) ? 0 : this.state.hashCode());
             return result;
         }
 
@@ -314,24 +311,21 @@ public class BlockStats extends ChunkProcessorAllChunks
                 return true;
             if (obj == null)
                 return false;
-            if (getClass() != obj.getClass())
+            if (this.getClass() != obj.getClass())
                 return false;
             BlockStateCount other = (BlockStateCount) obj;
-            if (registryName == null)
+            if (this.registryName == null)
             {
                 if (other.registryName != null)
                     return false;
             }
-            else if (!registryName.equals(other.registryName))
+            else if (!this.registryName.equals(other.registryName))
                 return false;
-            if (state == null)
+            if (this.state == null)
             {
-                if (other.state != null)
-                    return false;
+                return other.state == null;
             }
-            else if (!state.equals(other.state))
-                return false;
-            return true;
+            else return this.state.equals(other.state);
         }
 
         public static Comparator<BlockStateCount> getAlphabeticComparator()

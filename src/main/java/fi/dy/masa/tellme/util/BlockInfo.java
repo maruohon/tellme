@@ -24,7 +24,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -342,7 +341,7 @@ public class BlockInfo
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = (new TranslatableText(block.getTranslationKey())).getString();
+                displayName = (Text.translatable(block.getTranslationKey())).getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));
