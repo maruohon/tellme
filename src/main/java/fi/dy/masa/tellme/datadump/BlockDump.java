@@ -2,8 +2,6 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -16,8 +14,6 @@ import net.minecraft.block.MapColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.tag.BlockTags;
-import net.minecraft.tag.Tag;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -197,12 +193,13 @@ public class BlockDump
 
     public static String getTagNamesJoined(Block block, ArrayListMultimap<Block, Identifier> tagMap)
     {
-        return tagMap.get(block).stream().map(Identifier::toString).sorted().collect(Collectors.joining(", "));
+        return "??? TODO 1.18.2+";//tagMap.get(block).stream().map(Identifier::toString).sorted().collect(Collectors.joining(", "));
     }
 
     public static ArrayListMultimap<Block, Identifier> createBlockTagMap()
     {
         ArrayListMultimap<Block, Identifier> tagMapOut = ArrayListMultimap.create();
+        /*
         Map<Identifier, Tag<Block>> tagMapIn = BlockTags.getTagGroup().getTags();
 
         for (Map.Entry<Identifier, Tag<Block>> entry : tagMapIn.entrySet())
@@ -211,6 +208,7 @@ public class BlockDump
             final Identifier id = entry.getKey();
             tag.values().forEach((block) -> tagMapOut.put(block, id));
         }
+        */
 
         return tagMapOut;
     }
