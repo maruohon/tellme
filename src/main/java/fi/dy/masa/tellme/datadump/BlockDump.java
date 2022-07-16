@@ -2,7 +2,7 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.Collections;
 import java.util.List;
-import com.google.common.collect.ArrayListMultimap;
+import java.util.stream.Collectors;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -30,12 +30,11 @@ public class BlockDump
     public static List<String> getFormattedBlockDump(DataDump.Format format, boolean tags)
     {
         DataDump blockDump = new DataDump(tags ? 5 : 4, format);
-        ArrayListMultimap<Block, Identifier> tagMap = createBlockTagMap();
 
         for (Identifier id : Registry.BLOCK.getIds())
         {
             Block block = Registry.BLOCK.get(id);
-            addDataToDump(blockDump, id, block, new ItemStack(block), tags, tagMap);
+            addDataToDump(blockDump, id, block, new ItemStack(block), tags);
         }
 
         if (tags)
@@ -71,7 +70,7 @@ public class BlockDump
         return blockDump.getLines();
     }
 
-    private static void addDataToDump(DataDump dump, Identifier id, Block block, ItemStack stack, boolean tags, ArrayListMultimap<Block, Identifier> tagMap)
+    private static void addDataToDump(DataDump dump, Identifier id, Block block, ItemStack stack, boolean tags)
     {
         String modName = ModNameUtils.getModName(id);
         String registryName = id.toString();
@@ -83,7 +82,7 @@ public class BlockDump
 
         if (tags)
         {
-            dump.addData(modName, registryName, itemId, displayName, getTagNamesJoined(block, tagMap));
+            dump.addData(modName, registryName, itemId, displayName, getTagNamesJoined(block));
         }
         else
         {
@@ -142,7 +141,6 @@ public class BlockDump
         List<String> modIds = Lists.newArrayList(map.keySet());
         Collections.sort(modIds);
         JsonObject root = new JsonObject();
-        ArrayListMultimap<Block, Identifier> tagMap = createBlockTagMap();
 
         for (String mod : modIds)
         {
@@ -174,7 +172,7 @@ public class BlockDump
                     objItem.add("RegistryName", new JsonPrimitive(itemId));
                     objItem.add("DisplayName", new JsonPrimitive(displayName));
 
-                    String tags = getTagNamesJoined(block, tagMap);
+                    String tags = getTagNamesJoined(block);
                     objItem.add("Tags", new JsonPrimitive(tags));
 
                     objBlock.add("Item", objItem);
@@ -191,25 +189,9 @@ public class BlockDump
         return gson.toJson(root);
     }
 
-    public static String getTagNamesJoined(Block block, ArrayListMultimap<Block, Identifier> tagMap)
+    @SuppressWarnings("deprecation")
+    public static String getTagNamesJoined(Block block)
     {
-        return "??? TODO 1.18.2+";//tagMap.get(block).stream().map(Identifier::toString).sorted().collect(Collectors.joining(", "));
-    }
-
-    public static ArrayListMultimap<Block, Identifier> createBlockTagMap()
-    {
-        ArrayListMultimap<Block, Identifier> tagMapOut = ArrayListMultimap.create();
-        /*
-        Map<Identifier, Tag<Block>> tagMapIn = BlockTags.getTagGroup().getTags();
-
-        for (Map.Entry<Identifier, Tag<Block>> entry : tagMapIn.entrySet())
-        {
-            final Tag<Block> tag = entry.getValue();
-            final Identifier id = entry.getKey();
-            tag.values().forEach((block) -> tagMapOut.put(block, id));
-        }
-        */
-
-        return tagMapOut;
+        return block.getRegistryEntry().streamTags().map(e -> e.id().toString()).collect(Collectors.joining(", "));
     }
 }

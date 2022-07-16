@@ -16,7 +16,7 @@ import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
 public class FoodItemDump
 {
-    private static void addData(DataDump dump, Item item, Identifier rl, ItemDump.ItemDumpContext ctx)
+    private static void addData(DataDump dump, Item item, Identifier rl)
     {
         String registryName = rl.toString();
         ItemStack stack = new ItemStack(item);
@@ -30,16 +30,15 @@ public class FoodItemDump
         String isFastEat = String.valueOf(food.isAlwaysEdible());
         List<Pair<StatusEffectInstance, Float>> effects = food.getStatusEffects();
         String effectsStr = effects.stream()
-                .map((pair) -> "{[" + pair.getFirst().toString() + "], Propability: " + pair.getSecond() + "}")
+                .map((pair) -> "{[" + pair.getFirst().toString() + "], Probability: " + pair.getSecond() + "}")
                 .collect(Collectors.joining(", "));
 
-        dump.addData(registryName, displayName, hunger, saturation, isMeat, isFastEat, ItemDump.getTagNamesJoined(item, ctx.tagMap), effectsStr);
+        dump.addData(registryName, displayName, hunger, saturation, isMeat, isFastEat, ItemDump.getTagNamesJoined(item), effectsStr);
     }
 
     public static List<String> getFormattedFoodItemDump(Format format)
     {
         DataDump itemDump = new DataDump(8, format);
-        ItemDump.ItemDumpContext ctx = new ItemDump.ItemDumpContext(ItemDump.createItemTagMap());
 
         for (Identifier id : Registry.ITEM.getIds())
         {
@@ -47,7 +46,7 @@ public class FoodItemDump
 
             if (item.isFood())
             {
-                addData(itemDump, item, id, ctx);
+                addData(itemDump, item, id);
             }
         }
 

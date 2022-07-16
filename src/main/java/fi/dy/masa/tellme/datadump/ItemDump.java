@@ -3,8 +3,8 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -54,12 +54,11 @@ public class ItemDump
     public static List<String> getFormattedItemDump(Format format, ItemInfoProviderBase provider)
     {
         DataDump itemDump = new DataDump(provider.getColumnCount(), format);
-        ItemDumpContext ctx = new ItemDumpContext(createItemTagMap());
 
         for (Identifier id : Registry.ITEM.getIds())
         {
             Item item = Registry.ITEM.get(id);
-            provider.addLine(itemDump, new ItemStack(item), id, ctx);
+            provider.addLine(itemDump, new ItemStack(item), id);
         }
 
         provider.addTitle(itemDump);
@@ -76,7 +75,6 @@ public class ItemDump
         if (server != null)
         {
             RecipeManager manager = server.getRecipeManager();
-            ItemDumpContext ctx = new ItemDumpContext(createItemTagMap());
 
             for (Recipe<?> recipe : manager.values())
             {
@@ -84,7 +82,7 @@ public class ItemDump
 
                 if (stack.isEmpty() == false)
                 {
-                    provider.addLine(dump, stack, recipe.getId(), ctx);
+                    provider.addLine(dump, stack, recipe.getId());
                 }
             }
         }
@@ -140,7 +138,6 @@ public class ItemDump
         List<String> mods = Lists.newArrayList(map.keySet());
         Collections.sort(mods);
         JsonObject root = new JsonObject();
-        ItemDumpContext ctx = new ItemDumpContext(createItemTagMap());
 
         for (String mod : mods)
         {
@@ -152,7 +149,7 @@ public class ItemDump
             for (Identifier key : items)
             {
                 JsonArray arrItem = new JsonArray();
-                addDataForItemSubtypeForJson(arrItem, Registry.ITEM.get(key), key, player, ctx);
+                addDataForItemSubtypeForJson(arrItem, Registry.ITEM.get(key), key, player);
                 objectMod.add(key.toString(), arrItem);
             }
 
@@ -164,13 +161,13 @@ public class ItemDump
         return gson.toJson(root);
     }
 
-    private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, Identifier rl, PlayerEntity player, ItemDumpContext ctx)
+    private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, Identifier rl, PlayerEntity player)
     {
         int id = Item.getRawId(item);
         ItemStack stack = new ItemStack(item);
         int maxDamage = stack.getMaxDamage();
         String idStr = String.valueOf(id);
-        String tags = getTagNamesJoined(item, ctx.tagMap);
+        String tags = getTagNamesJoined(item);
         String regName = rl != null ? rl.toString() : "<null>";
         String displayName = stack.getName().getString();
         displayName = Formatting.strip(displayName);
@@ -298,17 +295,7 @@ public class ItemDump
 
         public abstract void addTitle(DataDump dump);
 
-        public abstract void addLine(DataDump dump, ItemStack stack, Identifier id, ItemDumpContext ctx);
-    }
-
-    public static class ItemDumpContext
-    {
-        public final ArrayListMultimap<Item, Identifier> tagMap;
-
-        public ItemDumpContext(ArrayListMultimap<Item, Identifier> tagMap)
-        {
-            this.tagMap = tagMap;
-        }
+        public abstract void addLine(DataDump dump, ItemStack stack, Identifier id);
     }
 
     public static class ItemInfoProviderBasic extends ItemInfoProviderBase
@@ -340,7 +327,7 @@ public class ItemDump
         }
 
         @Override
-        public void addLine(DataDump dump, ItemStack stack, Identifier id, ItemDumpContext ctx)
+        public void addLine(DataDump dump, ItemStack stack, Identifier id)
         {
             if (this.tags)
             {
@@ -348,7 +335,7 @@ public class ItemDump
                              this.getRegistryName(id),
                              this.getItemId(stack),
                              this.getDisplayName(stack),
-                             getTagNamesJoined(stack.getItem(), ctx.tagMap));
+                             getTagNamesJoined(stack.getItem()));
             }
             else
             {
@@ -375,7 +362,7 @@ public class ItemDump
         }
 
         @Override
-        public void addLine(DataDump dump, ItemStack stack, Identifier id, ItemDumpContext ctx)
+        public void addLine(DataDump dump, ItemStack stack, Identifier id)
         {
             if (stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock() instanceof Fertilizable)
             {
@@ -383,7 +370,7 @@ public class ItemDump
                              this.getRegistryName(id),
                              this.getItemId(stack),
                              this.getDisplayName(stack),
-                             getTagNamesJoined(stack.getItem(), ctx.tagMap));
+                             getTagNamesJoined(stack.getItem()));
             }
         }
     }
@@ -403,7 +390,7 @@ public class ItemDump
         }
 
         @Override
-        public void addLine(DataDump dump, ItemStack stack, Identifier id, ItemDumpContext ctx)
+        public void addLine(DataDump dump, ItemStack stack, Identifier id)
         {
             Identifier itemId = Registry.ITEM.getId(stack.getItem());
 
@@ -412,7 +399,7 @@ public class ItemDump
                          this.getItemId(stack),
                          this.getDisplayName(stack),
                          this.getRegistryName(id),
-                         getTagNamesJoined(stack.getItem(), ctx.tagMap));
+                         getTagNamesJoined(stack.getItem()));
         }
     }
 
@@ -432,7 +419,7 @@ public class ItemDump
         }
 
         @Override
-        public void addLine(DataDump dump, ItemStack stack, Identifier id, ItemDumpContext ctx)
+        public void addLine(DataDump dump, ItemStack stack, Identifier id)
         {
             Item item = stack.getItem();
 
@@ -443,30 +430,14 @@ public class ItemDump
                              this.getItemId(stack),
                              this.getDisplayName(stack),
                              String.valueOf(item.getMaxDamage()),
-                             getTagNamesJoined(item, ctx.tagMap));
+                             getTagNamesJoined(item));
             }
         }
     }
 
-    public static String getTagNamesJoined(Item item, ArrayListMultimap<Item, Identifier> tagMap)
+    @SuppressWarnings("deprecation")
+    public static String getTagNamesJoined(Item item)
     {
-        return "??? TODO 1.18.2+";//tagMap.get(item).stream().map(Identifier::toString).sorted().collect(Collectors.joining(", "));
-    }
-
-    public static ArrayListMultimap<Item, Identifier> createItemTagMap()
-    {
-        ArrayListMultimap<Item, Identifier> tagMapOut = ArrayListMultimap.create();
-        /*
-        Map<Identifier, Tag<Item>> tagMapIn = ItemTags.getTagGroup().getTags();
-
-        for (Map.Entry<Identifier, Tag<Item>> entry : tagMapIn.entrySet())
-        {
-            final Tag<Item> tag = entry.getValue();
-            final Identifier id = entry.getKey();
-            tag.values().forEach((item) -> tagMapOut.put(item, id));
-        }
-        */
-
-        return tagMapOut;
+        return item.getRegistryEntry().streamTags().map(e -> e.id().toString()).collect(Collectors.joining(", "));
     }
 }
