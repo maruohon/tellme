@@ -1,6 +1,7 @@
 package fi.dy.masa.tellme.event.datalogging;
 
 import java.util.EnumMap;
+
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
 
 public class EventManager

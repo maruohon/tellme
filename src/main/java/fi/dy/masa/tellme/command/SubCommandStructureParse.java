@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -22,8 +23,9 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
-import fi.dy.masa.malilib.util.data.json.JsonUtils;
-import fi.dy.masa.malilib.util.game.wrap.NbtWrap;
+
+import malilib.util.data.json.JsonUtils;
+import malilib.util.game.wrap.NbtWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -22,8 +23,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
-import fi.dy.masa.malilib.util.game.WorldUtils;
-import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
+
+import malilib.util.game.WorldUtils;
+import malilib.util.game.wrap.EntityWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;

@@ -2,10 +2,12 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.potion.PotionType;
 import net.minecraft.util.ResourceLocation;
+
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.mixin.IMixinPotionEffect;

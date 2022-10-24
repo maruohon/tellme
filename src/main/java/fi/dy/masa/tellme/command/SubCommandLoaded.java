@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.command;
 import java.io.File;
 import java.util.List;
 import javax.annotation.Nullable;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -14,7 +15,8 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
+
+import malilib.util.game.wrap.EntityWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.ChunkDump;
 import fi.dy.masa.tellme.datadump.DataDump;
@@ -104,7 +106,7 @@ public class SubCommandLoaded extends SubCommand
                 if (world != null)
                 {
                     LiteModTellMe.logger.info(String.format("DIM %4s: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
-                                                            fi.dy.masa.malilib.util.game.WorldUtils.getDimensionAsString(world), world.provider.getDimensionType().getName(),
+                                                            malilib.util.game.WorldUtils.getDimensionIdAsString(world), world.provider.getDimensionType().getName(),
                                                             WorldUtils.getLoadedChunkCount(world),
                                                             world.loadedEntityList.size(), world.playerEntities.size()));
                 }

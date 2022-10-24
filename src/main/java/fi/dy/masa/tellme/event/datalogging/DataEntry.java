@@ -5,8 +5,9 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.malilib.util.game.WorldUtils;
-import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
+
+import malilib.util.game.WorldUtils;
+import malilib.util.game.wrap.EntityWrap;
 import fi.dy.masa.tellme.datadump.DataDump;
 
 public class DataEntry

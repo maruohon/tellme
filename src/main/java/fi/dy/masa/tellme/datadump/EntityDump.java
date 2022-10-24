@@ -1,9 +1,11 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
+
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -15,7 +16,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
+
+import malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;

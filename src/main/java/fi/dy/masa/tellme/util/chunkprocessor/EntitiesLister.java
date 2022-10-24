@@ -3,13 +3,15 @@ package fi.dy.masa.tellme.util.chunkprocessor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
+
+import malilib.util.game.wrap.EntityWrap;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.EntityCountDump;
 

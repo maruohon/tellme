@@ -1,9 +1,11 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+
 import net.minecraft.client.audio.MusicTicker.MusicType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 

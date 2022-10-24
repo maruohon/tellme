@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -19,8 +20,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import fi.dy.masa.malilib.util.game.wrap.DefaultedList;
-import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
+
+import malilib.util.game.wrap.DefaultedList;
+import malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
 import fi.dy.masa.tellme.mixin.IMixinBlock;
 import fi.dy.masa.tellme.util.ModNameUtils;

@@ -5,10 +5,12 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
-import fi.dy.masa.malilib.util.game.wrap.EntityWrap;
+
+import malilib.util.game.wrap.EntityWrap;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventBase;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventLoad;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryChunkEventUnload;

@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandManager;
@@ -19,6 +20,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+
 import fi.dy.masa.tellme.LiteModTellMe;
 
 public class SubCommandBatchRun extends SubCommand

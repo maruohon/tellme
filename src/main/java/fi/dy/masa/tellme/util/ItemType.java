@@ -1,9 +1,11 @@
 package fi.dy.masa.tellme.util;
 
 import javax.annotation.Nonnull;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
+
+import malilib.util.game.wrap.ItemWrap;
 
 /**
  * Wrapper class for ItemStack, which implements equals()

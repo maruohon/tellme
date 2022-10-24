@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.util;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 

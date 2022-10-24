@@ -2,6 +2,7 @@ package fi.dy.masa.tellme.util;
 
 import java.util.IllegalFormatException;
 import java.util.List;
+
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
@@ -13,7 +14,8 @@ import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
-import fi.dy.masa.malilib.util.game.wrap.NbtWrap;
+
+import malilib.util.game.wrap.NbtWrap;
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.reference.Constants;
 

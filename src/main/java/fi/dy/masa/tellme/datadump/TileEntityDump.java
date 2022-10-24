@@ -3,10 +3,12 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistryNamespaced;
+
 import fi.dy.masa.tellme.LiteModTellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;

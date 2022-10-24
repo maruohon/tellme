@@ -5,9 +5,11 @@ import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.ServerCommandProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import net.minecraft.command.ServerCommandManager;
-import fi.dy.masa.malilib.config.util.ConfigUtils;
-import fi.dy.masa.malilib.registry.Registry;
+
+import malilib.config.util.ConfigUtils;
+import malilib.registry.Registry;
 import fi.dy.masa.tellme.command.ClientCommandTellme;
 import fi.dy.masa.tellme.command.CommandTellme;
 import fi.dy.masa.tellme.reference.Reference;

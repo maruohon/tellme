@@ -1,8 +1,10 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.util.ResourceLocation;
+
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 

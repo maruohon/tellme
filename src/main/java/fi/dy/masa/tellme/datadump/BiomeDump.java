@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -16,7 +17,8 @@ import net.minecraft.world.ColorizerGrass;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.MapGenVillage;
-import fi.dy.masa.malilib.util.game.wrap.GameUtils;
+
+import malilib.util.game.wrap.GameUtils;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ChatUtils;

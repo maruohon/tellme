@@ -5,7 +5,8 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import fi.dy.masa.malilib.util.game.wrap.ItemWrap;
+
+import malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.util.ItemInfo;
 
 public class SubCommandHolding extends SubCommand

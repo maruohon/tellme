@@ -61,7 +61,7 @@ minecraft {
 }
 
 dependencies {
-	deobfCompile "fi.dy.masa.malilib:malilib-liteloader-" + config.minecraft_version_out + ":" + config.malilib_version + ":deobf"
+	deobfCompile "malilib:malilib-liteloader-" + config.minecraft_version_out + ":" + config.malilib_version + ":deobf"
 }
 
 sourceSets {
@@ -135,11 +135,11 @@ processResources
 	// replace stuff in mcmod.info, nothing else
 	from(sourceSets.main.resources.srcDirs) {
 		include 'mcmod.info'
-				
+
 		// replace version and mcversion
 		expand 'mod_version': project.minecraft.mod_version, 'minecraft_version': project.config.minecraft_version
 	}
-	  
+
 	// copy everything else, thats not the mcmod.info
 	from(sourceSets.main.resources.srcDirs) {
 		exclude 'mcmod.info'
