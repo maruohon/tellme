@@ -11,6 +11,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
@@ -20,6 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
@@ -49,7 +51,6 @@ import fi.dy.masa.tellme.datadump.SimpleVanillaRegistryKeyOnlyDump;
 import fi.dy.masa.tellme.datadump.SoundEventDump;
 import fi.dy.masa.tellme.datadump.SpawnEggDump;
 import fi.dy.masa.tellme.datadump.StatTypesDump;
-import fi.dy.masa.tellme.datadump.StructureFeatureDump;
 import fi.dy.masa.tellme.datadump.TagDump;
 import fi.dy.masa.tellme.datadump.VillagerProfessionDump;
 import fi.dy.masa.tellme.datadump.VillagerTradesDump;
@@ -223,7 +224,7 @@ public class SubCommandDump
         dumpProviders.put("sound-events",               (ctx) -> SoundEventDump.getFormattedSoundEventDump(ctx.format));
         dumpProviders.put("spawn-eggs",                 (ctx) -> SpawnEggDump.getFormattedSpawnEggDump(ctx.format));
         dumpProviders.put("stat-types",                 (ctx) -> StatTypesDump.getFormattedDump(ctx.format));
-        dumpProviders.put("structure-features",         (ctx) -> StructureFeatureDump.getFormattedDump(ctx.format));
+        dumpProviders.put("structure-features",         (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.STRUCTURE_FEATURES));
         dumpProviders.put("structure-piece-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PIECE));
         dumpProviders.put("structure-pool-element",     (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_POOL_ELEMENT));
         dumpProviders.put("structure-processor-types",  (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PROCESSOR));

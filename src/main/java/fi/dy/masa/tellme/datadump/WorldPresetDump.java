@@ -14,7 +14,7 @@ public class WorldPresetDump
     {
         DataDump potionDump = new DataDump(2, format);
 
-        for (Map.Entry<ResourceKey<ForgeWorldPreset>, ForgeWorldPreset> entry : ForgeRegistries.WORLD_TYPES.getEntries())
+        for (Map.Entry<ResourceKey<ForgeWorldPreset>, ForgeWorldPreset> entry : ForgeRegistries.WORLD_TYPES.get().getEntries())
         {
             ForgeWorldPreset type = entry.getValue();
             ResourceLocation id = type.getRegistryName();

@@ -225,11 +225,10 @@ public class BlockInfo
 
         if (te != null)
         {
-            CompoundTag nbt = new CompoundTag();
-            te.save(nbt);
+            CompoundTag nbt = te.serializeNBT();
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
-            lines.add("BlockEntity NBT (from BlockEntity::save()):");
+            lines.add("BlockEntity NBT (from IForgeBlockEntity::serializeNBT()):");
             lines.addAll((new NbtStringifierPretty(targetIsChat ? ChatFormatting.GRAY.toString() : null)).getNbtLines(nbt));
         }
 

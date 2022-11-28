@@ -1,19 +1,9 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.material.Fluid;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class TagDump
@@ -22,6 +12,7 @@ public class TagDump
     {
         DataDump dump = new DataDump(2, format);
 
+        /*
         switch (type)
         {
             case BLOCK:
@@ -76,8 +67,10 @@ public class TagDump
                 break;
             }
         }
+        */
 
         dump.addTitle("ID", "Tagged objects");
+        dump.addHeader("??? TODO 1.18.2+");
 
         return dump.getLines();
     }

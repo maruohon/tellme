@@ -3,15 +3,17 @@ package fi.dy.masa.tellme.util;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class BiomeLocator
 {
@@ -105,7 +107,7 @@ public class BiomeLocator
     private boolean samplePosition(int x, int z, int totalBiomes, BiomeManager biomeManager)
     {
         this.posMutable.set(x, 0, z);
-        Biome biome = biomeManager.getBiome(this.posMutable);
+        Biome biome = biomeManager.getBiome(this.posMutable).value();
         this.count++;
 
         BlockPos oldPos = this.biomePositions.get(biome);

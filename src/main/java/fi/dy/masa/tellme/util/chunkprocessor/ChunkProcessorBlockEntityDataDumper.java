@@ -92,7 +92,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
                     try
                     {
-                        CompoundTag tag = be.save(new CompoundTag());
+                        CompoundTag tag = be.serializeNBT();
                         this.data.add(new BlockEntityDataEntry(pos, id.toString(), tag.toString()));
                     }
                     catch (Exception e)

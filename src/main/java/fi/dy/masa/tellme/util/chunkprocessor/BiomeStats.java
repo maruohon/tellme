@@ -4,16 +4,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 
 public class BiomeStats
 {
@@ -43,14 +45,14 @@ public class BiomeStats
         final int zMax = posMax.getZ();
         final int width = xMax - xMin + 1;
         final int length = zMax - zMin + 1;
-        final long count = width * length;
+        final long count = (long) width * (long) length;
 
         for (int x = xMin; x <= xMax; ++x)
         {
             for (int z = zMin; z <= zMax; ++z)
             {
                 posMutable.set(x, 0, z);
-                Biome biome = biomeManager.getBiome(posMutable);
+                Biome biome = biomeManager.getBiome(posMutable).value();
                 counts.addTo(biome, 1);
             }
         }
@@ -75,7 +77,7 @@ public class BiomeStats
             for (int x = centerX - sampleRadius * sampleInterval; x <= endX; x += sampleInterval)
             {
                 posMutable.set(x, 0, z);
-                Biome biome = biomeManager.getBiome(posMutable);
+                Biome biome = biomeManager.getBiome(posMutable).value();
                 counts.addTo(biome, 1);
                 ++count;
             }

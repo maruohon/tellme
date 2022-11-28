@@ -111,7 +111,7 @@ public class BiomeDump
     {
         Level world = entity.getCommandSenderWorld();
         BlockPos pos = entity.blockPosition();
-        Biome biome = world.getBiome(pos);
+        Biome biome = world.getBiome(pos).value();
         ChatFormatting green = ChatFormatting.GREEN;
         ChatFormatting red = ChatFormatting.RED;
 

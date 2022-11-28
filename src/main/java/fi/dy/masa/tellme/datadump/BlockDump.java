@@ -3,7 +3,6 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -11,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.RegistryUtils;
@@ -201,6 +202,6 @@ public class BlockDump
 
     public static String getTagNamesJoined(Block block)
     {
-        return block.getTags().stream().map(ResourceLocation::toString).sorted().collect(Collectors.joining(", "));
+        return "??? TODO 1.18.2+";//block.getTags().stream().map(ResourceLocation::toString).sorted().collect(Collectors.joining(", "));
     }
 }

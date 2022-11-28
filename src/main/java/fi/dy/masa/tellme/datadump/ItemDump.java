@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -14,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.RegistryUtils;
@@ -98,7 +99,7 @@ public class ItemDump
 
     public static String getTagNamesJoined(Item item)
     {
-        return item.getTags().stream().map(ResourceLocation::toString).sorted().collect(Collectors.joining(", "));
+        return "??? TODO 1.18.2+";//item.getTags().stream().map(ResourceLocation::toString).sorted().collect(Collectors.joining(", "));
     }
 
     public static String getStackInfoBasic(ItemStack stack)
@@ -177,7 +178,7 @@ public class ItemDump
         int maxDamage = stack.getMaxDamage();
         String idStr = String.valueOf(id);
         String exists = RegistryUtils.isDummied(ForgeRegistries.ITEMS, rl) ? "false" : "true";
-        String tags = getTagNamesJoined(item);
+        String tags = "?"; //getTagNamesJoined(item);
         String regName = rl != null ? rl.toString() : "<null>";
         String displayName = stack.getHoverName().getString();
         displayName = ChatFormatting.stripFormatting(displayName);
@@ -352,7 +353,8 @@ public class ItemDump
                              this.getRegistryName(id),
                              this.getItemId(stack),
                              this.getDisplayName(stack),
-                             getTagNamesJoined(stack.getItem()));
+                             //getTagNamesJoined(stack.getItem()));
+                             "?");
             }
             else
             {
@@ -426,7 +428,8 @@ public class ItemDump
                                  this.getRegistryName(id),
                                  this.getDisplayName(stack),
                                  ((IPlantable) block).getPlantType(null, BlockPos.ZERO).getName(),
-                                 getTagNamesJoined(stack.getItem()));
+                                 //getTagNamesJoined(stack.getItem()));
+                                 "?");
                 }
                 catch (Exception ignore)
                 {
@@ -458,7 +461,8 @@ public class ItemDump
                 dump.addData(this.getModName(id),
                              this.getRegistryName(id),
                              this.getDisplayName(stack),
-                             getTagNamesJoined(stack.getItem()));
+                             //getTagNamesJoined(stack.getItem()));
+                             "?");
             }
         }
     }
@@ -486,7 +490,8 @@ public class ItemDump
                          this.getRegistryName(itemId),
                          this.getDisplayName(stack),
                          this.getRegistryName(id),
-                         getTagNamesJoined(stack.getItem()));
+                         //getTagNamesJoined(stack.getItem()));
+                         "?");
         }
     }
 }
