@@ -444,23 +444,24 @@ public class ItemDump
         @Override
         public int getColumnCount()
         {
-            return 4;
+            return 5;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("Mod name", "Registry name", "Display name", "Tags");
+            dump.addTitle("Mod name", "Registry name", "Display name", "Max Damage", "Tags");
         }
 
         @Override
         public void addLine(DataDump dump, ItemStack stack, ResourceLocation id)
         {
-            if (stack.getItem().canBeDepleted())
+            if (stack.isDamageableItem())
             {
                 dump.addData(this.getModName(id),
                              this.getRegistryName(id),
                              this.getDisplayName(stack),
+                             String.valueOf(stack.getMaxDamage()),
                              //getTagNamesJoined(stack.getItem()));
                              "?");
             }
