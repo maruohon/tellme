@@ -1,29 +1,44 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.world.ForgeWorldPreset;
-import net.minecraftforge.registries.ForgeRegistries;
+
+import net.minecraft.client.gui.screens.worldselection.WorldPreset;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class WorldPresetDump
 {
+    @SuppressWarnings("unchecked")
     public static List<String> getFormattedDump(DataDump.Format format)
     {
-        DataDump potionDump = new DataDump(2, format);
+        DataDump dump = new DataDump(1, format);
 
-        for (Map.Entry<ResourceKey<ForgeWorldPreset>, ForgeWorldPreset> entry : ForgeRegistries.WORLD_TYPES.get().getEntries())
+        Field fieldPresets;
+        List<WorldPreset> list = null;
+
+        try
         {
-            ForgeWorldPreset type = entry.getValue();
-            ResourceLocation id = type.getRegistryName();
-
-            potionDump.addData(id.toString(), type.getDisplayName().getString());
+            fieldPresets = ObfuscationReflectionHelper.findField(WorldPreset.class, "f_101508_");
+            list = (List<WorldPreset>) fieldPresets.get(null);
+        }
+        catch (Exception e)
+        {
+            TellMe.logger.warn("Exception while reflecting World Presets list fields", e);
         }
 
-        potionDump.addTitle("Registry name", "Display Name");
+        if (list != null)
+        {
+            for (WorldPreset preset : list)
+            {
+                dump.addData(preset.description().getString());
+            }
+        }
 
-        return potionDump.getLines();
+        dump.addTitle("Name");
+
+        return dump.getLines();
     }
 }
