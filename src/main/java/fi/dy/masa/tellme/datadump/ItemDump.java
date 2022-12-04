@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -99,7 +100,7 @@ public class ItemDump
 
     public static String getTagNamesJoined(Item item)
     {
-        return "??? TODO 1.18.2+";//item.getTags().stream().map(ResourceLocation::toString).sorted().collect(Collectors.joining(", "));
+        return item.builtInRegistryHolder().getTagKeys().map(e -> e.location().toString()).collect(Collectors.joining(", "));
     }
 
     public static String getStackInfoBasic(ItemStack stack)
@@ -178,7 +179,7 @@ public class ItemDump
         int maxDamage = stack.getMaxDamage();
         String idStr = String.valueOf(id);
         String exists = RegistryUtils.isDummied(ForgeRegistries.ITEMS, rl) ? "false" : "true";
-        String tags = "?"; //getTagNamesJoined(item);
+        String tags = getTagNamesJoined(item);
         String regName = rl != null ? rl.toString() : "<null>";
         String displayName = stack.getHoverName().getString();
         displayName = ChatFormatting.stripFormatting(displayName);
@@ -353,8 +354,7 @@ public class ItemDump
                              this.getRegistryName(id),
                              this.getItemId(stack),
                              this.getDisplayName(stack),
-                             //getTagNamesJoined(stack.getItem()));
-                             "?");
+                             getTagNamesJoined(stack.getItem()));
             }
             else
             {
@@ -428,8 +428,7 @@ public class ItemDump
                                  this.getRegistryName(id),
                                  this.getDisplayName(stack),
                                  ((IPlantable) block).getPlantType(null, BlockPos.ZERO).getName(),
-                                 //getTagNamesJoined(stack.getItem()));
-                                 "?");
+                                 getTagNamesJoined(stack.getItem()));
                 }
                 catch (Exception ignore)
                 {
@@ -462,8 +461,7 @@ public class ItemDump
                              this.getRegistryName(id),
                              this.getDisplayName(stack),
                              String.valueOf(stack.getMaxDamage()),
-                             //getTagNamesJoined(stack.getItem()));
-                             "?");
+                             getTagNamesJoined(stack.getItem()));
             }
         }
     }
@@ -491,8 +489,7 @@ public class ItemDump
                          this.getRegistryName(itemId),
                          this.getDisplayName(stack),
                          this.getRegistryName(id),
-                         //getTagNamesJoined(stack.getItem()));
-                         "?");
+                         getTagNamesJoined(stack.getItem()));
         }
     }
 }

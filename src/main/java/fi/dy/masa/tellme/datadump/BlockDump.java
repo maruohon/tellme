@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.datadump;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -202,6 +203,6 @@ public class BlockDump
 
     public static String getTagNamesJoined(Block block)
     {
-        return "??? TODO 1.18.2+";//block.getTags().stream().map(ResourceLocation::toString).sorted().collect(Collectors.joining(", "));
+        return block.builtInRegistryHolder().getTagKeys().map(e -> e.location().toString()).collect(Collectors.joining(", "));
     }
 }
