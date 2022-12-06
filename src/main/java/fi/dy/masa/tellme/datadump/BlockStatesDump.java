@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import com.google.common.collect.ImmutableList;
+
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class BlockStatesDump
@@ -29,7 +31,7 @@ public class BlockStatesDump
                 lines.add(propertyComparableEntry.getKey().toString());
             }
 
-            outputLines.add(block.getRegistryName().toString() + ": " + String.join(", ", lines));
+            outputLines.add(entry.getKey().location() + ": " + String.join(", ", lines));
         }
 
         Collections.sort(outputLines);
@@ -47,7 +49,7 @@ public class BlockStatesDump
         for (Map.Entry<ResourceKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
             Block block = entry.getValue();
-            String regName = block.getRegistryName().toString();
+            String regName = entry.getKey().location().toString();
 
             ImmutableList<BlockState> validStates = block.getStateDefinition().getPossibleStates();
 

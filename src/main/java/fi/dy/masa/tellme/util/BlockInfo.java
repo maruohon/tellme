@@ -14,11 +14,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -32,6 +32,7 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
 
@@ -346,7 +347,7 @@ public class BlockInfo
             // Blocks that are not obtainable/don't have an ItemBlock
             else
             {
-                displayName = (new TranslatableComponent(block.getDescriptionId())).getString();
+                displayName = (Component.translatable(block.getDescriptionId())).getString();
             }
 
             return new BlockData(state, displayName, registryName, getTileInfo(world, pos));

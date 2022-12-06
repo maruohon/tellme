@@ -14,12 +14,12 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -30,10 +30,10 @@ import net.minecraft.world.phys.Vec3;
 public class CommandUtils
 {
     public static final FilenameFilter FILTER_FILES = (pathName, fileName) -> { return (new File(pathName, fileName)).isFile(); };
-    public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(new TextComponent("This command must either be executed by an entity, or the dimension must be specified"));
-    public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> new TextComponent("The dimension \"" + type + "\" was not loaded"));
-    public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(new TextComponent("This command must be executed by a player"));
-    public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> new TextComponent("Invalid output type: " + type));
+    public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(Component.literal("This command must either be executed by an entity, or the dimension must be specified"));
+    public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> Component.literal("The dimension \"" + type + "\" was not loaded"));
+    public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(Component.literal("This command must be executed by a player"));
+    public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> Component.literal("Invalid output type: " + type));
 
     public static BlockPos getMinCorner(Vec2 pos1, Vec2 pos2, Level world)
     {
@@ -159,12 +159,12 @@ public class CommandUtils
 
     public static void throwException(String message) throws CommandSyntaxException
     {
-        throw (new SimpleCommandExceptionType(new TranslatableComponent(message))).create();
+        throw (new SimpleCommandExceptionType(Component.translatable(message))).create();
     }
 
     public static void sendMessage(CommandSourceStack source, String message)
     {
-        source.sendSuccess(new TextComponent(message), true);
+        source.sendSuccess(Component.literal(message), true);
     }
 
     public static Vec2 getVec2fFromSource(CommandSourceStack source)

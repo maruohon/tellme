@@ -16,7 +16,7 @@ public class DimensionDump
 {
     public static List<String> getFormattedDimensionDump(Format format, @Nullable MinecraftServer server, boolean verbose)
     {
-        DataDump dump = new DataDump(verbose ? 12 : 3, format);
+        DataDump dump = new DataDump(verbose ? 13 : 3, format);
 
         if (server != null)
         {
@@ -31,7 +31,8 @@ public class DimensionDump
                 {
                     String bedWorks = String.valueOf(dim.bedWorks());
                     String ceiling = String.valueOf(dim.hasCeiling());
-                    String dragon = String.valueOf(dim.createDragonFight());
+                    String minY = String.valueOf(dim.minY());
+                    String height = String.valueOf(dim.height());
                     String raids = String.valueOf(dim.hasRaids());
                     String skyLight = String.valueOf(dim.hasSkyLight());
                     String logicalHeight = String.valueOf(dim.logicalHeight());
@@ -39,7 +40,7 @@ public class DimensionDump
                     String respawnAnchor = String.valueOf(dim.respawnAnchorWorks());
                     String ultrawarm = String.valueOf(dim.ultraWarm());
 
-                    dump.addData(dimId, natural, coordScale, bedWorks, ceiling, dragon, logicalHeight, piglinSafe, raids, respawnAnchor, skyLight, ultrawarm);
+                    dump.addData(dimId, natural, coordScale, bedWorks, ceiling, minY, height, logicalHeight, piglinSafe, raids, respawnAnchor, skyLight, ultrawarm);
                 }
                 else
                 {
@@ -50,7 +51,7 @@ public class DimensionDump
 
         if (verbose)
         {
-            dump.addTitle("ID", "Natural", "Coord Scale", "Bed works", "Ceiling", "Dragon", "Height", "Piglin safe", "Raids", "Resp. Anchor", "Sky Light", "Ultra Warm");
+            dump.addTitle("ID", "Natural", "Coord Scale", "Bed works", "Ceiling", "Min Y", "Height", "Logical Height", "Piglin safe", "Raids", "Resp. Anchor", "Sky Light", "Ultra Warm");
             dump.setColumnAlignment(1, Alignment.RIGHT); // natural
             dump.setColumnAlignment(2, Alignment.RIGHT); // bed
             dump.setColumnAlignment(3, Alignment.RIGHT); // ceiling

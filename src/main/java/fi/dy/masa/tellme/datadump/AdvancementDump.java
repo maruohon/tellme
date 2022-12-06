@@ -27,10 +27,9 @@ public class AdvancementDump
             try
             {
                 String id = adv.getId() != null ? adv.getId().toString() : "<null>";
-                //String title = adv.getDisplay().getTitle().getUnformattedText();
-                String title = adv.getChatComponent() != null ? adv.getChatComponent().getContents() : "<null>";
+                String title = adv.getChatComponent() != null ? adv.getChatComponent().getString() : "<null>";
                 DisplayInfo di = adv.getDisplay();
-                String desc = di != null && di.getDescription() != null ? di.getDescription().getContents() : "<null>";
+                String desc = di != null && di.getDescription() != null ? di.getDescription().getString() : "<null>";
                 String parent = adv.getParent() != null && adv.getParent().getId() != null ? adv.getParent().getId().toString() : "-";
 
                 advancementDump.addData(id, title, desc, parent);

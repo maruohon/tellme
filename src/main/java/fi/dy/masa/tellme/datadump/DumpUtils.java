@@ -9,23 +9,23 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
+
 import fi.dy.masa.tellme.util.ModNameUtils;
 
 public class DumpUtils
 {
-    public static <T extends IForgeRegistryEntry<T>>
-    String getPackDevUtilsSnippetData(IForgeRegistry<T> registry, String dataTypeId)
+    public static <T> String getPackDevUtilsSnippetData(IForgeRegistry<T> registry, String dataTypeId)
     {
         HashMultimap<String, ResourceLocation> map = HashMultimap.create(128, 512);
 
         // Get a mapping of modName => collection-of-entry-names
         for (Map.Entry<ResourceKey<T>, T> entry : registry.getEntries())
         {
-            ResourceLocation key = entry.getValue().getRegistryName();
+            ResourceLocation key = entry.getKey().location();
             map.put(key.getNamespace(), key);
         }
 

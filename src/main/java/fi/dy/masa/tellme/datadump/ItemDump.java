@@ -42,7 +42,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
-import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -62,8 +61,9 @@ public class ItemDump
 
         for (Map.Entry<ResourceKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
+            ResourceLocation id = entry.getKey().location();
             Item item = entry.getValue();
-            provider.addLine(itemDump, new ItemStack(item), item.getRegistryName());
+            provider.addLine(itemDump, new ItemStack(item), id);
         }
 
         provider.addTitle(itemDump);
@@ -98,6 +98,7 @@ public class ItemDump
         return dump.getLines();
     }
 
+    @SuppressWarnings("deprecation")
     public static String getTagNamesJoined(Item item)
     {
         return item.builtInRegistryHolder().getTagKeys().map(e -> e.location().toString()).collect(Collectors.joining(", "));
@@ -107,8 +108,7 @@ public class ItemDump
     {
         if (stack.isEmpty() == false)
         {
-            ResourceLocation rl = stack.getItem().getRegistryName();
-            String regName = rl != null ? rl.toString() : "<null>";
+            String regName = getRegistryName(stack.getItem());
             String displayName = stack.getHoverName().getString();
             displayName = ChatFormatting.stripFormatting(displayName);
 
@@ -122,8 +122,7 @@ public class ItemDump
     {
         if (stack.isEmpty() == false)
         {
-            ResourceLocation rl = stack.getItem().getRegistryName();
-            String regName = rl != null ? rl.toString() : "<null>";
+            String regName = getRegistryName(stack.getItem());
             String displayName = stack.getHoverName().getString();
             displayName = ChatFormatting.stripFormatting(displayName);
             String nbt = stack.getTag() != null ? stack.getTag().toString() : "<no NBT>";
@@ -141,8 +140,8 @@ public class ItemDump
         // Get a mapping of modName => collection-of-block-names
         for (Map.Entry<ResourceKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries())
         {
-            ResourceLocation key = entry.getValue().getRegistryName();
-            map.put(key.getNamespace(), key);
+            ResourceLocation id = entry.getKey().location();
+            map.put(id.getNamespace(), id);
         }
 
         // First sort by mod name
@@ -178,7 +177,6 @@ public class ItemDump
         ItemStack stack = new ItemStack(item);
         int maxDamage = stack.getMaxDamage();
         String idStr = String.valueOf(id);
-        String exists = RegistryUtils.isDummied(ForgeRegistries.ITEMS, rl) ? "false" : "true";
         String tags = getTagNamesJoined(item);
         String regName = rl != null ? rl.toString() : "<null>";
         String displayName = stack.getHoverName().getString();
@@ -194,7 +192,6 @@ public class ItemDump
             obj.add("MaxDurability", new JsonPrimitive(maxDamage));
         }
 
-        obj.add("Exists", new JsonPrimitive(exists));
         obj.add("DisplayName", new JsonPrimitive(displayName));
 
         TellMe.dataProvider.addItemGroupNames(obj, item);
@@ -229,6 +226,7 @@ public class ItemDump
         }
         else if (item.isEdible())
         {
+            @SuppressWarnings("deprecation")
             FoodProperties food = item.getFoodProperties();
             String hunger = stack.isEmpty() == false ? String.valueOf(food.getNutrition()) : "?";
             String saturation = stack.isEmpty() == false ? String.valueOf(food.getSaturationModifier()) : "?";
@@ -491,5 +489,11 @@ public class ItemDump
                          this.getRegistryName(id),
                          getTagNamesJoined(stack.getItem()));
         }
+    }
+
+    public static String getRegistryName(Item item)
+    {
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+        return id != null ? id.toString() : "<null>";
     }
 }

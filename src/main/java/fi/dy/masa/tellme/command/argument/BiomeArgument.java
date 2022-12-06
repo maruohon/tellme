@@ -12,10 +12,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -24,7 +25,7 @@ public class BiomeArgument implements ArgumentType<ResourceLocation>
 {
     private static final Collection<String> EXAMPLES = Stream.of(Biomes.PLAINS, Biomes.OCEAN).map((regKey) -> regKey.location().toString()).collect(Collectors.toList());
 
-    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> new TextComponent("Invalid biome name: \"" + val + "\""));
+    public static final DynamicCommandExceptionType INVALID_BIOME_EXCEPTION = new DynamicCommandExceptionType((val) -> Component.literal("Invalid biome name: \"" + val + "\""));
 
     public ResourceLocation parse(StringReader reader) throws CommandSyntaxException
     {
@@ -40,11 +41,6 @@ public class BiomeArgument implements ArgumentType<ResourceLocation>
     public Collection<String> getExamples()
     {
         return EXAMPLES;
-    }
-
-    public static BiomeArgument create()
-    {
-        return new BiomeArgument();
     }
 
     public static Biome getBiomeArgument(CommandContext<CommandSourceStack> ctx, String name) throws CommandSyntaxException

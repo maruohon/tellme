@@ -17,7 +17,7 @@ public class PoiTypesDump
         for (Map.Entry<ResourceKey<PoiType>, PoiType> entry : ForgeRegistries.POI_TYPES.getEntries())
         {
             PoiType type = entry.getValue();
-            dump.addData(type.getRegistryName().toString(), type.toString());
+            dump.addData(entry.getKey().location().toString(), type.toString());
         }
 
         dump.addTitle("Registry name", "Name");

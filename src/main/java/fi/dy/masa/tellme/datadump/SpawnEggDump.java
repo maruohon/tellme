@@ -4,7 +4,10 @@ import java.lang.reflect.Field;
 import java.util.List;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class SpawnEggDump
@@ -30,14 +33,14 @@ public class SpawnEggDump
         {
             try
             {
-                String id = egg.getRegistryName().toString();
+                String id = ItemDump.getRegistryName(egg);
 
                 int primaryColor = (int) fieldPrimaryColor.get(egg);
                 int secondaryColor = (int) fieldSecondaryColor.get(egg);
                 String colorPrimary = String.format("0x%08X (%10d)", primaryColor, primaryColor);
                 String colorSecondary = String.format("0x%08X (%10d)", secondaryColor, secondaryColor);
 
-                spawnEggDump.addData(id, egg.getType(null).getRegistryName().toString(), colorPrimary, colorSecondary);
+                spawnEggDump.addData(id, RegistryUtils.getIdStr(egg.getType(null), ForgeRegistries.ENTITY_TYPES), colorPrimary, colorSecondary);
             }
             catch (Exception e)
             {

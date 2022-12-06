@@ -1,14 +1,17 @@
 package fi.dy.masa.tellme.event;
 
 import java.util.List;
+
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.config.Configs;
 import fi.dy.masa.tellme.util.BlockInfo;
@@ -29,10 +32,10 @@ public class InteractEventHandler
     @SubscribeEvent
     public void onRightClickItem(PlayerInteractEvent.RightClickItem event)
     {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
-        if (Configs.Generic.enableDebugItemForItems && event.getWorld().isClientSide == false &&
+        if (Configs.Generic.enableDebugItemForItems && event.getLevel().isClientSide == false &&
             event.getHand() == InteractionHand.MAIN_HAND && player.createCommandSourceStack().hasPermission(4))
         {
             if (ItemInfo.areItemStacksEqual(Configs.debugItemItems, player.getMainHandItem()))
@@ -60,7 +63,7 @@ public class InteractEventHandler
 
     private void printEntityInfo(PlayerInteractEvent event, Entity entity)
     {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
@@ -68,7 +71,7 @@ public class InteractEventHandler
             player.createCommandSourceStack().hasPermission(4) &&
             ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
         {
-            if (event.getWorld().isClientSide == false)
+            if (event.getLevel().isClientSide == false)
             {
                 if (player.isShiftKeyDown())
                 {
@@ -87,7 +90,8 @@ public class InteractEventHandler
 
     private void printBlockInfo(PlayerInteractEvent event, boolean useLiquids)
     {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
+        Level world = event.getLevel();
 
         // The command name isn't important, only that it doesn't match the vanilla allowed-for-everyone commands
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
@@ -95,11 +99,11 @@ public class InteractEventHandler
             player.createCommandSourceStack().hasPermission(4) &&
             ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
         {
-            if (event.getWorld().isClientSide == false)
+            if (world.isClientSide == false)
             {
-                HitResult trace = RayTraceUtils.getRayTraceFromEntity(event.getWorld(), player, useLiquids);
+                HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, player, useLiquids);
                 boolean adjacent = ItemInfo.areItemStacksEqual(Configs.debugItemBlocks, player.getOffhandItem());
-                List<String> lines = BlockInfo.getBlockInfoFromRayTracedTarget(event.getWorld(), player, trace, adjacent, false);
+                List<String> lines = BlockInfo.getBlockInfoFromRayTracedTarget(world, player, trace, adjacent, false);
                 OutputType outputType = player.isShiftKeyDown() ? OutputType.FILE : OutputType.CONSOLE;
 
                 OutputUtils.printOutput(lines, outputType, DataDump.Format.ASCII, "block_info_", player);

@@ -1,11 +1,13 @@
 package fi.dy.masa.tellme.network;
 
 import java.util.function.Supplier;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
+
 import fi.dy.masa.tellme.TellMe;
 
 public class MessageCopyToClipboard
@@ -51,7 +53,7 @@ public class MessageCopyToClipboard
 
                 if (mc.player != null)
                 {
-                    mc.player.displayClientMessage(new TextComponent("Copied " + this.str), true);
+                    mc.player.displayClientMessage(Component.literal("Copied " + this.str), true);
                 }
             });
 

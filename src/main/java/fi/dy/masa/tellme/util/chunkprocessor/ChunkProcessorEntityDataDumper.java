@@ -87,7 +87,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
 
         if (this.filters.isEmpty() || this.filters.contains(type))
         {
-            ResourceLocation id = ForgeRegistries.ENTITIES.getKey(type);
+            ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
             CompoundTag tag = new CompoundTag();
 
             if (entity.saveAsPassenger(tag))

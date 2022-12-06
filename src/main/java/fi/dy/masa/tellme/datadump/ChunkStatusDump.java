@@ -5,6 +5,8 @@ import java.util.Map;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
@@ -17,8 +19,8 @@ public class ChunkStatusDump
         for (Map.Entry<ResourceKey<ChunkStatus>, ChunkStatus> entry : ForgeRegistries.CHUNK_STATUS.getEntries())
         {
             ChunkStatus val = entry.getValue();
+            String regName = entry.getKey().location().toString();
             String ordinal = String.valueOf(val.getIndex());
-            String regName = val.getRegistryName().toString();
             String type = val.getChunkType().name();
             String taskRange = String.valueOf(val.getRange());
 

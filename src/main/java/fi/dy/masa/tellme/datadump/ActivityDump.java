@@ -2,9 +2,11 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import java.util.Map;
+
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
@@ -16,8 +18,9 @@ public class ActivityDump
 
         for (Map.Entry<ResourceKey<Activity>, Activity> entry : ForgeRegistries.ACTIVITIES.getEntries())
         {
+            String id = entry.getKey().location().toString();
             Activity type = entry.getValue();
-            dump.addData(type.getRegistryName().toString(), type.getName());
+            dump.addData(id, type.getName());
         }
 
         dump.addTitle("Registry name", "Key");

@@ -15,7 +15,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -54,7 +54,6 @@ import fi.dy.masa.tellme.datadump.StatTypesDump;
 import fi.dy.masa.tellme.datadump.TagDump;
 import fi.dy.masa.tellme.datadump.VillagerProfessionDump;
 import fi.dy.masa.tellme.datadump.VillagerTradesDump;
-import fi.dy.masa.tellme.datadump.WorldPresetDump;
 import fi.dy.masa.tellme.util.EntityInfo;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -119,7 +118,7 @@ public class SubCommandDump
             }
             else
             {
-                ctx.getSource().sendFailure(new TextComponent("No such dump type: '" + name + "'"));
+                ctx.getSource().sendFailure(Component.literal("No such dump type: '" + name + "'"));
             }
         }
 
@@ -134,7 +133,7 @@ public class SubCommandDump
 
         if (data.isEmpty())
         {
-            source.sendFailure(new TextComponent("No data available for dump '" + name + "'"));
+            source.sendFailure(Component.literal("No data available for dump '" + name + "'"));
             return;
         }
 
@@ -159,7 +158,7 @@ public class SubCommandDump
         dumpProviders.put("biomes-with-mob-spawns",     (ctx) -> BiomeDump.getFormattedBiomeDumpWithMobSpawns(ctx.format, ctx.world));
         dumpProviders.put("biomes-with-types",          (ctx) -> BiomeDump.getFormattedBiomeDump(ctx.format, ctx.world, BiomeDump.TYPES));
         dumpProviders.put("biomes-id-to-name",          (ctx) -> BiomeDump.getBiomeDumpIdToName(ctx.format, ctx.world));
-        dumpProviders.put("block-entities",             (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.BLOCK_ENTITIES));
+        dumpProviders.put("block-entities",             (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.BLOCK_ENTITY_TYPES));
         dumpProviders.put("block-material-colors",      (ctx) -> BlockDump.getFormattedBlockToMapColorDump(ctx.format, ctx.world));
         dumpProviders.put("block-predicate-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.BLOCK_PREDICATE_TYPES));
         dumpProviders.put("block-props",                (ctx) -> BlockDump.getFormattedBlockPropertiesDump(ctx.format));
@@ -204,7 +203,7 @@ public class SubCommandDump
         dumpProviders.put("material-condition-types",   (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.CONDITION));
         dumpProviders.put("material-rule-types",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.RULE));
         dumpProviders.put("memory-module-types",        (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.MEMORY_MODULE_TYPES));
-        dumpProviders.put("menu-types",                 (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.CONTAINERS));
+        dumpProviders.put("menu-types",                 (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.MENU_TYPES));
         dumpProviders.put("mob-effects",                (ctx) -> MobEffectDump.getFormattedPotionDump(ctx.format));
         dumpProviders.put("mod-list",                   (ctx) -> ModListDump.getFormattedModListDump(ctx.format));
         dumpProviders.put("painting-types",             (ctx) -> PaintingTypesDump.getFormattedDump(ctx.format));
@@ -217,17 +216,18 @@ public class SubCommandDump
         dumpProviders.put("position-source-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.POSITION_SOURCE_TYPE));
         dumpProviders.put("potions",                    (ctx) -> PotionDump.getFormattedPotionDump(ctx.format));
         dumpProviders.put("recipe-serializers",         (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.RECIPE_SERIALIZERS));
-        dumpProviders.put("recipe-types",               (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.RECIPE_TYPE));
+        dumpProviders.put("recipe-types",               (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.RECIPE_TYPES));
         dumpProviders.put("rule-test-types",            (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.RULE_TEST));
         dumpProviders.put("schedules",                  (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.SCHEDULES));
         dumpProviders.put("sensor-types",               (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.SENSOR_TYPES));
         dumpProviders.put("sound-events",               (ctx) -> SoundEventDump.getFormattedSoundEventDump(ctx.format));
         dumpProviders.put("spawn-eggs",                 (ctx) -> SpawnEggDump.getFormattedSpawnEggDump(ctx.format));
         dumpProviders.put("stat-types",                 (ctx) -> StatTypesDump.getFormattedDump(ctx.format));
-        dumpProviders.put("structure-features",         (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.STRUCTURE_FEATURES));
         dumpProviders.put("structure-piece-types",      (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PIECE));
+        dumpProviders.put("structure-placement",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PLACEMENT_TYPE));
         dumpProviders.put("structure-pool-element",     (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_POOL_ELEMENT));
         dumpProviders.put("structure-processor-types",  (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_PROCESSOR));
+        dumpProviders.put("structure-type",             (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.STRUCTURE_TYPES));
         dumpProviders.put("tags-block",                 (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.BLOCK, false));
         dumpProviders.put("tags-block-split",           (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.BLOCK, true));
         dumpProviders.put("tags-entitytype",            (ctx) -> TagDump.getFormattedTagDump(ctx.format, TagDump.TagType.ENTITY_TYPE, false));
@@ -242,7 +242,7 @@ public class SubCommandDump
         dumpProviders.put("villager-trades",            (ctx) -> VillagerTradesDump.getFormattedVillagerTradesDump(ctx.format, ctx.entity));
         dumpProviders.put("villager-types",             (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.VILLAGER_TYPE));
         dumpProviders.put("world-carvers",              (ctx) -> SimpleForgeRegistryKeyOnlyDump.getFormattedDump(ctx.format, ForgeRegistries.WORLD_CARVERS));
-        dumpProviders.put("world-presets",              (ctx) -> WorldPresetDump.getFormattedDump(ctx.format));
+        dumpProviders.put("world-presets",              (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, ctx.world.registryAccess().registryOrThrow(Registry.WORLD_PRESET_REGISTRY)));
 
         return DUMP_PROVIDERS;
     }

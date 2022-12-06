@@ -12,12 +12,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.network.chat.TextComponent;
+
+import net.minecraft.network.chat.Component;
+
 import fi.dy.masa.tellme.command.CommandUtils;
 
 public class EnumArgument<T extends Enum<T>> implements ArgumentType<T>
 {
-    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(new TextComponent("No argument given"));
+    private static final SimpleCommandExceptionType EMPTY_TYPE = new SimpleCommandExceptionType(Component.literal("No argument given"));
 
     private final Function<String, T> entryFactory;
     private final ImmutableList<String> typeArguments;
@@ -25,7 +27,7 @@ public class EnumArgument<T extends Enum<T>> implements ArgumentType<T>
     protected EnumArgument(List<T> values, Function<String, T> stringToEntryFactory, Function<T, String> entryToStringFactory)
     {
         this.entryFactory = stringToEntryFactory;
-        this.typeArguments = ImmutableList.copyOf(values.stream().map((entry) -> entryToStringFactory.apply(entry)).collect(Collectors.toList()));
+        this.typeArguments = ImmutableList.copyOf(values.stream().map(entryToStringFactory).collect(Collectors.toList()));
     }
 
     @Override

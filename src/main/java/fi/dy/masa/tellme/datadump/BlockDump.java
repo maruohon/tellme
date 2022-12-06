@@ -14,7 +14,7 @@ import com.google.gson.JsonPrimitive;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -27,7 +27,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
-import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
@@ -35,21 +34,21 @@ public class BlockDump
 {
     public static List<String> getFormattedBlockDump(DataDump.Format format, boolean tags)
     {
-        DataDump blockDump = new DataDump(tags ? 6 : 5, format);
+        DataDump blockDump = new DataDump(tags ? 5 : 4, format);
 
         for (Map.Entry<ResourceKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
             Block block = entry.getValue();
-            addDataToDump(blockDump, block.getRegistryName(), block, new ItemStack(entry.getValue()), tags);
+            addDataToDump(blockDump, entry.getKey().location(), block, new ItemStack(entry.getValue()), tags);
         }
 
         if (tags)
         {
-            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Exists", "Tags");
+            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Tags");
         }
         else
         {
-            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name", "Exists");
+            blockDump.addTitle("Mod name", "Registry name", "Item ID", "Display name");
         }
 
         return blockDump.getLines();
@@ -64,10 +63,10 @@ public class BlockDump
             try
             {
                 Block block = entry.getValue();
-                ResourceLocation id = block.getRegistryName();
+                String id = entry.getKey().location().toString();
                 MaterialColor materialColor = block.defaultBlockState().getMapColor(world, BlockPos.ZERO);
                 int color = materialColor != null ? materialColor.col : 0xFFFFFF;
-                blockDump.addData(id.toString(), String.format("#%06X", color), String.valueOf(color));
+                blockDump.addData(id, String.format("#%06X", color), String.valueOf(color));
             }
             catch (Exception ignore) {}
         }
@@ -81,20 +80,19 @@ public class BlockDump
     {
         String modName = ModNameUtils.getModName(id);
         String registryName = id.toString();
-        String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslatableComponent(block.getDescriptionId())).getString();
+        String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (Component.translatable(block.getDescriptionId())).getString();
         displayName = ChatFormatting.stripFormatting(displayName);
         Item item = stack.getItem();
-        ResourceLocation itemIdRl = item != Items.AIR ? item.getRegistryName() : null;
+        ResourceLocation itemIdRl = item != Items.AIR ? ForgeRegistries.ITEMS.getKey(item) : null;
         String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
-        String exists = RegistryUtils.isDummied(ForgeRegistries.BLOCKS, id) ? "false" : "true";
 
         if (tags)
         {
-            dump.addData(modName, registryName, itemId, displayName, exists, getTagNamesJoined(block));
+            dump.addData(modName, registryName, itemId, displayName, getTagNamesJoined(block));
         }
         else
         {
-            dump.addData(modName, registryName, itemId, displayName, exists);
+            dump.addData(modName, registryName, itemId, displayName);
         }
     }
 
@@ -102,17 +100,18 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(4, format);
 
-        for (ResourceLocation id : ForgeRegistries.BLOCKS.getKeys())
+        for (Map.Entry<ResourceKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
+            ResourceLocation id = entry.getKey().location();
+
             try
             {
+                Block block = entry.getValue();
                 String modName = ModNameUtils.getModName(id);
-                String registryName = id.toString();
-                Block block = ForgeRegistries.BLOCKS.getValue(id);
                 String hardness = String.format("%.2f", block.defaultBlockState().getDestroySpeed(null, BlockPos.ZERO));
                 @SuppressWarnings("deprecation")
                 String resistance = String.format("%.2f", block.getExplosionResistance());
-                blockDump.addData(modName, registryName, hardness, resistance);
+                blockDump.addData(modName, id.toString(), hardness, resistance);
             }
             catch (Exception e)
             {
@@ -143,8 +142,8 @@ public class BlockDump
         // Get a mapping of modName => collection-of-block-names
         for (Map.Entry<ResourceKey<Block>, Block> entry : ForgeRegistries.BLOCKS.getEntries())
         {
-            ResourceLocation key = entry.getValue().getRegistryName();
-            map.put(key.getNamespace(), key);
+            ResourceLocation id = ForgeRegistries.BLOCKS.getKey(entry.getValue());
+            map.put(id.getNamespace(), id);
         }
 
         // First sort by mod name
@@ -167,17 +166,15 @@ public class BlockDump
                 Block block = ForgeRegistries.BLOCKS.getValue(key);
                 ItemStack stack = new ItemStack(block);
                 Item item = stack.getItem();
-                String exists = RegistryUtils.isDummied(ForgeRegistries.BLOCKS, key) ? "false" : "true";
 
                 objBlock.add("RegistryName", new JsonPrimitive(registryName));
-                objBlock.add("Exists", new JsonPrimitive(exists));
 
                 if (item != null && item != Items.AIR)
                 {
-                    ResourceLocation itemIdRl = item != Items.AIR ? item.getRegistryName() : null;
+                    ResourceLocation itemIdRl = item != Items.AIR ? ForgeRegistries.ITEMS.getKey(item) : null;
                     String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
 
-                    String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (new TranslatableComponent(block.getDescriptionId())).getString();
+                    String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : (Component.translatable(block.getDescriptionId())).getString();
                     displayName = ChatFormatting.stripFormatting(displayName);
 
                     JsonObject objItem = new JsonObject();
@@ -201,8 +198,15 @@ public class BlockDump
         return gson.toJson(root);
     }
 
+    @SuppressWarnings("deprecation")
     public static String getTagNamesJoined(Block block)
     {
         return block.builtInRegistryHolder().getTagKeys().map(e -> e.location().toString()).collect(Collectors.joining(", "));
+    }
+
+    public static String getRegistryName(Block block)
+    {
+        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(block);
+        return id != null ? id.toString() : "<null>";
     }
 }

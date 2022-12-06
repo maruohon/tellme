@@ -3,15 +3,16 @@ package fi.dy.masa.tellme.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+
 import fi.dy.masa.tellme.config.Configs;
 
 public class CommandReloadConfig
 {
-    private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableComponent("TellMe: failed to reload the config!"));
+    private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Component.literal("TellMe: failed to reload the config!"));
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
@@ -25,7 +26,7 @@ public class CommandReloadConfig
      {
          if (Configs.reloadConfig())
          {
-             source.sendSuccess(new TextComponent("TellMe config reloaded"), false);
+             source.sendSuccess(Component.literal("TellMe config reloaded"), false);
              return 1;
          }
 

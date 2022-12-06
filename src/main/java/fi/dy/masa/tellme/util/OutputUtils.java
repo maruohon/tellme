@@ -3,6 +3,7 @@ package fi.dy.masa.tellme.util;
 import java.io.File;
 import java.util.List;
 import javax.annotation.Nullable;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.ClickEvent;
@@ -10,10 +11,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.HoverEvent.Action;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -22,7 +22,7 @@ public class OutputUtils
 {
     public static Component getClipboardCopiableMessage(String textPre, String textToCopy, String textPost)
     {
-        return getClipboardCopiableMessage(new TextComponent(textPre), new TextComponent(textToCopy), new TextComponent(textPost));
+        return getClipboardCopiableMessage(Component.literal(textPre), Component.literal(textToCopy), Component.literal(textPost));
     }
 
     public static MutableComponent getClipboardCopiableMessage(MutableComponent textPre, MutableComponent textToCopy, MutableComponent textPost)
@@ -31,7 +31,7 @@ public class OutputUtils
         textToCopy.withStyle((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tellme copy-to-clipboard " + copyString)));
         textToCopy.withStyle(ChatFormatting.UNDERLINE);
 
-        TextComponent hoverText = new TextComponent(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
+        MutableComponent hoverText = Component.literal(String.format("Copy the string '%s' to clipboard", textToCopy.getString()));
         textToCopy.getStyle().withHoverEvent(new HoverEvent(Action.SHOW_TEXT, hoverText));
 
         return textPre.append(textToCopy).append(textPost);
@@ -39,7 +39,7 @@ public class OutputUtils
 
     public static void sendClickableLinkMessage(Player player, String messageKey, final File file)
     {
-        TextComponent name = new TextComponent(file.getName());
+        MutableComponent name = Component.literal(file.getName());
 
         if (TellMe.isClient())
         {
@@ -47,14 +47,14 @@ public class OutputUtils
             name.withStyle(ChatFormatting.UNDERLINE);
         }
 
-        player.displayClientMessage(new TranslatableComponent(messageKey, name), false);
+        player.displayClientMessage(Component.translatable(messageKey, name), false);
     }
 
     public static void printOutputToChat(List<String> lines, Player entity)
     {
         for (String line : lines)
         {
-            entity.displayClientMessage(new TextComponent(line), false);
+            entity.displayClientMessage(Component.literal(line), false);
         }
     }
 
@@ -102,7 +102,7 @@ public class OutputUtils
 
                 if (player != null)
                 {
-                    player.displayClientMessage(new TextComponent("Output printed to console"), false);
+                    player.displayClientMessage(Component.literal("Output printed to console"), false);
                 }
                 break;
 
@@ -117,7 +117,7 @@ public class OutputUtils
                     }
                     else
                     {
-                        source.sendSuccess(new TextComponent("Output written to file '" + file.getName() + "'"), false);
+                        source.sendSuccess(Component.literal("Output written to file '" + file.getName() + "'"), false);
                     }
                 }
                 break;

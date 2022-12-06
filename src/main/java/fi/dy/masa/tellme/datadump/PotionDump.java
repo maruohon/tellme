@@ -10,6 +10,8 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
@@ -22,7 +24,7 @@ public class PotionDump
         for (Map.Entry<ResourceKey<Potion>, Potion> entry : ForgeRegistries.POTIONS.getEntries())
         {
             Potion potion = entry.getValue();
-            String regName = potion.getRegistryName().toString();
+            String regName = entry.getKey().location().toString();
 
             @SuppressWarnings("deprecation")
             String id = String.valueOf(Registry.POTION.getId(potion));
@@ -43,7 +45,7 @@ public class PotionDump
         String isBad = String.valueOf(effect.getCategory() == MobEffectCategory.HARMFUL);
         String isBeneficial = String.valueOf(effect.isBeneficial());
 
-        return "MobEffect:[reg:" + effect.getRegistryName().toString() + ",name:" + effect.getDescriptionId() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
+        return "MobEffect:[reg:" + RegistryUtils.getIdStr(effect, ForgeRegistries.MOB_EFFECTS) + ",name:" + effect.getDescriptionId() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
     }
 
     public static String getMobEffectInstanceInfo(MobEffectInstance effect)

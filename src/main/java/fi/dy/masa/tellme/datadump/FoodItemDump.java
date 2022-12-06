@@ -25,6 +25,7 @@ public class FoodItemDump
         String displayName = stack.isEmpty() == false ? stack.getHoverName().getString() : DataDump.EMPTY_STRING;
         displayName = ChatFormatting.stripFormatting(displayName);
 
+        @SuppressWarnings("deprecation")
         FoodProperties food = item.getFoodProperties();
         String hunger = String.valueOf(food.getNutrition());
         String saturation = String.valueOf(food.getSaturationModifier());
@@ -48,7 +49,7 @@ public class FoodItemDump
 
             if (item.isEdible())
             {
-                addData(itemDump, item, item.getRegistryName());
+                addData(itemDump, item, entry.getKey().location());
             }
         }
 

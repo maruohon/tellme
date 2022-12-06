@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.tellme.TellMe;
+import fi.dy.masa.tellme.datadump.BlockDump;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -119,8 +120,8 @@ public class LocateBlocks extends LocateBase
 
                         if (filters.contains(state))
                         {
-                            ResourceLocation name = state.getBlock().getRegistryName();
-                            this.data.add(LocationData.of(name.toString(), dim, new Vec3(x, y, z)));
+                            String name = BlockDump.getRegistryName(state.getBlock());
+                            this.data.add(LocationData.of(name, dim, new Vec3(x, y, z)));
                             count++;
                         }
                     }

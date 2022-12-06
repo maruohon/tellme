@@ -20,10 +20,10 @@ public class EntityDump
     {
         DataDump entityDump = new DataDump(includeClassName ? 5 : 4, format);
 
-        for (Map.Entry<ResourceKey<EntityType<?>>, EntityType<?>> entry : ForgeRegistries.ENTITIES.getEntries())
+        for (Map.Entry<ResourceKey<EntityType<?>>, EntityType<?>> entry : ForgeRegistries.ENTITY_TYPES.getEntries())
         {
             EntityType<?> type = entry.getValue();
-            ResourceLocation id = type.getRegistryName();
+            ResourceLocation id = entry.getKey().location();
             String modName = ModNameUtils.getModName(id);
             @SuppressWarnings("deprecation")
             String entityId = String.valueOf(Registry.ENTITY_TYPE.getId(type));

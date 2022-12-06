@@ -5,9 +5,9 @@ import fi.dy.masa.tellme.command.SubCommandLoaded.Grouping;
 
 public class GroupingArgument extends EnumArgument<Grouping>
 {
-    private GroupingArgument()
+    public GroupingArgument()
     {
-        super(Arrays.asList(Grouping.values()), Grouping::fromArgument, (e) -> e.getArgument());
+        super(Arrays.asList(Grouping.values()), Grouping::fromArgument, Grouping::getArgument);
     }
 
     public static GroupingArgument create()

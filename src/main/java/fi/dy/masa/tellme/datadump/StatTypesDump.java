@@ -21,7 +21,7 @@ public class StatTypesDump
         for (Map.Entry<ResourceKey<StatType<?>>, StatType<?>> entry : ForgeRegistries.STAT_TYPES.getEntries())
         {
             StatType<?> type = entry.getValue();
-            String typeName = type.getRegistryName().toString();
+            String typeName = entry.getKey().location().toString();
 
             for (Stat<?> stat : type)
             {

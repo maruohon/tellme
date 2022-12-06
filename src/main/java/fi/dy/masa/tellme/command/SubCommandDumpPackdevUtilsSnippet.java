@@ -62,7 +62,7 @@ public class SubCommandDumpPackdevUtilsSnippet
         {
             case "blocks":          return DumpUtils.getPackDevUtilsSnippetData(ForgeRegistries.BLOCKS, "blocks");
             case "items":           return DumpUtils.getPackDevUtilsSnippetData(ForgeRegistries.ITEMS, "items");
-            case "entities":        return DumpUtils.getPackDevUtilsSnippetData(ForgeRegistries.ENTITIES, "entities");
+            case "entities":        return DumpUtils.getPackDevUtilsSnippetData(ForgeRegistries.ENTITY_TYPES, "entities");
             case "biomes":          return DumpUtils.getPackDevUtilsSnippetData(ForgeRegistries.BIOMES, "biomes");
             case "enchantments":    return DumpUtils.getPackDevUtilsSnippetData(ForgeRegistries.ENCHANTMENTS, "enchant");
             case "potions":         return DumpUtils.getPackDevUtilsSnippetData(ForgeRegistries.POTIONS, "potions");

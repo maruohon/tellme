@@ -13,10 +13,10 @@ public class VillagerProfessionDump
     {
         DataDump villagerProfessionDump = new DataDump(2, format);
 
-        for (Map.Entry<ResourceKey<VillagerProfession>, VillagerProfession> entry : ForgeRegistries.PROFESSIONS.getEntries())
+        for (Map.Entry<ResourceKey<VillagerProfession>, VillagerProfession> entry : ForgeRegistries.VILLAGER_PROFESSIONS.getEntries())
         {
             VillagerProfession profession = entry.getValue();
-            String regName = profession.getRegistryName().toString();
+            String regName = entry.getKey().location().toString();
 
             villagerProfessionDump.addData(regName, profession.toString());
         }

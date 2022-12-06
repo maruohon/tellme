@@ -16,6 +16,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.registries.ForgeRegistries;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
 
@@ -23,9 +25,7 @@ public class EntityInfo
 {
     private static String getBasicEntityInfo(Entity target)
     {
-        ResourceLocation rl = target.getType().getRegistryName();
-        String regName = rl != null ? rl.toString() : "<null>";
-
+        String regName = getEntityNameFor(target.getType());
         return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getId());
     }
 
@@ -70,7 +70,7 @@ public class EntityInfo
 
             for (MobEffectInstance effect : effects)
             {
-                ResourceLocation rl = effect.getEffect().getRegistryName();
+                ResourceLocation rl = ForgeRegistries.MOB_EFFECTS.getKey(effect.getEffect());
 
                 dump.addData(
                         rl != null ? rl.toString() : effect.getClass().getName(),
@@ -91,8 +91,7 @@ public class EntityInfo
 
     public static void printBasicEntityInfoToChat(Player player, Entity target)
     {
-        ResourceLocation rl = target.getType().getRegistryName();
-        String regName = rl != null ? rl.toString() : "null";
+        String regName = getEntityNameFor(target.getType());
         String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
         String textPost = String.format("] (entityId: %d)", target.getId());
 

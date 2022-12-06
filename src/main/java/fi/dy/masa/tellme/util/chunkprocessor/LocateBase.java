@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.network.chat.TextComponent;
+
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
@@ -20,7 +22,7 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
     protected static final String FMT_CHUNK_5 = "%5d, %5d";
     protected static final String FMT_COORDS = "x = %.2f, y = %.2f, z = %.2f";
     protected static final String FMT_COORDS_8 = "x = %8.2f, y = %5.2f, z = %8.2f";
-    protected static final DynamicCommandExceptionType INVALID_NAME_EXCEPTION = new DynamicCommandExceptionType((v) -> new TextComponent("Invalid name: " + v));
+    protected static final DynamicCommandExceptionType INVALID_NAME_EXCEPTION = new DynamicCommandExceptionType((v) -> Component.literal("Invalid name: " + v));
 
     protected final List<LocationData> data = new ArrayList<>();
     protected final DataDump.Format format;
@@ -150,8 +152,8 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
     public enum LocateType
     {
         BLOCK       ("block",        "blocks",           () -> ForgeRegistries.BLOCKS, LocateBlocks::new),
-        ENTITY      ("entity",       "entities",         () -> ForgeRegistries.ENTITIES, LocateEntities::new),
-        BLOCK_ENTITY("block-entity", "block_entities",   () -> ForgeRegistries.BLOCK_ENTITIES, LocateBlockEntities::new);
+        ENTITY      ("entity",       "entities",         () -> ForgeRegistries.ENTITY_TYPES, LocateEntities::new),
+        BLOCK_ENTITY("block-entity", "block_entities",   () -> ForgeRegistries.BLOCK_ENTITY_TYPES, LocateBlockEntities::new);
 
         private final String argument;
         private final String plural;

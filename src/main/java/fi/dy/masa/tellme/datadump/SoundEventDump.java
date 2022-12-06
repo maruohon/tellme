@@ -19,7 +19,7 @@ public class SoundEventDump
         for (Map.Entry<ResourceKey<SoundEvent>, SoundEvent> entry : ForgeRegistries.SOUND_EVENTS.getEntries())
         {
             SoundEvent sound = entry.getValue();
-            String regName = sound.getRegistryName().toString();
+            String regName = entry.getKey().location().toString();
 
             @SuppressWarnings("deprecation")
             String id = String.valueOf(Registry.SOUND_EVENT.getId(sound));

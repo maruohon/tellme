@@ -2,10 +2,16 @@ package fi.dy.masa.tellme.command;
 
 import java.util.Collections;
 import com.mojang.brigadier.CommandDispatcher;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.synchronization.ArgumentTypes;
-import net.minecraft.commands.synchronization.EmptyArgumentSerializer;
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
+import net.minecraft.commands.synchronization.ArgumentTypeInfos;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
+import net.minecraft.core.Registry;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
+
 import fi.dy.masa.tellme.command.argument.BiomeArgument;
 import fi.dy.masa.tellme.command.argument.BlockStateCountGroupingArgument;
 import fi.dy.masa.tellme.command.argument.FileArgument;
@@ -13,6 +19,7 @@ import fi.dy.masa.tellme.command.argument.GroupingArgument;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
 import fi.dy.masa.tellme.command.argument.StringCollectionArgument;
+import fi.dy.masa.tellme.reference.Reference;
 
 public class CommandTellMe
 {
@@ -28,13 +35,17 @@ public class CommandTellMe
 
     public static void registerArgumentTypes()
     {
-        ArgumentTypes.register("tellme:biome", BiomeArgument.class, new EmptyArgumentSerializer<>(BiomeArgument::create));
-        ArgumentTypes.register("tellme:block_grouping", BlockStateCountGroupingArgument.class, new EmptyArgumentSerializer<>(BlockStateCountGroupingArgument::create));
-        ArgumentTypes.register("tellme:file", FileArgument.class, new EmptyArgumentSerializer<>(FileArgument::createEmpty));
-        ArgumentTypes.register("tellme:grouping", GroupingArgument.class, new EmptyArgumentSerializer<>(GroupingArgument::create));
-        ArgumentTypes.register("tellme:output_format", OutputFormatArgument.class, new EmptyArgumentSerializer<>(OutputFormatArgument::create));
-        ArgumentTypes.register("tellme:output_type", OutputTypeArgument.class, new EmptyArgumentSerializer<>(OutputTypeArgument::create));
-        ArgumentTypes.register("tellme:string_collection", StringCollectionArgument.class, new EmptyArgumentSerializer<>(() -> StringCollectionArgument.create(() -> Collections.emptyList(), "")));
+        DeferredRegister<ArgumentTypeInfo<?, ?>> dr = DeferredRegister.create(Registry.COMMAND_ARGUMENT_TYPE_REGISTRY, Reference.MOD_ID);
+
+        dr.register("biome",             () -> ArgumentTypeInfos.registerByClass(BiomeArgument.class,                    SingletonArgumentInfo.contextFree(BiomeArgument::new)));
+        dr.register("block_grouping",    () -> ArgumentTypeInfos.registerByClass(BlockStateCountGroupingArgument.class,  SingletonArgumentInfo.contextFree(BlockStateCountGroupingArgument::new)));
+        dr.register("file",              () -> ArgumentTypeInfos.registerByClass(FileArgument.class,                     SingletonArgumentInfo.contextFree(FileArgument::createEmpty)));
+        dr.register("grouping",          () -> ArgumentTypeInfos.registerByClass(GroupingArgument.class,                 SingletonArgumentInfo.contextFree(GroupingArgument::new)));
+        dr.register("output_format",     () -> ArgumentTypeInfos.registerByClass(OutputFormatArgument.class,             SingletonArgumentInfo.contextFree(OutputFormatArgument::new)));
+        dr.register("output_type",       () -> ArgumentTypeInfos.registerByClass(OutputTypeArgument.class,               SingletonArgumentInfo.contextFree(OutputTypeArgument::new)));
+        dr.register("string_collection", () -> ArgumentTypeInfos.registerByClass(StringCollectionArgument.class,         SingletonArgumentInfo.contextFree(() -> StringCollectionArgument.create(Collections::emptyList, ""))));
+
+        dr.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     protected static void register(CommandDispatcher<CommandSourceStack> dispatcher, String baseCommandName, final int permissionLevel)
