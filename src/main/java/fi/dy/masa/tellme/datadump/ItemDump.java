@@ -45,6 +45,7 @@ public class ItemDump
 {
     public static final String[] HARVEST_LEVEL_NAMES = new String[] { "Wood/Gold", "Stone", "Iron", "Diamond" };
 
+    public static final ItemInfoProviderBase INFO_REG_NAME = new ItemInfoProviderRegistryName();
     public static final ItemInfoProviderBase INFO_BASIC = new ItemInfoProviderBasic(false);
     public static final ItemInfoProviderBase INFO_TAGS = new ItemInfoProviderBasic(true);
     public static final ItemInfoProviderBase INFO_CRAFTABLES = new ItemInfoProviderCraftables();
@@ -284,11 +285,14 @@ public class ItemDump
 
         public void addHeaders(DataDump dump)
         {
-            dump.setColumnProperties(2, Alignment.RIGHT, true); // ID
+            if (this.getColumnCount() >= 3)
+            {
+                dump.setColumnProperties(2, Alignment.RIGHT, true); // ID
 
-            dump.addHeader("*** WARNING ***");
-            dump.addHeader("Don't use the item ID for anything \"proper\"!!");
-            dump.addHeader("It's provided here for completeness's sake, it's different in every world.");
+                dump.addHeader("*** WARNING ***");
+                dump.addHeader("Don't use the item ID for anything \"proper\"!!");
+                dump.addHeader("It's provided here for completeness's sake, it's different in every world.");
+            }
         }
 
         public abstract int getColumnCount();
@@ -296,6 +300,31 @@ public class ItemDump
         public abstract void addTitle(DataDump dump);
 
         public abstract void addLine(DataDump dump, ItemStack stack, Identifier id);
+    }
+
+    public static class ItemInfoProviderRegistryName extends ItemInfoProviderBase
+    {
+        public ItemInfoProviderRegistryName()
+        {
+        }
+
+        @Override
+        public int getColumnCount()
+        {
+            return 1;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("Registry name");
+        }
+
+        @Override
+        public void addLine(DataDump dump, ItemStack stack, Identifier id)
+        {
+            dump.addData(this.getRegistryName(id));
+        }
     }
 
     public static class ItemInfoProviderBasic extends ItemInfoProviderBase

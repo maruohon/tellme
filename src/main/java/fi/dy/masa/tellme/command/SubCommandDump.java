@@ -188,6 +188,7 @@ public class SubCommandDump
         dumpProviders.put("items-craftable",            (ctx) -> ItemDump.getFormattedCraftableItemsDump(ctx.format, ctx.server));
         dumpProviders.put("items-damageable",           (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_DAMAGEABLES));
         dumpProviders.put("items-plantable",            (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_PLANTABLES));
+        dumpProviders.put("items-registry-name",        (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_REG_NAME));
         dumpProviders.put("items-with-tags",            (ctx) -> ItemDump.getFormattedItemDump(ctx.format, ItemDump.INFO_TAGS));
         dumpProviders.put("loot-condition-types",       (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_CONDITION_TYPE));
         dumpProviders.put("loot-function-types",        (ctx) -> SimpleVanillaRegistryKeyOnlyDump.getFormattedDump(ctx.format, Registry.LOOT_FUNCTION_TYPE));
