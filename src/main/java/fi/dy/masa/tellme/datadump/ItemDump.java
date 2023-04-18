@@ -1,6 +1,8 @@
 package fi.dy.masa.tellme.datadump;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -160,6 +162,31 @@ public class ItemDump
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         return gson.toJson(root);
+    }
+
+    public static String getJsonItemRegistryNamesDump()
+    {
+        ArrayList<String> list = new ArrayList<>();
+
+        for (Identifier id : Registry.ITEM.getIds())
+        {
+            list.add(id.toString());
+        }
+
+        list.sort(Comparator.naturalOrder());
+
+        JsonArray arr = new JsonArray();
+
+        for (String str : list)
+        {
+            JsonObject o = new JsonObject();
+            o.addProperty("name", str);
+            arr.add(o);
+        }
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        return gson.toJson(arr);
     }
 
     private static void addDataForItemSubtypeForJson(JsonArray arr, Item item, Identifier rl, PlayerEntity player)

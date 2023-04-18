@@ -66,6 +66,7 @@ public class SubCommandDumpJson
         switch (type)
         {
             case "blocks":              return BlockDump.getJsonBlockDump();
+            case "items-registry-name": return ItemDump.getJsonItemRegistryNamesDump();
             case "items-with-props":    if (entity instanceof PlayerEntity) { return ItemDump.getJsonItemsWithPropsDump((PlayerEntity) entity); } break;
         }
 
