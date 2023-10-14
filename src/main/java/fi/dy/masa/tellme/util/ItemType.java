@@ -37,28 +37,12 @@ public class ItemType
     {
         if (this == obj)
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
+
+        if (obj == null || this.getClass() != obj.getClass())
             return false;
 
         ItemType other = (ItemType) obj;
 
-        if (this.stack.isEmpty() || other.stack.isEmpty())
-        {
-            if (this.stack.isEmpty() != other.stack.isEmpty())
-                return false;
-        }
-        else
-        {
-            if (this.stack.getItem() != other.stack.getItem())
-            {
-                return false;
-            }
-
-            return ItemStack.areNbtEqual(this.stack, other.stack);
-        }
-
-        return true;
+        return ItemStack.canCombine(this.stack, other.stack);
     }
 }

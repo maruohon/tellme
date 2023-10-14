@@ -18,12 +18,7 @@ public class ItemInfo
 {
     public static boolean areItemStacksEqual(@Nonnull ItemStack stack1, @Nonnull ItemStack stack2)
     {
-        if (stack1.isEmpty() || stack2.isEmpty())
-        {
-            return stack1.isEmpty() == stack2.isEmpty();
-        }
-
-        return stack1.isItemEqual(stack2) && ItemStack.areNbtEqual(stack1, stack2);
+        return ItemStack.canCombine(stack1, stack2);
     }
 
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)

@@ -10,10 +10,10 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+
 import net.minecraft.command.argument.Vec2ArgumentType;
 import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.entity.Entity;
@@ -30,9 +30,7 @@ public class CommandUtils
 {
     public static final FilenameFilter FILTER_FILES = (pathName, fileName) -> (new File(pathName, fileName)).isFile();
     public static final SimpleCommandExceptionType NO_DIMENSION_EXCEPTION = new SimpleCommandExceptionType(Text.literal("This command must either be executed by an entity, or the dimension must be specified"));
-    public static final DynamicCommandExceptionType DIMENSION_NOT_LOADED_EXCEPTION = new DynamicCommandExceptionType((type) -> Text.literal("The dimension \"" + type + "\" was not loaded"));
     public static final SimpleCommandExceptionType NOT_A_PLAYER_EXCEPTION = new SimpleCommandExceptionType(Text.literal("This command must be executed by a player"));
-    public static final DynamicCommandExceptionType INVALID_OUTPUT_TYPE_EXCEPTION = new DynamicCommandExceptionType((type) -> Text.literal("Invalid output type: " + type));
 
     public static BlockPos getMinCorner(Vec2f pos1, Vec2f pos2, World world)
     {
@@ -163,7 +161,7 @@ public class CommandUtils
 
     public static void sendMessage(ServerCommandSource source, String message)
     {
-        source.sendFeedback(Text.literal(message), true);
+        source.sendFeedback(() -> Text.literal(message), true);
     }
 
     public static Vec2f getVec2fFromSource(ServerCommandSource source)
@@ -172,7 +170,7 @@ public class CommandUtils
         return entity != null ? new Vec2f((float) entity.getX(), (float) entity.getZ()) : Vec2f.ZERO;
     }
 
-    public static Vec2f getVec2fFromArg(CommandContext<ServerCommandSource> ctx, String argName) throws CommandSyntaxException
+    public static Vec2f getVec2fFromArg(CommandContext<ServerCommandSource> ctx, String argName)
     {
         return Vec2ArgumentType.getVec2(ctx, argName);
     }

@@ -3,7 +3,6 @@ package fi.dy.masa.tellme.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,7 +16,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -38,63 +36,6 @@ import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
 
 public class BlockInfo
 {
-    private static final Map<Material, String> MATERIAL_NAMES = getMaterialNames();
-
-    private static Map<Material, String> getMaterialNames()
-    {
-        Map<Material, String> names = new HashMap<>();
-
-        names.put(Material.AGGREGATE, "AGGREGATE");
-        names.put(Material.AIR, "AIR");
-        names.put(Material.AMETHYST, "AMETHYST");
-        names.put(Material.BAMBOO, "BAMBOO");
-        names.put(Material.BAMBOO_SAPLING, "BAMBOO_SAPLING");
-        names.put(Material.BARRIER, "BARRIER");
-        names.put(Material.BUBBLE_COLUMN, "BUBBLE_COLUMN");
-        names.put(Material.CACTUS, "CACTUS");
-        names.put(Material.CAKE, "CAKE");
-        names.put(Material.CARPET, "CARPET");
-        names.put(Material.COBWEB, "COBWEB");
-        names.put(Material.DECORATION, "DECORATION");
-        names.put(Material.DENSE_ICE, "DENSE_ICE");
-        names.put(Material.EGG, "EGG");
-        names.put(Material.FIRE, "FIRE");
-        names.put(Material.GLASS, "GLASS");
-        names.put(Material.GOURD, "GOURD");
-        names.put(Material.ICE, "ICE");
-        names.put(Material.LAVA, "LAVA");
-        names.put(Material.LEAVES, "LEAVES");
-        names.put(Material.METAL, "METAL");
-        names.put(Material.MOSS_BLOCK, "MOSS_BLOCK");
-        names.put(Material.NETHER_SHOOTS, "NETHER_SHOOTS");
-        names.put(Material.NETHER_WOOD, "NETHER_WOOD");
-        names.put(Material.ORGANIC_PRODUCT, "ORGANIC_PRODUCT");
-        names.put(Material.PISTON, "PISTON");
-        names.put(Material.PLANT, "PLANT");
-        names.put(Material.PORTAL, "PORTAL");
-        names.put(Material.POWDER_SNOW, "POWDER_SNOW");
-        names.put(Material.REDSTONE_LAMP, "REDSTONE_LAMP");
-        names.put(Material.REPAIR_STATION, "REPAIR_STATION");
-        names.put(Material.REPLACEABLE_PLANT, "REPLACEABLE_PLANT");
-        names.put(Material.REPLACEABLE_UNDERWATER_PLANT, "REPLACEABLE_UNDERWATER_PLANT");
-        names.put(Material.SCULK, "SCULK");
-        names.put(Material.SHULKER_BOX, "SHULKER_BOX");
-        names.put(Material.SNOW_BLOCK, "SNOW_BLOCK");
-        names.put(Material.SNOW_LAYER, "SNOW_LAYER");
-        names.put(Material.SOIL, "SOIL");
-        names.put(Material.SOLID_ORGANIC, "SOLID_ORGANIC");
-        names.put(Material.SPONGE, "SPONGE");
-        names.put(Material.STONE, "STONE");
-        names.put(Material.STRUCTURE_VOID, "STRUCTURE_VOID");
-        names.put(Material.TNT, "TNT");
-        names.put(Material.UNDERWATER_PLANT, "UNDERWATER_PLANT");
-        names.put(Material.WATER, "WATER");
-        names.put(Material.WOOD, "WOOD");
-        names.put(Material.WOOL, "WOOL");
-
-        return names;
-    }
-
     public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, Property<T> prop, String valueStr)
     {
         Optional<T> value = prop.parse(valueStr);
@@ -199,10 +140,9 @@ public class BlockInfo
         BlockState state = data.state;
 
         lines.add(String.format("Full block state: %s", state));
-        lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
+        lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f",
                 state.getHardness(world, pos),
-                state.getBlock().getBlastResistance(),
-                getMaterialName(state.getMaterial())));
+                state.getBlock().getBlastResistance()));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 
         if (state.getProperties().size() > 0)
@@ -231,11 +171,6 @@ public class BlockInfo
         }
 
         return lines;
-    }
-
-    public static String getMaterialName(Material material)
-    {
-        return MATERIAL_NAMES.getOrDefault(material, "<unknown>");
     }
 
     public static void printBasicBlockInfoToChat(PlayerEntity entity, World world, BlockPos pos)

@@ -3,10 +3,12 @@ package fi.dy.masa.tellme.datadump;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 
-import net.minecraft.advancement.Advancement;
+import net.minecraft.advancement.AdvancementEntry;
+import net.minecraft.advancement.PlacedAdvancement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientChunkManager;
@@ -76,7 +78,7 @@ public class DataProviderClient extends DataProviderBase
 
     @Override
     @Nullable
-    public Collection<Advancement> getAdvancements(MinecraftServer server)
+    public Collection<AdvancementEntry> getAdvancements(MinecraftServer server)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
 
@@ -88,7 +90,7 @@ public class DataProviderClient extends DataProviderBase
         else
         {
             ClientPlayNetworkHandler nh = mc.getNetworkHandler();
-            return nh != null ? nh.getAdvancementHandler().getManager().getAdvancements() : null;
+            return nh != null ? nh.getAdvancementHandler().getManager().getAdvancements().stream().map(PlacedAdvancement::getAdvancementEntry).collect(Collectors.toList()) : null;
         }
     }
 

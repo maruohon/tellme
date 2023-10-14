@@ -1,10 +1,10 @@
 package fi.dy.masa.tellme.command;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
 import net.minecraft.command.argument.MessageArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.CommandManager;
@@ -26,7 +26,7 @@ public class SubCommandCopyToClipboard
         return subCommandRootNode;
     }
 
-    private static int execute(ServerCommandSource source, Text message) throws CommandSyntaxException
+    private static int execute(ServerCommandSource source, Text message)
     {
         Entity entity = source.getEntity();
 
@@ -40,7 +40,7 @@ public class SubCommandCopyToClipboard
         }
         else
         {
-            source.sendFeedback(Text.literal("'/tellme copy-to-clipboard' can only be run by a player"), false);
+            source.sendFeedback(() -> Text.literal("'/tellme copy-to-clipboard' can only be run by a player"), false);
             return -1;
         }
 
