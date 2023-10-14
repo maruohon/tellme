@@ -7,9 +7,9 @@ import javax.annotation.Nonnull;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.registry.Registry;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
@@ -100,7 +100,7 @@ public class ItemInfo
 
         public static ItemData getFor(ItemStack stack)
         {
-            String registryName = Registry.ITEM.getId(stack.getItem()).toString();
+            String registryName = Registries.ITEM.getId(stack.getItem()).toString();
             String nbtInfo;
 
             if (stack.hasNbt())

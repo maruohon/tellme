@@ -1,9 +1,11 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+
 import net.minecraft.entity.ai.brain.Activity;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
@@ -13,9 +15,9 @@ public class ActivityDump
     {
         DataDump dump = new DataDump(2, format);
 
-        for (Identifier id : Registry.ACTIVITY.getIds())
+        for (Identifier id : Registries.ACTIVITY.getIds())
         {
-            Activity type = Registry.ACTIVITY.get(id);
+            Activity type = Registries.ACTIVITY.get(id);
             dump.addData(id.toString(), type.getId());
         }
 

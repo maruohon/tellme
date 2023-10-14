@@ -3,13 +3,15 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.mojang.datafixers.util.Pair;
+
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
@@ -40,9 +42,9 @@ public class FoodItemDump
     {
         DataDump itemDump = new DataDump(8, format);
 
-        for (Identifier id : Registry.ITEM.getIds())
+        for (Identifier id : Registries.ITEM.getIds())
         {
-            Item item = Registry.ITEM.get(id);
+            Item item = Registries.ITEM.get(id);
 
             if (item.isFood())
             {

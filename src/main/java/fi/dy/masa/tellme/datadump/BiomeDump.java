@@ -5,8 +5,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.BiomeAdditionsSound;
 import net.minecraft.sound.BiomeMoodSound;
 import net.minecraft.sound.MusicSound;
@@ -16,11 +22,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeEffects;
 import net.minecraft.world.biome.SpawnSettings;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.OutputUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -39,7 +45,7 @@ public class BiomeDump
         if (world == null) { return biomeDump.getLines(); }
 
         BiomeDumpContext ctx = new BiomeDumpContext(world);
-        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
+        Registry<Biome> registry = world.getRegistryManager().get(RegistryKeys.BIOME);
 
         for (Identifier id : registry.getIds())
         {
@@ -59,7 +65,7 @@ public class BiomeDump
 
         if (world == null) { return biomeDump.getLines(); }
 
-        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
+        Registry<Biome> registry = world.getRegistryManager().get(RegistryKeys.BIOME);
 
         for (Identifier id : registry.getIds())
         {
@@ -75,7 +81,7 @@ public class BiomeDump
                 // Add the spawns grouped by category and sorted alphabetically within each category
                 for (SpawnSettings.SpawnEntry spawn : biome.getSpawnSettings().getSpawnEntries(type).getEntries())
                 {
-                    Identifier erl = Registry.ENTITY_TYPE.getId(spawn.type);
+                    Identifier erl = Registries.ENTITY_TYPE.getId(spawn.type);
                     String entName = erl.toString();
                     int weight = spawn.getWeight().getValue();
                     tmpList.add(String.format("{ %s [weight: %d, min: %d, max: %d] }", entName, weight, spawn.minGroupSize, spawn.maxGroupSize));
@@ -99,14 +105,14 @@ public class BiomeDump
         World world = entity.getEntityWorld();
         BlockPos pos = entity.getBlockPos();
         Biome biome = world.getBiome(pos).value();
-        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
+        Registry<Biome> registry = world.getRegistryManager().get(RegistryKeys.BIOME);
 
         String intId = String.valueOf(registry.getRawId(biome));
         Formatting green = Formatting.GREEN;
 
         String regName = registry.getId(biome).toString();
 
-        Biome.Precipitation rainType = biome.getPrecipitation();
+        Biome.Precipitation rainType = biome.getPrecipitation(pos);
         BiomeEffects effects = biome.getEffects();
         int skyColor = effects.getSkyColor();
         int fogColor = effects.getFogColor();
@@ -114,8 +120,8 @@ public class BiomeDump
         int waterFogColor = effects.getWaterFogColor();
 
         String strMaxSpawnChance = String.valueOf(biome.getSpawnSettings().getCreatureSpawnProbability());
-        String strRainType = rainType.getName();
-        String strRainfall = String.valueOf(biome.getDownfall());
+        String strRainType = rainType.name();
+        String strRainfall = "?"; //String.valueOf(biome.weather.downfall);
         String strTemperature = String.valueOf(biome.getTemperature());
 
         String strFogColor = String.format("0x%08X (%d)", fogColor, fogColor);
@@ -165,13 +171,18 @@ public class BiomeDump
         if (optional.isPresent())
         {
             MusicSound sound = optional.get();
-            Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
-            String name = id != null ? id.toString() : "?";
+            Optional<RegistryKey<SoundEvent>> o = sound.getSound().getKey();
 
-            return text.append(Text.literal(name).formatted(green))
-                       .append(", min delay: ").append(Text.literal(String.valueOf(sound.getMinDelay())).formatted(green))
-                       .append(", max delay: ").append(Text.literal(String.valueOf(sound.getMaxDelay())).formatted(green))
-                       .append(", replace current: ").append(Text.literal(String.valueOf(sound.shouldReplaceCurrentMusic())).formatted(green));
+            if (o.isPresent())
+            {
+                Identifier id = o.get().getValue();
+                String name = id != null ? id.toString() : "?";
+
+                return text.append(Text.literal(name).formatted(green))
+                               .append(", min delay: ").append(Text.literal(String.valueOf(sound.getMinDelay())).formatted(green))
+                               .append(", max delay: ").append(Text.literal(String.valueOf(sound.getMaxDelay())).formatted(green))
+                               .append(", replace current: ").append(Text.literal(String.valueOf(sound.shouldReplaceCurrentMusic())).formatted(green));
+            }
         }
 
         return text.append(Text.literal("-").formatted(Formatting.RED));
@@ -185,23 +196,28 @@ public class BiomeDump
         if (optional.isPresent())
         {
             BiomeAdditionsSound sound = optional.get();
-            Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
-            String name = id != null ? id.toString() : "?";
+            Optional<RegistryKey<SoundEvent>> o = sound.getSound().getKey();
 
-            return text.append(Text.literal(name).formatted(green))
-                       .append(", chance: ").append(Text.literal(String.valueOf(sound.getChance())).formatted(green));
+            if (o.isPresent())
+            {
+                Identifier id = o.get().getValue();
+                String name = id != null ? id.toString() : "?";
+
+                return text.append(Text.literal(name).formatted(green))
+                               .append(", chance: ").append(Text.literal(String.valueOf(sound.getChance())).formatted(green));
+            }
         }
 
         return text.append(Text.literal("-").formatted(Formatting.RED));
     }
 
-    public static MutableText getLoopSoundInfo(Optional<SoundEvent> optional)
+    public static MutableText getLoopSoundInfo(Optional<RegistryEntry<SoundEvent>> optional)
     {
         MutableText text = Text.literal("Loop Sound: ");
 
-        if (optional.isPresent())
+        if (optional.isPresent() && optional.get().getKey().isPresent())
         {
-            Identifier id = Registry.SOUND_EVENT.getId(optional.get());
+            Identifier id = optional.get().getKey().get().getValue();
             String name = id != null ? id.toString() : "?";
 
             return text.append(Text.literal(name).formatted(Formatting.GREEN));
@@ -218,13 +234,18 @@ public class BiomeDump
         if (optional.isPresent())
         {
             BiomeMoodSound sound = optional.get();
-            Identifier id = Registry.SOUND_EVENT.getId(sound.getSound());
-            String name = id != null ? id.toString() : "?";
+            Optional<RegistryKey<SoundEvent>> o = sound.getSound().getKey();
 
-            return text.append(Text.literal(name).formatted(green))
-                       .append(", delay: ").append(Text.literal(String.valueOf(sound.getCultivationTicks())).formatted(green))
-                       .append(", range: ").append(Text.literal(String.valueOf(sound.getSpawnRange())).formatted(green))
-                       .append(", extra distance: ").append(Text.literal(String.valueOf(sound.getExtraDistance())).formatted(green));
+            if (o.isPresent())
+            {
+                Identifier id = o.get().getValue();
+                String name = id != null ? id.toString() : "?";
+
+                return text.append(Text.literal(name).formatted(green))
+                               .append(", delay: ").append(Text.literal(String.valueOf(sound.getCultivationTicks())).formatted(green))
+                               .append(", range: ").append(Text.literal(String.valueOf(sound.getSpawnRange())).formatted(green))
+                               .append(", extra distance: ").append(Text.literal(String.valueOf(sound.getExtraDistance())).formatted(green));
+            }
         }
 
         return text.append(Text.literal("-").formatted(Formatting.RED));
@@ -237,7 +258,7 @@ public class BiomeDump
 
         if (world == null) { return lines; }
 
-        Registry<Biome> registry = world.getRegistryManager().get(Registry.BIOME_KEY);
+        Registry<Biome> registry = world.getRegistryManager().get(RegistryKeys.BIOME);
 
         for (Identifier id : registry.getIds())
         {
@@ -328,17 +349,16 @@ public class BiomeDump
         @Override
         public int getColumnCount()
         {
-            return 5;
+            return 4;
         }
 
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("ID", "Registry name", "Temp.", "RainType", "Downfall");
+            dump.addTitle("ID", "Registry name", "Temp.", "RainType @ 0,0");
 
             dump.setColumnProperties(2, Alignment.RIGHT, true); // temperature
             dump.setColumnProperties(3, Alignment.RIGHT, true); // raintype
-            dump.setColumnAlignment(4, Alignment.RIGHT); // downfall
         }
 
         @Override
@@ -346,15 +366,14 @@ public class BiomeDump
         {
             if (ctx.world == null) { return; }
 
-            Registry<Biome> registry = ctx.world.getRegistryManager().get(Registry.BIOME_KEY);
+            Registry<Biome> registry = ctx.world.getRegistryManager().get(RegistryKeys.BIOME);
             String intId = String.valueOf(registry.getRawId(biome));
             String regName = id.toString();
             String temp = String.format("%5.2f", biome.getTemperature());
-            Biome.Precipitation precipitation = biome.getPrecipitation();
-            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.getName() : "-";
-            String downfall = String.format("%.2f", biome.getDownfall());
+            Biome.Precipitation precipitation = biome.getPrecipitation(BlockPos.ORIGIN);
+            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.name() : "-";
 
-            dump.addData(intId, regName, temp, precStr, downfall);
+            dump.addData(intId, regName, temp, precStr);
         }
     }
 
@@ -384,7 +403,7 @@ public class BiomeDump
         {
             if (ctx.world == null) { return; }
 
-            Registry<Biome> registry = ctx.world.getRegistryManager().get(Registry.BIOME_KEY);
+            Registry<Biome> registry = ctx.world.getRegistryManager().get(RegistryKeys.BIOME);
             String intId = String.valueOf(registry.getRawId(biome));
             String regName = id.toString();
             BiomeEffects effects = biome.getEffects();

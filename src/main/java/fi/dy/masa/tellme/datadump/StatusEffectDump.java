@@ -1,10 +1,12 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
@@ -15,12 +17,12 @@ public class StatusEffectDump
     {
         DataDump potionDump = new DataDump(7, format);
 
-        for (Identifier id : Registry.STATUS_EFFECT.getIds())
+        for (Identifier id : Registries.STATUS_EFFECT.getIds())
         {
-            StatusEffect effect = Registry.STATUS_EFFECT.get(id);
+            StatusEffect effect = Registries.STATUS_EFFECT.get(id);
             String modName = ModNameUtils.getModName(id);
             String regName = id.toString();
-            String intId = String.valueOf(Registry.STATUS_EFFECT.getRawId(effect));
+            String intId = String.valueOf(Registries.STATUS_EFFECT.getRawId(effect));
             String name = effect.getTranslationKey();
             String color = String.format("0x%08X (%10d)", effect.getColor(), effect.getColor());
             String isBad = String.valueOf(effect.getCategory() == StatusEffectCategory.HARMFUL);

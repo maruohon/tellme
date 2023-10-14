@@ -6,17 +6,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.BlockInfo;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -53,7 +55,7 @@ public class LocateBlocks extends LocateBase
                 throw INVALID_NAME_EXCEPTION.create(str);
             }
 
-            Optional<Block> block = Registry.BLOCK.getOrEmpty(key);
+            Optional<Block> block = Registries.BLOCK.getOrEmpty(key);
 
             if (block.isPresent())
             {
@@ -120,7 +122,7 @@ public class LocateBlocks extends LocateBase
 
                         if (filters.contains(state))
                         {
-                            String name = ids.computeIfAbsent(state, (s) -> Registry.BLOCK.getId(s.getBlock()).toString());
+                            String name = ids.computeIfAbsent(state, (s) -> Registries.BLOCK.getId(s.getBlock()).toString());
                             this.data.add(LocationData.of(name, dim, new Vec3d(x, y, z)));
                             count++;
                         }

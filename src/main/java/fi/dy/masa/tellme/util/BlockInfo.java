@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
@@ -22,6 +23,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -29,8 +31,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
 
@@ -260,7 +262,7 @@ public class BlockInfo
     public static String blockStateToString(BlockState state)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(Registry.BLOCK.getId(state.getBlock()));
+        sb.append(Registries.BLOCK.getId(state.getBlock()));
 
         if (state.getEntries().isEmpty() == false)
         {
@@ -330,7 +332,7 @@ public class BlockInfo
             Block block = state.getBlock();
 
             ItemStack stack = new ItemStack(block.asItem());
-            Identifier rl = Registry.BLOCK.getId(block);
+            Identifier rl = Registries.BLOCK.getId(block);
             String registryName = rl != null ? rl.toString() : "<null>";
             String displayName;
 

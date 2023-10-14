@@ -7,15 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -40,7 +42,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
             try
             {
                 Identifier id = new Identifier(str);
-                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOrEmpty(id);
+                Optional<BlockEntityType<?>> type = Registries.BLOCK_ENTITY_TYPE.getOrEmpty(id);
 
                 if (type.isPresent())
                 {
@@ -76,7 +78,7 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
 
             if (noFilters || filters.contains(type))
             {
-                Identifier id = Registry.BLOCK_ENTITY_TYPE.getId(type);
+                Identifier id = Registries.BLOCK_ENTITY_TYPE.getId(type);
 
                 if (id != null)
                 {

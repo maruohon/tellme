@@ -2,20 +2,22 @@ package fi.dy.masa.tellme.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.tellme.mixin.IMixinThreadedAnvilChunkStorage;
 import fi.dy.masa.tellme.mixin.IMixinWorld;
-import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class WorldUtils
 {
@@ -43,7 +45,7 @@ public class WorldUtils
 
     public static String getDimensionId(World world)
     {
-        Identifier id = world.getRegistryManager().get(Registry.DIMENSION_TYPE_KEY).getId(world.getDimension());
+        Identifier id = world.getRegistryManager().get(RegistryKeys.DIMENSION_TYPE).getId(world.getDimension());
         return id != null ? id.toString() : "?";
     }
 

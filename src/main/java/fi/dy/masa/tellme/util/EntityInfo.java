@@ -6,17 +6,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
 
@@ -24,7 +26,7 @@ public class EntityInfo
 {
     private static String getBasicEntityInfo(Entity target)
     {
-        Identifier rl = Registry.ENTITY_TYPE.getId(target.getType());
+        Identifier rl = Registries.ENTITY_TYPE.getId(target.getType());
         String regName = rl != null ? rl.toString() : "<null>";
 
         return String.format("Entity: %s [registry name: %s] (entityId: %d)", target.getName().getString(), regName, target.getId());
@@ -71,7 +73,7 @@ public class EntityInfo
 
             for (StatusEffectInstance effect : effects)
             {
-                Identifier rl = Registry.STATUS_EFFECT.getId(effect.getEffectType());
+                Identifier rl = Registries.STATUS_EFFECT.getId(effect.getEffectType());
 
                 dump.addData(
                         rl != null ? rl.toString() : effect.getClass().getName(),
@@ -92,7 +94,7 @@ public class EntityInfo
 
     public static void printBasicEntityInfoToChat(PlayerEntity player, Entity target)
     {
-        Identifier rl = Registry.ENTITY_TYPE.getId(target.getType());
+        Identifier rl = Registries.ENTITY_TYPE.getId(target.getType());
         String regName = rl != null ? rl.toString() : "null";
         String textPre = String.format("Entity: %s [registry name: ", target.getName().getString());
         String textPost = String.format("] (entityId: %d)", target.getId());

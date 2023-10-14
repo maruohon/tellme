@@ -4,16 +4,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 
 public class BiomeStats
 {

@@ -11,18 +11,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.command.argument.Vec2ArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.source.BiomeAccess;
+
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
 import fi.dy.masa.tellme.command.argument.OutputFormatArgument;
 import fi.dy.masa.tellme.command.argument.OutputTypeArgument;
@@ -137,7 +139,7 @@ public class SubCommandBiomeLocate
         CommandUtils.sendMessage(source, "Finding closest biome locations...");
 
         biomeLocator.setAppend(append);
-        biomeLocator.findClosestBiomePositions(biomeAccess, new BlockPos(center.x, 0, center.y), sampleInterval, sampleRadius);
+        biomeLocator.findClosestBiomePositions(biomeAccess, BlockPos.ofFloored(center.x, 0, center.y), sampleInterval, sampleRadius);
 
         CommandUtils.sendMessage(source, "Done");
 
@@ -161,12 +163,12 @@ public class SubCommandBiomeLocate
         {
             if (consoleBiomeLocator == null)
             {
-                consoleBiomeLocator = new BiomeLocator(source.getRegistryManager().get(Registry.BIOME_KEY));
+                consoleBiomeLocator = new BiomeLocator(source.getRegistryManager().get(RegistryKeys.BIOME));
             }
 
             return consoleBiomeLocator;
         }
 
-        return BIOME_LOCATORS.computeIfAbsent(entity.getUuid(), (e) -> new BiomeLocator(source.getRegistryManager().get(Registry.BIOME_KEY)));
+        return BIOME_LOCATORS.computeIfAbsent(entity.getUuid(), (e) -> new BiomeLocator(source.getRegistryManager().get(RegistryKeys.BIOME)));
     }
 }

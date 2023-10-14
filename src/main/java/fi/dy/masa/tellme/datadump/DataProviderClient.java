@@ -5,17 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+
 import net.minecraft.advancement.Advancement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -27,7 +24,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
-import fi.dy.masa.tellme.TellMe;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class DataProviderClient extends DataProviderBase
@@ -120,6 +117,7 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupData(DataDump dump)
     {
+        /* TODO 1.20
         for (ItemGroup group : ItemGroup.GROUPS)
         {
             if (group != null)
@@ -153,11 +151,13 @@ public class DataProviderClient extends DataProviderBase
                 dump.addData(index, name, translatedName, iconItem);
             }
         }
+        */
     }
 
     @Override
     public void addItemGroupNames(JsonObject obj, Item item)
     {
+        /* TODO 1.20
         ItemGroup group = item.getGroup();
 
         if (group != null)
@@ -165,5 +165,6 @@ public class DataProviderClient extends DataProviderBase
             String name = I18n.translate(group.getDisplayName().getString());
             obj.add("CreativeTabs", new JsonPrimitive(name));
         }
+        */
     }
 }

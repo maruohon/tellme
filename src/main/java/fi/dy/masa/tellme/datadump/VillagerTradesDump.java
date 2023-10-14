@@ -6,14 +6,16 @@ import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.random.LocalRandom;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
 import net.minecraft.village.VillagerProfession;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class VillagerTradesDump
@@ -24,11 +26,11 @@ public class VillagerTradesDump
         Random rand = new LocalRandom(0);
 
         ArrayList<VillagerProfession> professions = new ArrayList<>(TradeOffers.PROFESSION_TO_LEVELED_TRADE.keySet());
-        professions.sort(Comparator.comparing(v -> Registry.VILLAGER_PROFESSION.getId(v).toString()));
+        professions.sort(Comparator.comparing(v -> Registries.VILLAGER_PROFESSION.getId(v).toString()));
 
         for (VillagerProfession profession : professions)
         {
-            String regName = Registry.VILLAGER_PROFESSION.getId(profession).toString();
+            String regName = Registries.VILLAGER_PROFESSION.getId(profession).toString();
 
             dump.addData(regName, profession.toString(), "", "", "", "");
             Int2ObjectMap<TradeOffers.Factory[]> map = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(profession);

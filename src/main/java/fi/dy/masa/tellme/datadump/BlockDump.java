@@ -9,17 +9,19 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -31,9 +33,9 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(tags ? 5 : 4, format);
 
-        for (Identifier id : Registry.BLOCK.getIds())
+        for (Identifier id : Registries.BLOCK.getIds())
         {
-            Block block = Registry.BLOCK.get(id);
+            Block block = Registries.BLOCK.get(id);
             addDataToDump(blockDump, id, block, new ItemStack(block), tags);
         }
 
@@ -53,11 +55,11 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(3, format);
 
-        for (Identifier id : Registry.BLOCK.getIds())
+        for (Identifier id : Registries.BLOCK.getIds())
         {
             try
             {
-                Block block = Registry.BLOCK.get(id);
+                Block block = Registries.BLOCK.get(id);
                 MapColor materialColor = block.getDefaultState().getMapColor(world, BlockPos.ORIGIN);
                 int color = materialColor != null ? materialColor.color : 0xFFFFFF;
                 blockDump.addData(id.toString(), String.format("#%06X", color), String.valueOf(color));
@@ -77,7 +79,7 @@ public class BlockDump
         String displayName = stack.isEmpty() == false ? stack.getName().getString() : (Text.translatable(block.getTranslationKey())).getString();
         displayName = Formatting.strip(displayName);
         Item item = stack.getItem();
-        Identifier itemIdRl = item != Items.AIR ? Registry.ITEM.getId(item) : null;
+        Identifier itemIdRl = item != Items.AIR ? Registries.ITEM.getId(item) : null;
         String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
 
         if (tags)
@@ -94,13 +96,13 @@ public class BlockDump
     {
         DataDump blockDump = new DataDump(4, format);
 
-        for (Identifier id : Registry.BLOCK.getIds())
+        for (Identifier id : Registries.BLOCK.getIds())
         {
             try
             {
                 String modName = ModNameUtils.getModName(id);
                 String registryName = id.toString();
-                Block block = Registry.BLOCK.get(id);
+                Block block = Registries.BLOCK.get(id);
                 String hardness = String.format("%.2f", block.getDefaultState().getHardness(null, BlockPos.ORIGIN));
                 String resistance = String.format("%.2f", block.getBlastResistance());
                 blockDump.addData(modName, registryName, hardness, resistance);
@@ -132,7 +134,7 @@ public class BlockDump
         HashMultimap<String, Identifier> map = HashMultimap.create(400, 512);
 
         // Get a mapping of modName => collection-of-block-names
-        for (Identifier id : Registry.BLOCK.getIds())
+        for (Identifier id : Registries.BLOCK.getIds())
         {
             map.put(id.getNamespace(), id);
         }
@@ -154,7 +156,7 @@ public class BlockDump
                 JsonObject objBlock = new JsonObject();
 
                 String registryName = key.toString();
-                Block block = Registry.BLOCK.get(key);
+                Block block = Registries.BLOCK.get(key);
                 ItemStack stack = new ItemStack(block);
                 Item item = stack.getItem();
 
@@ -162,7 +164,7 @@ public class BlockDump
 
                 if (item != null && item != Items.AIR)
                 {
-                    Identifier itemIdRl = item != Items.AIR ? Registry.ITEM.getId(item) : null;
+                    Identifier itemIdRl = item != Items.AIR ? Registries.ITEM.getId(item) : null;
                     String itemId = itemIdRl != null ? itemIdRl.toString() : DataDump.EMPTY_STRING;
 
                     String displayName = stack.isEmpty() == false ? stack.getName().getString() : (Text.translatable(block.getTranslationKey())).getString();

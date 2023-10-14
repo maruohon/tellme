@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class BlockStatesDump
@@ -19,9 +21,9 @@ public class BlockStatesDump
     {
         List<String> outputLines = new ArrayList<>();
 
-        for (Identifier id : Registry.BLOCK.getIds())
+        for (Identifier id : Registries.BLOCK.getIds())
         {
-            Block block = Registry.BLOCK.get(id);
+            Block block = Registries.BLOCK.get(id);
 
             List<String> lines = new ArrayList<>();
             UnmodifiableIterator<Entry<Property<?>, Comparable<?>>> propIter = block.getDefaultState().getEntries().entrySet().iterator();
@@ -46,9 +48,9 @@ public class BlockStatesDump
     {
         DataDump blockStatesDump = new DataDump(2, format);
 
-        for (Identifier id : Registry.BLOCK.getIds())
+        for (Identifier id : Registries.BLOCK.getIds())
         {
-            Block block = Registry.BLOCK.get(id);
+            Block block = Registries.BLOCK.get(id);
             String regName = id.toString();
 
             ImmutableList<BlockState> validStates = block.getStateManager().getStates();

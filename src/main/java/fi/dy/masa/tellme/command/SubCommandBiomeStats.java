@@ -11,19 +11,21 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.command.argument.Vec2ArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.source.BiomeAccess;
+
 import fi.dy.masa.tellme.command.CommandUtils.AreaType;
 import fi.dy.masa.tellme.command.CommandUtils.IWorldRetriever;
 import fi.dy.masa.tellme.command.CommandUtils.OutputType;
@@ -309,12 +311,12 @@ public class SubCommandBiomeStats
         {
             if (consoleBiomeStats == null)
             {
-                consoleBiomeStats = new BiomeStats(source.getRegistryManager().get(Registry.BIOME_KEY));
+                consoleBiomeStats = new BiomeStats(source.getRegistryManager().get(RegistryKeys.BIOME));
             }
 
             return consoleBiomeStats;
         }
 
-        return BIOME_STATS.computeIfAbsent(entity.getUuid(), (e) -> new BiomeStats(source.getRegistryManager().get(Registry.BIOME_KEY)));
+        return BIOME_STATS.computeIfAbsent(entity.getUuid(), (e) -> new BiomeStats(source.getRegistryManager().get(RegistryKeys.BIOME)));
     }
 }

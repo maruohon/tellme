@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 
@@ -147,9 +150,9 @@ public abstract class LocateBase extends ChunkProcessorAllChunks
 
     public enum LocateType
     {
-        BLOCK       ("block",        "blocks",           () -> Registry.BLOCK, LocateBlocks::new),
-        ENTITY      ("entity",       "entities",         () -> Registry.ENTITY_TYPE, LocateEntities::new),
-        BLOCK_ENTITY("block-entity", "block_entities",   () -> Registry.BLOCK_ENTITY_TYPE, LocateBlockEntities::new);
+        BLOCK       ("block",        "blocks",           () -> Registries.BLOCK, LocateBlocks::new),
+        ENTITY      ("entity",       "entities",         () -> Registries.ENTITY_TYPE, LocateEntities::new),
+        BLOCK_ENTITY("block-entity", "block_entities",   () -> Registries.BLOCK_ENTITY_TYPE, LocateBlockEntities::new);
 
         private final String argument;
         private final String plural;

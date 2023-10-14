@@ -2,12 +2,14 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.potion.Potion;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Alignment;
 
@@ -17,17 +19,17 @@ public class PotionDump
     {
         DataDump potionTypeDump = new DataDump(3, format);
 
-        for (Identifier id : Registry.POTION.getIds())
+        for (Identifier id : Registries.POTION.getIds())
         {
-            Potion potion = Registry.POTION.get(id);
-            String intId = String.valueOf(Registry.POTION.getRawId(potion));
+            Potion potion = Registries.POTION.get(id);
+            String intId = String.valueOf(Registries.POTION.getRawId(potion));
 
             List<StatusEffectInstance> effects = potion.getEffects();
 
             potionTypeDump.addData(id.toString(), intId, String.join(", ", getEffectInfoLines(effects)));
         }
 
-        potionTypeDump.addTitle("Registry name", "ID", "Effects");
+        potionTypeDump.addTitle("Registries name", "ID", "Effects");
         potionTypeDump.setColumnProperties(1, Alignment.RIGHT, true); // id
 
         return potionTypeDump.getLines();
@@ -37,7 +39,7 @@ public class PotionDump
     {
         String isBad = String.valueOf(effect.getCategory() == StatusEffectCategory.HARMFUL);
         String isBeneficial = String.valueOf(effect.getCategory() == StatusEffectCategory.BENEFICIAL);
-        String regName = Registry.STATUS_EFFECT.getId(effect).toString();
+        String regName = Registries.STATUS_EFFECT.getId(effect).toString();
 
         return "Potion:[reg:" + regName + ",name:" + effect.getTranslationKey() + ",isBad:" + isBad + ",isBeneficial:" + isBeneficial + "]";
     }

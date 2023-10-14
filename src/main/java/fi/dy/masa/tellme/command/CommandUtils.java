@@ -186,7 +186,7 @@ public class CommandUtils
     public static BlockPos getBlockPosFromSource(ServerCommandSource source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? new BlockPos(entity.getPos()) : BlockPos.ORIGIN;
+        return entity != null ? BlockPos.ofFloored(entity.getPos()) : BlockPos.ORIGIN;
     }
 
     public static Vec3d getVec3dFromArg(CommandContext<ServerCommandSource> ctx, String argName) throws CommandSyntaxException

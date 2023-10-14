@@ -1,9 +1,11 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.village.VillagerProfession;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class VillagerProfessionDump
@@ -12,10 +14,10 @@ public class VillagerProfessionDump
     {
         DataDump villagerProfessionDump = new DataDump(2, format);
 
-        for (Identifier id : Registry.VILLAGER_PROFESSION.getIds())
+        for (Identifier id : Registries.VILLAGER_PROFESSION.getIds())
         {
             String regName = id.toString();
-            VillagerProfession profession = Registry.VILLAGER_PROFESSION.get(id);
+            VillagerProfession profession = Registries.VILLAGER_PROFESSION.get(id);
 
             villagerProfessionDump.addData(regName, profession.toString());
         }

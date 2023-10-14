@@ -11,11 +11,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+
 import net.minecraft.command.CommandSource;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 
@@ -32,7 +33,7 @@ public class BiomeArgument implements ArgumentType<Identifier>
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> ctx, SuggestionsBuilder builder)
     {
-        return CommandSource.suggestIdentifiers(((CommandSource) ctx.getSource()).getRegistryManager().get(Registry.BIOME_KEY).getIds(), builder);
+        return CommandSource.suggestIdentifiers(((CommandSource) ctx.getSource()).getRegistryManager().get(RegistryKeys.BIOME).getIds(), builder);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class BiomeArgument implements ArgumentType<Identifier>
     public static Biome getBiomeArgument(CommandContext<ServerCommandSource> ctx, String name) throws CommandSyntaxException
     {
         Identifier id = ctx.getArgument(name, Identifier.class);
-        Biome biome = ctx.getSource().getRegistryManager().get(Registry.BIOME_KEY).get(id);
+        Biome biome = ctx.getSource().getRegistryManager().get(RegistryKeys.BIOME).get(id);
 
         if (biome == null)
         {

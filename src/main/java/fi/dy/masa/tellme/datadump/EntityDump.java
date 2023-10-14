@@ -2,12 +2,14 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import javax.annotation.Nullable;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+
 import fi.dy.masa.tellme.util.ModNameUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
@@ -17,11 +19,11 @@ public class EntityDump
     {
         DataDump entityDump = new DataDump(includeClassName ? 4 : 3, format);
 
-        for (Identifier id : Registry.ENTITY_TYPE.getIds())
+        for (Identifier id : Registries.ENTITY_TYPE.getIds())
         {
-            EntityType<?> type = Registry.ENTITY_TYPE.get(id);
+            EntityType<?> type = Registries.ENTITY_TYPE.get(id);
             String modName = ModNameUtils.getModName(id);
-            String entityId = String.valueOf(Registry.ENTITY_TYPE.getRawId(type));
+            String entityId = String.valueOf(Registries.ENTITY_TYPE.getRawId(type));
 
             if (includeClassName && world != null)
             {
@@ -62,10 +64,10 @@ public class EntityDump
     {
         DataDump dump = new DataDump(4, format);
 
-        for (Identifier id : Registry.ATTRIBUTE.getIds())
+        for (Identifier id : Registries.ATTRIBUTE.getIds())
         {
             String idStr = id.toString();
-            EntityAttribute attr = Registry.ATTRIBUTE.get(id);
+            EntityAttribute attr = Registries.ATTRIBUTE.get(id);
             String translationKey = attr.getTranslationKey();
             String defaultValue = String.valueOf(attr.getDefaultValue());
             String tracked = String.valueOf(attr.isTracked());

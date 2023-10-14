@@ -1,12 +1,14 @@
 package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+
 import fi.dy.masa.tellme.util.datadump.DataDump;
 
 public class FluidRegistryDump
@@ -15,12 +17,12 @@ public class FluidRegistryDump
     {
         DataDump fluidRegistryDump = new DataDump(2, format);
 
-        for (Identifier id : Registry.FLUID.getIds())
+        for (Identifier id : Registries.FLUID.getIds())
         {
-            Fluid fluid = Registry.FLUID.get(id);
+            Fluid fluid = Registries.FLUID.get(id);
             BlockState blockState = fluid.getDefaultState().getBlockState();
             Block block = blockState.getBlock();
-            String blockName = block != null && block != Blocks.AIR ? Registry.BLOCK.getId(block).toString() : "-";
+            String blockName = block != null && block != Blocks.AIR ? Registries.BLOCK.getId(block).toString() : "-";
 
             fluidRegistryDump.addData(id.toString(), blockName);
         }

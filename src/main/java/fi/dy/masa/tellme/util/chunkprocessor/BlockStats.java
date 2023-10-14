@@ -13,19 +13,22 @@ import com.google.common.collect.ArrayListMultimap;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils;
 import fi.dy.masa.tellme.util.BlockInfo;
@@ -106,7 +109,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             try
             {
                 final Block block = state.getBlock();
-                final Identifier id = Registry.BLOCK.getId(block);
+                final Identifier id = Registries.BLOCK.getId(block);
                 final long amount = counts.getLong(state);
 
                 if (id == null)
@@ -132,7 +135,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         }
     }
 
-    private List<BlockStateCount> getFilteredData(List<String> filters) throws CommandSyntaxException
+    private List<BlockStateCount> getFilteredData(List<String> filters, RegistryWrapper<Block> registryWrapper) throws CommandSyntaxException
     {
         ArrayList<BlockStateCount> list = new ArrayList<>();
         ArrayListMultimap<Block, BlockStateCount> infoByBlock = ArrayListMultimap.create();
@@ -145,7 +148,7 @@ public class BlockStats extends ChunkProcessorAllChunks
 
         for (String filter : filters)
         {
-            BlockArgumentParser.BlockResult result = BlockArgumentParser.block(Registry.BLOCK, filter, false);
+            BlockArgumentParser.BlockResult result = BlockArgumentParser.block(registryWrapper, filter, false);
             BlockState state = result.blockState();
 
             if (state == null)
@@ -190,19 +193,22 @@ public class BlockStats extends ChunkProcessorAllChunks
         return list;
     }
 
-    public List<String> queryAll(Format format, CommandUtils.BlockStateGrouping grouping, boolean sortByCount) throws CommandSyntaxException
+    public List<String> queryAll(Format format, CommandUtils.BlockStateGrouping grouping,
+                                 boolean sortByCount, RegistryWrapper<Block> registryWrapper) throws CommandSyntaxException
     {
-        return this.query(format, grouping, sortByCount, null);
+        return this.query(format, grouping, sortByCount, null, registryWrapper);
     }
 
-    public List<String> query(Format format, CommandUtils.BlockStateGrouping grouping, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
+    public List<String> query(Format format, CommandUtils.BlockStateGrouping grouping,
+                              boolean sortByCount, @Nullable List<String> filters,
+                              RegistryWrapper<Block> registryWrapper) throws CommandSyntaxException
     {
         DataDump dump = new DataDump(3, format);
         List<BlockStateCount> list = new ArrayList<>();
 
         if (filters != null)
         {
-            list.addAll(this.getFilteredData(filters));
+            list.addAll(this.getFilteredData(filters, registryWrapper));
         }
         else
         {

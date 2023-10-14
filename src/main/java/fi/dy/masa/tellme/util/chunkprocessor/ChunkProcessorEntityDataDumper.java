@@ -6,16 +6,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.mixin.IMixinWorld;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -42,7 +44,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
             try
             {
                 Identifier id = new Identifier(str);
-                Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(id);
+                Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(id);
 
                 if (type.isPresent())
                 {
@@ -86,7 +88,7 @@ public class ChunkProcessorEntityDataDumper extends ChunkProcessorBase
 
         if (this.filters.isEmpty() || this.filters.contains(type))
         {
-            Identifier id = Registry.ENTITY_TYPE.getId(type);
+            Identifier id = Registries.ENTITY_TYPE.getId(type);
             NbtCompound tag = new NbtCompound();
 
             if (entity.saveSelfNbt(tag))

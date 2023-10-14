@@ -1,9 +1,6 @@
 package fi.dy.masa.tellme.mixin;
 
-import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.tag.FluidTags;
-
-@Mixin(FluidTags.class)
+//@Mixin(FluidTags.class)
 public interface IMixinFluidTags
 {
     /*

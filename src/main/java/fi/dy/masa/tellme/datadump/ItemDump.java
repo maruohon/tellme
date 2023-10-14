@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -30,12 +31,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.mixin.IMixinAbstractFireBlock;
 import fi.dy.masa.tellme.util.ModNameUtils;
@@ -58,9 +60,9 @@ public class ItemDump
     {
         DataDump itemDump = new DataDump(provider.getColumnCount(), format);
 
-        for (Identifier id : Registry.ITEM.getIds())
+        for (Identifier id : Registries.ITEM.getIds())
         {
-            Item item = Registry.ITEM.get(id);
+            Item item = Registries.ITEM.get(id);
             provider.addLine(itemDump, new ItemStack(item), id);
         }
 
@@ -81,7 +83,7 @@ public class ItemDump
 
             for (Recipe<?> recipe : manager.values())
             {
-                ItemStack stack = recipe.getOutput();
+                ItemStack stack = recipe.getOutput(server.getRegistryManager());
 
                 if (stack.isEmpty() == false)
                 {
@@ -100,7 +102,7 @@ public class ItemDump
     {
         if (stack.isEmpty() == false)
         {
-            Identifier rl = Registry.ITEM.getId(stack.getItem());
+            Identifier rl = Registries.ITEM.getId(stack.getItem());
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = stack.getName().getString();
             displayName = Formatting.strip(displayName);
@@ -115,7 +117,7 @@ public class ItemDump
     {
         if (stack.isEmpty() == false)
         {
-            Identifier rl = Registry.ITEM.getId(stack.getItem());
+            Identifier rl = Registries.ITEM.getId(stack.getItem());
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = stack.getName().getString();
             displayName = Formatting.strip(displayName);
@@ -132,7 +134,7 @@ public class ItemDump
         HashMultimap<String, Identifier> map = HashMultimap.create(10000, 16);
 
         // Get a mapping of modName => collection-of-block-names
-        for (Identifier id : Registry.ITEM.getIds())
+        for (Identifier id : Registries.ITEM.getIds())
         {
             map.put(id.getNamespace(), id);
         }
@@ -152,7 +154,7 @@ public class ItemDump
             for (Identifier key : items)
             {
                 JsonArray arrItem = new JsonArray();
-                addDataForItemSubtypeForJson(arrItem, Registry.ITEM.get(key), key, player);
+                addDataForItemSubtypeForJson(arrItem, Registries.ITEM.get(key), key, player);
                 objectMod.add(key.toString(), arrItem);
             }
 
@@ -168,7 +170,7 @@ public class ItemDump
     {
         ArrayList<String> list = new ArrayList<>();
 
-        for (Identifier id : Registry.ITEM.getIds())
+        for (Identifier id : Registries.ITEM.getIds())
         {
             list.add(id.toString());
         }
@@ -448,7 +450,7 @@ public class ItemDump
         @Override
         public void addLine(DataDump dump, ItemStack stack, Identifier id)
         {
-            Identifier itemId = Registry.ITEM.getId(stack.getItem());
+            Identifier itemId = Registries.ITEM.getId(stack.getItem());
 
             dump.addData(this.getModName(id),
                          this.getRegistryName(itemId),

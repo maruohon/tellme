@@ -7,15 +7,17 @@ import java.util.Optional;
 import java.util.Set;
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.mixin.IMixinWorld;
 import fi.dy.masa.tellme.util.EntityInfo;
@@ -44,7 +46,7 @@ public class LocateEntities extends LocateBase
             try
             {
                 Identifier key = new Identifier(name);
-                Optional<EntityType<?>> type = Registry.ENTITY_TYPE.getOrEmpty(key);
+                Optional<EntityType<?>> type = Registries.ENTITY_TYPE.getOrEmpty(key);
 
                 if (type.isPresent())
                 {

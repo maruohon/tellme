@@ -12,19 +12,24 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
+import net.minecraft.block.Block;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.command.argument.Vec2ArgumentType;
 import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.CommandUtils.AreaType;
 import fi.dy.masa.tellme.command.CommandUtils.IWorldRetriever;
@@ -100,7 +105,7 @@ public class SubCommandBlockStats
 
         @SuppressWarnings("unchecked")
         ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersSortByCount = CommandManager.argument("block_filters",
-                StringCollectionArgument.create(() -> Registry.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
+                StringCollectionArgument.create(() -> Registries.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
                 .executes(c -> outputData(c.getSource(),
                                           c.getArgument("output_type", OutputType.class),
                                           c.getArgument("output_format", DataDump.Format.class),
@@ -111,7 +116,7 @@ public class SubCommandBlockStats
 
         @SuppressWarnings("unchecked")
         ArgumentCommandNode<ServerCommandSource, List<String>> argBlockFiltersSortByName = CommandManager.argument("block_filters",
-                StringCollectionArgument.create(() -> Registry.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
+                StringCollectionArgument.create(() -> Registries.BLOCK.getIds().stream().map(Identifier::toString).collect(Collectors.toList()), ""))
                 .executes(c -> outputData(c.getSource(),
                                           c.getArgument("output_type", OutputType.class),
                                           c.getArgument("output_format", DataDump.Format.class),
@@ -233,7 +238,7 @@ public class SubCommandBlockStats
     private static int countBlocksRange(ServerCommandSource source, int range, Vec3d center,
                                         IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        BlockPos centerPos = new BlockPos(center);
+        BlockPos centerPos = BlockPos.ofFloored(center);
         World world = dimensionGetter.getWorldFromSource(source);
         int minY = world.getBottomY();
         int maxY = world.getTopY() - 1;
@@ -315,19 +320,22 @@ public class SubCommandBlockStats
         return outputData(source, outputType, format, grouping, sortByCount, null);
     }
 
-    private static int outputData(ServerCommandSource source, OutputType outputType, DataDump.Format format, CommandUtils.BlockStateGrouping grouping, boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
+    private static int outputData(ServerCommandSource source, OutputType outputType,
+                                  DataDump.Format format, CommandUtils.BlockStateGrouping grouping,
+                                  boolean sortByCount, @Nullable List<String> filters) throws CommandSyntaxException
     {
         BlockStats blockStats = getBlockStatsFor(source.getEntity());
+        RegistryWrapper<Block> registryWrapper = source.getWorld().createCommandRegistryWrapper(RegistryKeys.BLOCK);
         List<String> lines;
 
         // We have some filters specified
         if (filters != null && filters.isEmpty() == false)
         {
-            lines = blockStats.query(format, grouping, sortByCount, filters);
+            lines = blockStats.query(format, grouping, sortByCount, filters, registryWrapper);
         }
         else
         {
-            lines = blockStats.queryAll(format, grouping, sortByCount);
+            lines = blockStats.queryAll(format, grouping, sortByCount, registryWrapper);
         }
 
         OutputUtils.printOutput(lines, outputType, format, "block_stats", source);
