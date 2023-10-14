@@ -223,10 +223,10 @@ public class BlockInfo
 
         if (te != null)
         {
-            NbtCompound nbt = te.createNbt();
+            NbtCompound nbt = te.createNbtWithIdentifyingData();
             lines.add("BlockEntity class: " + te.getClass().getName());
             lines.add("");
-            lines.add("BlockEntity NBT (from BlockEntity::write()):");
+            lines.add("BlockEntity NBT (from BlockEntity::createNbtWithIdentifyingData()):");
             lines.addAll((new NbtStringifierPretty(targetIsChat ? Formatting.GRAY.toString() : null)).getNbtLines(nbt));
         }
 
