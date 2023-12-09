@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.SpawnGroup;
@@ -37,6 +38,7 @@ public class BiomeDump
 {
     public static final BiomeInfoProviderBase BASIC = new BiomeInfoProviderBasic();
     public static final BiomeInfoProviderBase COLORS = new BiomeInfoProviderColors();
+    public static final BiomeInfoProviderBase TAGS = new BiomeInfoProviderTags();
 
     public static List<String> getFormattedBiomeDump(Format format, @Nullable World world, BiomeInfoProviderBase provider)
     {
@@ -429,6 +431,34 @@ public class BiomeDump
             {
                 dump.addData(intId, regName, strFogColor, strSkyColor, strWaterColor, strWaterFogColor);
             }
+        }
+    }
+
+    public static class BiomeInfoProviderTags extends BiomeInfoProviderBase
+    {
+        @Override
+        public int getColumnCount()
+        {
+            return 3;
+        }
+
+        @Override
+        public void addTitle(DataDump dump)
+        {
+            dump.addTitle("ID", "Registry name", "Tags");
+        }
+
+        @Override
+        public void addLine(DataDump dump, Biome biome, Identifier id, BiomeDumpContext ctx)
+        {
+            if (ctx.world == null) { return; }
+
+            Registry<Biome> registry = ctx.world.getRegistryManager().get(RegistryKeys.BIOME);
+            String intId = String.valueOf(registry.getRawId(biome));
+            String regName = id.toString();
+            String tags = registry.getEntry(biome).streamTags().map(e -> e.id().toString()).collect(Collectors.joining(", "));
+
+            dump.addData(intId, regName, tags);
         }
     }
 }
