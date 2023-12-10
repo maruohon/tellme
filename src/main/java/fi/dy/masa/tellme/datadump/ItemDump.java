@@ -269,7 +269,7 @@ public class ItemDump
                     o1.add("Value", o2);
 
                     EntityAttributeModifier att = entry.getValue();
-                    o2.add("Name", new JsonPrimitive(att.getName()));
+                    o2.add("Name", new JsonPrimitive(att.toNbt().getString("Name")));
                     o2.add("Operation", new JsonPrimitive(att.getOperation().name()));
                     o2.add("Amount", new JsonPrimitive(att.getValue()));
 
