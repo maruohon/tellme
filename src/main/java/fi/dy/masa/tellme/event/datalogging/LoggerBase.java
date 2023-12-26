@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.chunk.Chunk;
 
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.event.datalogging.DataEntry.DataEntryBase;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
@@ -111,7 +111,7 @@ public class LoggerBase
         {
             if (this.enablePrint)
             {
-                LiteModTellMe.logger.info(data.getPrintLine());
+                TellMe.LOGGER.info(data.getPrintLine());
             }
 
             if (this.enableLog)

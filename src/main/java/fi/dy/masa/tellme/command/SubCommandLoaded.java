@@ -17,7 +17,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 import malilib.util.game.wrap.EntityWrap;
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.ChunkDump;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -105,10 +105,10 @@ public class SubCommandLoaded extends SubCommand
             {
                 if (world != null)
                 {
-                    LiteModTellMe.logger.info(String.format("DIM %4s: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
-                                                            malilib.util.game.WorldUtils.getDimensionIdAsString(world), world.provider.getDimensionType().getName(),
-                                                            WorldUtils.getLoadedChunkCount(world),
-                                                            world.loadedEntityList.size(), world.playerEntities.size()));
+                    TellMe.LOGGER.info(String.format("DIM %4s: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
+                                                     malilib.util.game.WorldUtils.getDimensionIdAsString(world), world.provider.getDimensionType().getName(),
+                                                     WorldUtils.getLoadedChunkCount(world),
+                                                     world.loadedEntityList.size(), world.playerEntities.size()));
                 }
             }
 

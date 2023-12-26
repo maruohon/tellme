@@ -27,7 +27,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 import malilib.util.game.wrap.ItemWrap;
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
 
@@ -92,7 +92,7 @@ public class BlockInfo
                 }
                 else
                 {
-                    LiteModTellMe.logger.warn("Invalid block property '{}'", propParts[i]);
+                    TellMe.LOGGER.warn("Invalid block property '{}'", propParts[i]);
                 }
             }
 
@@ -224,7 +224,7 @@ public class BlockInfo
 
         for (String line : lines)
         {
-            LiteModTellMe.logger.info(line);
+            TellMe.LOGGER.info(line);
         }
     }
 

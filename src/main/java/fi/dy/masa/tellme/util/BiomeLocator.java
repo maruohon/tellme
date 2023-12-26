@@ -10,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 
@@ -50,8 +50,8 @@ public class BiomeLocator
         }
 
         final long timeAfter = System.currentTimeMillis();
-        LiteModTellMe.logger.info(String.format(Locale.US, "Sampled the biome in %d xz-locations in %.3f seconds",
-                this.count, (timeAfter - timeBefore) / 1000f));
+        TellMe.LOGGER.info(String.format(Locale.US, "Sampled the biome in %d xz-locations in %.3f seconds",
+                                         this.count, (timeAfter - timeBefore) / 1000f));
     }
 
     private boolean samplePositionsOnRing(int centerX, int centerZ, int offset, int sampleInterval,
@@ -125,7 +125,7 @@ public class BiomeLocator
 
             if (biome == null)
             {
-                LiteModTellMe.logger.warn("Null biome '{}' with position {} ?!", biome, entry.getValue());
+                TellMe.LOGGER.warn("Null biome '{}' with position {} ?!", biome, entry.getValue());
                 continue;
             }
 

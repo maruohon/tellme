@@ -18,7 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 
 import malilib.util.game.wrap.ItemWrap;
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -75,7 +75,7 @@ public class BlockStats extends ChunkProcessorAllChunks
         }
 
         final long timeAfter = System.currentTimeMillis();
-        LiteModTellMe.logger.info(String.format(Locale.US, "Counted %d blocks in %d chunks in %.3f seconds.",
+        TellMe.LOGGER.info(String.format(Locale.US, "Counted %d blocks in %d chunks in %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
 
         this.addParsedData(counts);
@@ -103,8 +103,8 @@ public class BlockStats extends ChunkProcessorAllChunks
 
                 if (key == null)
                 {
-                    LiteModTellMe.logger.warn("Non-registered block: class = {}, id = {}, meta = {}, state 0 {}",
-                            block.getClass().getName(), id, meta, state);
+                    TellMe.LOGGER.warn("Non-registered block: class = {}, id = {}, meta = {}, state 0 {}",
+                                       block.getClass().getName(), id, meta, state);
                 }
 
                 if (this.append)
@@ -133,7 +133,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             }
             catch (Exception e)
             {
-                LiteModTellMe.logger.error("Caught an exception while getting block names", e);
+                TellMe.LOGGER.error("Caught an exception while getting block names", e);
             }
         }
     }
@@ -170,7 +170,7 @@ public class BlockStats extends ChunkProcessorAllChunks
                 }
                 catch (NumberFormatException e)
                 {
-                    LiteModTellMe.logger.error("Caught an exception while parsing block meta value from user input", e);
+                    TellMe.LOGGER.error("Caught an exception while parsing block meta value from user input", e);
                 }
             }
             else

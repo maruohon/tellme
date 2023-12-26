@@ -11,7 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -64,8 +64,8 @@ public class BiomeStats
         }
 
         final long timeAfter = System.currentTimeMillis();
-        LiteModTellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
-                count, (timeAfter - timeBefore) / 1000f));
+        TellMe.LOGGER.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
+                                         count, (timeAfter - timeBefore) / 1000f));
 
         this.addData(counts, count);
     }
@@ -90,7 +90,7 @@ public class BiomeStats
         }
 
         final long timeAfter = System.currentTimeMillis();
-        LiteModTellMe.logger.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
+        TellMe.LOGGER.info(String.format(Locale.US, "Counted the biome for %d xz-locations in %.3f seconds",
                 count, (timeAfter - timeBefore) / 1000f));
 
         this.addData(counts, count);
@@ -135,7 +135,7 @@ public class BiomeStats
 
             if (biome == null)
             {
-                LiteModTellMe.logger.warn("Invalid biome name '{}'", filter);
+                TellMe.LOGGER.warn("Invalid biome name '{}'", filter);
                 continue;
             }
 
@@ -179,7 +179,7 @@ public class BiomeStats
 
                 if (biome == null)
                 {
-                    LiteModTellMe.logger.warn("Null biome '{}' with count {} ?!", biome, entry.getValue());
+                    TellMe.LOGGER.warn("Null biome '{}' with count {} ?!", biome, entry.getValue());
                     continue;
                 }
 

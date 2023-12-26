@@ -26,7 +26,7 @@ import net.minecraft.world.gen.structure.StructureBoundingBox;
 
 import malilib.util.data.json.JsonUtils;
 import malilib.util.game.wrap.NbtWrap;
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 
@@ -48,7 +48,7 @@ public class SubCommandStructureParse extends SubCommand
 
     private File getDir()
     {
-        return new File(LiteModTellMe.configDirPath, "data");
+        return new File(TellMe.configDirPath, "data");
     }
 
     @Override
@@ -260,7 +260,7 @@ public class SubCommandStructureParse extends SubCommand
                 ex = e;
             }
 
-            LiteModTellMe.logger.warn("Failed to read structure data from file '{}'", file.getAbsolutePath(), ex);
+            TellMe.LOGGER.warn("Failed to read structure data from file '{}'", file.getAbsolutePath(), ex);
         }
 
         return null;

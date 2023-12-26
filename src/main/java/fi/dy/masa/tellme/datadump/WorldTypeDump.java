@@ -2,10 +2,10 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldType;
 
-@SuppressWarnings("deprecation")
+import malilib.util.StringUtils;
+
 public class WorldTypeDump extends DataDump
 {
     private WorldTypeDump(Format format)
@@ -23,7 +23,7 @@ public class WorldTypeDump extends DataDump
             {
                 dump.addData(
                         type.getName(),
-                        I18n.translateToLocal("generator." + type.getName()),
+                        StringUtils.translate("generator." + type.getName()),
                         Boolean.valueOf(type.isVersioned()).toString(),
                         String.valueOf(type.getVersion()),
                         String.valueOf(type.getId()));

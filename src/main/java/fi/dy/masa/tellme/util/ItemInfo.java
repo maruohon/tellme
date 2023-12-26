@@ -12,7 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
 
 import malilib.util.game.wrap.ItemWrap;
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.command.SubCommand;
 import fi.dy.masa.tellme.datadump.DataDump;
 
@@ -62,7 +62,7 @@ public class ItemInfo
 
         for (String line : lines)
         {
-            LiteModTellMe.logger.info(line);
+            TellMe.LOGGER.info(line);
         }
     }
 

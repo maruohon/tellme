@@ -9,7 +9,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistryNamespaced;
 
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.mixin.IMixinTileEntity;
@@ -37,7 +37,7 @@ public class TileEntityDump
         }
         catch (Exception e)
         {
-            LiteModTellMe.logger.warn("Failed to dump the TileEntity map");
+            TellMe.LOGGER.warn("Failed to dump the TileEntity map");
         }
 
         return tileEntityDump.getLines();

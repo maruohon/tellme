@@ -26,7 +26,7 @@ import net.minecraft.world.gen.structure.StructureBoundingBox;
 
 import malilib.util.game.WorldUtils;
 import malilib.util.game.wrap.EntityWrap;
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.datadump.TileEntityDump;
@@ -106,7 +106,7 @@ public class Locate extends ChunkProcessorAllChunks
             }
             else
             {
-                LiteModTellMe.logger.warn("Invalid block name '{}'", str);
+                TellMe.LOGGER.warn("Invalid block name '{}'", str);
             }
         }
 
@@ -127,7 +127,7 @@ public class Locate extends ChunkProcessorAllChunks
             }
             else
             {
-                LiteModTellMe.logger.warn("Invalid entity name '{}'", name);
+                TellMe.LOGGER.warn("Invalid entity name '{}'", name);
             }
         }
 
@@ -149,7 +149,7 @@ public class Locate extends ChunkProcessorAllChunks
             }
             else
             {
-                LiteModTellMe.logger.warn("Invalid TileEntity name '{}'", name);
+                TellMe.LOGGER.warn("Invalid TileEntity name '{}'", name);
             }
         }
 
@@ -184,7 +184,7 @@ public class Locate extends ChunkProcessorAllChunks
         {
             if (this.data.size() >= 100000)
             {
-                LiteModTellMe.logger.warn("Over 100 000 blocks found already, aborting...");
+                TellMe.LOGGER.warn("Over 100 000 blocks found already, aborting...");
                 break;
             }
 
@@ -218,7 +218,7 @@ public class Locate extends ChunkProcessorAllChunks
         }
 
         final long timeAfter = System.currentTimeMillis();
-        LiteModTellMe.logger.info(String.format(Locale.US, "Located %d blocks in %d chunks in %.3f seconds.",
+        TellMe.LOGGER.info(String.format(Locale.US, "Located %d blocks in %d chunks in %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
@@ -255,7 +255,7 @@ public class Locate extends ChunkProcessorAllChunks
         }
 
         final long timeAfter = System.currentTimeMillis();
-        LiteModTellMe.logger.info(String.format(Locale.US, "Located %d Entities in %d chunks in %.3f seconds.",
+        TellMe.LOGGER.info(String.format(Locale.US, "Located %d Entities in %d chunks in %.3f seconds.",
                 count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
@@ -269,7 +269,7 @@ public class Locate extends ChunkProcessorAllChunks
         {
             if (this.data.size() >= 100000)
             {
-                LiteModTellMe.logger.warn("Over 100 000 TileEntities found already, aborting...");
+                TellMe.LOGGER.warn("Over 100 000 TileEntities found already, aborting...");
                 break;
             }
 
@@ -302,8 +302,8 @@ public class Locate extends ChunkProcessorAllChunks
         }
 
         final long timeAfter = System.currentTimeMillis();
-        LiteModTellMe.logger.info(String.format(Locale.US, "Located %d TileEntities in %d chunks in %.3f seconds.",
-                count, chunks.size(), (timeAfter - timeBefore) / 1000f));
+        TellMe.LOGGER.info(String.format(Locale.US, "Located %d TileEntities in %d chunks in %.3f seconds.",
+                                         count, chunks.size(), (timeAfter - timeBefore) / 1000f));
     }
 
     public List<String> getLines()

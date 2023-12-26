@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 import javax.annotation.Nullable;
 
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 
 public class DataDump
 {
@@ -224,7 +224,7 @@ public class DataDump
         {
             if (data[i] == null)
             {
-                LiteModTellMe.logger.warn("null value at column index {} on row '{}'", i, this.rowDataToString(data));
+                TellMe.LOGGER.warn("null value at column index {} on row '{}'", i, this.rowDataToString(data));
                 valid = false;
             }
             else if (this.format == Format.ASCII)
@@ -532,8 +532,7 @@ public class DataDump
     @Nullable
     public static File dumpDataToFile(String fileNameBase, String fileNameExtension, List<String> lines)
     {
-        File outFile = null;
-        File cfgDir = new File(LiteModTellMe.configDirPath);
+        File cfgDir = new File(TellMe.configDirPath);
 
         if (cfgDir.exists() == false)
         {
@@ -543,14 +542,14 @@ public class DataDump
             }
             catch (Exception e)
             {
-                LiteModTellMe.logger.error("dumpDataToFile(): Failed to create the configuration directory", e);
+                TellMe.LOGGER.error("dumpDataToFile(): Failed to create the configuration directory", e);
                 return null;
             }
         }
 
         String fileNameBaseWithDate = fileNameBase + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date(System.currentTimeMillis()));
         String fileName = fileNameBaseWithDate + fileNameExtension;
-        outFile = new File(cfgDir, fileName);
+        File outFile = new File(cfgDir, fileName);
         int postFix = 1;
 
         while (outFile.exists() && postFix < 100)
@@ -562,7 +561,7 @@ public class DataDump
 
         if (outFile.exists())
         {
-            LiteModTellMe.logger.error("dumpDataToFile(): Failed to create data dump file '{}', one already exists", fileName);
+            TellMe.LOGGER.error("dumpDataToFile(): Failed to create data dump file '{}', one already exists", fileName);
             return null;
         }
 
@@ -572,7 +571,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            LiteModTellMe.logger.error("dumpDataToFile(): Failed to create data dump file '{}'", fileName, e);
+            TellMe.LOGGER.error("dumpDataToFile(): Failed to create data dump file '{}'", fileName, e);
             return null;
         }
 
@@ -591,7 +590,7 @@ public class DataDump
         }
         catch (IOException e)
         {
-            LiteModTellMe.logger.error("dumpDataToFile(): Exception while writing data dump to file '{}'", fileName, e);
+            TellMe.LOGGER.error("dumpDataToFile(): Exception while writing data dump to file '{}'", fileName, e);
         }
 
         return outFile;
@@ -599,11 +598,9 @@ public class DataDump
 
     public static void printDataToLogger(List<String> lines)
     {
-        final int size = lines.size();
-
-        for (int i = 0; i < size; i++)
+        for (String line : lines)
         {
-            LiteModTellMe.logger.info(lines.get(i));
+            TellMe.LOGGER.info(line);
         }
     }
 

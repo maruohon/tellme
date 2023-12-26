@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.gen.ChunkProviderServer;
 
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -25,7 +26,7 @@ public class DimensionDump
             String shouldLoadSpawn = String.valueOf(type.getId() == 0);
             String worldProviderClass = ((IMixinDimensionType) (Object) type).getClazz().getName();
             String currentlyLoaded = String.valueOf(world != null);
-            String loadedChunks = String.valueOf(world.getChunkProvider().getLoadedChunks().size());
+            String loadedChunks = String.valueOf(((ChunkProviderServer) world.getChunkProvider()).getLoadedChunkCount());
 
             dimensionDump.addData(typeId, name, shouldLoadSpawn, currentlyLoaded, loadedChunks, worldProviderClass);
         }

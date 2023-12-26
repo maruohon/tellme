@@ -16,10 +16,6 @@ import fi.dy.masa.tellme.reference.Reference;
 
 public class LiteModTellMe implements LiteMod, ServerCommandProvider
 {
-    public static final Logger logger = LogManager.getLogger(Reference.MOD_ID);
-
-    public static String configDirPath;
-
     public LiteModTellMe()
     {
     }
@@ -39,7 +35,7 @@ public class LiteModTellMe implements LiteMod, ServerCommandProvider
     @Override
     public void init(File configPath)
     {
-        configDirPath = ConfigUtils.getConfigDirectory().resolve(Reference.MOD_ID).toFile().getAbsolutePath();
+        TellMe.configDirPath = ConfigUtils.getConfigDirectory().resolve(Reference.MOD_ID).toFile().getAbsolutePath();
         Registry.CLIENT_COMMAND_HANDLER.registerCommand(new ClientCommandTellme());
     }
 

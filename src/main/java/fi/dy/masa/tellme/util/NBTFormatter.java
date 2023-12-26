@@ -16,7 +16,7 @@ import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 
 import malilib.util.game.wrap.NbtWrap;
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.reference.Constants;
 
 public class NBTFormatter
@@ -56,7 +56,7 @@ public class NBTFormatter
         }
         catch(IllegalFormatException e)
         {
-            LiteModTellMe.logger.warn("Error while printing NBT data");
+            TellMe.LOGGER.warn("Error while printing NBT data");
         }
 
         switch (typeId)

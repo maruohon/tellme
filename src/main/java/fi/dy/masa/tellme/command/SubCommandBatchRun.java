@@ -21,7 +21,7 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
-import fi.dy.masa.tellme.LiteModTellMe;
+import fi.dy.masa.tellme.TellMe;
 
 public class SubCommandBatchRun extends SubCommand
 {
@@ -82,7 +82,7 @@ public class SubCommandBatchRun extends SubCommand
 
             for (String command : commands)
             {
-                LiteModTellMe.logger.info("Running a command: '{}'", command);
+                TellMe.LOGGER.info("Running a command: '{}'", command);
                 manager.executeCommand(sender, command);
             }
         }
@@ -110,7 +110,7 @@ public class SubCommandBatchRun extends SubCommand
         }
         catch (IOException e)
         {
-            LiteModTellMe.logger.warn("Failed to read commands from a batch file '{}'", batchFile.getAbsolutePath());
+            TellMe.LOGGER.warn("Failed to read commands from a batch file '{}'", batchFile.getAbsolutePath());
         }
 
         return lines;
@@ -119,7 +119,7 @@ public class SubCommandBatchRun extends SubCommand
     @Nullable
     private File getBatchCommandFile(String fileName)
     {
-        File cfgDir = new File(LiteModTellMe.configDirPath);
+        File cfgDir = new File(TellMe.configDirPath);
         File batchFile = new File(new File(cfgDir, "batch_commands"), fileName);
 
         return batchFile.exists() && batchFile.isFile() ? batchFile : null;
@@ -127,7 +127,7 @@ public class SubCommandBatchRun extends SubCommand
 
     private List<String> getExistingBatchFileNames()
     {
-        File dir = new File(new File(LiteModTellMe.configDirPath), "batch_commands");
+        File dir = new File(new File(TellMe.configDirPath), "batch_commands");
 
         if (dir.isDirectory())
         {
