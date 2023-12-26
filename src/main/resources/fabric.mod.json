@@ -1,0 +1,39 @@
+{
+	"schemaVersion": 1,
+	"id": "tellme",
+	"name": "TellMe",
+	"version": "${mod_version}",
+
+	"description": "Registry dumps and other information output",
+	"license": "LGPLv3",
+	"authors": [ "masa" ],
+	"contact": {
+		"homepage": "https://www.curseforge.com/minecraft/mc-mods/tellme",
+		"issues": "https://github.com/maruohon/tellme/issues",
+		"sources": "https://github.com/maruohon/tellme",
+		"discord": "https://discordapp.com/channels/169369095538606080/455481648125968384"
+	},
+
+	"icon": "assets/tellme/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"init": [
+			"fi.dy.masa.tellme.TellMe"
+		]
+	},
+
+	"mixins": [
+		{
+			"config": "mixins.tellme.json",
+			"environment": "client"
+		}
+	],
+
+	"depends": {
+		"minecraft": "1.12.x",
+		"malilib": ">=0.55.0",
+		"osl-entrypoints": "*",
+		"osl-lifecycle-events": "*",
+		"osl-resource-loader": "*"
+	}
+}
