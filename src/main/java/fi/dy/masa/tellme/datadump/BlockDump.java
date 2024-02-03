@@ -19,8 +19,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
 
+import malilib.render.text.TextRendererUtils;
 import malilib.util.game.wrap.DefaultedList;
 import malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.datadump.BiomeDump.IdToStringHolder;
@@ -77,7 +77,7 @@ public class BlockDump extends DataDump
         String registryName = rl.toString();
         boolean notEmpty = ItemWrap.notEmpty(stack);
         String displayName = notEmpty ? stack.getDisplayName() : block.getLocalizedName();
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+        displayName = TextRendererUtils.stripVanillaFormattingCodes(displayName);
         Item item = Item.getItemFromBlock(block);
         String itemId = item != Items.AIR ? String.valueOf(Item.getIdFromItem(item)) : EMPTY_STRING;
         String itemMeta = notEmpty ? String.valueOf(stack.getMetadata()) : EMPTY_STRING;
@@ -284,7 +284,7 @@ public class BlockDump extends DataDump
                 int itemId = Item.getIdFromItem(item);
                 int itemMeta = stack.getMetadata();
                 String displayName = ItemWrap.notEmpty(stack) ? stack.getDisplayName() : block.getLocalizedName();
-                displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+                displayName = TextRendererUtils.stripVanillaFormattingCodes(displayName);
 
                 JsonObject objItem = new JsonObject();
                 objItem.add("RegistryName", new JsonPrimitive(itemName));

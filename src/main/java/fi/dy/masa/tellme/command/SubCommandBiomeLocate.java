@@ -15,12 +15,12 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 
+import malilib.util.position.BlockPos;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.BiomeLocator;
@@ -134,7 +134,7 @@ public class SubCommandBiomeLocate extends SubCommand
 
             // Get the world - either the player's current world, or the one based on the provided dimension ID
             World world = this.getWorld(cmd, args, sender, server);
-            BlockPos pos = sender instanceof EntityPlayer ? sender.getPosition() : WorldUtils.getSpawnPoint(world);
+            BlockPos pos = sender instanceof EntityPlayer ? BlockPos.of(sender.getPosition()) : WorldUtils.getSpawnPoint(world);
             String pre = this.getSubCommandUsagePre();
             BiomeProvider biomeProvider = world.getBiomeProvider();
 

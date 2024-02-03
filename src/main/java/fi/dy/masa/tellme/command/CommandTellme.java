@@ -70,7 +70,7 @@ public class CommandTellme extends CommandBase
 
             if (sc != null)
             {
-                return sc.getTabCompletions(server, sender, SubCommand.dropFirstStrings(args, 1), targetPos);
+                return sc.getTabCompletions(server, sender, SubCommand.dropFirstStrings(args, 1), malilib.util.position.BlockPos.of(targetPos));
             }
         }
 

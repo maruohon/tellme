@@ -7,8 +7,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
 
+import malilib.render.text.TextRendererUtils;
 import malilib.util.game.wrap.DefaultedList;
 import malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
@@ -26,7 +26,7 @@ public class FoodItemDump
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = notEmpty ? stack.getDisplayName() : DataDump.EMPTY_STRING;
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+        displayName = TextRendererUtils.stripVanillaFormattingCodes(displayName);
         String hunger = notEmpty ? String.valueOf(item.getHealAmount(stack)) : "?";
         String saturation = notEmpty ? String.valueOf(item.getSaturationModifier(stack)) : "?";
 

@@ -8,13 +8,16 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
+
+import malilib.util.game.wrap.EntityWrap;
+import malilib.util.game.wrap.GameUtils;
+import malilib.util.position.BlockPos;
+import malilib.util.position.ChunkPos;
 
 public class WorldUtils
 {
@@ -27,11 +30,11 @@ public class WorldUtils
             return ((ChunkProviderServer) provider).getLoadedChunks();
         }
 
-        EntityPlayer player = Minecraft.getMinecraft().player;
+        EntityPlayer player = GameUtils.getClientPlayer();
 
         if (player != null)
         {
-            BlockPos pos = player.getPosition();
+            BlockPos pos = EntityWrap.getEntityBlockPos(player);
             int cX = pos.getX() >> 4;
             int cZ = pos.getZ() >> 4;
             int radius = Minecraft.getMinecraft().gameSettings.renderDistanceChunks + 1;
@@ -101,12 +104,12 @@ public class WorldUtils
         if (world instanceof WorldServer)
         {
             // This is mostly for The End dimension, others return null here
-            pos = ((WorldServer) world).getSpawnCoordinate();
+            pos = BlockPos.of(((WorldServer) world).getSpawnCoordinate());
         }
 
         if (pos == null)
         {
-            pos = world.getSpawnPoint();
+            pos = BlockPos.of(world.getSpawnPoint());
         }
 
         return pos;

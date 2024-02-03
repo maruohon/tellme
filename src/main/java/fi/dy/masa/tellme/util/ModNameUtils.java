@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
+
+import malilib.render.text.TextRendererUtils;
 
 public class ModNameUtils
 {
@@ -26,7 +27,7 @@ public class ModNameUtils
                 modName = domain;
             }
 
-            modName = TextFormatting.getTextWithoutFormattingCodes(modName);
+            modName = TextRendererUtils.stripVanillaFormattingCodes(modName);
             MOD_NAMES.put(domain, modName);
         }
 

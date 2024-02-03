@@ -1,13 +1,13 @@
 package fi.dy.masa.tellme.event.datalogging;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import malilib.util.game.WorldUtils;
 import malilib.util.game.wrap.EntityWrap;
+import malilib.util.position.ChunkPos;
+import malilib.util.position.Vec3d;
 import fi.dy.masa.tellme.datadump.DataDump;
 
 public class DataEntry
@@ -60,7 +60,7 @@ public class DataEntry
     {
         public DataEntryChunkEventBase(Chunk chunk)
         {
-            super(chunk.getWorld(), chunk.getPos());
+            super(chunk.getWorld(), ChunkPos.of(chunk.getPos()));
         }
 
         @Override

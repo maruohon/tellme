@@ -8,8 +8,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
 
+import malilib.render.text.TextRendererUtils;
 import malilib.util.game.wrap.DefaultedList;
 import malilib.util.game.wrap.ItemWrap;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
@@ -27,7 +27,7 @@ public class ItemDump
         String modName = ModNameUtils.getModName(rl);
         String registryName = rl.toString();
         String displayName = notEmpty ? stack.getDisplayName() : DataDump.EMPTY_STRING;
-        displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+        displayName = TextRendererUtils.stripVanillaFormattingCodes(displayName);
 
         if (dumpNBT)
         {
@@ -111,7 +111,7 @@ public class ItemDump
             ResourceLocation rl = Item.REGISTRY.getNameForObject(stack.getItem());
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = meta == 32767 ? "(WILDCARD)" : stack.getDisplayName();
-            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+            displayName = TextRendererUtils.stripVanillaFormattingCodes(displayName);
 
             return String.format("[%s@%d - '%s']", regName, meta, displayName);
         }
@@ -129,7 +129,7 @@ public class ItemDump
             ResourceLocation rl = Item.REGISTRY.getNameForObject(stack.getItem());
             String regName = rl != null ? rl.toString() : "<null>";
             String displayName = meta == 32767 ? "(WILDCARD)" : stack.getDisplayName();
-            displayName = TextFormatting.getTextWithoutFormattingCodes(displayName);
+            displayName = TextRendererUtils.stripVanillaFormattingCodes(displayName);
             NBTTagCompound tag = ItemWrap.getTag(stack);
 
             return String.format("[%s@%d - '%s' - %s]", regName, meta, displayName,

@@ -6,12 +6,12 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
+import malilib.util.MathUtils;
+import malilib.util.position.BlockPos;
+import malilib.util.position.ChunkPos;
 import fi.dy.masa.tellme.util.WorldUtils;
 
 public abstract class ChunkProcessorAllChunks
@@ -50,8 +50,8 @@ public abstract class ChunkProcessorAllChunks
         int yMax = Math.max(pos1.getY(), pos2.getY());
         int zMax = Math.max(pos1.getZ(), pos2.getZ());
 
-        yMin = MathHelper.clamp(yMin, 0, 255);
-        yMax = MathHelper.clamp(yMax, 0, 255);
+        yMin = MathUtils.clamp(yMin, 0, 255);
+        yMax = MathUtils.clamp(yMax, 0, 255);
 
         return Pair.of(new BlockPos(xMin, yMin, zMin), new BlockPos(xMax, yMax, zMax));
     }

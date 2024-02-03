@@ -19,8 +19,8 @@ import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 
+import malilib.util.position.BlockPos;
 import fi.dy.masa.tellme.TellMe;
 
 public class SubCommandBatchRun extends SubCommand

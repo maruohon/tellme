@@ -10,13 +10,13 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 import malilib.util.game.wrap.EntityWrap;
+import malilib.util.position.BlockPos;
+import malilib.util.position.ChunkPos;
+import malilib.util.position.Vec3d;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.ChunkDump;
 import fi.dy.masa.tellme.datadump.DataDump;

@@ -17,11 +17,11 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
+import malilib.util.position.BlockPos;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -135,7 +135,7 @@ public class SubCommandBlockStats extends SubCommand
 
             // Get the world - either the player's current world, or the one based on the provided dimension ID
             World world = this.getWorld(type, args, sender, server);
-            BlockPos pos = sender instanceof EntityPlayer ? sender.getPosition() : WorldUtils.getSpawnPoint(world);
+            BlockPos pos = sender instanceof EntityPlayer ? BlockPos.of(sender.getPosition()) : WorldUtils.getSpawnPoint(world);
             String pre = this.getSubCommandUsagePre();
 
             // count range <x-distance> <y-distance> <z-distance> [dimension] [x y z (of the center)]

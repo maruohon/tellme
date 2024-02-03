@@ -15,11 +15,12 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.event.ClickEvent;
+
+import malilib.util.position.BlockPos;
 
 public abstract class SubCommand implements ISubCommand
 {
@@ -154,7 +155,7 @@ public abstract class SubCommand implements ISubCommand
         //if (TellMe.proxy.isSinglePlayer())
         {
             name.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
-            name.getStyle().setUnderlined(Boolean.valueOf(true));
+            name.getStyle().setUnderlined(true);
         }
 
         sender.sendMessage(new TextComponentTranslation(messageKey, name));
@@ -165,14 +166,14 @@ public abstract class SubCommand implements ISubCommand
         double x = CommandBase.parseDouble(base.getX(), args[startIndex    ], -30000000, 30000000, centerBlock);
         double y = CommandBase.parseDouble(base.getY(), args[startIndex + 1], 0, 256, false);
         double z = CommandBase.parseDouble(base.getZ(), args[startIndex + 2], -30000000, 30000000, centerBlock);
-        return new BlockPos(x, y, z);
+        return BlockPos.ofFloored(x, y, z);
     }
 
     public static BlockPos parseBlockPosXZ(BlockPos base, String[] args, int startIndex, boolean centerBlock) throws NumberInvalidException
     {
         double x = CommandBase.parseDouble(base.getX(), args[startIndex    ], -30000000, 30000000, centerBlock);
         double z = CommandBase.parseDouble(base.getZ(), args[startIndex + 1], -30000000, 30000000, centerBlock);
-        return new BlockPos(x, 0, z);
+        return BlockPos.ofFloored(x, 0, z);
     }
 
     public static int parseInt(String arg, int base) throws NumberInvalidException

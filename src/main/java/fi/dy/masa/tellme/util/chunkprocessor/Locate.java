@@ -18,14 +18,14 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.structure.StructureBoundingBox;
 
 import malilib.util.game.WorldUtils;
 import malilib.util.game.wrap.EntityWrap;
+import malilib.util.position.BlockPos;
+import malilib.util.position.IntBoundingBox;
+import malilib.util.position.Vec3d;
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.datadump.DataDump;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -176,7 +176,7 @@ public class Locate extends ChunkProcessorAllChunks
 
     private void locateBlocks(Collection<Chunk> chunks, BlockPos posMin, BlockPos posMax, IdentityHashMap<IBlockState, Integer> filters)
     {
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+        BlockPos.MutBlockPos pos = new BlockPos.MutBlockPos(0, 0, 0);
         int count = 0;
         final long timeBefore = System.currentTimeMillis();
 
@@ -203,7 +203,7 @@ public class Locate extends ChunkProcessorAllChunks
                 {
                     for (int y = yMin; y <= yMax; ++y)
                     {
-                        pos.setPos(x, y, z);
+                        pos.set(x, y, z);
                         IBlockState state = chunk.getBlockState(pos);
 
                         if (filters.containsKey(state))
@@ -281,20 +281,20 @@ public class Locate extends ChunkProcessorAllChunks
             final int xMax = Math.min((chunk.x << 4) + 15, posMax.getX());
             final int yMax = Math.min(topY, posMax.getY());
             final int zMax = Math.min((chunk.z << 4) + 15, posMax.getZ());
-            StructureBoundingBox box = StructureBoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
+            IntBoundingBox box = IntBoundingBox.createProper(xMin, yMin, zMin, xMax, yMax, zMax);
 
             for (TileEntity te : chunk.getTileEntityMap().values())
             {
-                BlockPos pos = te.getPos();
+                BlockPos pos = BlockPos.of(te.getPos());
                 //System.out.printf("plop @ %s - box: %s\n", pos, box);
 
-                if (filters.contains(te.getClass()) && box.isVecInside(pos))
+                if (filters.contains(te.getClass()) && box.contains(pos))
                 {
                     ResourceLocation name = registry.getNameForObject(te.getClass());
 
                     if (name != null)
                     {
-                        this.data.add(LocationData.of(name.toString(), dim, new Vec3d(pos)));
+                        this.data.add(LocationData.of(name.toString(), dim, Vec3d.of(pos)));
                         count++;
                     }
                 }

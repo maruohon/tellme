@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.ColorizerFoliage;
@@ -18,6 +17,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.MapGenVillage;
 
+import malilib.util.MathUtils;
 import malilib.util.game.wrap.GameUtils;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
@@ -87,15 +87,15 @@ public class BiomeDump
 
     private static int getGrassColor(Biome biome)
     {
-        double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        double temperature = MathUtils.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
+        double humidity = MathUtils.clamp(biome.getRainfall(), 0.0F, 1.0F);
         return ColorizerGrass.getGrassColor(temperature, humidity);
     }
 
     private static int getFoliageColor(Biome biome)
     {
-        double temperature = MathHelper.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
-        double humidity = MathHelper.clamp(biome.getRainfall(), 0.0F, 1.0F);
+        double temperature = MathUtils.clamp(biome.getDefaultTemperature(), 0.0F, 1.0F);
+        double humidity = MathUtils.clamp(biome.getRainfall(), 0.0F, 1.0F);
         return ColorizerFoliage.getFoliageColor(temperature, humidity);
     }
 
