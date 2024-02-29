@@ -4,7 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import malilib.util.game.WorldUtils;
+import malilib.util.game.wrap.WorldWrap;
 import fi.dy.masa.tellme.event.datalogging.DataLogger.DataType;
 
 public class EventHandlers
@@ -15,7 +15,7 @@ public class EventHandlers
 
         if (EventManager.isLoggingEnabled(DataType.CHUNK_LOAD) && world.isRemote == false)
         {
-            DataLogger.instance(WorldUtils.getDimensionId(world)).onChunkEvent(DataType.CHUNK_LOAD, chunk);
+            DataLogger.instance(WorldWrap.getDimensionId(world)).onChunkEvent(DataType.CHUNK_LOAD, chunk);
         }
     }
 
@@ -25,7 +25,7 @@ public class EventHandlers
 
         if (EventManager.isLoggingEnabled(DataType.CHUNK_UNLOAD) && world.isRemote == false)
         {
-            DataLogger.instance(WorldUtils.getDimensionId(world)).onChunkEvent(DataType.CHUNK_UNLOAD, chunk);
+            DataLogger.instance(WorldWrap.getDimensionId(world)).onChunkEvent(DataType.CHUNK_UNLOAD, chunk);
         }
     }
 
@@ -35,7 +35,7 @@ public class EventHandlers
 
         if (EventManager.isLoggingEnabled(DataType.ENTITY_JOIN_WORLD) && world.isRemote == false)
         {
-            DataLogger.instance(WorldUtils.getDimensionId(world)).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
+            DataLogger.instance(WorldWrap.getDimensionId(world)).onEntityEvent(DataType.ENTITY_JOIN_WORLD, entity);
         }
     }
 }

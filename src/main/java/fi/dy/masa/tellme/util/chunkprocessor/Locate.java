@@ -21,7 +21,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.chunk.Chunk;
 
-import malilib.util.game.WorldUtils;
+import malilib.util.game.wrap.WorldWrap;
 import malilib.util.game.wrap.EntityWrap;
 import malilib.util.position.BlockPos;
 import malilib.util.position.IntBoundingBox;
@@ -188,7 +188,7 @@ public class Locate extends ChunkProcessorAllChunks
                 break;
             }
 
-            final int dim = WorldUtils.getDimensionId(chunk.getWorld());
+            final int dim = WorldWrap.getDimensionId(chunk.getWorld());
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
@@ -229,7 +229,7 @@ public class Locate extends ChunkProcessorAllChunks
 
         for (Chunk chunk : chunks)
         {
-            final int dim = WorldUtils.getDimensionId(chunk.getWorld());
+            final int dim = WorldWrap.getDimensionId(chunk.getWorld());
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());
             final int zMin = Math.max(chunk.z << 4, posMin.getZ());
@@ -273,7 +273,7 @@ public class Locate extends ChunkProcessorAllChunks
                 break;
             }
 
-            final int dim = WorldUtils.getDimensionId(chunk.getWorld());
+            final int dim = WorldWrap.getDimensionId(chunk.getWorld());
             final int topY = chunk.getTopFilledSegment() + 15;
             final int xMin = Math.max(chunk.x << 4, posMin.getX());
             final int yMin = Math.max(0, posMin.getY());

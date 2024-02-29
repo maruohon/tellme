@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
+import malilib.util.game.wrap.WorldWrap;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.WorldUtils;
@@ -22,7 +23,7 @@ public class ChunkDump
         {
             if (world != null)
             {
-                String dimId = malilib.util.game.WorldUtils.getDimensionIdAsString(world);
+                String dimId = WorldWrap.getDimensionIdAsString(world);
                 Collection<Chunk> chunks = WorldUtils.getLoadedChunks(world);
 
                 for (Chunk chunk : chunks)

@@ -4,7 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import malilib.util.game.WorldUtils;
+import malilib.util.game.wrap.WorldWrap;
 import malilib.util.game.wrap.EntityWrap;
 import malilib.util.position.ChunkPos;
 import malilib.util.position.Vec3d;
@@ -21,7 +21,7 @@ public class DataEntry
 
         private DataEntryBase(World world, P position)
         {
-            this.dimension = WorldUtils.getDimensionId(world);
+            this.dimension = WorldWrap.getDimensionId(world);
             this.worldTick = world.getTotalWorldTime();
             this.systemTime = System.currentTimeMillis();
             this.position = position;

@@ -18,7 +18,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.MapGenVillage;
 
 import malilib.util.MathUtils;
-import malilib.util.game.wrap.GameUtils;
+import malilib.util.game.wrap.GameWrap;
 import fi.dy.masa.tellme.datadump.DataDump.Alignment;
 import fi.dy.masa.tellme.datadump.DataDump.Format;
 import fi.dy.masa.tellme.util.ChatUtils;
@@ -31,7 +31,7 @@ public class BiomeDump
 
         DataDump biomeDump = new DataDump(columns, format);
         biomeDump.setSort(false);
-        World world = GameUtils.getClientWorld();
+        World world = GameWrap.getClientWorld();
 
         if (world != null)
         {

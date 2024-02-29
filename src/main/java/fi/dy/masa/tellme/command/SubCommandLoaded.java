@@ -14,6 +14,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 import malilib.util.game.wrap.EntityWrap;
+import malilib.util.game.wrap.WorldWrap;
 import malilib.util.position.BlockPos;
 import malilib.util.position.ChunkPos;
 import malilib.util.position.Vec3d;
@@ -106,7 +107,7 @@ public class SubCommandLoaded extends SubCommand
                 if (world != null)
                 {
                     TellMe.LOGGER.info(String.format("DIM %4s: %-16s [%4d loaded chunks, %4d loaded entities, %d players]",
-                                                     malilib.util.game.WorldUtils.getDimensionIdAsString(world), world.provider.getDimensionType().getName(),
+                                                     WorldWrap.getDimensionIdAsString(world), world.provider.getDimensionType().getName(),
                                                      WorldUtils.getLoadedChunkCount(world),
                                                      world.loadedEntityList.size(), world.playerEntities.size()));
                 }
