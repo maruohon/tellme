@@ -3,7 +3,9 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.core.Registry;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.Stat;
@@ -37,11 +39,14 @@ public class StatTypesDump
     public static List<String> getFormattedDumpCustomStats(Format format)
     {
         DataDump dump = new DataDump(2, format);
+        Minecraft inst = Minecraft.getInstance();
 
-        for (ResourceLocation key : Registry.CUSTOM_STAT.keySet())
+        var reg = inst.level.registryAccess().registryOrThrow(Registries.CUSTOM_STAT);
+
+        for (ResourceLocation key : reg.keySet())
         {
             String typeName = key.toString();
-            Optional<ResourceLocation> stat = Registry.CUSTOM_STAT.getOptional(key);
+            Optional<ResourceLocation> stat = reg.getOptional(key);
 
             if (stat.isPresent())
             {

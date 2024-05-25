@@ -233,12 +233,14 @@ public class SubCommandBlockStats
     private static int countBlocksRange(CommandSourceStack source, int range, Vec3 center,
                                         IWorldRetriever dimensionGetter, boolean isAppend) throws CommandSyntaxException
     {
-        BlockPos centerPos = new BlockPos(center);
+        int x = Double.valueOf(center.x).intValue();
+        int y = Double.valueOf(center.y).intValue();
+        int z = Double.valueOf(center.z).intValue();
         Level world = dimensionGetter.getWorldFromSource(source);
         int minY = world.getMinBuildHeight();
         int maxY = world.getMaxBuildHeight() - 1;
-        BlockPos minPos = new BlockPos(centerPos.getX() - range, Math.max(minY, centerPos.getY() - range), centerPos.getZ() - range);
-        BlockPos maxPos = new BlockPos(centerPos.getX() + range, Math.min(maxY, centerPos.getY() + range), centerPos.getZ() + range);
+        BlockPos minPos = new BlockPos(x - range, Math.max(minY, y - range), z - range);
+        BlockPos maxPos = new BlockPos(x + range, Math.min(maxY, y + range), z + range);
 
         return countBlocksBox(source, minPos, maxPos, dimensionGetter, isAppend);
     }

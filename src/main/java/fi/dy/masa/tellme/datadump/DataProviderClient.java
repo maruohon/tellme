@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -142,30 +143,31 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupData(DataDump dump)
     {
-        for (CreativeModeTab group : CreativeModeTab.TABS)
+        var allTabs = CreativeModeTabs.allTabs();
+        for (CreativeModeTab group : allTabs)
         {
             if (group != null)
             {
-                String index = String.valueOf(group.getId());
-                String name = group.getRecipeFolderName();
+                String index = String.valueOf(allTabs.indexOf(group));
+                String name = group.getDisplayName().toString();
                 String key = group.getDisplayName().getString();
-                ItemStack stack = group.makeIcon();
+                ItemStack stack = group.getIconItem();
 
                 if (key == null)
                 {
-                    TellMe.logger.warn("null translation key for tab at index {} (name: '{}')", group.getId(), name);
+                    TellMe.logger.warn("null translation key for tab at index {} (name: '{}')", index, name);
                     continue;
                 }
 
                 if (name == null)
                 {
-                    TellMe.logger.warn("null name for tab at index {} (translation key: '{}')", group.getId(), key);
+                    TellMe.logger.warn("null name for tab at index {} (translation key: '{}')", index, key);
                     continue;
                 }
 
                 if (stack == null)
                 {
-                    TellMe.logger.warn("null icon item for tab at index {} (name: '{}', translation key: '{}')", group.getId(), name, key);
+                    TellMe.logger.warn("null icon item for tab at index {} (name: '{}', translation key: '{}')", index, name, key);
                     continue;
                 }
 
@@ -180,14 +182,21 @@ public class DataProviderClient extends DataProviderBase
     @Override
     public void addItemGroupNames(JsonObject obj, Item item)
     {
-        String[] names = new String[CreativeModeTab.TABS.length];
+        var allTabs = CreativeModeTabs.allTabs();
+        String[] names = new String[allTabs.size()];
         int i = 0;
+        ItemStack stack = item.getDefaultInstance();
 
-        for (CreativeModeTab group : item.getCreativeTabs())
+        for (CreativeModeTab group : allTabs)
         {
-            if (group != null)
+            Collection<ItemStack> groupStacks = group.getSearchTabDisplayItems();
+            //TODO: Test This. This may or may not work...  May need to try differently.
+            for (ItemStack groupItem : groupStacks) 
             {
-                names[i++] = I18n.get(group.getDisplayName().getString());
+                if (ItemStack.isSameItem(groupItem, stack))
+                {
+                    names[i++] = I18n.get(group.getDisplayName().getString());
+                }
             }
         }
 

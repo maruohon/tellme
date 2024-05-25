@@ -22,8 +22,7 @@ public class ItemInfo
         {
             return stack1.isEmpty() == stack2.isEmpty();
         }
-
-        return stack1.sameItem(stack2) && ItemStack.tagMatches(stack1, stack2);
+        return ItemStack.isSameItem(stack1, stack2) && ItemStack.isSameItemSameTags(stack1, stack2);
     }
 
     private static List<String> getFullItemInfo(@Nonnull ItemStack stack)

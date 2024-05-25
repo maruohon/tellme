@@ -13,10 +13,10 @@ import com.google.common.collect.ArrayListMultimap;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -62,6 +62,7 @@ public class BlockStats extends ChunkProcessorAllChunks
             final int zMin = Math.max(chunkPos.z << 4, posMin.getZ());
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
+            @SuppressWarnings("removal")
             final int topY = chunk.getHighestSectionPosition() + 15;
             final int yMin = Math.max(chunk.getMinBuildHeight(), posMin.getY());
             final int yMax = Math.min(topY, posMax.getY());
@@ -139,6 +140,8 @@ public class BlockStats extends ChunkProcessorAllChunks
         ArrayList<BlockStateCount> list = new ArrayList<>();
         ArrayListMultimap<Block, BlockStateCount> infoByBlock = ArrayListMultimap.create();
         DynamicCommandExceptionType exception = new DynamicCommandExceptionType((type) -> Component.literal("Invalid block state filter: '" + type + "'"));
+        @SuppressWarnings("resource")
+        var reg = Minecraft.getInstance().level.holderLookup(Registries.BLOCK);
 
         for (BlockStateCount info : this.blockStats.values())
         {
@@ -147,8 +150,8 @@ public class BlockStats extends ChunkProcessorAllChunks
 
         for (String filter : filters)
         {
-            @SuppressWarnings("deprecation")
-            BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(Registry.BLOCK, filter, false);
+            //@SuppressWarnings("deprecation")
+            BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(reg, filter, false);
             BlockState state = result.blockState();
 
             if (state == null)

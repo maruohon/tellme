@@ -164,7 +164,7 @@ public class CommandUtils
 
     public static void sendMessage(CommandSourceStack source, String message)
     {
-        source.sendSuccess(Component.literal(message), true);
+        source.sendSuccess(() -> Component.literal(message), true);
     }
 
     public static Vec2 getVec2fFromSource(CommandSourceStack source)
@@ -187,7 +187,8 @@ public class CommandUtils
     public static BlockPos getBlockPosFromSource(CommandSourceStack source)
     {
         Entity entity = source.getEntity();
-        return entity != null ? new BlockPos(entity.position()) : BlockPos.ZERO;
+        
+        return entity != null ? entity.blockPosition() : BlockPos.ZERO;
     }
 
     public static Vec3 getVec3dFromArg(CommandContext<CommandSourceStack> ctx, String argName) throws CommandSyntaxException

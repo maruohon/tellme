@@ -42,7 +42,7 @@ public class SubCommandCopyToClipboard
         }
         else
         {
-            source.sendSuccess(Component.literal("'/tellme copy-to-clipboard' can only be run by a player"), false);
+            source.sendSuccess(() -> Component.literal("'/tellme copy-to-clipboard' can only be run by a player"), false);
             return -1;
         }
 

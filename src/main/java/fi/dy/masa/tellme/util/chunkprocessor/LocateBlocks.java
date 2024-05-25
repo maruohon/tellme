@@ -8,8 +8,10 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
@@ -36,6 +38,8 @@ public class LocateBlocks extends LocateBase
     protected Set<BlockState> generateBlockStateFilters(List<String> filterStrings) throws CommandSyntaxException
     {
         Set<BlockState> filters = Sets.newIdentityHashSet();
+        @SuppressWarnings("resource")
+        var reg = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BLOCK);
 
         for (String str : filterStrings)
         {
@@ -53,8 +57,8 @@ public class LocateBlocks extends LocateBase
                 throw INVALID_NAME_EXCEPTION.create(str);
             }
 
-            @SuppressWarnings("deprecation")
-            Optional<Block> block = Registry.BLOCK.getOptional(key);
+            //@SuppressWarnings("deprecation")
+            Optional<Block> block = reg.getOptional(key);
 
             if (block.isPresent())
             {
@@ -107,6 +111,7 @@ public class LocateBlocks extends LocateBase
             final int xMax = Math.min((chunkPos.x << 4) + 15, posMax.getX());
             final int zMax = Math.min((chunkPos.z << 4) + 15, posMax.getZ());
             final int yMin = Math.max(chunk.getMinBuildHeight(), posMin.getY());
+            @SuppressWarnings("removal")
             final int yMax = Math.min(chunk.getHighestSectionPosition() + 15, posMax.getY());
 
             for (int z = zMin; z <= zMax; ++z)

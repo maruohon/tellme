@@ -48,7 +48,7 @@ public class DataProviderBase
 
             try
             {
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings({ "unchecked", "resource" })
                 Long2ObjectLinkedOpenHashMap<ChunkHolder> immutableLoadedChunks = (Long2ObjectLinkedOpenHashMap<ChunkHolder>) field_ChunkManager_immutableLoadedChunks.get(((ServerLevel) world).getChunkSource().chunkMap);
 
                 for (ChunkHolder holder : immutableLoadedChunks.values())

@@ -3,7 +3,9 @@ package fi.dy.masa.tellme.datadump;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -19,14 +21,16 @@ public class EntityDump
     public static List<String> getFormattedEntityDump(@Nullable Level world, DataDump.Format format, boolean includeClassName)
     {
         DataDump entityDump = new DataDump(includeClassName ? 5 : 4, format);
+        @SuppressWarnings("resource")
+        var reg = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.ENTITY_TYPE);
 
         for (Map.Entry<ResourceKey<EntityType<?>>, EntityType<?>> entry : ForgeRegistries.ENTITY_TYPES.getEntries())
         {
             EntityType<?> type = entry.getValue();
             ResourceLocation id = entry.getKey().location();
             String modName = ModNameUtils.getModName(id);
-            @SuppressWarnings("deprecation")
-            String entityId = String.valueOf(Registry.ENTITY_TYPE.getId(type));
+            //@SuppressWarnings("deprecation")
+            String entityId = String.valueOf(reg.getId(type));
             String category = type.getCategory().getName();
 
             if (includeClassName && world != null)

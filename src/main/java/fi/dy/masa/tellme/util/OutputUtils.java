@@ -117,7 +117,7 @@ public class OutputUtils
                     }
                     else
                     {
-                        source.sendSuccess(Component.literal("Output written to file '" + file.getName() + "'"), false);
+                        source.sendSuccess(() -> Component.literal("Output written to file '" + file.getName() + "'"), false);
                     }
                 }
                 break;

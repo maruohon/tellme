@@ -25,9 +25,9 @@ public class CommandReloadConfig
      private static int reloadConfig(CommandSourceStack source) throws CommandSyntaxException
      {
          if (Configs.reloadConfig())
-         {
-             source.sendSuccess(Component.literal("TellMe config reloaded"), false);
-             return 1;
+         {            
+            source.sendSuccess(() -> Component.literal("TellMe config reloaded"), false);
+            return 1;
          }
 
          throw FAILED_EXCEPTION.create();

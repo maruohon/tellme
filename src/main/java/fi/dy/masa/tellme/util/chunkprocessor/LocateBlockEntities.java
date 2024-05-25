@@ -7,8 +7,10 @@ import java.util.Optional;
 import java.util.Set;
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -35,14 +37,16 @@ public class LocateBlockEntities extends LocateBase
     protected Set<BlockEntityType<?>> generateBlockEntityFilters(List<String> filterStrings) throws CommandSyntaxException
     {
         Set<BlockEntityType<?>> set = Sets.newIdentityHashSet();
+        @SuppressWarnings("resource")
+        var reg = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BLOCK_ENTITY_TYPE);
 
         for (String name : filterStrings)
         {
             try
             {
                 ResourceLocation key = new ResourceLocation(name);
-                @SuppressWarnings("deprecation")
-                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOptional(key);
+                //@SuppressWarnings("deprecation")
+                Optional<BlockEntityType<?>> type = reg.getOptional(key);
 
                 if (type.isPresent())
                 {

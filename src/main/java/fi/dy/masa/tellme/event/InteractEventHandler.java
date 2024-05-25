@@ -61,6 +61,7 @@ public class InteractEventHandler
         this.printEntityInfo(event, event.getTarget());
     }
 
+    @SuppressWarnings("resource")
     private void printEntityInfo(PlayerInteractEvent event, Entity entity)
     {
         Player player = event.getEntity();
@@ -69,7 +70,7 @@ public class InteractEventHandler
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
             event.getHand() == InteractionHand.MAIN_HAND &&
             player.createCommandSourceStack().hasPermission(4) &&
-            ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
+            ItemStack.isSameItem(Configs.debugItemBlocks, player.getMainHandItem()))
         {
             if (event.getLevel().isClientSide == false)
             {
@@ -97,7 +98,7 @@ public class InteractEventHandler
         if (Configs.Generic.enableDebugItemForBlocksAndEntities &&
             event.getHand() == InteractionHand.MAIN_HAND &&
             player.createCommandSourceStack().hasPermission(4) &&
-            ItemStack.isSame(Configs.debugItemBlocks, player.getMainHandItem()))
+            ItemStack.isSameItem(Configs.debugItemBlocks, player.getMainHandItem()))
         {
             if (world.isClientSide == false)
             {

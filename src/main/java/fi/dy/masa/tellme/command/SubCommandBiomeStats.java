@@ -17,7 +17,7 @@ import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -309,12 +309,12 @@ public class SubCommandBiomeStats
         {
             if (consoleBiomeStats == null)
             {
-                consoleBiomeStats = new BiomeStats(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
+                consoleBiomeStats = new BiomeStats(source.registryAccess().registryOrThrow(Registries.BIOME));
             }
 
             return consoleBiomeStats;
         }
 
-        return BIOME_STATS.computeIfAbsent(entity.getUUID(), (e) -> new BiomeStats(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)));
+        return BIOME_STATS.computeIfAbsent(entity.getUUID(), (e) -> new BiomeStats(source.registryAccess().registryOrThrow(Registries.BIOME)));
     }
 }

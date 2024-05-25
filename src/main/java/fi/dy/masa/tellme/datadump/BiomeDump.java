@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -37,15 +38,17 @@ public class BiomeDump
     public static final BiomeInfoProviderBase BASIC = new BiomeInfoProviderBasic();
     public static final BiomeInfoProviderBase COLORS = new BiomeInfoProviderColors();
     public static final BiomeInfoProviderBase TYPES = new BiomeInfoProviderTypes();
+    private static final BlockPos SEALEVEL = new BlockPos(64, 64, 64);
+
 
     private static Registry<Biome> getBiomeRegistry(Level world)
     {
-        return world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+        return world.registryAccess().registryOrThrow(Registries.BIOME);
     }
 
     private static ResourceKey<Biome> getBiomeKey(Biome biome, Level world)
     {
-        return world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getResourceKey(biome).orElse(null);
+        return world.registryAccess().registryOrThrow(Registries.BIOME).getResourceKey(biome).orElse(null);
     }
 
     public static List<String> getFormattedBiomeDump(Format format, @Nullable Level world, BiomeInfoProviderBase provider)
@@ -122,7 +125,7 @@ public class BiomeDump
         Registry<Biome> registry = getBiomeRegistry(world);
         String intId = String.valueOf(registry.getId(biome));
         String regName = registry.getKey(biome).toString();
-        Biome.Precipitation rainType = biome.getPrecipitation();
+        Biome.Precipitation rainType = biome.getPrecipitationAt(pos);
 
         BiomeSpecialEffects effects = biome.getSpecialEffects();
         int skyColor = effects.getSkyColor();
@@ -135,8 +138,8 @@ public class BiomeDump
         String strWaterFogColor = String.format("0x%08X (%d)", waterFogColor, waterFogColor);
 
         String strMaxSpawnChance = String.valueOf(biome.getMobSettings().getCreatureProbability());
-        String strRainType = rainType.getName();
-        String strRainfall = String.valueOf(biome.getDownfall());
+        String strRainType = rainType.name();
+        String strRainfall = "?"; //String.valueOf(biome.weather.downfall);
         String strTemperature = String.valueOf(biome.getBaseTemperature());
 
         boolean canSnow = biome.shouldSnow(world, pos);
@@ -332,12 +335,11 @@ public class BiomeDump
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("ID", "Registry name", "Temp.", "RainType", "Downfall");
+            dump.addTitle("ID", "Registry name", "Temp.", "RainType");
 
             dump.setColumnProperties(0, Alignment.RIGHT, true); // id
             dump.setColumnProperties(2, Alignment.RIGHT, true); // temperature
             dump.setColumnProperties(3, Alignment.RIGHT, true); // raintype
-            dump.setColumnAlignment(4, Alignment.RIGHT); // downfall
         }
 
         @Override
@@ -349,11 +351,10 @@ public class BiomeDump
             String intId = String.valueOf(registry.getId(biome));
             String regName = id.toString();
             String temp = String.format("%5.2f", biome.getBaseTemperature());
-            Biome.Precipitation precipitation = biome.getPrecipitation();
-            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.getName() : "-";
-            String downfall = String.format("%.2f", biome.getDownfall());
+            Biome.Precipitation precipitation = biome.getPrecipitationAt(SEALEVEL);
+            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.name() : "-";
 
-            dump.addData(intId, regName, temp, precStr, downfall);
+            dump.addData(intId, regName, temp, precStr);
         }
     }
 
@@ -368,12 +369,11 @@ public class BiomeDump
         @Override
         public void addTitle(DataDump dump)
         {
-            dump.addTitle("ID", "Registry name", "Temp.", "RainType", "Downfall", "BiomeTypes", "BiomeDictionary Types");
+            dump.addTitle("ID", "Registry name", "Temp.", "RainType", "BiomeTypes", "BiomeDictionary Types");
 
             dump.setColumnProperties(0, Alignment.RIGHT, true); // id
             dump.setColumnProperties(2, Alignment.RIGHT, true); // temperature
             dump.setColumnProperties(3, Alignment.RIGHT, true); // raintype
-            dump.setColumnAlignment(4, Alignment.RIGHT); // downfall
         }
 
         @Override
@@ -385,13 +385,12 @@ public class BiomeDump
             String intId = String.valueOf(registry.getId(biome));
             String regName = id.toString();
             String temp = String.format("%5.2f", biome.getBaseTemperature());
-            Biome.Precipitation precipitation = biome.getPrecipitation();
-            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.getName() : "-";
-            String downfall = String.format("%.2f", biome.getDownfall());
+            Biome.Precipitation precipitation = biome.getPrecipitationAt(SEALEVEL);
+            String precStr = precipitation != Biome.Precipitation.NONE ? precipitation.name() : "-";
             String biomeTypes = getBiomeTypesForBiome(ctx.world, biome);
             String biomeDictionaryTypes = ""; //getBiomeDictionaryTypesForBiome(getBiomeKey(biome, ctx.world));
 
-            dump.addData(intId, regName, temp, precStr, downfall, biomeTypes, biomeDictionaryTypes);
+            dump.addData(intId, regName, temp, precStr, biomeTypes, biomeDictionaryTypes);
         }
     }
 

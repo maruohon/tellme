@@ -15,7 +15,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
@@ -34,7 +34,7 @@ public class BiomeArgument implements ArgumentType<ResourceLocation>
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> ctx, SuggestionsBuilder builder)
     {
-        return SharedSuggestionProvider.suggestResource(((CommandSourceStack) ctx.getSource()).registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).keySet(), builder);
+        return SharedSuggestionProvider.suggestResource(((CommandSourceStack) ctx.getSource()).registryAccess().registryOrThrow(Registries.BIOME).keySet(), builder);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class BiomeArgument implements ArgumentType<ResourceLocation>
     public static Biome getBiomeArgument(CommandContext<CommandSourceStack> ctx, String name) throws CommandSyntaxException
     {
         ResourceLocation id = ctx.getArgument(name, ResourceLocation.class);
-        Optional<Biome> optional = ctx.getSource().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getOptional(id);
+        Optional<Biome> optional = ctx.getSource().registryAccess().registryOrThrow(Registries.BIOME).getOptional(id);
 
         if (optional.isPresent() == false)
         {

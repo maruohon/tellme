@@ -5,69 +5,94 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import fi.dy.masa.tellme.util.datadump.DataDump;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.tags.ITag;
+import net.minecraftforge.registries.tags.ITagManager;
 
 public class TagDump
 {
+    @SuppressWarnings("unchecked")
     public static List<String> getFormattedTagDump(DataDump.Format format, TagType type, boolean split)
     {
         DataDump dump = new DataDump(2, format);
 
-        /*
         switch (type)
         {
             case BLOCK:
             {
-                Map<ResourceLocation, Tag<Block>> tagMap = BlockTags.getAllTags().getAllTags();
+                ITagManager<Block> tags = ForgeRegistries.BLOCKS.tags();
+                
+                for (Object oTag : tags.getTagNames().toArray()) {
+                    TagKey<Block> tagKey = (TagKey<Block>)oTag;
+                    ITag<Block> iTag = tags.getTag(tagKey);
+                    Stream<String> elementString = iTag.stream().map(TagDump::getBlockRegistryString);
 
-                for (Map.Entry<ResourceLocation, Tag<Block>> entry : tagMap.entrySet())
-                {
-                    addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
-                }
+                    addLines(dump, tagKey.location().toString(),
+                             elementString, 
+                             split);                    
+                }           
 
                 break;
             }
 
             case ITEM:
             {
-                Map<ResourceLocation, Tag<Item>> tagMap = ItemTags.getAllTags().getAllTags();
+                ITagManager<Item> tags = ForgeRegistries.ITEMS.tags();
+                
+                for (Object oTag : tags.getTagNames().toArray()) {
+                    TagKey<Item> tagKey = (TagKey<Item>)oTag;
+                    ITag<Item> iTag = tags.getTag(tagKey);
+                    Stream<String> elementString = iTag.stream().map(TagDump::getItemRegistryString);
 
-                for (Map.Entry<ResourceLocation, Tag<Item>> entry : tagMap.entrySet())
-                {
-                    addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
-                }
+                    addLines(dump, tagKey.location().toString(),
+                             elementString, 
+                             split);                    
+                }           
 
                 break;
             }
 
             case FLUID:
             {
-                Map<ResourceLocation, Tag<Fluid>> tagMap = FluidTags.getAllTags().getAllTags();
+                ITagManager<Fluid> tags = ForgeRegistries.FLUIDS.tags();
+                
+                for (Object oTag : tags.getTagNames().toArray()) {
+                    TagKey<Fluid> tagKey = (TagKey<Fluid>)oTag;
+                    ITag<Fluid> iTag = tags.getTag(tagKey);
+                    Stream<String> elementString = iTag.stream().map(TagDump::getFluidRegistryString);
 
-                for (Map.Entry<ResourceLocation, Tag<Fluid>> entry : tagMap.entrySet())
-                {
-                    addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
-                }
+                    addLines(dump, tagKey.location().toString(),
+                             elementString, 
+                             split);                    
+                }           
 
                 break;
             }
 
             case ENTITY_TYPE:
             {
-                Map<ResourceLocation, Tag<EntityType<?>>> tagMap = EntityTypeTags.getAllTags().getAllTags();
+                ITagManager<EntityType<?>> tags = ForgeRegistries.ENTITY_TYPES.tags();
+                
+                for (Object oTag : tags.getTagNames().toArray()) {
+                    TagKey<EntityType<?>> tagKey = (TagKey<EntityType<?>>)oTag;
+                    ITag<EntityType<?>> iTag = tags.getTag(tagKey);
+                    Stream<String> elementString = iTag.stream().map(TagDump::getEntityTypeRegistryString);
 
-                for (Map.Entry<ResourceLocation, Tag<EntityType<?>>> entry : tagMap.entrySet())
-                {
-                    addLines(dump, entry.getKey().toString(),
-                            entry.getValue().getValues().stream().map((b) -> b.getRegistryName().toString()), split);
-                }
+                    addLines(dump, tagKey.location().toString(),
+                             elementString, 
+                             split);                    
+                }           
 
                 break;
             }
         }
-        */
 
         dump.addTitle("ID", "Tagged objects");
         dump.addHeader("??? TODO 1.18.2+");
@@ -94,4 +119,36 @@ public class TagDump
         FLUID,
         ENTITY_TYPE;
     }
+
+    // public static String getRegistryString(IForgeRegistry<T> registry, T i) {
+    //     ResourceKey<T> k = registry.getResourceKey(i).get();
+    //     ResourceLocation l = k.location();
+    //     return l.toString();
+    // }
+
+    public static String getItemRegistryString(Item i) {
+        ResourceKey<Item> k = ForgeRegistries.ITEMS.getResourceKey(i).get();
+        ResourceLocation l = k.location();
+        return l.toString();
+    }
+
+    public static String getBlockRegistryString(Block i) {
+        ResourceKey<Block> k = ForgeRegistries.BLOCKS.getResourceKey(i).get();
+        ResourceLocation l = k.location();
+        return l.toString();
+    }
+
+    public static String getFluidRegistryString(Fluid i) {
+        ResourceKey<Fluid> k = ForgeRegistries.FLUIDS.getResourceKey(i).get();
+        ResourceLocation l = k.location();
+        return l.toString();
+    }
+
+    public static String getEntityTypeRegistryString(EntityType<?> i) {
+        ResourceKey<EntityType<?>> k = ForgeRegistries.ENTITY_TYPES.getResourceKey(i).get();
+        ResourceLocation l = k.location();
+        return l.toString();
+    }
+
+
 }

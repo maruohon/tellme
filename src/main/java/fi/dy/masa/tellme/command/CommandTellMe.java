@@ -8,7 +8,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 
@@ -35,7 +35,7 @@ public class CommandTellMe
 
     public static void registerArgumentTypes()
     {
-        DeferredRegister<ArgumentTypeInfo<?, ?>> dr = DeferredRegister.create(Registry.COMMAND_ARGUMENT_TYPE_REGISTRY, Reference.MOD_ID);
+        DeferredRegister<ArgumentTypeInfo<?, ?>> dr = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, Reference.MOD_ID);
 
         dr.register("biome",             () -> ArgumentTypeInfos.registerByClass(BiomeArgument.class,                    SingletonArgumentInfo.contextFree(BiomeArgument::new)));
         dr.register("block_grouping",    () -> ArgumentTypeInfos.registerByClass(BlockStateCountGroupingArgument.class,  SingletonArgumentInfo.contextFree(BlockStateCountGroupingArgument::new)));

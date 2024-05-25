@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.world.entity.Entity;
@@ -18,6 +19,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class WorldUtils
 {
+    @SuppressWarnings("resource")
     public static int getLoadedChunkCount(Level world)
     {
         if (world != null && world.getChunkSource() instanceof ServerChunkCache)
@@ -45,7 +47,7 @@ public class WorldUtils
 
     public static String getDimensionId(Level world)
     {
-        Optional<? extends Registry<DimensionType>> opt = world.registryAccess().registry(Registry.DIMENSION_TYPE_REGISTRY);
+        Optional<? extends Registry<DimensionType>> opt = world.registryAccess().registry(Registries.DIMENSION_TYPE);
         ResourceLocation id = opt.isPresent() ? opt.get().getKey(world.dimensionType()) : null;
         return id != null ? id.toString() : "?";
     }

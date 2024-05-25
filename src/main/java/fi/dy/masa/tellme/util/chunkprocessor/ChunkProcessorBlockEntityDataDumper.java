@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,14 +36,16 @@ public class ChunkProcessorBlockEntityDataDumper extends ChunkProcessorBase
     private void setFilters(Collection<String> filtersIn)
     {
         this.filters.clear();
+        @SuppressWarnings("resource")
+        var reg = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BLOCK_ENTITY_TYPE);
 
         for (String str : filtersIn)
         {
             try
             {
                 ResourceLocation id = new ResourceLocation(str);
-                @SuppressWarnings("deprecation")
-                Optional<BlockEntityType<?>> type = Registry.BLOCK_ENTITY_TYPE.getOptional(id);
+                //@SuppressWarnings("deprecation")
+                Optional<BlockEntityType<?>> type = reg.getOptional(id);
                 type.ifPresent(this.filters::add);
             }
             catch (Exception e)

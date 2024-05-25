@@ -3,7 +3,6 @@ package fi.dy.masa.tellme.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,7 +27,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -38,63 +36,6 @@ import fi.dy.masa.tellme.util.nbt.NbtStringifierPretty;
 
 public class BlockInfo
 {
-    private static final Map<Material, String> MATERIAL_NAMES = getMaterialNames();
-
-    private static Map<Material, String> getMaterialNames()
-    {
-        Map<Material, String> names = new HashMap<>();
-
-        names.put(Material.AIR, "AIR");
-        names.put(Material.AMETHYST, "AMETHYST");
-        names.put(Material.BAMBOO, "BAMBOO");
-        names.put(Material.BAMBOO_SAPLING, "BAMBOO_SAPLING");
-        names.put(Material.BARRIER, "BARRIER");
-        names.put(Material.BUBBLE_COLUMN, "BUBBLE_COLUMN");
-        names.put(Material.BUILDABLE_GLASS, "BUILDABLE_GLASS");
-        names.put(Material.CACTUS, "CACTUS");
-        names.put(Material.CAKE, "CAKE");
-        names.put(Material.CLAY, "CLAY");
-        names.put(Material.CLOTH_DECORATION, "CLOTH_DECORATION");
-        names.put(Material.DECORATION, "DECORATION");
-        names.put(Material.DIRT, "DIRT");
-        names.put(Material.EGG, "EGG");
-        names.put(Material.EXPLOSIVE, "EXPLOSIVE");
-        names.put(Material.FIRE, "FIRE");
-        names.put(Material.GLASS, "GLASS");
-        names.put(Material.GRASS, "GRASS");
-        names.put(Material.HEAVY_METAL, "HEAVY_METAL");
-        names.put(Material.ICE, "ICE");
-        names.put(Material.ICE_SOLID, "ICE_SOLID");
-        names.put(Material.LAVA, "LAVA");
-        names.put(Material.LEAVES, "LEAVES");
-        names.put(Material.METAL, "METAL");
-        names.put(Material.MOSS, "MOSS");
-        names.put(Material.NETHER_WOOD, "NETHER_WOOD");
-        names.put(Material.PISTON, "PISTON");
-        names.put(Material.PLANT, "PLANT");
-        names.put(Material.PORTAL, "PORTAL");
-        names.put(Material.POWDER_SNOW, "POWDER_SNOW");
-        names.put(Material.REPLACEABLE_FIREPROOF_PLANT, "REPLACEABLE_FIREPROOF_PLANT");
-        names.put(Material.REPLACEABLE_PLANT, "REPLACEABLE_PLANT");
-        names.put(Material.REPLACEABLE_WATER_PLANT, "REPLACEABLE_WATER_PLANT");
-        names.put(Material.SAND, "SAND");
-        names.put(Material.SCULK, "SCULK");
-        names.put(Material.SHULKER_SHELL, "SHULKER_SHELL");
-        names.put(Material.SNOW, "SNOW");
-        names.put(Material.SPONGE, "SPONGE");
-        names.put(Material.STONE, "STONE");
-        names.put(Material.STRUCTURAL_AIR, "STRUCTURAL_AIR");
-        names.put(Material.TOP_SNOW, "TOP_SNOW");
-        names.put(Material.VEGETABLE, "VEGETABLE");
-        names.put(Material.WATER, "WATER");
-        names.put(Material.WATER_PLANT, "WATER_PLANT");
-        names.put(Material.WEB, "WEB");
-        names.put(Material.WOOD, "WOOD");
-        names.put(Material.WOOL, "WOOL");
-
-        return names;
-    }
-
     public static <T extends Comparable<T>> BlockState setPropertyValueFromString(BlockState state, Property<T> prop, String valueStr)
     {
         Optional<T> value = prop.getValue(valueStr);
@@ -202,10 +143,9 @@ public class BlockInfo
         float explosionResistance = state.getBlock().getExplosionResistance();
 
         lines.add(String.format("Full block state: %s", state));
-        lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f, Material: %s",
+        lines.add(String.format("Hardness: %.4f, Explosion resistance: %.4f",
                 state.getDestroySpeed(world, pos),
-                explosionResistance,
-                getMaterialName(state.getMaterial())));
+                explosionResistance));
         lines.add("Block class: " + state.getBlock().getClass().getName());
 
         if (state.getValues().size() > 0)
@@ -234,11 +174,6 @@ public class BlockInfo
         }
 
         return lines;
-    }
-
-    public static String getMaterialName(Material material)
-    {
-        return MATERIAL_NAMES.getOrDefault(material, "<unknown>");
     }
 
     public static void printBasicBlockInfoToChat(Player entity, Level world, BlockPos pos)

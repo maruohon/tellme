@@ -29,6 +29,7 @@ public class MessageCopyToClipboard
         buf.writeUtf(this.str);
     }
 
+    @SuppressWarnings("resource")
     public void handle(Supplier<NetworkEvent.Context> ctxSupplier)
     {
         NetworkEvent.Context ctx = ctxSupplier.get();

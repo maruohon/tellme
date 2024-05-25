@@ -17,7 +17,7 @@ import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -137,7 +137,7 @@ public class SubCommandBiomeLocate
         CommandUtils.sendMessage(source, "Finding closest biome locations...");
 
         biomeLocator.setAppend(append);
-        biomeLocator.findClosestBiomePositions(biomeManager, new BlockPos(center.x, 0, center.y), sampleInterval, sampleRadius);
+        biomeLocator.findClosestBiomePositions(biomeManager, new BlockPos(Math.round(center.x), 0, Math.round(center.y)), sampleInterval, sampleRadius);
 
         CommandUtils.sendMessage(source, "Done");
 
@@ -161,12 +161,12 @@ public class SubCommandBiomeLocate
         {
             if (consoleBiomeLocator == null)
             {
-                consoleBiomeLocator = new BiomeLocator(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
+                consoleBiomeLocator = new BiomeLocator(source.registryAccess().registryOrThrow(Registries.BIOME));
             }
 
             return consoleBiomeLocator;
         }
 
-        return BIOME_LOCATORS.computeIfAbsent(entity.getUUID(), (e) -> new BiomeLocator(source.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)));
+        return BIOME_LOCATORS.computeIfAbsent(entity.getUUID(), (e) -> new BiomeLocator(source.registryAccess().registryOrThrow(Registries.BIOME)));
     }
 }

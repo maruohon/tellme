@@ -83,7 +83,7 @@ public class ItemDump
 
             for (Recipe<?> recipe : manager.getRecipes())
             {
-                ItemStack stack = recipe.getResultItem();
+                ItemStack stack = recipe.getResultItem(server.overworld().registryAccess());
 
                 if (stack.isEmpty() == false && recipe.canCraftInDimensions(3, 3))
                 {

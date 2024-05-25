@@ -56,7 +56,7 @@ public class ItemType
                 return false;
             }
 
-            return ItemStack.tagMatches(this.stack, other.stack);
+            return ItemStack.isSameItemSameTags(this.stack, other.stack);
         }
 
         return true;

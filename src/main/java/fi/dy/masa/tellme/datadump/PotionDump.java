@@ -3,7 +3,9 @@ package fi.dy.masa.tellme.datadump;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.core.Registry;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -20,14 +22,16 @@ public class PotionDump
     public static List<String> getFormattedPotionDump(DataDump.Format format)
     {
         DataDump potionTypeDump = new DataDump(3, format);
+        @SuppressWarnings("resource")
+        var reg = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.POTION);
 
         for (Map.Entry<ResourceKey<Potion>, Potion> entry : ForgeRegistries.POTIONS.getEntries())
         {
             Potion potion = entry.getValue();
             String regName = entry.getKey().location().toString();
 
-            @SuppressWarnings("deprecation")
-            String id = String.valueOf(Registry.POTION.getId(potion));
+            //@SuppressWarnings("deprecation")
+            String id = String.valueOf(reg.getId(potion));
 
             List<MobEffectInstance> effects = potion.getEffects();
 

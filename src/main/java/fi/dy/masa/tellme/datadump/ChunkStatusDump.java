@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import fi.dy.masa.tellme.util.RegistryUtils;
 import fi.dy.masa.tellme.util.datadump.DataDump;
 import fi.dy.masa.tellme.util.datadump.DataDump.Format;
 

@@ -2,7 +2,6 @@ package fi.dy.masa.tellme.datadump;
 
 import java.util.List;
 import java.util.Map;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -23,8 +22,8 @@ public class MobEffectDump
             MobEffect effect = entry.getValue();
             ResourceLocation id = entry.getKey().location();
 
-            @SuppressWarnings("deprecation")
-            String numericId = String.valueOf(Registry.MOB_EFFECT.getId(effect));
+            //@SuppressWarnings("deprecation")
+            String numericId = "0"; //String.valueOf(Registries.MOB_EFFECT.getId(effect));
 
             String modName = ModNameUtils.getModName(id);
             String regName = id.toString();

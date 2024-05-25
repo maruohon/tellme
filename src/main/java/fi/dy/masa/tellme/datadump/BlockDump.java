@@ -22,7 +22,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
+//import net.minecraft.world.level.material;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import fi.dy.masa.tellme.TellMe;
@@ -64,7 +65,7 @@ public class BlockDump
             {
                 Block block = entry.getValue();
                 String id = entry.getKey().location().toString();
-                MaterialColor materialColor = block.defaultBlockState().getMapColor(world, BlockPos.ZERO);
+                MapColor materialColor = block.defaultBlockState().getMapColor(world, BlockPos.ZERO);
                 int color = materialColor != null ? materialColor.col : 0xFFFFFF;
                 blockDump.addData(id, String.format("#%06X", color), String.valueOf(color));
             }
