@@ -11,8 +11,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-
-import net.minecraft.advancement.AdvancementEntry;
+import net.minecraft.advancement.Advancement;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
@@ -22,7 +21,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
-
 import fi.dy.masa.tellme.TellMe;
 import fi.dy.masa.tellme.mixin.IMixinThreadedAnvilChunkStorage;
 import fi.dy.masa.tellme.util.datadump.DataDump;
@@ -35,7 +33,7 @@ public class DataProviderBase
     }
 
     @Nullable
-    public Collection<AdvancementEntry> getAdvancements(MinecraftServer server)
+    public Collection<Advancement> getAdvancements(MinecraftServer server)
     {
         return server != null ? server.getAdvancementLoader().getAdvancements() : null;
     }

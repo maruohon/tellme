@@ -29,7 +29,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -81,13 +81,13 @@ public class ItemDump
         {
             RecipeManager manager = server.getRecipeManager();
 
-            for (RecipeEntry<?> recipe : manager.values())
+            for (Recipe<?> recipe : manager.values())
             {
-                ItemStack stack = recipe.value().getResult(server.getRegistryManager());
+                ItemStack stack = recipe.getOutput(server.getRegistryManager());
 
                 if (stack.isEmpty() == false)
                 {
-                    provider.addLine(dump, stack, recipe.id());
+                    provider.addLine(dump, stack, recipe.getId());
                 }
             }
         }
