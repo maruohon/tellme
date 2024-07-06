@@ -52,6 +52,7 @@ public class CommandTellMe
                     .then(SubCommandDump.registerSubCommand(dispatcher))
                     .then(SubCommandDumpJson.registerSubCommand(dispatcher))
                     .then(SubCommandEntityData.registerSubCommand(dispatcher))
+                    .then(SubCommandEntityNbt.registerSubCommand(dispatcher))
                     .then(SubCommandHolding.registerSubCommand(dispatcher))
                     .then(SubCommandLoaded.registerSubCommand(dispatcher))
                     .then(SubCommandLocate.registerSubCommand(dispatcher))
